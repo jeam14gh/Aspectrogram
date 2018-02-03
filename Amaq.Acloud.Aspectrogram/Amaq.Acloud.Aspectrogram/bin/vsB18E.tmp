@@ -1,0 +1,1912 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Amaq.Acloud.Aspectrogram</name>
+    </assembly>
+    <members>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController">
+            <summary>
+            Controlador Asdaq
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController.ShouldReconfigure(System.String)">
+            <summary>
+            Obtiene que indica si el Asdaq debe obtener nuevamente su configuración
+            </summary>
+            <param name="asdaqId">Id Asdaq</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController.ResetReconfigureFlag(System.String)">
+            <summary>
+            Resetea al valor false, la propiedad Reconfigure del asdaq con el Id especificado
+            </summary>
+            <param name="asdaqId">Id Asdaq</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController.GetAllWithMdVariableTag">
+            <summary>
+            Obtiene toda la coleccion Asdaq con el nombre de la mdVariable asociada a un Aichannel y no su MdVariableId.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController.UpdateDevice(System.String,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto})">
+            <summary>
+            Actualiza todos los dispositivos de adquisición (NiDevices y NiCompactDaqs) asociados a un AsdaqId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController.GetRealTimeRequests(System.String)">
+            <summary>
+            Obtiene las solicitudes tiempo real del asdaq con el id especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController.UpdateRealTimeRequests(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto})">
+            <summary>
+            Actualiza las solicitudes tiempo real de los asdaq especificados
+            </summary>
+            <param name="realTimeRequestsByAsdaqList">Lista de solicitudes tiempo por asdaq</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController.DeleteRealTimeRequests(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina las solicitudes tiempo real especificadas del asdaq con el id especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <param name="subVariableIdList">Lista de id de subVariables a eliminar de la lista de solicitudes tiempo real</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AsdaqController.DeleteRelationshipMdVariableWithAiChannels(System.String,Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto)">
+            <summary>
+            Elimina la relación de puntos de medición con su respectivo canal
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AtrController">
+            <summary>
+            Controlador Atransmitter
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AtrController.ShouldReconfigure(System.String)">
+            <summary>
+            Obtiene que indica si el Atransmitter debe obtener nuevamente su configuración
+            </summary>
+            <param name="atrId">Id Atransmitter</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AtrController.UpdateModule(System.String,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.AtrModule})">
+            <summary>
+            Obtiene los cambios hechos en cada uno de sus modulos y canales de la A-transmitter seleccionada
+            </summary>
+            <param name="atrId">Id Atransmitter</param>
+            <param name="modules">Lista de modulos</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AtrController.GetAllWithMdVariableTag">
+            <summary>
+            Obtiebe todos los Atr con el nombre de la MdVariable asociada con un canal.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AtrController.DeleteRelationshipMdVariableWithAiChannels(System.String,Amaq.Acloud.Aspectrogram.Entities.AtrModule)">
+            <summary>
+            Elimina la relación de puntos de medición con su respectivo canal
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController">
+            <summary>
+            Controlador Api MdVariableExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.GetByAssetId(System.String)">
+            <summary>
+            Obtiene las mdVariable asociadas al Id de Asset especificado.
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns>Listado de MdVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.GetByAssetId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las mdVariable asociadas con cualquiera de los id asset especificados
+            </summary>
+            <param name="assetIdList">Lista de id asset</param>
+            <returns>Lista de objetos de tipo MdVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.GetMeasurementPointsByAsset(System.String)">
+            <summary>
+            Obtiene los puntos de medicion asociados a un activo,
+            asi como la informacion de subvariables por punto de medicion.
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns>Lista de objetos de tipo MdVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.GetOverallMeasure(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las subVariables con medidas globales asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <returns>Lista de tipo MeasurementPointDto</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.GetSignal(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las subVariables con valor tipo Amaq Stream asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <returns>Lista de tipo MeasurementPointDto</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.CloneMdVariable(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension)">
+            <summary>
+            Retorna un nuevo Id a partir de una MdVariable clonada
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.DeleteById(System.String)">
+            <summary>
+            Elimina un punto de medición, sus SubVariables y el Node asociado a el por medio de su Id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.UpdateIncludingParameterValues(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension)">
+            <summary>
+            Actualiza un punto de medición incluyendo la propiedad ParameterValues
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.Create(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension)">
+            <summary>
+            Retorna el punto de medición anteriormente creado en base de datos
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.GetByNodeId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Retorna una lista de puntos de medición a través de una lista de nodeId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.DeleteManyByIdAndSubVaribles(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension})">
+            <summary>
+            Elimina varios puntos de medición y las Subvaribles asociadas a cada punto
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController">
+            <summary>
+            Controlador Api Node
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController.DeleteById(System.String)">
+            <summary>
+            Elimina un nodo por Id
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController.DeleteMany(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToDeleteDto})">
+            <summary>
+            Elimina los nodos del árbol con los id especificados y sus respectivos tipos de entidades
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController.UpdateManyMdVariableStatus(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableNodeStatusDto})">
+            <summary>
+            Actualiza los estados de los nodos tipo MdVariable especificados
+            </summary>
+            <param name="mdVariableNodeStatusDtoList">Lista de nodos tipo MdVariable con el nuevo estado</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController.CloneNode(Amaq.Acloud.Entities.Core.Node)">
+            <summary>
+            Retorna un nuevo Id a partir de un node clonado
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController.UpdateNameAndDescription(Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto)">
+            <summary>
+            Actualiza el nombre y la descripción de un node
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController.Create(Amaq.Acloud.Entities.Core.Node)">
+            <summary>
+            Retorna el node anteriormente creado en base de datos 
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController.Clone(Amaq.Acloud.Entities.Core.Node)">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController.Delete_Many(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios nodos por medio de una lista de Id
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SensorTypeController">
+            <summary>
+            Controlador Api SensorType
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AssetExtensionController">
+            <summary>
+            Controlador AssetExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AssetExtensionController.GetByAsdaq(System.String)">
+            <summary>
+            Obtiene los asset con el asdaqId especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <returns>Lista de objetos de tipo AssetExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AssetExtensionController.GetAssetIdByNode(System.String)">
+            <summary>
+            Obtiene el Id del asset con el nodeId especificado
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AssetExtensionController.GetIdAndAsdaqIdByNode(System.String)">
+            <summary>
+            Obtiene el id y el asdaqId del asset con el nodeId especificado
+            </summary>
+            <param name="nodeId">Id de nodo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AssetExtensionController.UpdateNameAndDescription(Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto)">
+            <summary>
+            Actualiza el nombre y la descripción de un asset
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AssetExtensionController.Clone(Amaq.Acloud.Aspectrogram.Entities.AssetExtension)">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.AssetExtensionController.DeleteManyByNodeId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios activos por medio de una lista de NodeId
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController">
+            <summary>
+            Controlador Api SubVariableExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.GetByMdVariableId(System.Collections.Generic.List{System.String},System.Boolean)">
+            <summary>
+            Obtiene las subVariables asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <param name="includeRealTimeData">Indica si se incluyen los datos tiempo real en el resultado(Value y TimeStamp)</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.UpdateMany(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Actualizar varios documentos de una entidad.
+            </summary>
+            <param name="subVariableExtensionList">Listado de subvariables a actualizar</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.GetRealTimeData(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto})">
+            <summary>
+            Obtiene datos tiempo real de las subVariables con los id especificados.
+            </summary>
+            <param name="realTimeRequestsByAsdaqList">Listado de solicitudes de subVariables tiempo real agrupadas por asdaq</param>
+            <returns>Datos tiempo real</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.UpdateManyRealTimeData(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto})">
+            <summary>
+            Actualiza las subVariables con la información especificada para cada una, pero solo las propiedades necesarias para tiempor real
+            </summary>
+            <param name="realTimeDataList">Lista de subVariables con los datos a actualizar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.UpdateRealTimeData(Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto)">
+            <summary>
+            Actualiza la subVariable con la información especificada, pero solo las propiedades necesarias para tiempor real
+            </summary>
+            <param name="realTimeData">SubVariable con los datos a actualizar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.CloneSubVariables(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Clona una lista de subvariables
+            </summary>
+            <returns> Una lista de Id's de subvariables </returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.UpdateMany2(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Actualiza una lista de SubVariables
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.SetCompesation(System.String,System.Double,System.Double)">
+            <summary>
+            Define los valores de referencia/compensacion de Amplitud y Fase 1x
+            Usado para compensar Bode y Polar
+            </summary>
+            <param name="mdVariableId">Id de la MdVariable a compensar</param>
+            <param name="amplitude">Amplitud 1X de referencia</param>
+            <param name="phase">Fase 1X de referencia</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.DeleteById(System.String)">
+            <summary>
+            Elimina una subvariable por medio de su Id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.SubVariableExtensionController.Create(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Guarda una lista de subVariables en base de datos
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1">
+            <summary>
+            Representa un controlador generico para las operaciones comunes sobre el tipo especificado
+            </summary>
+            <typeparam name="T">Tipo concreto</typeparam>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1.CoreDbUrl">
+            <summary>
+            Url de la base base de datos (URL Server + DbName)
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1.Initialize(System.Web.Http.Controllers.HttpControllerContext)">
+            <summary>
+            Inicializa la variable CoreDbUrl que es heredada por todos los Api Controller
+            </summary>
+            <param name="controllerContext"></param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1.GetById(System.String)">
+            <summary>
+            Obtiene un documento segun su Id en la base de datos.
+            </summary>
+            <param name="entityId">Id del documento en la base datos</param>
+            <returns>El documento requerido</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1.GetById(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene un listado de documentos segun un listado de Ids especificados.
+            </summary>
+            <param name="listEntityId">Listado de Ids de los diferentes documentos en la base datos</param>
+            <returns>Listado de documentos requeridos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1.Find(`0)">
+            <summary>
+            Encuentra un documento (el primero caso exista mas de una coincidencia) segun las propiedades conocidas del mismo.
+            </summary>
+            <param name="entity">Entidad con los valores conocidos con los que se realizara la busqueda</param>
+            <returns>El primer documento que coincida con los valores conocidos de la entidad</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1.AddSingle(`0)">
+            <summary>
+            Inserta un nuevo documento en la base de datos.
+            </summary>
+            <param name="entity">Documento a insertar</param>
+            <returns>El Id generado para el documento insertado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1.GetAll">
+            <summary>
+            Obtiene la lista completa de documentos que pertenecen a la entidad.
+            </summary>
+            <returns>Listado de documentos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.GenericController`1.Update(`0)">
+            <summary>
+            Actualizar un documento de una entidad.
+            </summary>
+            <param name="entity">Entidad a actualizar</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController">
+            <summary>
+            Controlador base del sistema
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.Index">
+            <summary>
+            Vista por defecto del sistema Aspectrogram
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.Report">
+            <summary>
+            Vista para mostrar los reportes
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetSignalRealTime(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene datos de formas de onda en tiempo real para los Id de MdVariable especificados.
+            </summary>
+            <param name="mdVariableIdList">Listado de Ids de MdVariable</param>
+            <returns>Datos de formas de onda en tiempo real</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetNodes">
+            <summary>
+            Obtiene la lista de nodos concernientes al usuario.
+            </summary>
+            <returns>Listado de nodos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetMdVariableExtension(System.String)">
+            <summary>
+            Obtiene el listado de MdVariables de un activo especifico
+            </summary>
+            <param name="nodeId">Id del nodo correspondiente al activo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetMeasurementPointsByAsset(System.String)">
+            <summary>
+            Obtiene los measurement points con sus respectivas subVariables del asset con el Id especificado
+            </summary>
+            <param name="assetId">Id nodo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetMeasurementPointsByAssetList(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene los measurement points con sus respectivas subVariables del asset con el Id especificado
+            </summary>
+            <param name="assetIdList">Listado de Ids de activo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetAssetIdAndAsdaqId(System.String)">
+            <summary>
+            Obtiene el id y el asdaqId del asset con el nodeId especificado
+            </summary>
+            <param name="nodeId">Id de nodo</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetSetOfRiskStates">
+            <summary>
+            Obtiene el conjunto de estados del Corp riesgo
+            </summary>
+            <returns>Lista de objetos de tipo StatusExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetRealTimeData(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto})">
+            <summary>
+            Obtiene datos tiempo real de las subVariables con los id especificados.
+            </summary>
+            <param name="realTimeRequestsByAsdaqList">Listado de solicitudes de subVariables tiempo real agrupadas por asdaq</param>
+            <returns>Datos tiempo real</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetAllSensorTypes">
+            <summary>
+            Obtiene todos los tipos de sensor registrados en el sistema Aspectrogram
+            </summary>
+            <returns>Lista de objetos de tipo SensorType</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.DeleteAssetByNodeId(System.String)">
+            <summary>
+            Elimina un Asset por medio de su NodeId
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.DeleteMany(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToDeleteDto})">
+            <summary>
+            Elimina los nodos del árbol con los id especificados
+            </summary>
+            <param name="nodes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetStatusById(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtine una lista de nodos con su parentId y StatusId
+            </summary>
+            <param name="idList"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetMdVariableById(System.String)">
+            <summary>
+            Retorna una MdVariable por medio de su id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetNodeById(System.String)">
+            <summary>
+            Retorna un node por medio de su id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.CloneNodeAndMdVariable(Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAndMdVariableDto)">
+            <summary>
+            Clona una MdVariable con su respectivo Node que se asocia con ésta
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetHistoricalData(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String},System.String,System.String,System.Boolean)">
+            <summary>
+            Obtiene datos historicos de las subVariables con los id especificados y segun el rango de fechas.
+            </summary>
+            <param name="mdVariableIdList">Listado de Ids de mdVariable a consultar</param>
+            <param name="subVariableIdList">Listado de Ids de subVariable</param>
+            <param name="startDate">Fecha de inicio desde el cual se desea filtrar el historico</param>
+            <param name="endDate">Fecha de fin hasta la cual se desea filtrar el historico</param>
+            <param name="isChangeOfRpm">Determina si el historico solicitado es exclusivamente por cambios de RPM</param>
+            <returns>Datos historicos de las subvariables especificas en un rango de tiempo</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetEventList(System.String)">
+            <summary>
+            Obtiene el listado de eventos segun el Id del activo especificado
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetEventHeader(System.String)">
+            <summary>
+            Obtiene la cabecera del evento con toda la informacion relacionada al mismo
+            </summary>
+            <param name="eventId">Id del evento</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetPackages(System.String,System.String)">
+            <summary>
+            Obtiene tanto el paquete de globales como el de formas de onda segun los Ids especificados
+            </summary>
+            <param name="overallPackageId">Id del paquete de valores globales a obtener</param>
+            <param name="waveformPackageId">Id del paquete de formas de onda a obtener</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.UpdateMdVariableAndNode(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension)">
+            <summary>
+            Actualiza un punto de medición incluyendo la propiedad ParameterValues y su respectivo Nodo asociado a éste.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.CloneSubVariables(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Clona una lista de subvariables
+            </summary>
+            <returns> Una lista de Id's de subvariables </returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.DeleteMdVariableById(System.String)">
+            <summary>
+            Elimina un punto de medición, sus SubVariables y el Node asociado a el por medio de su Id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.UpdateSubVariables(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Actualiza una lista de SubVariables
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.SetSclOptions(Amaq.Acloud.Aspectrogram.Models.SclOptionsModel)">
+            <summary>
+            Define las diferentes opciones de visualizacion del SCL, como Gaps de referencias,
+            diametros de clearance y punto de inicio del clearance plot.
+            </summary>
+            <param name="sclOptModel">Opciones del Shaft Centerline</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.SetCompesation(System.String,System.Double,System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="mdVariableId">Id de la MdVariable a compensar</param>
+            <param name="amplitude">Amplitud 1X de compensacion</param>
+            /// <param name="phase">Fase 1X de compensacion</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.DeleteSubVariableById(System.String)">
+            <summary>
+            Elimina una subvariable por medio de su Id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.CreateNodeMdVariableAndSubVariables(Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAndMdVariableDto,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Crea un nuevo node, punto de medición y su respectivas subVariables
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetAssetById(System.String)">
+            <summary>
+            Retorna un asset por medio de su id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.CreateNodeAndAsset(Amaq.Acloud.Entities.Core.Node,Amaq.Acloud.Aspectrogram.Entities.AssetExtension)">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.UpdateNameAndDescriptionOfNodeAndAsset(Amaq.Acloud.Aspectrogram.Entities.AssetExtension)">
+            <summary>
+            Actualiza el nombre y la descripción de un node y asset
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.CloneNodeAndAsset(Amaq.Acloud.Entities.Core.Node)">
+            <summary>
+            Clona tanto el nodo como su activo y toda su descendencia en el arbol si éste la tiene.
+            </summary>
+            <returns>Un listado de nodos, activos, puntos de medicion y subvariables</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.CreateNode(Amaq.Acloud.Entities.Core.Node)">
+            <summary>
+            Crea y retorna un nuevo nodo
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.UpdateNameAndDescriptionOfNode(Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto)">
+            <summary>
+            Actualiza el nombre y descripción de un Nodo
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.DeleteLocation(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina una ubicación y toda su descendencia (Nodos, Activos, Puntos de medición y SubVaribales)
+            </summary>
+            <param name="nodeIdList">Lista de nodos por Id</param>
+            <param name="nodeIdListAsset">Lista de nodos por Id de tipo Asset</param>
+            <param name="nodeIdListMdVariable">Lista de nodos por Id de tipo MdVariable</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl">
+            <summary>
+            Logica de negocio AssetExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.GetByAsdaq(System.String)">
+            <summary>
+            Obtiene los asset con el asdaqId especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <returns>Lista de objetos de tipo AssetExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.GetAssetIdByNode(System.String)">
+            <summary>
+            Obtiene el Id del asset con el nodeId especificado
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.GetIdAndAsdaqIdByNode(System.String)">
+            <summary>
+            Obtiene el id y el asdaqId del asset con el nodeId especificado
+            </summary>
+            <param name="nodeId">Id de nodo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.DeleteMany(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios Assets de una lista
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.UpdateNameAndDescription(Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto)">
+            <summary>
+            Actualiza el nombre y la descripción de un asset
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.GetByNodeId(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="nodeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.Clone(Amaq.Acloud.Aspectrogram.Entities.AssetExtension)">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.UpdateAsdaqId(System.Collections.Generic.List{System.String},System.String)">
+            <summary>
+            Actualiza el AsdaqId del activo si existe una relación de un canal Asdaq con un punto de medición
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl.DeleteManyByNodeId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios activos por medio de una lista de NodeId
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository">
+            <summary>
+            Repository AssetExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.GetByAsdaq(System.String)">
+            <summary>
+            Obtiene los asset con el asdaqId especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <returns>Lista de objetos de tipo AssetExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.GetAssetIdByNode(System.String)">
+            <summary>
+            Obtiene el Id del asset con el nodeId especificado
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.GetIdAndAsdaqIdByNode(System.String)">
+            <summary>
+            Obtiene el Id y el AsdaqId del activo correspondiente al nodo especificado
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.DeleteByNodeId(System.String)">
+            <summary>
+            Elimina un Asset por medio de su NodeId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.DeleteMany(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios Assets
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.UpdateNameAndDescription(Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto)">
+            <summary>
+            Actualiza el nombre y la descripción de un asset
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.getById(System.String)">
+            <summary>
+            Obtiene una lista de activos que su ParentId sea igual.
+            </summary>
+            <returns> Los activos hijos de su paren </returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.GetByNodeId(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="nodeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.UpdateAsdaqId(System.Collections.Generic.List{System.String},System.String)">
+            <summary>
+            Actualiza el AsdaqId del activo si existe una relación de un canal Asdaq con un punto de medición
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Models.Data.AssetExtensionRepository.DeleteManyByNodeId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios activos por medio de una lista de NodeId
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.ApplicationUserManager">
+            <summary>
+            Configura la aplicacion de gestion de usuarios usado en esta aplicacion.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.ApplicationUserManager.#ctor(Microsoft.AspNet.Identity.IUserStore{Amaq.Acloud.Aspectrogram.Models.ApplicationUser})">
+            <summary>
+            Inicializa la gestion de usuarios
+            </summary>
+            <param name="store"></param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.AccountController">
+            <summary>
+            Gestiona las cuentas de los usuarios en el sistema
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.AccountController.Login(System.String)">
+            <summary>
+            Autenticacion de usuarios por medio de un formulario web.
+            </summary>
+            <param name="returnUrl">URL a retornar posterior al login</param>
+            <returns>Formulario web de autenticacion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.AccountController.Login(Amaq.Acloud.Aspectrogram.Entities.Dtos.FullCredentialDto)">
+            <summary>
+            Valida la informacion de un usuario que intenta acceder al sistema
+            </summary>
+            <param name="model">Informacion necesaria para el login</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.AccountController.GetCompanies(Amaq.Acloud.Entities.Dtos.BasicCredentialsDto)">
+            <summary>
+            Obtiene las empresas relacionadas al usuario que intenta iniciar sesion en el sistema
+            </summary>
+            <param name="model">Informacion basica del usuario en el sistema</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.AccountController.ProductLogin(Amaq.Acloud.Aspectrogram.Entities.Account)">
+            <summary>
+            Login para los diferentes productos o dispositivos AMAQ.
+            </summary>
+            <param name="model">Informacion del producto o dispositivo</param>
+            <returns>Token de acceso al sistema</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.AccountController.LogOff">
+            <summary>
+            POST: /Account/LogOff
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.AccountController.IdentitySignin(Amaq.Acloud.Proxy.Models.AppUserState,System.Boolean,System.String)">
+            <summary>
+            Crea los diferentes claims y realiza la autenticacion del usuario una vez se confirma la identidad del mismo en el sistema
+            </summary>
+            <param name="appUserState">Objecto con la informacion obtenida del usuario</param>
+            <param name="isPersistent"></param>
+            <param name="providerKey"></param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.AccountController.IdentitySignout">
+            <summary>
+            Realiza el cierre de la session de usuario
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.AccountController.SignInAsync(System.String,System.Boolean,System.String)">
+            <summary>
+            Registro de sesión de usuario con ApplicationCookie
+            </summary>
+            <param name="userName">Nombre de usuario en el sistema</param>
+            <param name="accessToken">Token de acceso a los Servicios de A-Cloud</param>
+            <param name="rememberme">Bandera para determinar si se almacena informacion del usuario en una cookie del navegador</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.Attributes.CustomAuthorizeAttribute">
+            <summary>
+            Atributo personalizado para la verificacion de los permisos de un usuario en el sistema.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Attributes.CustomAuthorizeAttribute.#ctor">
+            <summary>
+            Constructor por defecto
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Attributes.CustomAuthorizeAttribute.IsAuthorized(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Verificacion personalizada al comparar con el servidor que provee el token
+            </summary>
+            <param name="actionContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.Attributes.RolesAttribute">
+            <summary>
+            Atributo personalizado para la verificacion de los roles de un usuario en el sistema.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Attributes.RolesAttribute.#ctor(System.String[])">
+            <summary>
+            Constructor para inicializar los roles requeridos para cada metodo o clase
+            </summary>
+            <param name="roles">Diferentes roles autorizados para el metodo o clase</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Attributes.RolesAttribute.HandleUnauthorizedRequest(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Personalizacion del respuesta a una respuesta Unauthorized del atributo RolesAttribute
+            </summary>
+            <param name="actionContext">Contexto de la accion/metodo</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Attributes.RolesAttribute.IsAuthorized(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Verificacion personalizada al comparar los roles permitidos por metodo/accion
+            </summary>
+            <param name="actionContext">Contexto de la accion/metodo</param>
+            <returns>Verdadero o falso segun el(los) rol(es) del usuario</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.LocationController">
+            <summary>
+            Controlador Api Location
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.RecordedEventController">
+            <summary>
+            Controlador Api RecordedEvent
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.RecordedEventController.Add(Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto)">
+            <summary>
+            Registra un nuevo evento en el servidor
+            </summary>
+            <param name="recordedEventDto">Objeto con los datos necesarios para el registro del evento</param>
+            <returns>Id del evento en el servidor o una cadena vacía si ocurre algún error</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.RecordedEventController.AddPackage(Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto)">
+            <summary>
+            Registra un nuevo paquete de evento en el servidor
+            </summary>
+            <param name="newEventPackageDto">Objeto con la información necesaria para registrar un paquete de evento en el servidor</param>
+            <returns>Valor lógico que indica si el paquete fue guardado correctamente o no</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.RecordedEventController.GetEventHeader(System.String)">
+            <summary>
+            Obtiene la cabecera del evento con toda la informacion relacionada al mismo
+            </summary>
+            <param name="eventId">Id del evento</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.RecordedEventController.GetByAssetId(System.String)">
+            <summary>
+            Obtiene el listado de eventos segun el Id del activo especificado
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.RecordedEventController.GetPackages(System.String,System.String)">
+            <summary>
+            Obtiene tanto el paquete de globales como el de formas de onda segun los Ids especificados
+            </summary>
+            <param name="overallPackageId">Id del paquete de valores globales a obtener</param>
+            <param name="waveformPackageId">Id del paquete de formas de onda a obtener</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.StatusExtensionController">
+            <summary>
+            Controlador Api StatusExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.StatusExtensionController.GetSetOfRiskStates">
+            <summary>
+            Obtiene el conjunto de estados del Corp riesgo
+            </summary>
+            <returns>Lista de objetos de tipo StatusExtension</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.XYMeasurementPointPairController">
+            <summary>
+            Controlador Api XYMeasurementPointPair
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.XYMeasurementPointPairController.GetXYPair(System.String)">
+            <summary>
+            Obtiene el conjunto de puntos XY de la mdVariable indicada
+            </summary>
+            <returns>Lista de objetos de tipo XYMeasurementPointPair</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.XYMeasurementPointPairController.GetXYPairByAssetId(System.String)">
+            <summary>
+            Obtiene los pares configurados de las diferentes MdVariables pasada como parametro.
+            </summary>
+            <param name="assetId">Id del Asset</param>
+            <returns>Lista de objetos de tipo XYMeasurementPointPair</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.XYMeasurementPointPairController.SetSclOptions(System.Object)">
+            <summary>
+            Define las diferentes opciones de visualizacion del SCL, como Gaps de referencias,
+            diametros de clearance y punto de inicio del clearance plot.
+            </summary>
+            <param name="model">Opciones del Shaft Centerline</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.Atr">
+            <summary>
+            Retorna todos los Atransmitter con el nombre de la MdVariable asociada con un canal.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.UpdateModule(System.String,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.AtrModule})">
+            <summary>
+            Actualiza todos los modulos asociados a un AtrId
+            </summary>
+            <param name="atrId"></param>
+            <param name="modules"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.ShouldReconfigure(System.String)">
+            <summary>
+            Obtiene que indica si el Atransmitter debe obtener nuevamente su configuración
+            </summary>
+            <param name="atrId">Id Atransmitter</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.Update(Amaq.Acloud.Aspectrogram.Entities.Atr)">
+            <summary>
+            Actualiza un Atransmitter
+            </summary>
+            <param name="atr">Entidad Atr</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.Asdaq">
+            <summary>
+            Retorna todos los Asdaq
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.UpdateDevice(System.String,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto})">
+            <summary>
+            Actualiza todos los dispositivos de adquisición (NiDevices y NiCompactDaqs) asociados a un Asdaq con su respectivo Id
+            </summary>        
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.ShouldReconfigureAsdaq(System.String)">
+            <summary>
+            Obtiene e indica si el Asdaq debe obtener nuevamente su configuración
+            </summary>
+            <param name="asdaqId">Id Atransmitter</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.UpdateAsdaq(Amaq.Acloud.Aspectrogram.Entities.Asdaq)">
+            <summary>
+            Actualiza un Asdaq
+            </summary>
+            <param name="asdaq">Entidad Asdaq</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.DeleteRelationshipMdVariableWithAiChannelsAsdaq(System.String,Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto)">
+            <summary>
+            Elimina la relación de puntos de medición con su respectivo canal
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.ConfigController.DeleteRelationshipMdVariableWithAiChannelsAtr(System.String,Amaq.Acloud.Aspectrogram.Entities.AtrModule)">
+            <summary>
+            Elimina la relación de puntos de medición con su respectivo canal
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Helpers.AmaqStreamDecoder">
+            <summary>
+            Representa un decodificador Amaq Stream de cierta información como señales, posiciones de keyphasor y valores globales derivados de señal.
+            Amaq Stream es un formato estandar de Amaq para la interoperabilidad en la comunicación de señales, keyphasor y valores globales entre diferentes sistemas
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Helpers.AmaqStreamDecoder.Decode(System.Byte[])">
+            <summary>
+            Decodifica los bytes crudos que representan un Amaq Stream de señal y los convierte a un objeto de tipo AmaqStreamSignal
+            </summary>
+            <param name="rawAmaqStreamSignal">Bytes crudos que representan un Amaq Stream de señal</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.XYData">
+            <summary>
+            Representa un dato XY
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.XYData.X">
+            <summary>
+            Dato en X
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.XYData.Y">
+            <summary>
+            Dato en Y
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.AmaqStreamSignal">
+            <summary>
+            Representa un objeto Amaq Stream de señal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.AmaqStreamSignal.Version">
+            <summary>
+            Versión actual del formato
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.AmaqStreamSignal.StreamType">
+            <summary>
+            Tipo de información dinámica almacenada
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.AmaqStreamSignal.SampleTime">
+            <summary>
+            Tiempo total de la señal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.AmaqStreamSignal.SignalData">
+            <summary>
+            Datos de señal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.AmaqStreamSignal.KeyphasorPositions">
+            <summary>
+            Lista de posiciones en X de keyphasor que marcan el final de cada ciclo de la señal
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.AmaqStreamSignal.#ctor(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Models.XYData},System.Double,System.Collections.Generic.List{System.UInt32})">
+            <summary>
+            Inicializa una nueva instancia de AmaqStreamSignal
+            </summary>
+            <param name="signalData"></param>
+            <param name="sampleTime"></param>
+            <param name="keyphasorPositions"></param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl">
+            <summary>
+            Lógica de negocio Asdaq
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl._asdaqRepository">
+            <summary>
+            Contiene una referencia al repositorio de AsdaqRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.ShouldReconfigure(System.String)">
+            <summary>
+            Obtiene que indica si el Asdaq debe obtener nuevamente su configuración
+            </summary>
+            <param name="asdaqId">Id Asdaq</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.ResetReconfigureFlag(System.String)">
+            <summary>
+            Resetea al valor false, la propiedad Reconfigure del asdaq con el Id especificado
+            </summary>
+            <param name="asdaqId">Id Asdaq</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.GetAllWithMdVariableTag">
+            <summary>
+            Obtiene toda la coleccion Asdaq con el nombre de la mdVariable asociada a un Aichannel y no su MdVariableId.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.UpdateDevice(System.String,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto})">
+            <summary>
+            Actualiza todos los dispositivos de adquisición (NiDevices y NiCompactDaqs) asociados a un AsdaqId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.GetRealTimeRequests(System.String)">
+            <summary>
+            Obtiene las solicitudes tiempo real del asdaq con el id especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.UpdateRealTimeRequests(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto})">
+            <summary>
+            Actualiza las solicitudes tiempo real de los asdaq especificados
+            </summary>
+            <param name="realTimeRequestsByAsdaqList">Lista de solicitudes tiempo por asdaq</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.DeleteRealTimeRequests(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina las solicitudes tiempo real especificadas del asdaq con el id especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <param name="subVariableIdList">Lista de id de subVariables a eliminar de la lista de solicitudes tiempo real</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AsdaqBl.DeleteRelationshipMdVariableWithAiChannels(System.String,Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto)">
+            <summary>
+            Elimina la relación de puntos de medición con su respectivo canal y valida si el AsdaqId del Asset debe setearse en null
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.AtrBl">
+            <summary>
+            Lógica de negocio Atransmitter
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.AtrBl._atrRepository">
+            <summary>
+            Contiene una referencia al repositorio de AtrRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AtrBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AtrBl.ShouldReconfigure(System.String)">
+            <summary>
+            Obtiene que indica si el Atransmitter debe obtener nuevamente su configuración
+            </summary>
+            <param name="atrId">Id Atransmitter</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AtrBl.UpdateModule(System.String,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.AtrModule})">
+            <summary>
+            Actauliza una lista de modulos por medio de un IdTransmitter seleccionado
+            </summary>
+            <param name="atrId"></param>
+            <param name="modules"></param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AtrBl.GetAllWithMdVariableTag">
+            <summary>
+            Obtiene la lista completa de los Atransmitter con el nombre de la mdVariable asociada a un Aichannel y no su Id.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.AtrBl.DeleteRelationshipMdVariableWithAiChannels(System.String,Amaq.Acloud.Aspectrogram.Entities.AtrModule)">
+            <summary>
+            Elimina la relación de puntos de medición con su respectivo canal
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.LocationBl">
+            <summary>
+            Logica de negocio LocationExtension
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.LocationBl._locationRepository">
+            <summary>
+            Contiene una referencia al repositorio de locationRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.LocationBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.LocationBl.DeleteByNodeId(System.String)">
+            <summary>
+            Elimina un Location por medio de su NodeId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.LocationBl.DeleteMany(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios Locations de una lista
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl">
+            <summary>
+            Lógica de negocio MdVariableExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetByAssetId(System.String)">
+            <summary>
+            Obtiene las mdVariable asociadas al Id de Asset especificado.
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns>Listado de MdVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetMeasurementPointsByAsset(System.String)">
+            <summary>
+            Obtiene las mdVariable asociadas al Id de Asset especificado.
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns>Listado de MdVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetByAssetId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las mdVariable asociadas con cualquiera de los id asset especificados
+            </summary>
+            <param name="assetIdList">Lista de id asset</param>
+            <returns>Lista de objetos de tipo MdVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetSignal(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las subVariables con valor tipo Amaq Stream asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetOverallMeasure(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las subVariables con medidas globales asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetTagById(System.Collections.Generic.List{System.String})">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.DeleteById(System.String)">
+            <summary>
+            Elimina un punto de medición, sus SubVariables y el Node asociado a el por medio de su Id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.CloneMdVariable(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension)">
+            <summary>
+            Retorna un nuevo Id a partir de una MdVariable clonada
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.UpdateIncludingParameterValues(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension)">
+            <summary>
+            Actualiza un punto de medición incluyendo la propiedad ParameterValues
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetByNodeId(System.String)">
+            <summary>
+            Retorna un punto de medición por medio de su NodeId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetByNodeId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Retorna una lista de puntos de medición atravez de una lista de nodeId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.DeleteManyByIdAndSubVaribles(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension})">
+            <summary>
+            Elimina varios puntos de medición y las Subvaribles asociadas a cada punto
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl">
+            <summary>
+            Logica de negocio NodeExtension
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl._nodeRepository">
+            <summary>
+            Contiene una referencia al repositorio de NodeRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.listNodes">
+            <summary>
+            Lista de nodos 
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.listAssets">
+            <summary>
+            Lista de activos 
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.listMdVariables">
+            <summary>
+            Lista de puntos de medición
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.listSubvariables">
+            <summary>
+            Lista de subvariables
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.newAssetId">
+            <summary>
+            Nuevo id de un activo
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.DeleteMany(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToDeleteDto})">
+            <summary>
+            Elimina varios nodos y su tipo de entidad (Asset o Location)
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.DeleteById(System.String)">
+            <summary>
+            Elimina un Node por medio de su id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.UpdateManyMdVariableStatus(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableNodeStatusDto})">
+            <summary>
+            Actualiza los estados de los nodos tipo MdVariable especificados
+            </summary>
+            <param name="mdVariableNodeStatusDtoList">Lista de nodos tipo MdVariable con el nuevo estado</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.UpdateNameAndDescription(Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto)">
+            <summary>
+            Actualiza el nombre y la descripción de un node
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.GetChildren(System.String)">
+            <summary>
+            Obtiene los nodos hijos usando el parentLevel
+            se van a buscar
+            </summary>
+            <param name="parentLevel">Cadena de texto que representa el Level del nodo. Ejemplo: "1.1"</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.GetHierarchy(Amaq.Acloud.Entities.Core.Node)">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl.Delete_Many(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios nodos por medio de una lista de Id
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.RecordedEventBl">
+            <summary>
+            Logica de negocio RecordedEvent
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.RecordedEventBl.#ctor(System.String)">
+            <summary>
+            Inicializa una nueva instancia de RecordedEventBl
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.RecordedEventBl.Add(Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto)">
+            <summary>
+            Registra un nuevo evento en el servidor
+            </summary>
+            <param name="recordedEventDto">Objeto con los datos necesarios para el registro del evento</param>
+            <returns>Id del evento en el servidor o una cadena vacía si ocurre algún error</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.RecordedEventBl.AddPackage(Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto)">
+            <summary>
+            Registra un nuevo paquete de evento en el servidor
+            </summary>
+            <param name="newEventPackageDto">Objeto con la información necesaria para registrar un paquete de evento en el servidor</param>
+            <returns>Valor lógico que indica si el paquete fue guardado correctamente o no</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.RecordedEventBl.GetEventHeader(System.String)">
+            <summary>
+            Obtiene la cabecera del evento con toda la informacion relacionada al mismo
+            </summary>
+            <param name="eventId">Id del evento</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.RecordedEventBl.GetByAssetId(System.String)">
+            <summary>
+            Obtiene el listado de eventos segun el Id del activo especificado
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.RecordedEventBl.GetPackages(System.String,System.String)">
+            <summary>
+            Obtiene tanto el paquete de globales como el de formas de onda segun los Ids especificados
+            </summary>
+            <param name="overallPackageId">Id del paquete de valores globales a obtener</param>
+            <param name="waveformPackageId">Id del paquete de formas de onda a obtener</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.SensorTypeBl">
+            <summary>
+            Logica de negocio SensorType
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Models.Business.SensorTypeBl._sensorTypeRepository">
+            <summary>
+            Contiene una referencia al repositorio de SensorTypeRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SensorTypeBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.StatusExtensionBl">
+            <summary>
+            Logica de negocio StatusExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.StatusExtensionBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.StatusExtensionBl.GetSetOfRiskStates">
+            <summary>
+            Obtiene el conjunto de estados del Corp riesgo
+            </summary>
+            <returns>Lista de objetos de tipo StatusExtension</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl">
+            <summary>
+            Lógica de negocio SubVariableExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.GetByMdVariableId(System.Collections.Generic.List{System.String},System.Boolean)">
+            <summary>
+            Obtiene las subVariables asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <param name="includeRealTimeData">Indica si se incluyen los datos tiempo real en el resultado(Value y TimeStamp)</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.GetSignal(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las subVariables con valor de tipo Amaq Stream asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.GetOverallMeasure(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las subVariables con medidas globales asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.GetRealTimeData(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto})">
+            <summary>
+            Obtiene datos tiempo real de las subVariables con los id especificados.
+            </summary>
+            <param name="realTimeRequestsByAsdaqList">Listado de solicitudes de subVariables tiempo real agrupadas por asdaq</param>
+            <returns>Datos tiempo real</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.UpdateManyRealTimeData(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto})">
+            <summary>
+            Actualiza las subVariables con la información especificada para cada una, pero solo las propiedades necesarias para tiempor real
+            </summary>
+            <param name="realTimeDataList">Lista de subVariables con los datos a actualizar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.UpdateRealTimeData(Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto)">
+            <summary>
+            Actualiza la subVariable con la información especificada, pero solo las propiedades necesarias para tiempor real
+            </summary>
+            <param name="realTimeData">SubVariable con los datos a actualizar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.DeleteByParentId(System.String)">
+            <summary>
+            Elimina las SubVariables que su parentId sea igual
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.UpdateMany(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Actualiza una lista de SubVariables
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.CloneSubVariables(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Clona una lista de subvariables
+            </summary>
+            <returns> Una lista de Id's de subvariables </returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.DeleteById(System.String)">
+            <summary>
+            Elimina una subvariable por medio de su Id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.SetCompesation(System.String,System.Double,System.Double)">
+            <summary>
+            Define los valores de referencia/compensacion de Amplitud y Fase 1x
+            Usado para compensar Bode y Polar
+            </summary>
+            <param name="mdVariableId">Id de la MdVariable a compensar</param>
+            <param name="amplitude">Amplitud 1X de referencia</param>
+            <param name="phase">Fase 1X de referencia</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.Create(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Guarda y retorna una lista de Id's de subVariables
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.GetByParentId(System.String)">
+            <summary>
+            Retorna una lista de subvariables por medio de su parentId
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.XYMeasurementPointPairBl">
+            <summary>
+            Logica de negocio para XYMeasurementPointPair
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.XYMeasurementPointPairBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.XYMeasurementPointPairBl.GetXYPair(System.String)">
+            <summary>
+            Obtiene el correspondiente Par de la MdVariable pasada como parametro.
+            </summary>
+            <param name="mdVariableId">Id de la MdVariable a relacionar</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.XYMeasurementPointPairBl.GetXYPairByAssetId(System.String)">
+            <summary>
+            Obtiene los pares configurados de las diferentes MdVariables pasada como parametro.
+            </summary>
+            <param name="assetId">Id del Asset</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.XYMeasurementPointPairBl.SetSclOptions(Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SclOptions,System.String,System.String)">
+            <summary>
+            Define las diferentes opciones de visualizacion del SCL, como Gaps de referencias,
+            diametros de clearance y punto de inicio del clearance plot.
+            </summary>
+            <param name="sclOpts">Opciones del Shaft Centerline</param>
+            <param name="xMdVariableId">Id de la MdVariable orientada en X</param>
+            <param name="yMdVariableId">Id de la MdVariable orientada en Y</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.AsdaqRepository">
+            <summary>
+            Repository Asdaq
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AsdaqRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AsdaqRepository.ShouldReconfigure(System.String)">
+            <summary>
+            Obtiene un valor que indica si el Asdaq debe obtener nuevamente su configuración
+            </summary>
+            <param name="asdaqId">Id Asdaq</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AsdaqRepository.ResetReconfigureFlag(System.String)">
+            <summary>
+            Resetea al valor false, la propiedad Reconfigure del asdaq con el Id especificado
+            </summary>
+            <param name="asdaqId">Id Asdaq</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AsdaqRepository.GetRealTimeRequests(System.String)">
+            <summary>
+            Obtiene las solicitudes tiempo real del asdaq con el id especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AsdaqRepository.UpdateRealTimeRequests(System.String,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RealTimeRequest})">
+            <summary>
+            Actualiza las solicitudes tiempo real del asdaq con el id especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <param name="realTimeRequests">Solicitudes tiempo real para el asdaq</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AsdaqRepository.DeleteRealTimeRequests(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina las solicitudes tiempo real especificadas del asdaq con el id especificado
+            </summary>
+            <param name="asdaqId">Id de asdaq</param>
+            <param name="subVariableIdList">Lista de id de subVariables a eliminar de la lista de solicitudes tiempo real</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.AtrRepository">
+            <summary>
+            Repository Atransmitter
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AtrRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AtrRepository.ShouldReconfigure(System.String)">
+            <summary>
+            Obtiene que indica si el Atransmitter debe obtener nuevamente su configuración
+            </summary>
+            <param name="atrId">Id Atransmitter</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AtrRepository.UpdateModule(System.String,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.AtrModule})">
+            <summary>
+            Se reccorre cada uno de los modulos y sus respectivos canaeles que tenga un A-transmitter seleccionado y se actualizan éstos.
+            </summary>
+            <param name="atrId">Id del A-transmitter</param>
+            <param name="modules">Lista de modulos de un A-transmitter</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.AtrRepository.DeleteRelationshipMdVariableWithAiChannels(System.String,Amaq.Acloud.Aspectrogram.Entities.AtrModule)">
+            <summary>
+            Elimina la relación de puntos de medición con su respectivo canal
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.LocationRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.LocationRepository.DeleteMany(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios Locations
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.NodeRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.NodeRepository.DeleteMany(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios nodos por medio de una lista de Id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.NodeRepository.UpdateManyMdVariableStatus(System.Collections.Generic.List{Amaq.Acloud.Entities.Core.Node})">
+            <summary>
+            Actualiza los estados de los nodos tipo MdVariable especificados
+            </summary>
+            <param name="mdVariableNodeList">Lista de nodos tipo MdVariable con el nuevo estado</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.NodeRepository.UpdateNameAndDescription(Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto)">
+            <summary>
+            Actualiza el nombre y la descripción de un node
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.NodeRepository.GetChildren(System.String)">
+            <summary>
+            Obtiene los nodos hijos usando el parentLevel
+            </summary>
+            <param name="parentLevel">Cadena de texto que representa el Level del nodo. Ejemplo: "1.1"</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.RecordedEventRepository">
+            <summary>
+            Repository RecordedEvent
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.RecordedEventRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.RecordedEventRepository.GetEventHeader(System.String)">
+            <summary>
+            Obtiene la cabecera del evento con toda la informacion relacionada al mismo
+            </summary>
+            <param name="eventId">Id del evento</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.RecordedEventRepository.GetByAssetId(System.String)">
+            <summary>
+            Obtiene el listado de eventos segun el Id del activo especificado
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.SensorTypeRepository">
+            <summary>
+            Repository SensorType
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SensorTypeRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.StatusExtensionRepository">
+            <summary>
+            Repository StatusExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.StatusExtensionRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.StatusExtensionRepository.GetSetOfRiskStates">
+            <summary>
+            Obtiene el conjunto de estados del Corp riesgo
+            </summary>
+            <returns>Lista de objetos de tipo StatusExtension</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository">
+            <summary>
+            Repository SubVariableExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.GetByMdVariableId(System.Collections.Generic.List{System.String},System.Boolean)">
+            <summary>
+            Obtiene las subVariables asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <param name="includeRealTimeData">Indica si se incluyen los datos tiempo real en el resultado(Value y TimeStamp)</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.GetSignal(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las subVariables con valor de tipo Amaq Stream asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.GetOverallMeasure(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las subVariables con medidas globales asociadas con cualquiera de los id de mdVariable especificados
+            </summary>
+            <param name="mdVariableIdList">Lista de id de mdVariable</param>
+            <returns>Lista de tipo SubVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.GetRealTimeData(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene datos tiempo real de las subVariables con los id especificados.
+            </summary>
+            <param name="subVariableIdList">Listado de Ids de subVariable</param>
+            <returns>Datos tiempo real</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.UpdateManyRealTimeData(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Actualiza las subVariables con la información especificada para cada una, pero solo las propiedades necesarias para tiempor real
+            </summary>
+            <param name="realTimeDataList">Lista de subVariables con los datos a actualizar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.UpdateRealTimeData(Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension)">
+            <summary>
+            Actualiza la subVariable con la información especificada, pero solo las propiedades necesarias para tiempor real
+            </summary>
+            <param name="realTimeData">SubVariable con los datos a actualizar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.GetAndCloneSubVariblesByParentId(System.String)">
+            <summary>
+            Obtiene una lista de SubVariables por parentId y despues las clona
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.DeleteByParentId(System.String)">
+            <summary>
+            Elimina las SubVariables que su parentId sea igual
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.UpdateMany(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
+            <summary>
+            Actualiza una lista de SubVariables
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.SetCompesation(System.String,System.Double,System.Double)">
+            <summary>
+            Define los valores de referencia/compensacion de Amplitud y Fase 1x
+            Usado para compensar Bode y Polar
+            </summary>
+            <param name="mdVariableId">Id de la MdVariable a compensar</param>
+            <param name="amplitude">Amplitud 1X de referencia</param>
+            <param name="phase">Fase 1X de referencia</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.XYMeasurementPointPairRepository">
+            <summary>
+            Repositorio XYMeasurementPointPair
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.XYMeasurementPointPairRepository.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="dbUrl">URL del repositorio</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.XYMeasurementPointPairRepository.GetXYPair(System.String)">
+            <summary>
+            Obtiene el correspondiente Par de la MdVariable pasada como parametro.
+            </summary>
+            <param name="mdVariableId">Id de la MdVariable a relacionar</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.XYMeasurementPointPairRepository.GetXYPairByAssetId(System.String)">
+            <summary>
+            Obtiene los pares configurados de las diferentes MdVariables pasada como parametro.
+            </summary>
+            <param name="assetId">Id del Asset</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.XYMeasurementPointPairRepository.SetSclOptions(Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SclOptions,System.String,System.String)">
+            <summary>
+            Define las diferentes opciones de visualizacion del SCL, como Gaps de referencias,
+            diametros de clearance y punto de inicio del clearance plot.
+            </summary>
+            <param name="sclOpts">Opciones del Shaft Centerline</param>
+            <param name="xMdVariableId">Id de la MdVariable orientada en X</param>
+            <param name="yMdVariableId">Id de la MdVariable orientada en Y</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.MdVariableExtensionRepository">
+            <summary>
+            Repository MdVariableExtension
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.MdVariableExtensionRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.MdVariableExtensionRepository.GetByAssetId(System.String)">
+            <summary>
+            Obtiene las mdVariable asociadas al Id de Asset especificado.
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <returns>Listado de MdVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.MdVariableExtensionRepository.GetByAssetId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las mdVariable asociadas con cualquiera de los id asset especificados
+            </summary>
+            <param name="assetIdList">Lista de id asset</param>
+            <returns>Lista de objetos de tipo MdVariableExtension</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.MdVariableExtensionRepository.GetTagById(System.Collections.Generic.List{System.String})">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.MdVariableExtensionRepository.GetByNodeId(System.String)">
+            <summary>
+            Retorna un punto de medición por medio de su NodeId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.MdVariableExtensionRepository.GetByNodeId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Retorna una lista de puntos de medición atravez de una lista de nodeId
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.MdVariableExtensionRepository.DeleteManyById(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina varios puntos de medición por medio de una lista de Id
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.ApplicationUser.GenerateUserIdentityAsync(Microsoft.AspNet.Identity.UserManager{Amaq.Acloud.Aspectrogram.Models.ApplicationUser})">
+            <summary>
+            Genera la autenticacion del usuario
+            </summary>
+            <param name="manager"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.LoginResponse">
+            <summary>
+            Respuesta al proceso de login.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.LoginResponse.Message">
+            <summary>
+            Mensaje del sistema.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Models.LoginResponse.ReturnUrl">
+            <summary>
+            URL a redirigir si la autenticacion es correcta.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Properties">
+            <summary>
+            Propiedades generales del sistema
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Properties.MongoUrlBase">
+            <summary>
+            Url servidor mongo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Properties.AppUserState">
+            <summary>
+            Informacion de la identidad del usuario en el servicio Web API
+            </summary>
+        </member>
+    </members>
+</doc>

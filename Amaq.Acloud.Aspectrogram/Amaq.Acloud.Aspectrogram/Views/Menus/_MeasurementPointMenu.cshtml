@@ -1,0 +1,37 @@
+﻿@{
+    var claimsIdentity = User.Identity as System.Security.Claims.ClaimsIdentity;
+}
+<!--Menú de opciones para los puntos de medición-->
+<div id="measurementPointMenuContainer" style="display:none;">
+    <ul id="measurementPointMenu">
+        <li id="realTimeMenuItem">
+            <a href="#">Tiempo real</a>
+            <ul>
+                <li id="waveformMenuItem"><a href="#">Forma de onda</a></li>
+                <li id="spectrumMenuItem"><a href="#">Espectro de amplitud</a></li>
+                <li id="orbitSpectrumMenuItem"><a href="#">Espectro de &oacute;rbita</a></li>
+                <li id="orbitMenuItem"><a href="#">&Oacute;rbita</a></li>
+                <li id="sclMenuItem"><a href="#">Posici&oacute;n del eje</a></li>
+            </ul>
+        </li>
+        @if (claimsIdentity != null)
+        {
+            var tmp = claimsIdentity.FindFirst("roles");
+            var roles = (tmp != null) ? tmp.Value.Split(',').ToList() : null;
+            if (roles != null)
+            {
+                if (roles.Any(s => s == "Admin"))
+                {
+                    <li>
+                        <a href="#">Administrar</a>
+                        <ul>
+                            <li id="editMeasurementPointMenuItem"><a href="#">Editar punto de medici&oacute;n</a></li>
+                            <li id="deleteMeasurementPointMenuItem"><a href="#">Eliminar punto(s) de medici&oacute;n</a></li>
+                            <li id="copyMeasurementPointMenuItem"><a href="#">Copiar</a></li>
+                        </ul>
+                    </li>
+                }
+            }
+        }
+    </ul>
+</div>

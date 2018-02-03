@@ -1,0 +1,1693 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4C6A0658-5073-43A6-BAAF-1626394BF863}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Amaq.Acloud.Aspectrogram</RootNamespace>
+    <AssemblyName>Amaq.Acloud.Aspectrogram</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort>44382</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Amaq.Acloud.Aspectrogram.XML</DocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+    <FilesToIncludeForPublish>AllFilesInTheProject</FilesToIncludeForPublish>
+    <IncludeIisSettings>true</IncludeIisSettings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
+    <IncludeIisSettings>true</IncludeIisSettings>
+    <PublishDatabases>false</PublishDatabases>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Amaq.Acloud.Business, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\Amaq.Acloud.Business.dll</HintPath>
+    </Reference>
+    <Reference Include="Amaq.Acloud.CrossCutting, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\Amaq.Acloud.CrossCutting.dll</HintPath>
+    </Reference>
+    <Reference Include="Amaq.Acloud.Data">
+      <HintPath>..\References\Amaq.Acloud.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Amaq.Acloud.Entities, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\Amaq.Acloud.Entities.dll</HintPath>
+    </Reference>
+    <Reference Include="Amaq.Acloud.Proxy">
+      <HintPath>..\References\Amaq.Acloud.Proxy.dll</HintPath>
+    </Reference>
+    <Reference Include="Amaq.Libraries.MongoRepository, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\Amaq.Libraries.MongoRepository.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.1\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Owin.2.2.1\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Cryptography.Internal.1.0.0\lib\net451\Microsoft.AspNetCore.Cryptography.Internal.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.DataProtection, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.DataProtection.1.0.0\lib\net451\Microsoft.AspNetCore.DataProtection.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.DataProtection.Abstractions.1.0.0\lib\net451\Microsoft.AspNetCore.DataProtection.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Abstractions.1.0.0\lib\net451\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Server.Abstractions.1.0.0\lib\net451\Microsoft.AspNetCore.Hosting.Server.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Http.1.0.0\lib\net451\Microsoft.AspNetCore.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Http.Abstractions.1.0.0\lib\net451\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Http.Extensions.1.0.0\lib\net451\Microsoft.AspNetCore.Http.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http.Features, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.Http.Features.1.0.0\lib\net451\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNetCore.WebUtilities.1.0.0\lib\net451\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.1.0.0\lib\netstandard1.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.0.0\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.1.0.0\lib\netstandard1.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.ObjectPool, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.ObjectPool.1.0.0\lib\net451\Microsoft.Extensions.ObjectPool.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.1.0.0\lib\netstandard1.0\Microsoft.Extensions.Options.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.1.0.0\lib\netstandard1.0\Microsoft.Extensions.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.WebEncoders, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.WebEncoders.1.0.0\lib\netstandard1.0\Microsoft.Extensions.WebEncoders.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Net.Http.Headers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.Headers.1.0.0\lib\netstandard1.1\Microsoft.Net.Http.Headers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Cookies, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.3.1.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MongoDB.Bson, Version=2.4.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Bson.2.4.4\lib\net45\MongoDB.Bson.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=2.4.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.2.4.4\lib\net45\MongoDB.Driver.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core, Version=2.4.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.Core.2.4.4\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver.GridFS">
+      <HintPath>..\References\MongoDB.Driver.GridFS.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.0.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security" />
+    <Reference Include="System.Text.Encodings.Web, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.4.4.0\lib\netstandard1.0\System.Text.Encodings.Web.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http">
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+    </Reference>
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Optimization">
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="WebGrease">
+      <Private>True</Private>
+      <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
+    </Reference>
+    <Reference Include="Antlr3.Runtime">
+      <Private>True</Private>
+      <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\IdentityConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\Startup.Auth.cs" />
+    <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\Api\Attributes\CustomAuthorizeAttribute.cs" />
+    <Compile Include="Controllers\Api\Attributes\RolesAttribute.cs" />
+    <Compile Include="Controllers\Api\Core\AconditionerTypeController.cs" />
+    <Compile Include="Controllers\Api\Core\AsdaqController.cs" />
+    <Compile Include="Controllers\Api\Core\AtrController.cs" />
+    <Compile Include="Controllers\Api\Core\AconditionerController.cs" />
+    <Compile Include="Controllers\Api\Core\LocationController.cs" />
+    <Compile Include="Controllers\Api\Core\MdVariableExtensionController.cs" />
+    <Compile Include="Controllers\Api\Core\NodeController.cs" />
+    <Compile Include="Controllers\Api\Core\RecordedEventController.cs" />
+    <Compile Include="Controllers\Api\Core\SensorTypeController.cs" />
+    <Compile Include="Controllers\Api\Core\StatusExtensionController.cs" />
+    <Compile Include="Controllers\Api\Core\AssetExtensionController.cs" />
+    <Compile Include="Controllers\Api\Core\SubVariableExtensionController.cs" />
+    <Compile Include="Controllers\Api\Core\XYMeasurementPointPairController.cs" />
+    <Compile Include="Controllers\Api\GenericController.cs" />
+    <Compile Include="Controllers\ConfigController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\AmaqStreamDecoder.cs" />
+    <Compile Include="Models\AmaqStreamSignal.cs" />
+    <Compile Include="Models\Business\AsdaqBl.cs" />
+    <Compile Include="Models\Business\AssetExtensionBl.cs" />
+    <Compile Include="Models\Business\AtrBl.cs" />
+    <Compile Include="Models\Business\LocationBl.cs" />
+    <Compile Include="Models\Business\MdVariableExtensionBl.cs" />
+    <Compile Include="Models\Business\NodeBl.cs" />
+    <Compile Include="Models\Business\RecordedEventBl.cs" />
+    <Compile Include="Models\Business\SensorTypeBl.cs" />
+    <Compile Include="Models\Business\StatusExtensionBl.cs" />
+    <Compile Include="Models\Business\SubVariableExtensionBl.cs" />
+    <Compile Include="Models\Business\XYMeasurementPointPairBl.cs" />
+    <Compile Include="Models\Data\AsdaqRepository.cs" />
+    <Compile Include="Models\Data\AssetExtensionRepository.cs" />
+    <Compile Include="Models\Data\AtrRepository.cs" />
+    <Compile Include="Models\Data\LocationRepository.cs" />
+    <Compile Include="Models\Data\NodeRepository.cs" />
+    <Compile Include="Models\Data\RecordedEventRepository.cs" />
+    <Compile Include="Models\Data\SensorTypeRepository.cs" />
+    <Compile Include="Models\Data\StatusExtensionRepository.cs" />
+    <Compile Include="Models\Data\SubVariableExtensionRepository.cs" />
+    <Compile Include="Models\Data\XYMeasurementPointPairRepository.cs" />
+    <Compile Include="Models\EnumerationsModel.cs" />
+    <Compile Include="Models\IdentityModels.cs" />
+    <Compile Include="Models\LoginResponse.cs" />
+    <Compile Include="Models\Data\MdVariableExtensionRepository.cs" />
+    <Compile Include="Models\SclOptionsModel.cs" />
+    <Compile Include="Properties.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Startup.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\aspectrogramWidget.css" />
+    <Content Include="Content\bmpWaterfall\AcuaLineal.bmp" />
+    <Content Include="Content\bmpWaterfall\AcuaMundo.bmp" />
+    <Content Include="Content\bmpWaterfall\AMAQ.bmp" />
+    <Content Include="Content\bmpWaterfall\AmarilloLineal2.bmp" />
+    <Content Include="Content\bmpWaterfall\arcoiris.bmp" />
+    <Content Include="Content\bmpWaterfall\BlueJean.bmp" />
+    <Content Include="Content\bmpWaterfall\frio.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\AcuaLineal.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\AcuaMundo.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\AMAQ.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\AmarilloLineal2.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\arcoiris.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\BlueJean.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\frio.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\hielo.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\InfraRojo.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\INVAMAQ.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\PapelFino.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\SangreyFuego.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\Termico..bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\Termico.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\Termico2.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\Termico3.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\TornasolInv.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\Tornasol.bmp" />
+    <Content Include="Content\bmpWaterfall\Gradientes\VerdeLineal.bmp" />
+    <Content Include="Content\bmpWaterfall\hielo.bmp" />
+    <Content Include="Content\bmpWaterfall\InfraRojo.bmp" />
+    <Content Include="Content\bmpWaterfall\INVAMAQ.bmp" />
+    <Content Include="Content\bmpWaterfall\PapelFino.bmp" />
+    <Content Include="Content\bmpWaterfall\SangreyFuego.bmp" />
+    <Content Include="Content\bmpWaterfall\Termico.bmp" />
+    <Content Include="Content\bmpWaterfall\Termico2.bmp" />
+    <Content Include="Content\bmpWaterfall\Termico3.bmp" />
+    <Content Include="Content\bmpWaterfall\Tornasol.bmp" />
+    <Content Include="Content\bmpWaterfall\TornasolInv.bmp" />
+    <Content Include="Content\bmpWaterfall\VerdeLineal.bmp" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\dygraphStyles.css" />
+    <Content Include="Content\ej\web\default-theme\ej.theme.min.css" />
+    <Content Include="Content\images\areaselect\border-anim-h.gif" />
+    <Content Include="Content\images\areaselect\border-anim-v.gif" />
+    <Content Include="Content\images\areaselect\border-h.gif" />
+    <Content Include="Content\images\areaselect\border-v.gif" />
+    <Content Include="Content\customContextMenu.css" />
+    <Content Include="Content\ej\web\common-images\colorpicker_dark.png" />
+    <Content Include="Content\ej\web\common-images\colorpicker_light.png" />
+    <Content Include="Content\ej\web\common-images\diagram_context.png" />
+    <Content Include="Content\ej\web\common-images\diagram_context1.png" />
+    <Content Include="Content\ej\web\common-images\ejicons.svg" />
+    <Content Include="Content\ej\web\common-images\maps\Arrow_Bootom.png" />
+    <Content Include="Content\ej\web\common-images\maps\Arrow_Bootom_hover.png" />
+    <Content Include="Content\ej\web\common-images\maps\Arrow_Left.png" />
+    <Content Include="Content\ej\web\common-images\maps\Arrow_Left_hover.png" />
+    <Content Include="Content\ej\web\common-images\maps\Arrow_Right.png" />
+    <Content Include="Content\ej\web\common-images\maps\Arrow_Right_hover.png" />
+    <Content Include="Content\ej\web\common-images\maps\Arrow_Top.png" />
+    <Content Include="Content\ej\web\common-images\maps\Arrow_Top_hover.png" />
+    <Content Include="Content\ej\web\common-images\maps\Bar.png" />
+    <Content Include="Content\ej\web\common-images\maps\Home.png" />
+    <Content Include="Content\ej\web\common-images\maps\Home_hover.png" />
+    <Content Include="Content\ej\web\common-images\maps\Home_hover_lime.png" />
+    <Content Include="Content\ej\web\common-images\maps\Home_hover_saffron.png" />
+    <Content Include="Content\ej\web\common-images\maps\Home_lime.png" />
+    <Content Include="Content\ej\web\common-images\maps\Home_saffron.png" />
+    <Content Include="Content\ej\web\common-images\maps\Navicatior.png" />
+    <Content Include="Content\ej\web\common-images\maps\Zoom-In.png" />
+    <Content Include="Content\ej\web\common-images\maps\Zoom-In_hover.png" />
+    <Content Include="Content\ej\web\common-images\maps\Zoom-out.png" />
+    <Content Include="Content\ej\web\common-images\maps\Zoom-out_hover.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\circle.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\diamond.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\down-arrow.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\green.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\red.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\right-arrow.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\three-color.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\triangle.png" />
+    <Content Include="Content\ej\web\common-images\olapkpi\up-arrow.png" />
+    <Content Include="Content\ej\web\common-images\radialmenu\back.png" />
+    <Content Include="Content\ej\web\common-images\radialmenu\radial.png" />
+    <Content Include="Content\ej\web\common-images\reports\down.png" />
+    <Content Include="Content\ej\web\common-images\reports\minus.gif" />
+    <Content Include="Content\ej\web\common-images\reports\minus.jpg" />
+    <Content Include="Content\ej\web\common-images\reports\minus.png" />
+    <Content Include="Content\ej\web\common-images\reports\plus.gif" />
+    <Content Include="Content\ej\web\common-images\reports\plus.jpg" />
+    <Content Include="Content\ej\web\common-images\reports\plus.png" />
+    <Content Include="Content\ej\web\common-images\reports\up.png" />
+    <Content Include="Content\ej\web\common-images\reports\updown.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\Blank.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\Browser.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\Check.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\Diet.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\ejrbnicons.svg" />
+    <Content Include="Content\ej\web\common-images\ribbon\gallery.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\Gantt.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\homegallery.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\paste.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\Project.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\Protect.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\Sales.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\style.gallery.png" />
+    <Content Include="Content\ej\web\common-images\ribbon\User.jpg" />
+    <Content Include="Content\ej\web\common-images\ribbon\Version.png" />
+    <Content Include="Content\ej\web\common-images\Rotate.cur" />
+    <Content Include="Content\ej\web\common-images\schedule_priority.png" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\blank.png" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\chart-sprites.png" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\charttab-sprites.png" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\charttype-sprites.png" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\Down_Arrow.cur" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\Draw_Border.cur" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\Draw_Border_Grid.cur" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\ejxlicons.svg" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\Format_Painter.cur" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\Right_Arrow.cur" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\sprites.png" />
+    <Content Include="Content\ej\web\common-images\tools\file_icons.png" />
+    <Content Include="Content\ej\web\default-theme\ej.theme.css" />
+    <Content Include="Content\ej\web\default-theme\ej.web.all.css" />
+    <Content Include="Content\ej\web\default-theme\ej.web.all.min.css" />
+    <Content Include="Content\ej\web\default-theme\images\ajax-loader.gif" />
+    <Content Include="Content\ej\web\default-theme\images\checkedtick.png" />
+    <Content Include="Content\ej\web\default-theme\images\dot.png" />
+    <Content Include="Content\ej\web\default-theme\images\drop-sibling.png" />
+    <Content Include="Content\ej\web\default-theme\images\gradient.png" />
+    <Content Include="Content\ej\web\default-theme\images\palette-arrow.png" />
+    <Content Include="Content\ej\web\default-theme\images\rating-star.png" />
+    <Content Include="Content\ej\web\default-theme\images\rotator-icon.png" />
+    <Content Include="Content\ej\web\default-theme\images\toggle-text.png" />
+    <Content Include="Content\ej\web\default-theme\images\toolbar_icons.png" />
+    <Content Include="Content\ej\web\default-theme\images\ui-icon.png" />
+    <Content Include="Content\ej\web\default-theme\images\waitingpopup.gif" />
+    <Content Include="Content\ej\web\ej.icons.css" />
+    <Content Include="Content\ej\web\ej.ribbon.css" />
+    <Content Include="Content\ej\web\ej.widgets.all.css" />
+    <Content Include="Content\ej\web\ej.widgets.core.css" />
+    <Content Include="Content\ej\web\ej.widgets.core.min.css" />
+    <Content Include="Content\flipSwitch.css" />
+    <Content Include="Content\font-awesome.css" />
+    <Content Include="Content\font-awesome.min.css" />
+    <Content Include="Content\funcionales.css" />
+    <Content Include="Content\gridstack.min.css" />
+    <Content Include="Content\iconmoon.css" />
+    <Content Include="Content\images\axes.png" />
+    <Content Include="Content\images\clockwise-black.png" />
+    <Content Include="Content\images\counterclockwise-black.png" />
+    <Content Include="Content\images\editor3d\add.png" />
+    <Content Include="Content\images\editor3d\angle.png" />
+    <Content Include="Content\images\editor3d\Assets\Bombas\Monobloque.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Bombas\Multietapa.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Compresores\Coker.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Compresores\GasHumedo.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Turbinas\FrancisHorizontal.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Turbinas\FrancisVertical.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Turbinas\GasReductor.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Turbinas\PeltonHorizontal.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Turbinas\PeltonVertical.JPG" />
+    <Content Include="Content\images\editor3d\Assets\Turbinas\Vapor.JPG" />
+    <Content Include="Content\images\editor3d\axis.png" />
+    <Content Include="Content\images\editor3d\ccw.png" />
+    <Content Include="Content\images\editor3d\clone.png" />
+    <Content Include="Content\images\editor3d\cw.png" />
+    <Content Include="Content\images\editor3d\delete.png" />
+    <Content Include="Content\images\editor3d\eyeMinus.png" />
+    <Content Include="Content\images\editor3d\eyePlus.png" />
+    <Content Include="Content\images\editor3d\height.png" />
+    <Content Include="Content\images\editor3d\horizontal.png" />
+    <Content Include="Content\images\editor3d\housing.png" />
+    <Content Include="Content\images\editor3d\location.png" />
+    <Content Include="Content\images\editor3d\MachineLibrary.png" />
+    <Content Include="Content\images\editor3d\moving.png" />
+    <Content Include="Content\images\editor3d\new.png" />
+    <Content Include="Content\images\editor3d\object.png" />
+    <Content Include="Content\images\editor3d\ok.png" />
+    <Content Include="Content\images\editor3d\open.png" />
+    <Content Include="Content\images\editor3d\paralel.png" />
+    <Content Include="Content\images\editor3d\perpend.png" />
+    <Content Include="Content\images\editor3d\PiecesLibrary.png" />
+    <Content Include="Content\images\editor3d\PiecesTree.png" />
+    <Content Include="Content\images\editor3d\PointsTree.png" />
+    <Content Include="Content\images\editor3d\position.png" />
+    <Content Include="Content\images\editor3d\radius.png" />
+    <Content Include="Content\images\editor3d\rotation.png" />
+    <Content Include="Content\images\editor3d\save.png" />
+    <Content Include="Content\images\editor3d\scaling.png" />
+    <Content Include="Content\images\editor3d\sensor.png" />
+    <Content Include="Content\images\editor3d\statics.png" />
+    <Content Include="Content\images\editor3d\SubAssetsLibrary.png" />
+    <Content Include="Content\images\editor3d\vertical.png" />
+    <Content Include="Content\images\editor3d\viewMinus.png" />
+    <Content Include="Content\images\editor3d\viewPlus.png" />
+    <Content Include="Content\images\Flare2.png" />
+    <Content Include="Content\images\fullspectrum.png" />
+    <Content Include="Content\images\ISAGEN_.png" />
+    <Content Include="Content\images\loading.gif" />
+    <Content Include="Content\images\Logo amaq2.png" />
+    <Content Include="Content\images\Logo-3-SR.png" />
+    <Content Include="Content\images\logo-amaq-medio-w.png" />
+    <Content Include="Content\images\Logo_Cliente.png" />
+    <Content Include="Content\images\report\AlignCenter.png" />
+    <Content Include="Content\images\report\AlignLeft.png" />
+    <Content Include="Content\images\report\AlignRight.png" />
+    <Content Include="Content\images\report\Bold.png" />
+    <Content Include="Content\images\report\DeleteCont.png" />
+    <Content Include="Content\images\report\DeletePage.png" />
+    <Content Include="Content\images\report\Italic.png" />
+    <Content Include="Content\images\report\Justify.png" />
+    <Content Include="Content\images\report\New.png" />
+    <Content Include="Content\images\report\NewImage.png" />
+    <Content Include="Content\images\report\NewText.png" />
+    <Content Include="Content\images\report\Printer.png" />
+    <Content Include="Content\images\report\Rectangle.png" />
+    <Content Include="Content\images\report\Save.png" />
+    <Content Include="Content\images\report\Square.png" />
+    <Content Include="Content\images\report\Underline.png" />
+    <Content Include="Content\images\orbit.png" />
+    <Content Include="Content\images\save.png" />
+    <Content Include="Content\images\spectrum.png" />
+    <Content Include="Content\images\spinner.gif" />
+    <Content Include="Content\images\toolbar\editToolbar.png" />
+    <Content Include="Content\images\toolbar\editToolbarh.png" />
+    <Content Include="Content\images\toolbar\editToolbarl.png" />
+    <Content Include="Content\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="Content\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="Content\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="Content\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="Content\images\ui-bg_glass_75_ffffff_1x400.png" />
+    <Content Include="Content\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="Content\images\ui-bg_inset-soft_95_fef1ec_1x100.png" />
+    <Content Include="Content\images\ui-icons_222222_256x240.png" />
+    <Content Include="Content\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\images\ui-icons_454545_256x240.png" />
+    <Content Include="Content\images\ui-icons_888888_256x240.png" />
+    <Content Include="Content\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\images\viewer3d.png" />
+    <Content Include="Content\images\viewer3d\ArrowLeft.png" />
+    <Content Include="Content\images\viewer3d\ArrowRight.png" />
+    <Content Include="Content\images\viewer3d\BarChart.png" />
+    <Content Include="Content\images\viewer3d\Carcaza.png" />
+    <Content Include="Content\images\viewer3d\Config3d.png" />
+    <Content Include="Content\images\viewer3d\Filter.png" />
+    <Content Include="Content\images\viewer3d\Graph.png" />
+    <Content Include="Content\images\viewer3d\iconmonstr-sound-wave-4-icon.png" />
+    <Content Include="Content\images\viewer3d\ShaftDef.png" />
+    <Content Include="Content\images\viewer3d\InitialView3d.png" />
+    <Content Include="Content\images\viewer3d\Orbital3d.png" />
+    <Content Include="Content\images\viewer3d\Ortographic3d.png" />
+    <Content Include="Content\images\viewer3d\Perspective3d.png" />
+    <Content Include="Content\images\viewer3d\signal-w.png" />
+    <Content Include="Content\images\viewer3d\Sorting.png" />
+    <Content Include="Content\images\viewer3d\Spectrum3d100p.png" />
+    <Content Include="Content\images\viewer3d\TotalScreen3d.png" />
+    <Content Include="Content\images\viewer3d\SCL3d.png" />
+    <Content Include="Content\images\viewer3d\Spectrum3d.png" />
+    <Content Include="Content\images\viewer3d\transparency3d.png" />
+    <Content Include="Content\images\viewer3d\Trend3d.png" />
+    <Content Include="Content\images\viewer3d\Waterfall3d.png" />
+    <Content Include="Content\images\viewer3d\Wireframe3d.png" />
+    <Content Include="Content\areaSelect.css" />
+    <Content Include="Content\images\waterfall\Back.png" />
+    <Content Include="Content\images\waterfall\Config.png" />
+    <Content Include="Content\images\waterfall\Eye.png" />
+    <Content Include="Content\images\waterfall\Info.png" />
+    <Content Include="Content\images\waterfall\Next.png" />
+    <Content Include="Content\images\viewer3d\Save.png" />
+    <Content Include="Content\images\waterfall\Save.png" />
+    <Content Include="Content\images\waterfall\TotalScreen3d.png" />
+    <Content Include="Content\images\waveform.png" />
+    <Content Include="Content\jcEventPlayer.css" />
+    <Content Include="Content\jquery-dataTable.min.css" />
+    <Content Include="Content\jquery-ui.css" />
+    <Content Include="Content\login.css" />
+    <Content Include="Content\STL\57fea387691d525051277386\Acople.asm" />
+    <Content Include="Content\STL\57fea387691d525051277386\Bobina.asm" />
+    <Content Include="Content\STL\57fea387691d525051277386\CaracolFrancis.asm" />
+    <Content Include="Content\STL\57fea387691d525051277386\Estator.asm" />
+    <Content Include="Content\STL\57fea387691d525051277386\Exitatriz.asm" />
+    <Content Include="Content\STL\57fea387691d525051277386\FrancisVertical.asm" />
+    <Content Include="Content\STL\EPM AGUAS.txt" />
+    <Content Include="Content\themes\base\accordion.css" />
+    <Content Include="Content\themes\base\all.css" />
+    <Content Include="Content\themes\base\autocomplete.css" />
+    <Content Include="Content\themes\base\base.css" />
+    <Content Include="Content\themes\base\button.css" />
+    <Content Include="Content\themes\base\core.css" />
+    <Content Include="Content\themes\base\datepicker.css" />
+    <Content Include="Content\themes\base\dialog.css" />
+    <Content Include="Content\themes\base\draggable.css" />
+    <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="Content\themes\base\images\ui-icons_222222_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_444444_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_454545_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_555555_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_777620_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_777777_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_888888_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_cc0000_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="Content\themes\base\jquery-ui.css" />
+    <Content Include="Content\themes\base\jquery-ui.min.css" />
+    <Content Include="Content\themes\base\menu.css" />
+    <Content Include="Content\themes\base\progressbar.css" />
+    <Content Include="Content\themes\base\resizable.css" />
+    <Content Include="Content\themes\base\selectable.css" />
+    <Content Include="Content\themes\base\selectmenu.css" />
+    <Content Include="Content\themes\base\slider.css" />
+    <Content Include="Content\themes\base\sortable.css" />
+    <Content Include="Content\themes\base\spinner.css" />
+    <Content Include="Content\themes\base\tabs.css" />
+    <Content Include="Content\themes\base\theme.css" />
+    <Content Include="Content\themes\base\tooltip.css" />
+    <Content Include="Content\themes\editor3d\style.css" />
+    <Content Include="Content\themes\report\style.css" />
+    <Content Include="Content\themes\viewer3d\style.css" />
+    <Content Include="Content\themes\viewer3d\styleFilter.css" />
+    <Content Include="Content\themes\waterfall3d\style.css" />
+    <Content Include="Content\toastr.css" />
+    <Content Include="Content\toolbarStyle.css" />
+    <Content Include="favicon.ico" />
+    <Content Include="fonts\fontawesome-webfont.svg" />
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="fonts\icomoon.svg" />
+    <Content Include="fonts\ionicons.svg" />
+    <Content Include="Global.asax" />
+    <Content Include="Content\site.css" />
+    <Content Include="Scripts\app\admin\assetAdmin.js" />
+    <Content Include="Scripts\app\admin\locationAdmin.js" />
+    <Content Include="Scripts\app\admin\measurementPointAdmin.js" />
+    <Content Include="Scripts\app\admin\rtdCoefficient.js" />
+    <Content Include="Scripts\app\admin\subVariables.js" />
+    <Content Include="Scripts\app\amaq3d\canvasPlot2d.js" />
+    <Content Include="Scripts\app\amaq3d\canvasText2d.js" />
+    <Content Include="Scripts\app\amaq3d\dummyInfo.js" />
+    <Content Include="Scripts\app\amaq3d\editor3d\functionsEd3d.js" />
+    <Content Include="Scripts\app\amaq3d\editor3d\globals.js" />
+    <Content Include="Scripts\app\amaq3d\editor3d\helpersEd3d.js" />
+    <Content Include="Scripts\app\amaq3d\editor3d\treeEd3d.js" />
+    <Content Include="Scripts\app\amaq3d\editor3d\uiEditor3d.js" />
+    <Content Include="Scripts\app\amaq3d\events3d.js" />
+    <Content Include="Scripts\app\amaq3d\globals.js" />
+    <Content Include="Scripts\app\amaq3d\loadMeshes.js" />
+    <Content Include="Scripts\app\amaq3d\location3d\appNavigation3d.js" />
+    <Content Include="Scripts\app\amaq3d\location3d\eventsLoc3d.js" />
+    <Content Include="Scripts\app\amaq3d\location3d\loadMeshesLoc3d.js" />
+    <Content Include="Scripts\app\amaq3d\location3d\manageLocCanvas3d.js" />
+    <Content Include="Scripts\app\amaq3d\manageCanvas3d.js" />
+    <Content Include="Scripts\app\amaq3d\properties3d.js" />
+    <Content Include="Scripts\app\amaq3d\utilities3d.js" />
+    <Content Include="Scripts\app\amaq3d\app3d.js" />
+    <Content Include="Scripts\app\amaq3d\viewer3d\drawChartsPlot2d.js" />
+    <Content Include="Scripts\app\amaq3d\viewer3d\imgViewer3d.js" />
+    <Content Include="Scripts\app\amaq3d\viewer3d\loadDataViewer3d.js" />
+    <Content Include="Scripts\app\amaq3d\viewer3d\shaftDeflection.js" />
+    <Content Include="Scripts\app\amaq3d\viewer3d\uiVblesViewer3d - Copy.js" />
+    <Content Include="Scripts\app\amaq3d\viewer3d\uiVblesViewer3d.js" />
+    <Content Include="Scripts\app\amaq3d\viewer3d\uiViewer3d.js" />
+    <Content Include="Scripts\app\amaq3d\waterfall\imgWaterfall3d.js" />
+    <Content Include="Scripts\app\amaq3d\waterfall\uiWaterfall3d.js" />
+    <Content Include="Scripts\app\amaq3d\waterfall\waterfall3d.js" />
+    <Content Include="Scripts\app\eventTimeMode.js" />
+    <Content Include="Scripts\app\graphs\barChartGraph.js" />
+    <Content Include="Scripts\app\graphs\bodeGraph.js" />
+    <Content Include="Scripts\app\graphs\fullSpectrumGraph.js" />
+    <Content Include="Scripts\app\graphs\scatterGraph.js" />
+    <Content Include="Scripts\app\graphs\shaftPositionGraph.js" />
+    <Content Include="Scripts\app\helpers\eventList.js" />
+    <Content Include="Scripts\app\graphs\historicalTrendGraph.js" />
+    <Content Include="Scripts\app\graphs\liveTrendGraph.js" />
+    <Content Include="Scripts\app\graphs\orbitGraph.js" />
+    <Content Include="Scripts\app\graphs\waveformGraph.js" />
+    <Content Include="Scripts\app\graphs\spectrumGraph.js" />
+    <Content Include="Scripts\app\graphs\polarGraph.js" />
+    <Content Include="Scripts\app\helpers\aspectrogramWidget.js" />
+    <Content Include="Scripts\app\helpers\dataMock.js" />
+    <Content Include="Scripts\app\report\printReport.js" />
+    <Content Include="Scripts\app\report\textReport.js" />
+    <Content Include="Scripts\babylon\babylon.max.js" />
+    <Content Include="Scripts\dygraph\dygraph-operations.js" />
+    <Content Include="Scripts\dygraph\plugins\hairlines.js" />
+    <Content Include="Scripts\dygraph\plugins\synchronizer.js" />
+    <None Include="Scripts\ej\ej.widgets.all.intellisense.js" />
+    <Content Include="Scripts\ej\ej.web.all.js" />
+    <Content Include="Scripts\helpers\chartScaleY.js" />
+    <Content Include="Scripts\helpers\cursors.js" />
+    <Content Include="Scripts\dygraph\plugins\serieSynchronizer.js" />
+    <Content Include="Scripts\filesaver.js" />
+    <Content Include="Scripts\helpers\fftFilter.js" />
+    <Content Include="Scripts\helpers\firFilter.js" />
+    <Content Include="Scripts\helpers\publishSubscriber.js" />
+    <Content Include="Scripts\app\helpers\helpers.js" />
+    <Content Include="Scripts\app\historicalTimeMode.js" />
+    <Content Include="Scripts\babylon\babylon.2.4.max.js" />
+    <Content Include="Scripts\babylon\babylon.math.js" />
+    <Content Include="Scripts\babylon\babylon.stlFileLoader.js" />
+    <Content Include="Scripts\dygraph\plugins\image-export.js" />
+    <Content Include="Scripts\helpers\ajaxErrorHandling.js" />
+    <Content Include="Scripts\helpers\streamParser.js" />
+    <Content Include="Scripts\helpers\binaryReader.js" />
+    <Content Include="Scripts\helpers\customContextMenu.js" />
+    <Content Include="Scripts\controls\listboxControl.js" />
+    <Content Include="Scripts\controls\treeViewControl.js" />
+    <Content Include="Scripts\dygraph\dashed-canvas.js" />
+    <Content Include="Scripts\dygraph\datahandler\bars-custom.js" />
+    <Content Include="Scripts\dygraph\datahandler\bars-error.js" />
+    <Content Include="Scripts\dygraph\datahandler\bars-fractions.js" />
+    <Content Include="Scripts\dygraph\datahandler\bars.js" />
+    <Content Include="Scripts\dygraph\datahandler\datahandler.js" />
+    <Content Include="Scripts\dygraph\datahandler\default-fractions.js" />
+    <Content Include="Scripts\dygraph\datahandler\default.js" />
+    <Content Include="Scripts\dygraph\dygraph-canvas.js" />
+    <Content Include="Scripts\dygraph\dygraph-gviz.js" />
+    <Content Include="Scripts\dygraph\dygraph-interaction-model.js" />
+    <Content Include="Scripts\dygraph\dygraph-layout.js" />
+    <Content Include="Scripts\dygraph\dygraph-options-reference.js" />
+    <Content Include="Scripts\dygraph\dygraph-options.js" />
+    <Content Include="Scripts\dygraph\dygraph-plugin-base.js" />
+    <Content Include="Scripts\dygraph\dygraph-plugin-install.js" />
+    <Content Include="Scripts\dygraph\dygraph-tickers.js" />
+    <Content Include="Scripts\dygraph\dygraph-utils.js" />
+    <Content Include="Scripts\dygraph\dygraph.js" />
+    <Content Include="Scripts\dygraph\excanvas.js" />
+    <Content Include="Scripts\dygraph\plugins\annotations.js" />
+    <Content Include="Scripts\dygraph\plugins\axes.js" />
+    <Content Include="Scripts\dygraph\plugins\chart-labels.js" />
+    <Content Include="Scripts\dygraph\plugins\grid.js" />
+    <Content Include="Scripts\dygraph\plugins\legend.js" />
+    <Content Include="Scripts\dygraph\plugins\plotter.js" />
+    <Content Include="Scripts\dygraph\plugins\range-selector.js" />
+    <Content Include="Scripts\dygraph\polyfills\console.js" />
+    <Content Include="Scripts\helpers\fileSaver.js" />
+    <Content Include="Scripts\gridstack.min.js" />
+    <Content Include="Scripts\helpers\concurrentThread.js" />
+    <Content Include="Scripts\dygraph\dygraph-combined.js" />
+    <Content Include="Scripts\helpers\fourierTransform.js" />
+    <Content Include="Scripts\helpers\areaSelect.js" />
+    <Content Include="Scripts\helpers\jcEventPlayer.js" />
+    <Content Include="Scripts\helpers\oscillator.js" />
+    <Content Include="Scripts\helpers\widgetHelper.js" />
+    <Content Include="Scripts\app\realTimeMode.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Content\ej\web\common-images\ejicons.eot" />
+    <Content Include="Content\ej\web\common-images\ejicons.ttf" />
+    <Content Include="Content\ej\web\common-images\ejicons.woff" />
+    <Content Include="Content\ej\web\common-images\ribbon\ejrbnicons.eot" />
+    <Content Include="Content\ej\web\common-images\ribbon\ejrbnicons.ttf" />
+    <Content Include="Content\ej\web\common-images\ribbon\ejrbnicons.woff" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\ejxlicons.eot" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\ejxlicons.ttf" />
+    <Content Include="Content\ej\web\common-images\spreadsheet\ejxlicons.woff" />
+    <Content Include="Scripts\ej\cultures\ej.culture.es-ES.js" />
+    <Content Include="fonts\FontAwesome.otf" />
+    <Content Include="fonts\fontawesome-webfont.woff2" />
+    <Content Include="fonts\fontawesome-webfont.woff" />
+    <Content Include="fonts\fontawesome-webfont.ttf" />
+    <Content Include="fonts\fontawesome-webfont.eot" />
+    <Content Include="fonts\icomoon.eot" />
+    <Content Include="fonts\icomoon.ttf" />
+    <Content Include="fonts\icomoon.woff" />
+    <Content Include="fonts\ionicons.eot" />
+    <Content Include="fonts\ionicons.ttf" />
+    <Content Include="fonts\ionicons.woff" />
+    <Content Include="fonts\lato\lato-black.ttf" />
+    <Content Include="fonts\lato\lato-bold.ttf" />
+    <Content Include="fonts\lato\lato-bolditalic.ttf" />
+    <Content Include="fonts\lato\lato-italic.ttf" />
+    <Content Include="fonts\lato\lato-light.ttf" />
+    <Content Include="fonts\lato\lato-regular.ttf" />
+    <Content Include="Content\bmpWaterfall\Gradientes\Thumbs.db" />
+    <Content Include="Content\STL\57fea387691d525051277386\Acople.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Acople2.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Acople2.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\acoplee.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\acoplee.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Anillo2Exitatriz.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Anillo2Exitatriz.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\AranaCentral.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\AranaInferior.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\AranaSuperior.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\AranaTapa.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\ArañaCentral.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\ArañaInferior.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\ArañaSuperior.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\ArañaTapa.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Bobinado1.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Bobinado1.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\bobinado2.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Bobinado2.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\BobinadoEjeCompresor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CajaEmbrague.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CajaReductora.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CaracolFrancis.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\CaracolFrancis.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CarcasaCompresor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CarcasaMotor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CarcasaReductora.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Cojinete.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Cojinete.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CojineteCompresor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CojineteMotorReductor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\CojineteReductor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Cracoll.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\CuerpoAcopleMotor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Eje.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Eje.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\EjeCompresor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\EjeEntradaSalidaReductor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\EjeMotor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\EjeReductor.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Embrague1.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Embrague2.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Engranaje1.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Engranaje2.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Engranaje3.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Engranaje4.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Estator.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Estator1.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Estator1.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\estator2.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\estator2.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\EstructuraCivil.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\EstructuraCivil.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Exitatriz-Anillo.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\Exitatriz-Anillo.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Exitatriz.cfg" />
+    <Content Include="Content\STL\57fea387691d525051277386\Exitatriz.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\ExitatrizAnillo.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\ExitatrizBase.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\ExitatrizBase.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\FrancisVertical.cfg" />
+    <Content Include="Content\STL\57fea387691d525051277386\PasadoresAcople.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\PernosExitatriz.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\PernosExitatriz.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Rotor1.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\Rotor2.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\SalidaCaracolFrancis.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\TapaCaracolInferior.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\TapaCaracolSuperior.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\TurbinaFrancis.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\TurbinaFrancis.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\TURBO\Acople.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\TURBO\Acople.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\TURBO\Estator.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\TURBO\Estator.stl" />
+    <Content Include="Content\STL\57fea387691d525051277386\TURBO\Exitatriz.par" />
+    <Content Include="Content\STL\57fea387691d525051277386\TURBO\Exitatriz.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\Eje.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\volante1.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\volante2.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\Bombeo.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\Bombeo.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\Eje.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\SalidaBomba.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\volante1.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\volante2.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\BaseChumacera.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\Bomba.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\CarcasaAcople.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\CarcasaAcople2.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\Chumacera.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\coupling.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\CuerpoAcople.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\Eje.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\Mortero.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\MorteroMotor.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\Motor.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\Motor2.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\PART1.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\PART2.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\PART3.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\Rotor1.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\Rotor2.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\RotorBomba.stl" />
+    <Content Include="Content\STL\583457e85ca9da6b0ca01dbe\SalidaBomba.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\BaseChumacera.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\Bomba.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\CarcasaAcople.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\CarcasaAcople2.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\Chumacera.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\coupling.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\CuerpoAcople.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\Eje.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\Mortero.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\MorteroMotor.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\Motor.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\Motor2.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\PART1.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\PART2.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\PART3.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\Rotor1.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\Rotor2.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\RotorBomba.stl" />
+    <Content Include="Content\STL\583457f55ca9da6b0ca01dc0\SalidaBomba.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\BaseChumacera.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\Bomba.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\CarcasaAcople.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\CarcasaAcople2.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\Chumacera.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\coupling.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\CuerpoAcople.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\Eje.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\Mortero.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\MorteroMotor.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\Motor.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\Motor2.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\PART1.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\PART2.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\PART3.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\Rotor1.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\Rotor2.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\RotorBomba.stl" />
+    <Content Include="Content\STL\583458025ca9da6b0ca01dc2\SalidaBomba.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\Base.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\CajaLateral.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\CajaLateral2.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\CilindroInferior.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\CilindroMedio.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\CilindroSuperior.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\CuerpoAcople.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\Eje.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\EntradaRecinto.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\PART1.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\PART2.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\PART3.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\RecintoBomba.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\Rotor1.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\Rotor2.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\RotorBomba.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\SalidaBomba.stl" />
+    <Content Include="Content\STL\583456785ca9da6b0ca01db4\SalidaRecinto.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\Base.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\CajaLateral.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\CajaLateral2.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\CilindroInferior.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\CilindroMedio.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\CilindroSuperior.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\CuerpoAcople.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\Eje.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\EntradaRecinto.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\PART1.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\PART2.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\PART3.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\RecintoBomba.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\Rotor1.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\Rotor2.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\RotorBomba.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\SalidaBomba.stl" />
+    <Content Include="Content\STL\583456685ca9da6b0ca01db2\SalidaRecinto.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\Base.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\CajaLateral.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\CajaLateral2.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\CilindroInferior.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\CilindroMedio.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\CilindroSuperior.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\CuerpoAcople.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\Eje.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\EntradaRecinto.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\PART1.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\PART2.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\PART3.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\RecintoBomba.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\Rotor1.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\Rotor2.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\RotorBomba.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\SalidaBomba.stl" />
+    <Content Include="Content\STL\583456555ca9da6b0ca01db0\SalidaRecinto.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\Base.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\CajaLateral.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\CajaLateral2.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\CilindroInferior.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\CilindroMedio.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\CilindroSuperior.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\CuerpoAcople.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\Eje.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\EntradaRecinto.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\PART1.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\PART2.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\PART3.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\PasadoresAcople.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\RecintoBomba.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\Rotor1.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\Rotor2.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\RotorBomba.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\SalidaBomba.stl" />
+    <Content Include="Content\STL\5834562f5ca9da6b0ca01dae\SalidaRecinto.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\Base.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\CajaLateral.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\CajaLateral2.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\CilindroInferior.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\CilindroMedio.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\CilindroSuperior.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\CuerpoAcople.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\Eje.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\EntradaRecinto.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\PART1.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\PART2.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\PART3.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\RecintoBomba.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\Rotor1.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\Rotor2.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\RotorBomba.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\SalidaBomba.stl" />
+    <Content Include="Content\STL\583455f85ca9da6b0ca01dac\SalidaRecinto.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\BombaG1.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\CarcasaCojinete.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\Chumacera.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\Cojinete.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\CuerpoAcopleMotor.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\Eje.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\Mortero.par" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\Mortero.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\motor.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\PART1.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\PART2.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\PART3.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\Rotor1.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\Rotor2.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\RotorBomba.stl" />
+    <Content Include="Content\STL\583457605ca9da6b0ca01db6\SalidaBomba.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\BombaG1.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\CarcasaCojinete.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\Chumacera.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\Cojinete.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\CuerpoAcopleMotor.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\Eje.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\Mortero.par" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\Mortero.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\motor.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\PART1.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\PART2.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\PART3.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\Rotor1.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\Rotor2.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\RotorBomba.stl" />
+    <Content Include="Content\STL\583457715ca9da6b0ca01db8\SalidaBomba.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\BombaG1.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\CarcasaCojinete.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\Chumacera.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\Cojinete.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\CuerpoAcopleMotor.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\Eje.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\Mortero.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\motor.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\PART1.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\PART2.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\PART3.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\PasadoresAcople.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\Rotor1.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\Rotor2.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\RotorBomba.stl" />
+    <Content Include="Content\STL\583457845ca9da6b0ca01dba\SalidaBomba.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\AnilloInternoRotor.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\Bombeo.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\CarcasaCojinete.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\Chumacera.par" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\Chumacera.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\coupling.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\Eje.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\Mortero.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\motor.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\PART1.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\PART2.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\PART3.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\Rotor1.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\Rotor2.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\RotorBomba.stl" />
+    <Content Include="Content\STL\583457905ca9da6b0ca01dbc\SalidaBomba.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\AnilloVolante.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\AnilloVolante2.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\Chumacera.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\CuerpoVolante.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\EjeMotor.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\Mortero.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\motor.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\PART1.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\PART2.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\PART3.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\Rotor1.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\Rotor2.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\RotorBomba.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\AnillosRotorMotor.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\AnilloVolante.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\AnilloVolante2.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\Chumacera.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\CuerpoVolante.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\EjeMotor.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\Mortero.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\motor.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\PART1.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\PART2.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\PART3.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\Rotor1.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\Rotor2.stl" />
+    <Content Include="Content\STL\5834583f5ca9da6b0ca01dc6\RotorBomba.stl" />
+    <Content Include="Content\STL\583458325ca9da6b0ca01dc4\SalidaBomba.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CampanaM.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\Cojinete.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CojineteM.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EjePpalM.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EjePpalR1.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EjePpalR2.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\ImpulsorBaseR1.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\ImpulsorBaseR2.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\ImpulsorCampanaR1.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\ImpulsorCampanaR2.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\RuedaDentada.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\SoporteEngranaje.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\SujecionImpulsor.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\ConoInduccion.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CorazaImpulsorAspas.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CorazaImpulsorSencilla.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CorazaPpal.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CorazaRuedaDentada.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\RotorAspas.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\Campana.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\Campana.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\CampanaM.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\CarcazaMotor.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\Cojinete.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\CojineteM.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\ConoInduccion.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\CorazaImpulsorAspas.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\CorazaImpulsorSencilla.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\CorazaPpal.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\CorazaRuedaDentada.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\EjePpalM.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\EjePpalR1.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\EjePpalR2.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\EngranajeR1.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\EngranajeR2.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\ImpulsorBaseR1.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\ImpulsorBaseR2.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\ImpulsorCampanaR1.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\ImpulsorCampanaR2.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\RotorAspas.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\RuedaDentada.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\SoporteEngranaje.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\SujecionImpulsor.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\Base.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\Campana.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CampanaM.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CarcazaMotor.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\Cojinete.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CojineteM.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\ConoInduccion.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CorazaImpulsorAspas.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CorazaImpulsorSencilla.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CorazaPpal.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CorazaRuedaDentada.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EjePpalM.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EjePpalR1.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EjePpalR2.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EngranajeR1.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EngranajeR2.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\EngranajeR2.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EngranajeR1.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\BobinadoEje.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\CojineteMo.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\EjeMotor.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\MallaCarcazaMotor.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\Rotor.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\VentiladorRotor.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\BobinadoEje.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\CojineteMo.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\EjeMotor.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\MallaCarcazaMotor.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\Rotor.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\VentiladorRotor.stl" />
+    <Content Include="Content\STL\57feb97b691d5250512773a6\VentiladorPpal.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\VentiladorPpal.stl" />
+    <Content Include="Content\STL\Locations\Berlin.stl" />
+    <Content Include="Content\STL\Locations\Captacion.stl" />
+    <Content Include="Content\STL\Locations\DistribucionPrimaria.stl" />
+    <Content Include="Content\STL\Locations\EpmAguas.stl" />
+    <Content Include="Content\STL\Locations\Pantanillo.stl" />
+    <Content Include="Content\STL\Locations\Pedregal.stl" />
+    <Content Include="Content\STL\Locations\Salvatoriano.stl" />
+    <Content Include="Content\STL\57feb8e6691d52505127739e\Base.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\AcopleCT.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\AcopleMotor.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\AcopleMotorC.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Base.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\BobinadoEje.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Campana.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\CampanaPiñon.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\CampanaR.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\CampanaT.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Caracol.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\CarcazaTurbina.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Chumacera.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Cojinete.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\CojineteReducidoR.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\CojineteReducidoT.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Eje.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\EjeT.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Mortero.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\MorteroReductor.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Motor.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\PiñonHelicoidal.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Rotor.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Rueda Helicoidal.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\RuedaHelicoidal.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Tapa.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Torre.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Turbina.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\Ventilador.stl" />
+    <Content Include="Content\STL\57feb9a0691d5250512773a8\VentiladorRotor.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\AcopleCT.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\AcopleMotor.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\AcopleMotorC.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Base.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\BobinadoEje.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Campana.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\CampanaPiñon.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\CampanaR.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\CampanaT.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Caracol.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\CarcazaTurbina.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Chumacera.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Cojinete.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\CojineteReducidoR.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\CojineteReducidoT.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Eje.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\EjeT.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Mortero.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\MorteroReductor.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Motor.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\PiñonHelicoidal.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Rotor.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Rueda Helicoidal.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\RuedaHelicoidal.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Tapa.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Torre.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Turbina.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\Ventilador.stl" />
+    <Content Include="Content\STL\57feb9b7691d5250512773aa\VentiladorRotor.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\AcopleCT.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\AcopleMotor.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\AcopleMotorC.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Base.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\BobinadoEje.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Campana.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\CampanaPiñon.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\CampanaR.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\CampanaT.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Caracol.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\CarcazaTurbina.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Chumacera.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Cojinete.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\CojineteReducidoR.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\CojineteReducidoT.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Eje.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\EjeT.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Mortero.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\MorteroReductor.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Motor.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\PiñonHelicoidal.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Rotor.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Rueda Helicoidal.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\RuedaHelicoidal.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Tapa.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Torre.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Turbina.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\Ventilador.stl" />
+    <Content Include="Content\STL\57feb931691d5250512773a0\VentiladorRotor.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\AcopleCT.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\AcopleMotor.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\AcopleMotorC.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Base.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\BobinadoEje.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Campana.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\CampanaPiñon.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\CampanaR.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\CampanaT.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Caracol.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\CarcazaTurbina.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Chumacera.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Cojinete.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\CojineteReducidoR.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\CojineteReducidoT.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Eje.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\EjeT.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Mortero.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\MorteroReductor.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Motor.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\PiñonHelicoidal.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Rotor.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Rueda Helicoidal.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\RuedaHelicoidal.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Tapa.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Torre.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Turbina.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\Ventilador.stl" />
+    <Content Include="Content\STL\57feb946691d5250512773a2\VentiladorRotor.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\AcopleSincrono.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\ApoyoMotor.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\Bomba.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\Campana.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\CarcazaAcopleMotor.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\Cojinete.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\Eje.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\EjeMotor.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\Motor.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\Rotor.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\RotorMotor.stl" />
+    <Content Include="Content\STL\57feb960691d5250512773a4\VentiladorMotor.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\AcopleSincrono.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\Bomba.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\Campana.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\CarcazaAcopleMotor.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\Cojinete.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\Eje.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\EjeMotor.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\Motor.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\Rotor.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\RotorMotor.stl" />
+    <Content Include="Content\STL\57feb9cb691d5250512773ac\VentiladorMotor.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\Acople.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\CashisMotor.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\ChasisAcople1.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\ChasisBomba.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\ChasisCaja.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\Cojinete.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\cojineteBomba.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\EjeAcopleCajaBomba.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\EJEBomba.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\EjeMotorCaja.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\motor.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\PiñonHelicoidal.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\Rotor.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\RuedaHelicoidal.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\Tierra.stl" />
+    <Content Include="Content\STL\57feb6a7691d525051277390\VentiladorRotor.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\Acople.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\CashisMotor.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\ChasisAcople1.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\ChasisBomba.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\ChasisCaja.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\Cojinete.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\cojineteBomba.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\EjeAcopleCajaBomba.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\EJEBomba.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\EjeMotorCaja.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\motor.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\PiñonHelicoidal.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\Rotor.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\RuedaHelicoidal.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\Tierra.stl" />
+    <Content Include="Content\STL\57feb5bb691d52505127738e\VentiladorRotor.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\BobinadoEje.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\BombaGerona.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\Cojinete.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\Cojinete2.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\EjeAcople.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\EjeMotorBomba.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\EjePpal.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\Guarda.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\ImpulsorBase.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\ImpulsorCampana.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\Mortero.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\MotorSiemens.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\Rotor.stl" />
+    <Content Include="Content\STL\596e7cf5ade4872d80a9ed50\VentiladorRotor.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\BobinadoEje.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\BombaGerona.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\Cojinete.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\Cojinete2.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\EjeAcople.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\EjeMotorBomba.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\EjePpal.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\Guarda.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\ImpulsorBase.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\ImpulsorCampana.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\Mortero.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\MotorSiemens.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\Rotor.stl" />
+    <Content Include="Content\STL\596e7d14ade4872d80a9ed7c\VentiladorRotor.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\BobinadoEje.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\BombaGerona.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\Cojinete.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\Cojinete2.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\EjeAcople.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\EjeMotorBomba.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\EjePpal.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\Guarda.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\ImpulsorBase.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\ImpulsorCampana.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\Mortero.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\MotorSiemens.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\Rotor.stl" />
+    <Content Include="Content\STL\596e7d81ade4872d80a9eda8\VentiladorRotor.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\AcopleMotorBomba.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\AcopleRefrigeracion.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\Bomba.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\CarcazaAcople.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\Cojinete.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\EjeMotor.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\EjePpal.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\ImpulsorBase.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\ImpulsorCampana.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\MotorSiemens.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\Rotor.stl" />
+    <Content Include="Content\STL\596e7dc0ade4872d80a9edd4\VentiladorRotor.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\AcopleMotorBomba.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\AcopleRefrigeracion.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\Bomba.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\CarcazaAcople.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\Cojinete.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\EjeMotor.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\EjePpal.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\ImpulsorBase.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\ImpulsorCampana.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\MotorSiemens.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\Rotor.stl" />
+    <Content Include="Content\STL\596e7dd0ade4872d80a9ee00\VentiladorRotor.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\AcopleMotorBomba.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\AcopleRefrigeracion.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\Bomba.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\CarcazaAcople.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\Cojinete.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\EjeMotor.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\EjePpal.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\ImpulsorBase.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\ImpulsorCampana.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\MotorSiemens.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\Rotor.stl" />
+    <Content Include="Content\STL\596e7de3ade4872d80a9ee26\VentiladorRotor.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\Acople2.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\acoplee.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\Anillo2Exitatriz.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\AranaCentral.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\AranaInferior.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\AranaSuperior.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\Bobinado1.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\Bobinado2.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\CaracolFrancis.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\Cojinete.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\Eje.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\Estator1.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\estator2.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\EstructuraCivil.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\ExitatrizAnillo.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\ExitatrizBase.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\PernosExitatriz.stl" />
+    <Content Include="Content\STL\5976127afafdd81a085cdefb\TurbinaFrancis.stl" />
+    <Content Include="Content\Prop3d\assets.json" />
+    <None Include="Properties\PublishProfiles\aspectrogram - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\aspectrogram - Web Deploy.pubxml" />
+    <Content Include="Scripts\html2canvas.js" />
+    <None Include="Scripts\jquery-3.1.1.intellisense.js" />
+    <Content Include="Scripts\jquery-3.1.1.js" />
+    <Content Include="Scripts\jquery-3.1.1.min.js" />
+    <Content Include="Scripts\jquery-3.1.1.slim.js" />
+    <Content Include="Scripts\jquery-3.1.1.slim.min.js" />
+    <Content Include="Scripts\jquery-dataTable.min.js" />
+    <Content Include="Scripts\jquery-ui-1.12.1.min.js" />
+    <Content Include="Scripts\jquery.easing.1.3.min.js" />
+    <Content Include="Scripts\jspdf.debug.js" />
+    <Content Include="Scripts\jspdf.js" />
+    <Content Include="Scripts\jsrender.min.js" />
+    <Content Include="Scripts\lodash.min.js" />
+    <Content Include="Scripts\math.js" />
+    <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\printThis.js" />
+    <Content Include="Scripts\properties.js" />
+    <Content Include="Scripts\referencesNI.js" />
+    <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\toastr.min.js" />
+    <Content Include="Scripts\underscore-min.js" />
+    <Content Include="Scripts\_references.js" />
+    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Modals\_BarFilter.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Shared\_LayoutLogin.cshtml" />
+    <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\Shared\_MainHeaderPartial.cshtml" />
+    <Content Include="Views\Templates\_MainTreeContainer.cshtml" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Home\About.cshtml" />
+    <Content Include="Views\Home\Contact.cshtml" />
+    <Content Include="Views\Account\Login.cshtml" />
+    <Content Include="Views\Config\Atr.cshtml" />
+    <Content Include="Views\Home\Report.cshtml" />
+    <Content Include="Views\Shared\_LayoutReport.cshtml" />
+    <None Include="Properties\PublishProfiles\aspectrogram.pubxml" />
+    <None Include="Properties\PublishProfiles\Wow.pubxml" />
+    <Content Include="Views\Modals\_graphConfigurationModal.cshtml" />
+    <Content Include="Views\Config\Asdaq.cshtml" />
+    <Content Include="Views\Modals\_SetShaftReference.cshtml" />
+    <Content Include="Views\Modals\_TrendSeriesVisibility.cshtml" />
+    <Content Include="Views\Menus\_MeasurementPointMenu.cshtml" />
+    <Content Include="Views\Menus\_AssetMenu.cshtml" />
+    <Content Include="Views\Modals\_ConfirmDialog.cshtml" />
+    <Content Include="Views\Modals\_HistoricalTrendFilter.cshtml" />
+    <Content Include="Views\Modals\_LiveTrendFilter.cshtml" />
+    <Content Include="Views\Menus\_LocationMenu.cshtml" />
+    <Content Include="Views\Shared\_LayoutEditor3d.cshtml" />
+    <Content Include="Views\Home\Editor3d.cshtml" />
+    <Content Include="Scripts\jquery-3.1.1.slim.min.map" />
+    <Content Include="Scripts\jquery-3.1.1.min.map" />
+    <Content Include="Views\Config\Asdaq - Copy.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Content\Prop3d\Assets\" />
+    <Folder Include="Controllers\Api\Security\" />
+    <Folder Include="Models\Interfaces\" />
+    <Folder Include="Views\Location\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Amaq.Acloud.Aspectrogram.Entities\Amaq.Acloud.Aspectrogram.Entities.csproj">
+      <Project>{56dd05b0-0216-4b02-8d6d-3c895c21193d}</Project>
+      <Name>Amaq.Acloud.Aspectrogram.Entities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Amaq.Acloud.Aspectrogram.Proxy\Amaq.Acloud.Aspectrogram.Proxy.csproj">
+      <Project>{cc90fec6-cf08-470f-b7fd-f5e901a8f184}</Project>
+      <Name>Amaq.Acloud.Aspectrogram.Proxy</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>58086</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:58086/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+</Project>

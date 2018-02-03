@@ -1,0 +1,454 @@
+﻿.custom {
+    border-radius: 6px;
+}
+
+.nodo-categoria, .nodo-ubicacion, .nodo-activo, .nodo-variableMD, .nodo-subvariable {
+    background-size: 20px 20px !important;
+    background-position: 1px 1px !important;
+}
+
+.nodo-categoria {
+}
+
+.nodo-ubicacion {
+    background-image: url(images/iconSearch.png) !important;
+}
+
+.nodo-activo {
+    background-image: url(images/iconDiamont.png) !important;
+}
+
+.nodo-variableMD {
+}
+
+.nodo-subvariable {
+}
+
+.aside-menu {
+    overflow-x: auto !important;
+}
+
+.sidebar-menu {
+    display: table;
+}
+
+/*.slimScrollBar, .slimScrollRail {
+    cursor: col-resize;
+}
+
+#ghostbar {
+    width: 4px;
+    background-color: #000;
+    opacity: 0.2;
+    position: absolute;
+    cursor: col-resize;
+    z-index: 999;
+}*/
+
+@-webkit-keyframes color_change {
+    0% {
+        background-color: violet;
+    }
+
+    25% {
+        background-color: blue;
+    }
+
+    50% {
+        background-color: green;
+    }
+
+    75% {
+        background-color: #888;
+    }
+
+    100% {
+        background-color: red;
+    }
+}
+
+@-moz-keyframes color_change {
+    0% {
+        background-color: violet;
+    }
+
+    25% {
+        background-color: blue;
+    }
+
+    50% {
+        background-color: green;
+    }
+
+    75% {
+        background-color: #888;
+    }
+
+    100% {
+        background-color: red;
+    }
+}
+
+@-ms-keyframes color_change {
+    0% {
+        background-color: violet;
+    }
+
+    25% {
+        background-color: blue;
+    }
+
+    50% {
+        background-color: green;
+    }
+
+    75% {
+        background-color: #888;
+    }
+
+    100% {
+        background-color: red;
+    }
+}
+
+@-o-keyframes color_change {
+    0% {
+        background-color: violet;
+    }
+
+    25% {
+        background-color: blue;
+    }
+
+    50% {
+        background-color: green;
+    }
+
+    75% {
+        background-color: #888;
+    }
+
+    100% {
+        background-color: red;
+    }
+}
+
+@keyframes color_change {
+    0% {
+        background-color: violet;
+    }
+
+    25% {
+        background-color: blue;
+    }
+
+    50% {
+        background-color: green;
+    }
+
+    75% {
+        background-color: #888;
+    }
+
+    100% {
+        background-color: red;
+    }
+}
+
+.loading-estado {
+    -webkit-animation: color_change 1s infinite alternate;
+    -moz-animation: color_change 1s infinite alternate;
+    -ms-animation: color_change 1s infinite alternate;
+    -o-animation: color_change 1s infinite alternate;
+    animation: color_change 1s infinite alternate;
+}
+
+@media (max-width: 768px) {
+    .nodo-categoria, .nodo-ubicacion, .nodo-activo, .nodo-variableMD, .nodo-subvariable {
+        background-size: 26px 26px !important;
+        background-position: 2px 2px !important;
+    }
+}
+
+
+/**/
+.flot-y-axis {
+    left: -50px !important;
+}
+
+.flot-x-axis .flot-tick-label {
+    max-width: 60px !important;
+}
+
+    .flot-x-axis .flot-tick-label:last-child {
+        /* Firefox */
+        left: -moz-calc(100% - 60px) !important;
+        /* WebKit */
+        left: -webkit-calc(100% - 60px) !important;
+        /* Opera */
+        left: -o-calc(100% - 60px) !important;
+        /* Standard */
+        left: calc(100% - 60px) !important;
+    }
+
+.modal-grafica {
+    width: 1100px;
+}
+
+.xaxisLabel {
+    left: 0;
+    top: 100%;
+    width: 100%;
+}
+
+.yaxisLabel {
+    left: -80px;
+    top: 50%;
+    transform: rotate(-90deg);
+    transform-origin: 0 0 0;
+}
+
+.axisLabel {
+    font-size: 12px;
+    position: absolute;
+    text-align: center;
+}
+
+
+
+.tabla-redondeada {
+    border: 0px;
+}
+
+    .tabla-redondeada caption {
+        border-radius: 4px 4px 0px 0px;
+    }
+
+    .tabla-redondeada tfoot td:first-child {
+        border-bottom-left-radius: 4px;
+    }
+
+    .tabla-redondeada tfoot td:last-child {
+        border-bottom-right-radius: 4px;
+    }
+
+.demo-placeholder {
+    padding: 0px;
+    position: relative;
+    width: 85%;
+    margin-left: 90px !important;
+    margin-bottom: 40px;
+    height: 420px;
+    font-size: 14px;
+    line-height: 1.2em;
+}
+
+.modoPaginaDisplay {
+    padding: 7px 14px 5px 10px;
+    margin-right: 5px;
+    color: white;
+}
+
+@media (max-width: 320px) {
+    .demo-placeholder {
+        width: 70%;
+        height: 300px;
+    }
+
+    .cajaIniSesion {
+        width: 280px;
+    }
+
+    body > .header .navbar .sidebar-toggle {
+        padding: 9px 0px;
+    }
+
+    .modoPaginaDisplay {
+        padding: 9px 0px 5px 0px;
+        margin-right: 0px;
+    }
+
+    .collapse-header {
+        top: 530px !important;
+    }
+
+    .hide-section-header {
+        top: 85px !important;
+    }
+
+    .left-nav {
+        max-width: 260px !important;
+    }
+
+    .collapse-left-aside {
+        margin-top: 40px;
+        margin-left: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .demo-placeholder {
+        width: 90%;
+        height: 300px;
+        margin-left: 30px;
+    }
+
+    .yaxisLabel {
+        left: -40px;
+        top: 50%;
+        transform: rotate(-90deg);
+        transform-origin: 0 0 0;
+        font-size: 10px;
+    }
+
+    .flot-y-axis {
+        left: -30px !important;
+        font-size: 10px;
+    }
+
+    .flot-x-axis .flot-tick-label:last-child {
+        /* Firefox */
+        left: -moz-calc(110% - 60px) !important;
+        /* WebKit */
+        left: -webkit-calc(110% - 60px) !important;
+        /* Opera */
+        left: -o-calc(110% - 60px) !important;
+        /* Standard */
+        left: calc(110% - 60px) !important;
+    }
+
+    .collapse-header {
+        top: 530px !important;
+    }
+
+    .hide-section-header {
+        top: 85px !important;
+    }
+
+    .left-nav {
+        max-width: 260px !important;
+    }
+
+    .collapse-left-aside {
+        margin-top: 40px !important;
+        margin-left: 12px !important;
+    }
+}
+
+#archivos-activo {
+    background-color: white;
+}
+
+#manager {
+    -webkit-transition: all 0.5s ease-in-out;
+    -moz-transition: all 0.5s ease-in-out;
+    -o-transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+}
+
+.icon-remove:before,
+.icon-remove-sign:before {
+    content: "\e608";
+}
+
+.divAudio_Player, .divVideo_Player, .imagen-seleccionada, .grafico-estados-activos {
+    background-color: white;
+    text-align: center;
+}
+
+.grafico {
+    background-color: white;
+}
+
+#header-section {
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease;
+}
+
+.left-nav {
+    background-color: #eeeeee;
+    height: 65.5vh;
+    max-width: 380px;
+    width: auto;
+    float: left;
+    padding: 0px;
+    overflow-y: scroll;
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease;
+}
+
+.left-nav-hide {
+    width: 0px !important;
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease;
+}
+
+#content-categories {
+    background-color: #eeeeee !important;
+}
+
+.collapse-header {
+    position: absolute;
+    top: 180px;
+    right: 10px;
+    background-color: #DBDBDB;
+    padding: 8px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease;
+    z-index: 999;
+}
+
+.hide-section-header {
+    top: 38px;
+}
+
+.collapse-left-aside {
+    display: inline-block;
+    margin: 10px;
+    background-color: #DBDBDB;
+    padding: 8px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease;
+    z-index: 999;
+}
+
+.hide-header-section {
+    padding: 0px !important;
+    height: 0px !important;
+    -webkit-transition: all 1ms ease;
+    -moz-transition: all 1ms ease;
+    -ms-transition: all 1ms ease;
+    -o-transition: all 1ms ease;
+    transition: all 1ms ease;
+}
+
+#contenedor {
+    padding: 10px;
+    height: 65.5vh;
+    overflow-y: auto;
+}
+
+.timeline-event-dot-container {
+    text-align: left;
+}

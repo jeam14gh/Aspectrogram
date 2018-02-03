@@ -1,0 +1,42 @@
+﻿@{
+    var claimsIdentity = User.Identity as System.Security.Claims.ClaimsIdentity;
+}
+<!--Menú de opciones para los activos-->
+<div id="locationMenuContainer" style="display:none;">
+    <ul id="locationMenu">
+        @if (claimsIdentity != null)
+        {
+            var tmp = claimsIdentity.FindFirst("roles");
+            var roles = (tmp != null) ? tmp.Value.Split(',').ToList() : null;
+            if (roles != null)
+            {
+                if (roles.Any(s => s == "Admin"))
+                {
+                <li id="liAdmin">
+                    <a href="#">Administrar</a>
+                    <ul>
+                        <li>
+                            <a href="#">Agregar</a>
+                            <ul>
+                                <li id="newLocationMenuItem"><a href="#">Nueva ubicación</a></li>
+                                <li id="newAssetMenuItem"><a href="#">Nuevo activo</a></li>
+                            </ul>
+                        </li>
+                        <li id="editLocationMenuItem"><a href="#">Editar ubicación</a></li>
+                        <li id="deleteLocationMenuItem"><a href="#">Eliminar ubicación</a></li>
+                        <li id="pasteAssetMenuItem"><a href="#">Pegar</a></li>
+                        <li id="summaryViewAssetsMenuItem" isAdmin="true"><a href="#">Vista resumen activos</a></li>
+                    </ul>
+                </li>
+                }
+                @*else {
+                    <li id="summaryViewAssetsMenuItem" title="Vista resumen activos" isAdmin="false"><a href="#">Vista resumen activos</a></li>
+                }*@
+            }
+        }
+    </ul>
+    <script type="text/javascript"> 
+        // Variable global que trae los tipos de rol que maneja el usuario logueado.     
+        var roles = "@claimsIdentity.FindFirst("roles").Value";
+    </script>
+</div>

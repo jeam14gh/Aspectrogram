@@ -1,0 +1,1552 @@
+﻿@model List<Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto>
+@{
+    ViewBag.Title = "Configuración Asdaq";
+}
+<div style="overflow-y:scroll;">
+    <!--Inicio contenedor del detalle Asdaq-->
+    <div id="aspectrogramMainContent" class="container-fluid fullHeight">
+        <div class="row">
+            <div id="GridAsdaq"></div>
+            <div id="gridAconditioners"></div>
+            <div id="GridNiDevices"></div>
+        </div>
+    </div>
+    <!--Fin del detalle-->
+    <!--Dialog para configurar otro valor en Rango de frecuencia ó Número de líneas-->
+    <div id="ejdOtherValue" class="hidden">
+        <div class="container-fluid">
+            <div class="row">
+                Mín: <label id="lblMin"></label> / Máx: <label id="lblMax"></label>
+                <br />
+                <input type="text" id="ejntOtherValue" />
+            </div>
+            <br />
+            <div class="row">
+                <button id="ejbAccept"> Aceptar</button>
+                <button id="ejbCancel"> Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <!--Fin dialog-->
+    <!--Formulario Cuenta de correo-->
+    <div class="hidden" id="formMailAccount">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group col-lg-12">
+                        <label>Servidor SMTP:</label>
+                        <input type="text" id="txtSmtpServer">
+                    </div>
+                    <div class="form-group col-lg-12">
+                        <label>Puerto:</label>
+                        <input type="text" id="txtSmtpPort">
+                    </div>
+                    <div class="form-inline">
+                        <input type="checkbox" id="chbUseSsl" />
+                        <label> Conexión cifrada (SSL) </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="row">
+                        <div class="form-group col-lg-12">
+                            <label>Usuario:</label>
+                            <input type="text" id="txtUserNameMail">
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <label>Contraseña:</label>
+                            <input type="text" id="txtPasswordMail">
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <label>Remitente:</label>
+                            <input type="text" id="txtFromAddress">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p></p>
+            <div class="row">
+                <button id="btnSaveMailAccount" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                <button id="btnCancelMailAccount" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <!--Fin formulario Cuenta de correo-->
+</div>
+
+@section applicationScripts {
+    <script id="Cancelar" type="text/x-jsrender">
+        <a class="e-cancel e-toolbaricons e-icon e-gcancel" />
+    </script>
+
+    <script id="Guardar" type="text/x-jsrender">
+        <a class="e-saveitem e-toolbaricons e-icon e-save" />
+    </script>
+
+    <script id="Eliminar" type="text/x-jsrender">
+        <a class="e-deleteitem e-toolbaricons e-icon e-delete" />
+    </script>
+
+    @*Template para los childGrid's de canales Asdaq*@
+    <script id="cgDevices" type="text/x-jsrender">
+        <div id="{{:Name}}">
+            <div id="detailGridDevice"></div>
+        </div>
+    </script>
+
+    @* Template para los childGrid's de canales Acondtioner *@
+    <script id="cgAconditioners" type="text/x-jsrender">
+        <div id="childGrid_{{:Serial}}">
+            <div id="detailGridAconditioner"></div>
+        </div>
+    </script>
+
+    <script type="text/javascript">
+        // Data de asdaq seleccionado solo para consultas, no modificaciones.
+        var _asdaqSelected = null;
+        // Puntos de medición relacionados con canales Asdaq y deben recalcular de nuevo sus parametros M y B
+        var _pointsWithAcon=[];
+        // Lista Asdaq
+        var asdaq = @Html.Raw(Json.Encode(Model));
+        // Lista de NiDevices de un Asdaq
+        var _niDevices = null;
+        // Id de un Asdaq seleccionado
+        var _asdaqId = null;
+        // Caché de los dispositivos de adquisición
+        var _DevicesCache = null;
+        // Caché de los Aconditioners por Asdaq
+        var _aconditionersCache = null;
+        // Estados que indican si el setTimeOut terminó para cada reinicio de cada asdaq
+        var _states = [];
+        // Indice para reconcocer la posicion del Array "_states"
+        var _index = -1;
+        // Lista de dispositivos A-conditioner
+        var _aconditioners = null;
+        // Lista de los diferentes tipos de dispositivos Acondiotioner con su detalle
+        var _aconditionersType = null;
+        // DataSource para cargar el dropdown de la columna "Aconditioner" del GridAsdaq cuando está en modo edición
+        var _dsAconditioners;
+        // dto mdVariable el cual contiene todos los puntos a los cuales se les asoció un Aconditioner para recalcular la M y B de cada uno de ellos
+        var _dto = [];
+        // Copia todos los AiChannels
+        var _copyAiChannels=[];
+        // Nombre del dispositivo actualmente seleccionado
+        var nameDevice= null;
+        // Index del canal actualmente seleccionado
+        var indexChannel= null;
+        // Id MdVaraible del canal actualmente seleccionado
+        var idMdVarChannel=null;
+        //
+        var _pointsToRecalculate = [];
+        //
+        var indexChildGrid = -1;
+        // Conjunto de datos de referencias de NI (National Instrument)
+        var _dsReferencesNI= null;
+        // Conjunto de datos dinámico de número de lineas de acuerdo al valor en frecuencia de rango en un dispositivo de adquisición Asdaq
+        var _dsNol = [];
+        var isOpened= false;
+
+        var _terminalConfiguration= [
+                        { text: "Differential", value: "Differential" },
+                        { text: "Nrse", value: "Nrse" },
+                        { text: "Pseudodifferential", value: "Pseudodifferential" },
+                        { text: "Rse", value: "Rse" },
+        ];
+
+        $(document).ready(function () {
+            $(function () {
+                GetAllAconditionerType();
+            });
+        });        
+
+        //Crea el grid Asdaq
+        function CreateGridAsdaq(dsAsdaq) {
+            $("#GridAsdaq").ejGrid({
+                dataSource: dsAsdaq,
+                locale: "es-ES",
+                isResponsive: true,
+                allowResizing: true,
+                //enableResponsiveRow: true,
+                allowPaging: true,
+                pageSettings: { pageSize: 5 },
+                //allowSorting: true,
+                editSettings: { allowEditing: true, editMode: "normal" },
+                enableAutoSaveOnSelectionChange: false,
+                allowKeyboardNavigation: false,
+                toolbarSettings: {
+                    showToolbar: true,
+                    toolbarItems:["search","edit","update","cancel"]
+                },
+                columns: [
+                            { field: "Id", headerText: "Id", headerTextAlign: "center", textAlign : "center", visible: false, isPrimaryKey: true },
+                            { field: "Alias", headerText: "Nombre", headerTextAlign: "center", textAlign : "center", },
+                            {
+                                field: "MailAccount", headerText: "Cuenta de Correo", width: "13%",
+                                commands:
+                                [{
+                                    type: "details",
+                                    buttonOptions: {
+                                        contentType: "imageonly",
+                                        prefixIcon: "e-icon e-settings",
+                                        width: "30px",  height: "22px",
+                                        size: "normal",
+                                        click: function (args) {
+                                            var mailAccount= $("#GridAsdaq").ejGrid("getSelectedRecords")[0].MailAccountConfiguration;
+                                            createDialogMailAccount(mailAccount);
+                                        }
+                                    },
+                                }],
+                                isUnbound: true,
+                                textAlign: ej.TextAlign.Center
+                            },
+                            {
+                                field: "Reconfigure", headerText: " ",
+                                commands:
+                                [
+                                    {
+                                        type: "details",
+                                        buttonOptions: {
+                                            htmlAttributes: { id: "btnReconfigure" },
+                                            width: "25%",
+                                            text: "reconfigurar",
+                                            showRoundedCorner: true,
+                                            size: "normal",
+                                            click: "_onClickReconfigure"
+                                        },
+                                    }
+                                ],
+                                isUnbound: true,
+                                textAlign: ej.TextAlign.Center
+                            },
+                ],
+                showStackedHeader: true,
+                stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Asdaq", column: "Alias,MailAccount,Reconfigure" }] }],
+                toolbarClick: "onToolBarClick_Asdaq",
+                rowSelected: function (args) {
+                    // Data de Asdaq seleccionado
+                    _asdaqSelected= ej.DataManager(asdaq).executeLocal(ej.Query().where("Id","equal",args.data.Id,false))[0];
+                    //_niDevices= args.data.NiDevices;
+                    var devices= args.data.NiDevices;
+                    _asdaqId = args.data.Id;
+                    _aconditionersCache = $.extend(true,[],args.data.Aconditioners);
+                    _DevicesCache= $.extend(true,[],devices);
+
+                    // Carga todos los Acondiotioner relacionados a un Asdaq seleccionado para el childgrid de canales de su columna "Canal Aconditioner"
+                    _dsAconditioners = getAconditionersType(args.data.Aconditioners);
+
+                    if ($("#GridNiDevices")[0].className != "")
+                        $("#GridNiDevices").ejGrid("destroy");
+
+                    CreateGridNiDevices(devices);
+
+                    if ($("#gridAconditioners")[0].className != "")
+                        $("#gridAconditioners").ejGrid("destroy");
+
+                    CreateGridAconditioners(_aconditionersType, args.data.Aconditioners);
+                },
+                actionComplete: function (args) {
+                    if(args.requestType == "paging"){
+                        this.selectRows(0);
+                    }
+                    //else if (args.requestType == "searching") {
+                    //    this.selectRows(0);
+                    //}
+                }
+            });
+        }
+
+        function onToolBarClick_Asdaq(args) {
+            switch(args.itemName){
+                // Actualiza el nombre y la cuenta de correo de un Asdaq
+                case "Actualizar":
+                    var _asdaq = $("#GridAsdaq").data("ejGrid").model.selectedRecords[0];
+                    _asdaq.Alias= $("#GridAsdaqAlias").val();
+
+                    $.ajax({
+                        url: "UpdateAliasAndMailAccountAsdaq",
+                        method: "POST",
+                        data:  { asdaq : _asdaq },
+                        success: function (response) {
+                            popUp("success","Se actualizó correctamente " + _asdaq.Alias);
+                            // Deshabilita el icono de actualizar del grid Asdaq
+                            $("#GridAsdaq_toolbarItems").ejToolbar("disableItem", $("#GridAsdaq_update"));
+                        },
+                        error: function (jqXHR, textStatus) {
+                            popUp("error","A ocurrido un error. Intente nuevamente");
+                        }
+                    });
+                    break;
+            }
+        }
+
+        // Retorna el dataSource de Aconditioners que se va a cargar en la columna "Canal Aconditioner" de canales Asdaq
+        function getAconditionersType(acon) {
+            var data =[{ value: "0", text: "Ninguno" }];
+            if (acon) {
+                for (var a = 0; a < acon.length; a++) {
+                    if (acon[a].AconChannels) {
+                        for(var ch = 0; ch < acon[a].AconChannels.length; ch++){
+                            var aconType = ej.DataManager(_aconditionersType).executeLocal(ej.Query().where("Id", "equal", acon[a].AconditionerTypeId, false));
+                            if (aconType.length > 0) {
+                                data.push({
+                                    value: acon[a].Serial + "-" + acon[a].AconChannels[ch].Number,
+                                    text: aconType[0].Reference + "-"+ acon[a].Serial + "/ch"+acon[a].AconChannels[ch].Number,
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+            return data;
+        }
+
+        function CreateGridAconditioners(aconditionersType,aconditioners) {
+            var listReference =[];
+            for (var a = 0; a < aconditionersType.length; a++) {
+                listReference.push({
+                    value:aconditionersType[a].Id,
+                    text: aconditionersType[a].Name + "-" + aconditionersType[a].Reference
+                });
+            }
+
+            $("#gridAconditioners").ejGrid({
+                dataSource: aconditioners,
+                detailsTemplate: "#cgAconditioners",
+                locale: "es-ES",
+                editSettings: { allowEditing: true,allowAdding: true, editMode: "normal", allowDeleting: true, showDeleteConfirmDialog:true },
+                toolbarSettings: {
+                    showToolbar: true,
+                    toolbarItems:["add","delete","cancel"],
+                    customToolbarItems:[ { templateID:"#Guardar" } ]
+                    //customToolbarItems:[ { templateID:"#Cancelar" } , { templateID:"#Guardar" } ]
+                },
+                toolbarClick: "onToolBarClick_Aconditioners",
+                isResponsive: true,
+                enableResponsiveRow: true,
+                allowSorting: true,
+                allowPaging: true,
+                pageSettings: { pageSize: 5 },
+                load: function (args) {
+                    var data = args.model.dataSource;// dataSource Aconditioners
+                    // Carga los "Id" temporales para cada Aconditioner que se liste en el Grid y evite errores al editarlos
+                    if (data) {
+                        for (var a = 0; a < data.length; a++) {
+                            data[a].Id = a;
+                        }
+                    }
+                },
+                showStackedHeader: true,
+                stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "A-Conditioners", column: "Id,Serial,AconditionerTypeId,Name,Description" }] }],
+                columns: [
+                              { field: "Id", headerText: "Id", width: 10,  headerTextAlign: "center", textAlign : "center", allowEditing: false, isPrimaryKey: true, visible:false },
+                              { field: "Serial", headerText: "Serial", width: 80, headerTextAlign: "center", textAlign : "center"},
+                              { field: "AconditionerTypeId", headerText: "Referencia", width: 80, headerTextAlign: "center", textAlign : "center", allowEditing: true, editType: "dropdownedit", dataSource:listReference, foreignKeyField: "value", foreignKeyValue: "text", },
+                              { field: "Name", headerText: "Nombre", width: 100,  headerTextAlign: "center", textAlign : "center", allowEditing: true,},
+                              { field: "Description", headerText: "Descripción", width: 120, headerTextAlign: "center", textAlign : "center" },
+                ],
+                actionBegin: function (args) {
+                    if (args.requestType == "save") {
+                        // Valida que antes de guardar un Aconditioner no exista un Serial igual
+                        var data= args.model.dataSource;
+                        var acon= ej.DataManager(data).executeLocal(ej.Query().where("Serial", "equal", args.data.Serial, false));
+                        if (args.data.Id == null) {
+                            if (acon.length > 0) {
+                                popUp("error","No pueden existir dos seriales iguales!");
+                                args.cancel = true;
+                                return false;
+                            }
+                        }else{
+                            if (acon.length >= 2) {
+                                popUp("error","No pueden existir dos seriales iguales!");
+                                args.cancel = true;
+                                return false;
+                            }
+                        }
+
+                        // Valida que todos los campos no esten vacios
+                        if ([args.data.AconditionerTypeId, args.data.Name, args.data.Serial, args.data.Description].includes(null)) {
+                            popUp("error","Todos los campos son obligatorios");
+                            args.cancel = true;
+                        }
+                    }
+                },
+                actionComplete: function (args) {
+                    //if (args.requestType == "beginedit") {
+                    //    $("#gridAconditionersAconditionerTypeId").ejDropDownList("disable");
+                    //}else
+                    if (args.requestType == "add") {
+                        $("#gridAconditionersAconditionerTypeId").ejDropDownList("enable");
+                    }
+
+                    if (["beginedit","add"].includes(args.requestType)) {
+                        $('#gridAconditioners_Guardar').addClass("e-disable"); // Des-habilita el boton "Guardar" hasta que termine el proceso de edición o agregación
+
+                        $('#gridAconditionersAconditionerTypeId').ejDropDownList({
+                            select: function (args) {
+                                //var serial= $('#gridAconditionersSerial').ejNumericTextbox("getValue");
+                                var serial= $("#gridAconditionersSerial")[0].value;
+                                $('#gridAconditionersName').val(args.text + "-" + serial);
+                            }
+                        });
+                    }else{
+                        $('#gridAconditioners_Guardar').removeClass("e-disable");
+                    }
+
+                    if (args.requestType == "save") {
+                        // Al agregar un nuevo Aconditioner creamos el número de canales que tendrá de acuerdo a la referencia seleccionada
+                        if (args.data.Id == null ) {
+                            args.data.Id = args.model.dataSource.length-1;
+                            var channels = ej.DataManager(_aconditionersType).executeLocal(ej.Query().where("Id", "equal", args.data.AconditionerTypeId, false))[0].Channels;
+                            args.data.AconChannels= channels;
+                        }
+                    }
+                    else if (args.requestType == "delete") {
+                        var acon= $("#GridAsdaq").ejGrid("getSelectedRecords")[0].Aconditioners;
+                        ej.DataManager(acon).remove("Serial", args.data.Serial, acon);
+
+                        var dataAcon= $("#gridAconditioners").data("ejGrid").model.dataSource;
+                        var devices= $("#GridNiDevices").data("ejGrid").model.dataSource;
+
+                        $.ajax({
+                            url: "DeleteAconditionerBySerial",
+                            method: "POST",
+                            data:  { asdaqId: _asdaqId, serial: args.data.Serial, niDevices: devices },
+                            success: function (response) {
+                                //var asdaq=$("#GridAsdaq").data("ejGrid").model.dataSource;
+                                $("#GridAsdaq").ejGrid("getSelectedRecords")[0].Aconditioners= dataAcon;
+                                _asdaqSelected.Aconditioners = dataAcon;
+                                //$("#GridAsdaq").ejGrid("refreshContent", true);
+
+                                for (var d = 0; d < devices.length; d++) {
+                                    for (var ch = 0; ch < devices[d].AiChannels.length; ch++) {
+                                        if (devices[d].AiChannels[ch].SerialAcon == args.data.Serial) {
+                                            devices[d].AiChannels[ch].SerialAcon = null;
+                                            devices[d].AiChannels[ch].AconChannel = null;
+                                            devices[d].AiChannels[ch].Acon =null;
+                                        }
+                                    }
+                                }
+                                $("#GridNiDevices").ejGrid("refreshContent", true);
+                                _DevicesCache= $.extend(true,[],devices); //
+
+                                popUp("success","Aconditioner eliminado correctamente!!!");
+                                //// Variables globales se ponen nuevamente vacias
+                                //_dto =[];
+                                //_copyAiChannels = [];
+                            },
+                            error: function (jqXHR, textStatus) {
+                                popUp("error","Error al eliminar. Intente nuevamente!!!");
+                            },
+                        });
+                    }
+                },
+                detailsDataBound: function (args){
+                    var dsAconChannels= args.data["AconChannels"];
+
+                    args.detailsElement.find("#detailGridAconditioner").ejGrid({
+                        dataSource: dsAconChannels,
+                        locale: "es-ES",
+                        editSettings: { allowEditing: true, editMode: "normal" },
+                        toolbarSettings: { showToolbar: true, toolbarItems: ["update","edit","cancel"], },
+                        isResponsive: true,
+                        enableResponsiveRow: true,
+                        allowPaging: false,
+                        //pageSettings:{ pageSize: 32 },
+                        columns: [
+                          { field: "Number", headerText: 'Canal', headerTextAlign: "center", textAlign : "center", isPrimaryKey: true },
+                          { field: "Gain", headerText: "Ganancia", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 3 }, },//format:"{0:N}"
+                          { field: "Displacement", headerText: 'Desplazamiento', headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 3 } },
+                        ],
+                        showStackedHeader: true,
+                        stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Canales", column: "Number,Gain,Displacement" }] }],
+                        actionBegin: function (args) {
+                            if (args.requestType == "save") {
+                                if ([args.data.Gain, args.data.Displacement].includes(null)) {
+                                    popUp("error","Todos los campos son obligatorios");
+                                    args.cancel = true;
+                                }
+                            }
+                        },
+                        actionComplete: function (args) {
+                            // Nos indica si hubieron cambios en la Ganancia o Desplazamiento de un canal Aconditioner que afecte los cálculos M y B de un punto de medición, pero si el punto ya está asociado con un canal Asdaq
+                            if (args.requestType == "save") {
+                                var devices= _asdaqSelected.NiDevices;
+                                // Obtenemos el serial del Aconditioner que está como un Id en el template que crea los childGrid's.
+                                var serial = $(this._id).parent().prevObject.prevObject[0].activeElement.parentElement.id.split('_')[1];
+                                for (var d = 0; d < devices.length; d++) {
+                                    var channelDevice= ej.DataManager(devices[d].AiChannels).executeLocal(ej.Query().where(
+                                        ej.Predicate("SerialAcon", "equal", serial, true).and("MdVariableId","notequal", null,true).and("AconChannel","equal", args.data.Number,true)));
+
+                                    if (channelDevice.length > 0) {
+                                        var exist = ej.DataManager(_pointsWithAcon).executeLocal(ej.Query().where("MdVariableId","equal",channelDevice[0].MdVariableId,false));
+                                        if (exist.length > 0) {
+                                            ej.DataManager(_pointsWithAcon).update("MdVariableId",
+                                                { MdVariableId: channelDevice[0].MdVariableId,
+                                                    Gain: args.data.Gain.toString().replace('.', ','),
+                                                    Displacement:args.data.Displacement.toString().replace('.', ',') },
+                                                _pointsWithAcon);
+                                        }
+                                        else{
+                                            _pointsWithAcon.push({
+                                                MdVariableId: channelDevice[0].MdVariableId,
+                                                Gain: args.data.Gain.toString().replace('.', ','),
+                                                Displacement: args.data.Displacement.toString().replace('.', ','),
+                                                Recalculate: false,
+                                                Serial: serial,
+                                                Channel: args.data.Number
+                                            });
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    });
+                },
+            });
+        }
+
+        function onToolBarClick_Aconditioners(args) {
+            switch(args.itemName){
+                case "Guardar":
+                    // Antes de guardar los cambios debemos recorrer todos los Aconditioners para reemplazar el punto por coma en las propiedad Gain y Displacement
+                    // para que lleguen al servidor como valor decimal si lo son.
+                    var dataAcon = $("#gridAconditioners").data("ejGrid").model.dataSource;
+                    for (var d = 0; d < dataAcon.length; d++) {
+                        for (var a = 0; a < dataAcon[d].AconChannels.length; a++){
+                            dataAcon[d].AconChannels[a].Gain = dataAcon[d].AconChannels[a].Gain.toString().replace('.', ',');
+                            dataAcon[d].AconChannels[a].Displacement = dataAcon[d].AconChannels[a].Displacement.toString().replace('.', ',');
+                        }
+                    }
+
+                    $.ajax({
+                        url: "UpdateAconditionerByAsdaq",
+                        method: "POST",
+                        data:  { asdaqId: _asdaqId, aconditioners: dataAcon, mdVariablesToUpdate: _pointsWithAcon },
+                        success: function (response) {
+                            // Actualizamos el dataSource del grid Asdaq en su propiedad Aconditioners
+                            $("#GridAsdaq").ejGrid("getSelectedRecords")[0].Aconditioners = dataAcon;
+                            _asdaqSelected.Aconditioners= dataAcon;
+                            //ej.DataManager(asdaq).executeLocal(ej.Query().where("Id","equal",_asdaqId,false))[0].Aconditioners = data;
+
+                            _dsAconditioners = getAconditionersType(dataAcon);
+                            // Actualizamos el dataSource del campo "Canal Aconditioner" del childGrid de canales Asdaq y luego refrescamos el grid de dispositivos de adquisición.
+                            var data = $("#detailGridDevice").data("ejGrid");
+                            
+                            if (data !== undefined) {
+                                var columnAcon = data.model.columns[4];
+                                columnAcon.dataSource = _dsAconditioners;
+                                data.columns(columnAcon);
+                            }
+                            //var columnAcon=$("#detailGridDevice").data("ejGrid").model.columns[4];
+                            //columnAcon.dataSource = _dsAconditioners;
+                            //$("#detailGridDevice").data("ejGrid").model.columns[4].dataSource= _dsAconditioners;
+                            //.refreshContent();
+
+                            // Recorremos la variable global "_dto" para ver si debemos actualizar los valor de ganancia y displazamiento.
+                            for (var d = 0; d < _dto.length; d++) {
+                                var aconditioner = ej.DataManager(dataAcon).executeLocal(ej.Query().where("Serial","equal",_dto[d].Serial,false));
+                                if (aconditioner.length > 0) {
+                                    var channel= ej.DataManager(aconditioner[0].AconChannels).executeLocal(ej.Query().where("Number","equal",_dto[d].Channel,false));
+                                    if (channel.length > 0) {
+                                        _dto[d].Gain= channel[0].Gain;
+                                        _dto[d].Displacement = channel[0].Displacement;
+                                    }
+                                }
+                            }
+
+                            popUp("success","Datos guardados correctamente!!!");
+                            _pointsWithAcon = [];
+                            //_DevicesCache= $.extend(true,[],dataNiDevice);
+                        },
+                        error: function (jqXHR, textStatus) {
+                            popUp("error","Error al actualizar. Intente nuevamente!!!");
+                        },
+                    });
+                    break;
+            }
+        }
+
+        function CreateGridNiDevices(niDevices) {
+            //Grid NiDevices
+            $("#GridNiDevices").ejGrid({                
+                dataSource: niDevices,
+                detailsTemplate: "#cgDevices",
+                locale: "es-ES",
+                //selectedRowIndex: 0,
+                editSettings: { allowEditing: true,allowAdding: true, editMode: ej.Grid.EditMode.Normal },
+                toolbarSettings: {
+                    showToolbar: true,
+                    customToolbarItems:[ { templateID:"#Cancelar" } , { templateID:"#Guardar" } ]
+                },
+                toolbarClick: "onToolBarClick_NiDevices",
+                isResponsive: true,
+                enableResponsiveRow: true,
+                allowSorting: true,
+                allowPaging: false,
+                allowTextWrap: true,
+                textWrapSettings:{ wrapMode: "header" },
+                //pageSettings:{ pageSize: 10},
+                showStackedHeader: true,
+                stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Dispositivos de Adquisición", column: "Name,ProductCategory,SampleRate,SamplesToRead,TerminalConfiguration,FrecuencyRange,NumberOfLines,SamplingTime,FrecuencyDelta" }] }],
+                columns: [
+                              { field: "Name", headerText: "Nombre", width: "12%",  headerTextAlign: "center", textAlign : "center", allowEditing: false, isPrimaryKey: true },
+                              { field: "ProductCategory", headerText: "Categoria", width: "3%", headerTextAlign: "center", textAlign : "center", allowEditing: false, visible: false },
+                              { field: "FrecuencyRange", headerText: "Rango de Frecuencia", width: "10%", headerTextAlign: "center", textAlign : "center", editType: "dropdownedit",  foreignKeyField: "value", foreignKeyValue: "text", },
+                              { field: "NumberOfLines", headerText: "Número de Líneas", width: "10%", headerTextAlign: "center", textAlign : "center", editType: "dropdownedit", foreignKeyField: "value", foreignKeyValue: "text", },
+                              { field: "FrecuencyDelta", headerText: "&Delta;f", width: "5%", headerTextAlign: "center", textAlign : "center", editType: "numericedit", editParams: { decimalPlaces: 2}, allowEditing: false },
+                              { field: "SamplingTime", headerText: "Tiempo de Muestreo", width: "10%", headerTextAlign: "center", textAlign : "center", editType: "numericedit", editParams: { decimalPlaces: 2}, allowEditing: false },
+                              { field: "SampleRate", headerText: "Frecuencia de Muestreo", width: "10%", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, allowEditing: false },
+                              { field: "SamplesToRead", headerText: "Número de Muestras", width: "10%", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, allowEditing: false },
+                              { field: "TerminalConfiguration", headerText: "Configuración Terminal", width: "10%", headerTextAlign: "center", textAlign : "center", allowEditing: true, visible:true, editType: "dropdownedit", dataSource:_terminalConfiguration, foreignKeyField: "value", foreignKeyValue: "text",},
+                ],
+                actionBegin: function (args) {
+                    if (args.requestType == "save") {
+                        if ([args.data.SampleRate, args.data.SamplesToRead, args.data.TerminalConfiguration].includes(null)) {
+                            popUp("error","Todos los campos son obligatorios");
+                            args.cancel = true;
+                        }
+
+                        if (args.data.FrecuencyRange == 0 || (args.data.NumberOfLines == 0 || args.data.NumberOfLines == null)) {
+                            popUp("error","Valor(es) incorrecto(s)!");
+                            args.cancel= true;
+                        }
+                    }
+                },
+                actionComplete: function (args) {
+                    if (["beginedit","add"].includes(args.requestType)) {
+                        $('#GridNiDevices_Guardar').addClass("e-disable"); // Des-habilita el boton "Guardar" hasta que termine el proceso de edición o agregación
+                    }else{
+                        $('#GridNiDevices_Guardar').removeClass("e-disable");
+                    }
+
+                    if (args.requestType == "beginedit") {
+
+                        var ctc = args.model.selectedRecords[0].CompatibleTerminalConfigurations;
+                        var items = $('#GridNiDevicesTerminalConfiguration').ejDropDownList("getListData");
+                        for (var t = 0; t < items.length; t++) {
+                            var index = ctc.indexOf(items[t].value);
+                            if (index == -1)
+                                $('#GridNiDevicesTerminalConfiguration').ejDropDownList("disableItemsByIndices", t);
+                            else
+                                $('#GridNiDevicesTerminalConfiguration').ejDropDownList("enableItemsByIndices", t);
+                        }
+
+                        //var pt = args.model.selectedRecords[0].ProductType.substr(-4);
+                        //var pt = args.model.selectedRecords[0].ProductType.split(" ")[1];
+                        var pt = getProductType(args.model.selectedRecords[0].ProductType);
+                        var fm = args.model.selectedRecords[0].SampleRate; //Frecuencia de muestreo
+
+                        var nol = args.model.selectedRecords[0].NumberOfLines; // Número de líneas
+                        var fr = args.model.selectedRecords[0].FrecuencyRange; // Rango de frecuencia
+                        var minfr,maxfr;
+                        _dsReferencesNI = new ReferencesNI().GetByNI(pt);
+
+                        // Si el módulo está con una tarjeta 9205 se cálcula los tipos de rango de frecuencia que pueda tener dependiendo a canales relacionados que tenga.
+                        if (pt == "9205") {
+                            var channels = args.model.selectedRecords[0].AiChannels;
+                            var numberChannels= ej.DataManager(channels).executeLocal(ej.Query().where("MdVariableId","notequal",null,false)).length;
+
+                            if (numberChannels == 0) {
+                                numberChannels = 1;
+                            }
+
+                            var max_fr = Math.round(250000 / numberChannels / 2);
+                            for (var i = 100; i <= max_fr; i*=2) {
+                                _dsReferencesNI.ranges.push({ text: i, value: i });
+                            }
+
+                            minfr = _dsReferencesNI.ranges[1].value;
+                            maxfr = max_fr;
+
+                        } else {
+                            minfr = _dsReferencesNI.ranges[1].value;
+                            maxfr = _dsReferencesNI.ranges[_dsReferencesNI.ranges.length-1].value;
+                        }
+
+                        var existFr = ej.DataManager(_dsReferencesNI.ranges).executeLocal(ej.Query().where("value", "equal", fr, false)).length;
+                        if (existFr == 0) {
+                            _dsReferencesNI.ranges.push({ text: fr, value: fr});
+                        }
+
+                        $('#GridNiDevicesFrecuencyRange').ejDropDownList({
+                            dataSource: ej.DataManager(_dsReferencesNI.ranges),
+                            value: fr,
+                            change:function (args) {
+                                if (args.value == "0") {
+                                    $('#GridNiDevicesNumberOfLines').ejDropDownList("disable");
+                                    if (isOpened)
+                                        createEjDialogOtherValue("Rango de Frecuencia", minfr, maxfr,"fr", pt);
+                                }
+                                else{
+                                    toListNumberOfLines(args.value, nol, "select", pt);
+                                    $('#GridNiDevicesNumberOfLines').ejDropDownList("enable");
+                                }
+                            }
+                        });
+
+                        $('#GridNiDevicesNumberOfLines').ejDropDownList({
+                            //value: exist ? nol : null,
+                            //selectedIndex: !exist ? 0 : null,
+                            change:function (args) {
+                                if (args.value == "0") {
+                                    if (isOpened){
+                                        var fr = $('#GridNiDevicesFrecuencyRange').ejDropDownList("getSelectedValue");
+                                        createEjDialogOtherValue("Número de Líneas", (fr * 0.4), (fr * 4), "nol", pt);
+                                    }
+                                }
+                            },
+                        });
+
+                        toListNumberOfLines(fr, nol, "beginedit", pt);
+                        isOpened = true;
+                    } else if (args.requestType == "save") {
+                        var data = args.model.selectedRecords[0];
+                        //var pt = data.ProductType.substr(-4);
+                        //var pt = data.ProductType.split(" ")[1]; 
+                        var pt = getProductType(data.ProductType);
+                        var toSave = true;
+
+                        if (pt == "9205") {
+                            var nRelatedPoints= ej.DataManager(data.AiChannels).executeLocal(ej.Query().where("MdVariableId","notequal",null,false)).length;
+
+                            var nChannelsAllowed= parseInt( 250000 / (data.FrecuencyRange * 2));
+                            (nChannelsAllowed >= 32) ? (nChannelsAllowed = 32): nChannelsAllowed;
+
+                            if (nRelatedPoints > nChannelsAllowed) {
+                                var answer = confirm("El rango de frecuencia es mayor al número de canales relacionados. Este módulo solo puede soportar "+ nChannelsAllowed +". Desea recalcular sus valores ?");
+
+                                if (answer) {
+                                    var _fr = Math.round( 250000 / nRelatedPoints / 2 );
+                                    var _nl =  Math.round( _fr / data.FrecuencyDelta );
+                                    data.FrecuencyRange= _fr;
+                                    data.NumberOfLines= _nl;
+                                } else {
+                                    toSave = false;
+                                    args.cancel = true;
+                                }
+                            }
+                        }
+
+                        if (toSave) {
+                            var _fr =  data.FrecuencyRange;
+                            var _nl =  data.NumberOfLines;
+                            // Frecuencia de muestreo
+                            var fm = _fr * 2;
+                            if ( pt != "9205") {
+                                var sampleRate = ej.DataManager(_dsReferencesNI.fs).executeLocal(ej.Query().where("value", "greaterThanOrEqual", fm, false))[0];
+                                data.SampleRate = sampleRate.value;
+                            } else {
+                                data.SampleRate= fm;
+                            }
+
+                            data.FrecuencyDelta = (_fr / _nl).toFixed(2);
+                            var st= _nl / _fr;
+                            data.SamplingTime = st.toFixed(2);// (_nl / _fr).toFixed(2);
+                            data.SamplesToRead = Math.round(data.SampleRate * st);
+                            //this.updateRecord("Name",data);
+
+                            // Si el ProductType es diferente al 9205 actualiza todos los módulos que compartan la misma NiCompactDaq
+                            if ( pt != "9205") {
+                                var name = data.Name.substr(0,data.Name.length-1);
+                                var dataset = ej.DataManager(args.model.dataSource).executeLocal(ej.Query().where("Name","contains", name,false));
+                                for (var i = 0; i < dataset.length; i++) {
+                                    if (data.Name != dataset[i].Name) {
+                                        dataset[i].FrecuencyRange= data.FrecuencyRange;
+                                        dataset[i].NumberOfLines=  data.NumberOfLines;
+                                        dataset[i].SampleRate =    data.SampleRate;
+                                        dataset[i].FrecuencyDelta= data.FrecuencyDelta;
+                                        dataset[i].SamplingTime =  data.SamplingTime;
+                                        dataset[i].SamplesToRead=  data.SamplesToRead;
+                                        //this.updateRecord("Name",dataset[i]);
+                                    }
+                                }
+                            }
+
+                            this.refreshContent();
+                        }
+                    }
+                },
+                detailsExpand: function (args) {
+                    var exist= ej.DataManager(_copyAiChannels).executeLocal(ej.Query().where("Name", "equal", args.masterData.Name, false));
+                    if (exist.length == 0) {
+                        _copyAiChannels.push({
+                            Name:args.masterData.Name,
+                            AiChannels: JSON.parse(JSON.stringify(args.masterData.AiChannels)),
+                        });
+                    }
+                    //var element= args.detailsRow.context.lastElementChild;
+                    //var element= args.detailsRow[0].lastElementChild;//+
+                    //if (element) {
+                    //    // Bug de Syncfusion en ChildGrid's. Si existen dos o mas Grid's y ambos tienen childgrid's, sus Id's son iguales en la misma posición, por ello antes de crearse estos, su Id es seteado por uno diferente.
+                    //    //args.detailsRow.context.lastElementChild.firstChild.id += "_NiDevices";
+                    //    element.firstChild.id += "_NiDevices";
+                    //}
+                },
+                detailsDataBound: function (args){
+                    var dsChannels= args.data["AiChannels"];
+
+                    for (var i = 0; i < dsChannels.length; i++) {
+                        // Carga el canal Aconditioner si existe
+                        if (dsChannels[i].SerialAcon)
+                            dsChannels[i].Acon= dsChannels[i].SerialAcon + "-" + dsChannels[i].AconChannel;
+
+                        // Carga el punto de medición si está relacionado a un canal, de lo contrario pone un placeholder.
+                        if (!dsChannels[i].MdVariableId)
+                            dsChannels[i].MdVariableTag= "[Arrastre aquí...]";
+                    }
+                    //var childGrid= "cg_"+args.data.Name;
+                    //$("#detailGridDevice").append("<div id="+ childGrid +"></div>");
+                    //$('#detailGridDevice').attr('id', args.data.Name);
+                    //$("#childGrid_"+args.data.Name).find("#detailGridDevice").ejGrid({
+                    args.detailsElement.find("#detailGridDevice").ejGrid({
+                        allowRowDragAndDrop: true,
+                        rowDropSettings: { dropTargetID: "#measurementPoints" },
+                        dataSource: dsChannels,
+                        locale: "es-ES",
+                        editSettings: { allowEditing: true, editMode: "normal" },
+                        toolbarSettings: {
+                            showToolbar: true,
+                            toolbarItems:["edit","cancel"],
+                            customToolbarItems:[ { templateID:"#Eliminar" } ]
+                        },
+                        toolbarClick: "onToolBarClick_AiChannels",
+                        isResponsive: true,
+                        enableResponsiveRow: true,
+                        allowPaging: false,
+                        //allowSelection: true,
+                        columns: [
+                          { field: "Disassociate", headerText: "", headerTextAlign: "center", textAlign : "center", width: "3%", editType: "booleanedit", type:"boolean"},
+                          { field: "MdVariableId", headerText: 'MdVar Id', headerTextAlign: "center", textAlign : "center", visible: false, isPrimaryKey: true },
+                          { field: "MdVariableTag", headerText: "Punto de Medición", headerTextAlign: "center", textAlign : "center", allowEditing: false },
+                          { field: "Name", headerText: 'Nombre', headerTextAlign: "center", textAlign : "center", allowEditing: false, isPrimaryKey: true },
+                          { field: "Acon", headerText: "Canal Aconditioner", editType:"dropdownedit", headerTextAlign: "center", textAlign : "center", dataSource:_dsAconditioners, foreignKeyField: "value", foreignKeyValue: "text",},
+                          { field: "ExcitationIEPE", headerText: 'Excitación IEPE', width: "13%", headerTextAlign: "center", textAlign : "center", editType: "booleanedit", allowEditing: true },
+                          { field: "Enabled", headerText: 'Habilitado', width: "10%", headerTextAlign: "center", textAlign : "center", editType: "booleanedit" },
+                        ],
+                        //{ field: "ByPassed", headerText: 'ByPassed', width: "10%", headerTextAlign: "center", editType: "booleanedit" },
+                        showStackedHeader: true,
+                        stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Canales", column: "Disassociate, MdVariableId, MdVariableTag, Name, Acon, Enabled, ExcitationIEPE" }] }],
+                        actionComplete: function (args) {
+                            // Agrega o actualiza el "_dto" al arrastrar un punto de medición a un canal Asdaq si existe previamente un canal Aconditioner
+                            if (args.requestType == "refresh") {
+                                if (_pointByToAssociate != null) {
+                                    var channelAsdaq = args.model.dataSource[_pointByToAssociate.Index];
+                                    if (channelAsdaq.SerialAcon != null && channelAsdaq.AconChannel != null) {
+                                        getAcconditioner({ MdVariableId: _pointByToAssociate.MdVarIdNew, AconChannel: channelAsdaq.AconChannel, SerialAcon: channelAsdaq.SerialAcon}, false, _asdaqId);
+                                    }
+                                    _pointByToAssociate = null;
+                                }
+                            }
+                                // Gestiona todos los Canales Asdaq que tengan punto de medición relacionado y que se les asocie o no un canal Aconditioner al momento de editarlo y posterior guardado en memoria
+                            else if (args.requestType == "save") {
+                                // Si la columna "Canal Aconditioner" no está seleccionado el item Ninguno actualiza el _dto si ya existe el punto o lo agrega en el
+                                if (args.data.Acon != "0" && args.data.Acon != null) {
+                                    var splitAcon= args.data.Acon.split('-');
+                                    // Actualiza su modelo
+                                    ej.DataManager(args.model.dataSource).update("Name", { Name: args.data.Name, SerialAcon: splitAcon[0], AconChannel: splitAcon[1] }, args.model.dataSource);
+                                }
+                                else if (args.data.Acon == "0") {
+                                    ej.DataManager(args.model.dataSource).update("Name", { Name: args.data.Name, SerialAcon: null, AconChannel: null }, args.model.dataSource);
+                                }
+
+                                var indexChannel = args.selectedRow === undefined ? args.rowIndex : args.selectedRow; //new
+                                var nameDevice = args.data["Name"].split('/')[0]; //new
+
+                                var channelEdited = $("#"+this._id).data("ejGrid").model.dataSource[indexChannel];
+                                var channelOld = ej.DataManager(_copyAiChannels).executeLocal(ej.Query().where("Name","equal", nameDevice,false))[0].AiChannels[indexChannel];
+
+                                var _recalculate= true;
+                                if ((channelOld.AconChannel == null) && (channelOld.SerialAcon == null)) {
+                                    _recalculate = false;
+                                }
+
+                                if ((channelOld.AconChannel != channelEdited.AconChannel) || (channelOld.SerialAcon != channelEdited.SerialAcon)) {
+                                    if (!_recalculate) {
+                                        getAcconditioner(channelEdited, false, _asdaqId);
+                                    }
+                                    else{
+
+                                        if (channelOld.MdVariableId) {
+                                            getAcconditioner(channelOld, true, _asdaqId);
+                                        }
+
+                                        getAcconditioner(channelEdited, false, _asdaqId);
+                                    }
+                                }
+                                else if ((channelOld.AconChannel == channelEdited.AconChannel) && (channelOld.SerialAcon == channelEdited.SerialAcon)) {
+                                    if (!ej.isNullOrUndefined(channelOld.MdVariableId))   
+                                        ej.DataManager(_dto).remove("MdVariableId", channelOld.MdVariableId, _dto);
+                                }
+                                else if ((channelOld.AconChannel != null) && (channelOld.SerialAcon != null)) {
+                                    if ((channelEdited.AconChannel == null) && (channelEdited.SerialAcon == null)) {
+                                        getAcconditioner(channelOld, true, _asdaqId);
+                                    }
+                                }
+                            }
+                                // Antes de editar un canal, en la columna "Canal Aconditioner" verificamos cuales ya estan asociados a un canal para deshabilitarlos en el dropdownlist
+                            else if (args.requestType == "beginedit") {
+                                // Consulta y valida el valor de AICurrentExcitationValue a nivel de módulo Asdaq para marcar la casilla ExcitationIEPE
+                                var devices = $("#GridNiDevices").ejGrid("model.dataSource");
+                                var deviceName= args.rowData["Name"].split('/')[0];
+                                var aICurrentExcitationValue = ej.DataManager(devices).executeLocal(ej.Query().where("Name", "equal", deviceName, false))[0]["AICurrentExcitationValue"];
+                                aICurrentExcitationValue = parseFloat(aICurrentExcitationValue.toString().replace(',', '.'));
+
+                                // Si es PRX, RA ó Desplazamiento axial se deshabilita el checkbox de Excitación IEPE
+                                if ([1,4,9].includes(args.rowData["SensorTypeCode"]) || aICurrentExcitationValue <= 0) {
+                                    $("#"+this._id+"ExcitationIEPE").prop('disabled',true);
+                                }
+
+                                // Obtenemos todos los AiChannels de cada uno de los NiDevices que tenga el Asdaq seleccionado
+                                var aiChannels = [];
+                                var channelsAsdaq = ej.DataManager(devices).executeLocal(ej.Query().select("AiChannels"));
+                                for (var c = 0; c < channelsAsdaq.length; c++) {
+                                    aiChannels.pushArray(channelsAsdaq[c]);
+                                }
+
+                                var channels = ej.DataManager(aiChannels).executeLocal(ej.Query().where("SerialAcon","notEqual", null,false));
+                                //var channels = ej.DataManager(args.model.dataSource).executeLocal(ej.Query().where("SerialAcon","notEqual", null,false));
+                                var items = $('#' + this._id + 'Acon').ejDropDownList("getListData");
+
+                                for (var i = 0; i < items.length; i++){
+                                    var exist = ej.DataManager(channels).executeLocal(ej.Query().where("Acon","equal", items[i].value ,false))
+                                    if (exist.length > 0)
+                                        $('#' + this._id +'Acon').ejDropDownList("disableItemsByIndices", i);
+                                    else
+                                        $('#' + this._id +'Acon').ejDropDownList("enableItemsByIndices", i);
+                                }
+
+                                // * [1 ó 0] es por el orden de como están definidas las columnas y de acuerdo a la propiedad isPrimaryKey:true
+                                nameDevice = args.primaryKeyValue[1].split('/')[0]; // *
+                                idMdVarChannel = args.primaryKeyValue[0]; // *
+                                indexChannel = args.rowIndex;
+                            }
+                        },
+                        beginEdit: function (args) {
+                            // Si no hay punto de medición asociado en el canal no permite la edición de éste
+                            if (args.primaryKeyValue[0] == null)
+                                args.cancel= true;                            
+                        },
+                        recordClick: function (args) {
+                            // Estado del checkbox de la 1er o última columna de canales Asdaq
+                            var isChecked= $(args.cell).find(":checkbox").is(":checked");
+                            // 1er celda (checkbox) para des-relacionar punto de medición de un canal Asdaq
+                            if (args.cellIndex == 0) {
+
+                                if (args.data.MdVariableId) {
+                                    var name= args.data.Name;
+                                    // Actualiza la propiedad Disassociate dependiendo del estado del checkbox
+                                    ej.DataManager(args.model.dataSource).update("Name", { Name: name, Disassociate: isChecked }, args.model.dataSource);
+
+                                    // Añade todos los puntos de medición que se eliminaran de la relacion con un canal Asdaq para recalcular su M y B al valor original
+                                    if (args.data.MdVariableId != null && args.data.SerialAcon != null) {
+                                        // Lista de canales Asdaq sin ninguna modificacíon
+                                        var aiChannelsOld = ej.DataManager(_copyAiChannels).executeLocal(ej.Query().where("Name","equal", name.split('/')[0], false))[0].AiChannels
+                                        var exist = ej.DataManager(aiChannelsOld).executeLocal(ej.Query().where("MdVariableId", "equal", args.data.MdVariableId, false));
+
+                                        if (exist.length > 0) {
+                                            // Validamos que sólo exista un solo punto de medición con respecto a su Id
+                                            //var point = ej.DataManager(_pointsToRecalculate).executeLocal(ej.Query().where(
+                                            //        ej.Predicate("MdVariableId", "equal", args.data.MdVariableId, true).and("Recalculate", "equal", true, true)));
+
+                                            if (!isChecked) {
+                                                // Buscamos y eliminamos el punto de medición si el checkbox no está chequeado 
+                                                ej.DataManager(_pointsToRecalculate).remove("MdVariableId", args.data.MdVariableId, _pointsToRecalculate);
+                                            }else{
+        
+                                            //if (point.length == 0) {    
+                                                _pointsToRecalculate.push({
+                                                    AsdaqId: _asdaqId,
+                                                    MdVariableId: args.data.MdVariableId,
+                                                    SerialAcon: args.data.SerialAcon,
+                                                    AconChannel: args.data.AconChannel,
+                                                    Recalculate: true
+                                                });
+                                            //}
+                                            }
+
+                                        }
+                                    }
+                                }
+                                else {
+                                    // Si no existe punto relacionado no permite chekearlo
+                                    $(args.cell).find(":checkbox").prop('checked', false); 
+                                }
+                            }
+                            // Celda del checkbox para habilitar un canal Asdaq
+                            else if (args.cellIndex == 6) {
+                                var name= args.data.Name;
+                                // Actualiza la propiedad Enabled dependiendo del estado del checkbox
+                                ej.DataManager(args.model.dataSource).update("Name", { Name: name, Enabled: isChecked }, args.model.dataSource);
+                            }
+                        },
+                        queryCellInfo: function (args) {
+                            // Habilita todos los checkbox de las columnas "Habilitado y des-relacionar puntos de medición" en los canales Asdaq
+                            if (args.cell.cellIndex == 0 || args.cell.cellIndex == 6) {
+                                $(args.cell.children[0]).removeAttr('disabled');
+                            }
+
+                            //if (args.cell.cellIndex == 4) {
+                            //    args.column.dataSource = _dsAconditioners;
+                            //}
+                        },
+                        load: function(args){
+                            // Actualizamos el dataSource de la columna "Acon" para cuando esté en modo edición.
+                            var aconditioners= $("#gridAconditioners").ejGrid("model.dataSource");
+                            this.model.columns[4].dataSource = getAconditionersType(aconditioners);
+                            //this.columns(this.model.columns[4].dataSource);
+                        }
+                    });
+                },
+            });
+        }
+
+        function onToolBarClick_NiDevices(args) {
+            switch(args.itemName){
+                case "Cancelar":
+                    var _dataSource = args.gridModel.currentViewData;
+                    for (var i = 0; i < _DevicesCache.length; i++) {
+                        //_dataSource[i].Name= _DevicesCache[i].Name;
+                        //_dataSource[i].ProductCategory= _DevicesCache[i].ProductCategory;
+                        _dataSource[i].SampleRate= _DevicesCache[i].SampleRate;
+                        _dataSource[i].SamplesToRead= _DevicesCache[i].SamplesToRead;
+                        _dataSource[i].TerminalConfiguration= _DevicesCache[i].TerminalConfiguration;
+
+                        _dataSource[i].FrecuencyRange= _DevicesCache[i].FrecuencyRange;
+                        _dataSource[i].NumberOfLines= _DevicesCache[i].NumberOfLines;
+                        _dataSource[i].SamplingTime= _DevicesCache[i].SamplingTime;
+                        _dataSource[i].FrecuencyDelta= _DevicesCache[i].FrecuencyDelta;
+
+                        var aic = _DevicesCache[i].AiChannels;
+                        for (var j = 0; j < aic.length; j++)
+                        {
+                            _dataSource[i].AiChannels[j].Disassociate = aic[j].Disassociate;
+                            _dataSource[i].AiChannels[j].ByPassed = aic[j].ByPassed;
+                            _dataSource[i].AiChannels[j].Enabled = aic[j].Enabled;
+                            _dataSource[i].AiChannels[j].MdVariableId = aic[j].MdVariableId;
+                            _dataSource[i].AiChannels[j].MdVariableTag = aic[j].MdVariableTag;
+
+                            _dataSource[i].AiChannels[j].Acon = aic[j].Acon;
+                            _dataSource[i].AiChannels[j].AconChannel = aic[j].AconChannel;
+                            _dataSource[i].AiChannels[j].SerialAcon = aic[j].SerialAcon;
+
+                            _dataSource[i].AiChannels[j].SensorTypeCode = aic[j].SensorTypeCode;
+                            _dataSource[i].AiChannels[j].ExcitationIEPE = aic[j].ExcitationIEPE;
+                        }
+                    }
+                    $("#GridNiDevices").ejGrid("dataSource", _dataSource);
+                    _dto =[];
+                    break;
+                case "Guardar":
+                    var dataNiDevice=$("#GridNiDevices").ejGrid("getCurrentViewData");
+                    //$("#GridNiDevices").data("ejGrid").model.dataSource;
+                    for (var nd = 0; nd < dataNiDevice.length; nd++) {
+                        dataNiDevice[nd].AICurrentExcitationValue = dataNiDevice[nd].AICurrentExcitationValue.toString().replace('.', ',');
+                        dataNiDevice[nd].SampleRate = dataNiDevice[nd].SampleRate.toString().replace('.', ',');
+                        dataNiDevice[nd].FrecuencyRange = dataNiDevice[nd].FrecuencyRange.toString().replace('.', ',');
+                        dataNiDevice[nd].NumberOfLines = dataNiDevice[nd].NumberOfLines.toString().replace('.', ',');
+                        dataNiDevice[nd].SamplingTime = dataNiDevice[nd].SamplingTime.toString().replace('.', ',');
+                        dataNiDevice[nd].FrecuencyDelta = dataNiDevice[nd].FrecuencyDelta.toString().replace('.', ',');
+                    }
+
+                    //Obtenemos todos los puntos de medición del respectivo asdaq, los cuales seran actualizados sus parametros M y B.
+                    var mdVariablesToUpdateMB = ej.DataManager(_dto).executeLocal(ej.Query().where("AsdaqId","equal",_asdaqId,false));
+                    // Cambiamos los valores decimales de puntos a comas para que el servidor los tome como tal
+                    for (var m = 0; m < mdVariablesToUpdateMB.length; m++) {
+                        mdVariablesToUpdateMB[m].MdVariableId = mdVariablesToUpdateMB[m].MdVariableId.replace('/','');
+                        mdVariablesToUpdateMB[m].Gain = mdVariablesToUpdateMB[m].Gain.toString().replace('.', ',');
+                        mdVariablesToUpdateMB[m].Displacement = mdVariablesToUpdateMB[m].Displacement.toString().replace('.', ',');
+                    }
+
+                    $.ajax({
+                        url: "UpdateDevice",
+                        method: "POST",
+                        data:  { asdaqId: _asdaqId, devices: dataNiDevice, mdVariablesDto: mdVariablesToUpdateMB },
+                        success: function (response) {
+                            _asdaqSelected.NiDevices= dataNiDevice;
+                            _DevicesCache= $.extend(true,[],dataNiDevice);
+                            $("#GridNiDevices").ejGrid("refreshContent", true);
+                            popUp("success","Datos guardados correctamente.");
+                            // Variables globales se ponen nuevamente vacias
+                            _dto =[];
+                            _copyAiChannels = [];
+                        },
+                        error: function (jqXHR, textStatus) {
+                            popUp("error","A ocurrido un error. Intente nuevamente");
+                        },
+                    });
+                    break;
+            }
+        }
+
+        //Eliminacion de puntos de medición asociados a AiChannels
+        function onToolBarClick_AiChannels(args) {
+            switch(args.itemName){
+                case "Eliminar":
+                    var deviceName = $(this.element.parent()).attr('id');
+                    var dsDevices = $("#GridNiDevices").ejGrid("model.dataSource");
+                    var _device = ej.DataManager(dsDevices).executeLocal(ej.Query().where("Name", "equal", deviceName, false))[0];
+                    //var _device= args.gridModel.parentDetails.parentRowData;
+                    var pointsToRecalculateMB = [];
+                    var pointsToRecalculate = ej.DataManager(_pointsToRecalculate).executeLocal(ej.Query().where("AsdaqId", "equal", _asdaqId, false));
+                    var aconditioners = ej.DataManager(asdaq).executeLocal(ej.Query().where("Id","equal",_asdaqId,false))[0].Aconditioners;
+
+                    for (var p = 0; p < pointsToRecalculate.length; p++) {
+                        // Obtenemos todos los Aconditioners relacionados al Asdaq seleccionado
+                        var aconChannels = ej.DataManager(aconditioners).executeLocal(ej.Query().where("Serial","equal", pointsToRecalculate[p].SerialAcon,false))[0].AconChannels;
+                        var channel = ej.DataManager(aconChannels).executeLocal(ej.Query().where("Number","equal", pointsToRecalculate[p].AconChannel,false))[0];
+                        pointsToRecalculateMB.push({
+                            MdVariableId: pointsToRecalculate[p].MdVariableId,
+                            Gain: channel.Gain.toString().replace('.', ','),
+                            Displacement: channel.Displacement.toString().replace('.', ','),
+                            Recalculate: true,
+                        });
+                    }
+
+                    $.ajax({
+                        url: "DeleteRelationshipMdVariableWithAiChannelsAsdaq",
+                        method: "POST",
+                        data:  { asdaqId: _asdaqId, device: _device, mdVariablesDto: pointsToRecalculateMB },
+                        success: function (response) {
+                            var dataNiDevice= $("#GridNiDevices").ejGrid("getCurrentViewData");
+                            for (var d = 0; d < dataNiDevice.length; d++) {
+                                if (dataNiDevice[d].Name == _device.Name){
+                                    for (var i = 0; i < _device.AiChannels.length; i++) {
+                                        if (_device.AiChannels[i].Disassociate) {
+                                            _device.AiChannels[i].MdVariableId = null;
+                                            _device.AiChannels[i].MdVariableTag = "[Arrastre aquí...]";
+                                            _device.AiChannels[i].Disassociate = false;
+                                            _device.AiChannels[i].SensorTypeCode= 0;
+                                            _device.AiChannels[i].ExcitationIEPE= false;
+                                        }
+                                    }
+                                }
+                            }
+                            $("#GridNiDevices").ejGrid("dataSource", dataNiDevice);
+                            _pointsToRecalculate = [];
+                            popUp("success","Canal(es) desasociado(s) correctamente.");
+                        },
+                        error: function (jqXHR, textStatus) {
+                            popUp("error","A ocurrido un error. Intente nuevamente");
+                        },
+                    });
+                    break;
+            }
+        }
+
+        //Función para cronometrar un tiempo limite de 40 seg para reiniciar un Asdaq
+        function ReconfigurationTimeout(index) {
+            window["timeOut" + index] = setTimeout(function(){
+                _states[index] = false;
+            }, 40000);
+        };
+
+        //Boton que reinicia un Asdaq
+        function _onClickReconfigure(){
+            var _thisControl = $(this)[0];
+            var gridObj = $("#GridAsdaq").ejGrid("instance");
+            var dataAsdaq = gridObj.model.selectedRecords[0];
+            var _asdaq= { Id:dataAsdaq.Id, Reconfigure:true };
+            _index++;
+            _states[_index] = true;
+
+            $.ajax({
+                url:"Reconfigure",
+                method:"POST",
+                data: _asdaq,
+                success:function (response) {
+                    ReconfigurationTimeout(_index);
+                    poll(dataAsdaq.Alias, _thisControl, _index, _asdaqId);
+                },
+                error: function (jqXHR, textStatus) {
+                    popUp("error","Error general.");
+                },
+            });
+        }
+
+        function poll(alias,control,index, idAsdaq){
+            $.ajax({
+                url:"ShouldReconfigureAsdaq",
+                method:"GET",
+                data:{ asdaqId: idAsdaq },
+                beforeSend: function () {
+                    control._events[0][0][0].innerHTML="<i class='fa fa-spinner fa-pulse fa-2x'></i>";
+                },
+                success:function (response) {
+                    var restarted = !response;
+
+                    if(!_states[index]) {
+                        control._events[0][0][0].innerHTML = "reconfigurar";
+                        popUp("error","El dispositivo " + alias + " no responde!");
+                        _states[index]=true;
+                        return false;
+                    }
+
+                    if(!restarted){
+                        setTimeout(function () {
+                            poll(alias,control,index,idAsdaq);
+                        },2000);
+                    }
+                    else{
+                        control._events[0][0][0].innerHTML = "reconfigurar";
+                        clearTimeout(window["timeOut" + index]);
+                        popUp("success","Se reinició correctamente el Asdaq " + alias);
+                    }
+                },
+                error: function (jqXHR, textStatus) {
+                    popUp("error","Error general.");
+                },
+            });
+        };
+
+        function createDialogMailAccount(mailAccount) {
+            $("#formMailAccount").ejDialog({
+                title: "Cuenta de Correo Asdaq",
+                showOnInit: false,
+                actionButtons: ["close"],
+                enableAnimation: true,
+                width: "30%",
+                minWidth: "30%",
+                height: "45%",
+                //minHeight: "95%",
+                maxHeight: _heightWindow,
+                maxWidth: _widthWindow,
+                scrollSettings: { height: "41%" },
+                allowScrolling: true,
+                enableResize: true,
+                allowDraggable: true,
+                zIndex: 11000,
+                enableModal: true,
+                isResponsive: true,
+                showRoundedCorner: true,
+                animation: {
+                    show: { effect: "slide", duration: 500 },
+                    hide: { effect: "fade", duration: 500 }
+                },
+                open:function (args) {
+                    autoHeightEjDialog("#formMailAccount", _heightWindow);
+                },
+                beforeOpen: function (args) {
+                    var cloneMailAccount = clone(mailAccount);
+                    createControlsMailAccount(cloneMailAccount);
+
+                    $("#btnSaveMailAccount").click(function () {
+                        var asdaq = $("#GridAsdaq").ejGrid("getSelectedRecords")[0];
+                        asdaq.MailAccountConfiguration = {
+                            SmtpServer: $("#txtSmtpServer").val(),
+                            SmtpPort: $("#txtSmtpPort").ejNumericTextbox("getValue"),
+                            UserName: $("#txtUserNameMail").val(),
+                            Password: btoa($("#txtPasswordMail").val()),
+                            UseSsl: $("#chbUseSsl").ejCheckBox("isChecked"),
+                            FromAddress: $("#txtFromAddress").val(),
+                        };
+                        $("#formMailAccount").addClass('hidden');
+                        $("#formMailAccount").ejDialog("close");
+
+                        // Habilita el icono de actualizar del grid Asdaq
+                        $("#GridAsdaq_toolbarItems").ejToolbar("enableItem", $("#GridAsdaq_update"));
+                    });
+
+                    // Cierre y cancela el formulario "Cuenta de Correo" de un Asdaq
+                    $("#btnCancelMailAccount").click(function () {
+                        $("#formMailAccount").addClass('hidden');
+                        $("#formMailAccount").ejDialog("close");
+                        // Deshabilita el icono de actualizar del grid Asdaq
+                        $("#GridAsdaq_toolbarItems").ejToolbar("disableItem", $("#GridAsdaq_update"));
+                    });
+                },//Fin beforeOpen
+                close: function (args) {
+                    $("#btnSaveMailAccount").off("click"); // Necesario desasociar el evento
+                    $("#txtSmtpServer").ejMaskEdit("destroy");
+                    $("#txtSmtpPort").ejNumericTextbox("destroy");
+                    $("#txtUserNameMail").ejMaskEdit("destroy");
+                    //$("#txtPasswordMail").ejMaskEdit("destroy");
+                    $("#chbUseSsl").ejCheckBox("destroy");
+                    $("#txtFromAddress").ejMaskEdit("destroy");
+                    $("#formMailAccount").addClass('hidden');
+                },//Fin close
+            });
+
+            $("#formMailAccount").ejDialog("open");
+            $("#formMailAccount").removeClass('hidden');
+        }
+
+        function createControlsMailAccount(mailAccount) {
+            $("#txtSmtpServer").ejMaskEdit({
+                width: "100%",
+                inputMode: ej.InputMode.Text,
+                value: mailAccount != null ? mailAccount.SmtpServer : "",
+            });
+
+            $("#txtSmtpPort").ejNumericTextbox({
+                width: "100%",
+                inputMode: ej.InputMode.Text,
+                minValue: 0,
+                value: mailAccount != null ? mailAccount.SmtpPort : 25,
+            });
+
+            $("#txtUserNameMail").ejMaskEdit({
+                width: "100%",
+                inputMode: ej.InputMode.Text,
+                value: mailAccount != null ? mailAccount.UserName : "",
+            });
+
+            if (mailAccount) {
+                if (mailAccount.Password){
+                    mailAccount.Password = atob(mailAccount.Password);
+                }
+                else
+                    mailAccount.Password = "";
+            }
+
+            $("#txtPasswordMail").ejMaskEdit({
+                width: "100%",
+                inputMode: ej.InputMode.Password,
+                value: mailAccount != null ? mailAccount.Password : "",
+            });
+
+            $("#chbUseSsl").ejCheckBox({
+                size: "medium",
+                checked:  mailAccount != null ? mailAccount.UseSsl : false,
+            });
+
+            $("#txtFromAddress").ejMaskEdit({
+                width: "100%",
+                inputMode: ej.InputMode.Text,
+                value: mailAccount != null ? mailAccount.FromAddress : "",
+            });
+        }
+
+        // Obtiene todos los Aconditioner Type de base de datos para despues cargar y listar todos los canales Aconditioners perteneciente a un Asdaq previamente seleccionado
+        function GetAllAconditionerType() {
+            $.ajax({
+                url:"GetAllAconditionerType",
+                method:"GET",
+                data: {},
+                success:function (response) {
+                    _aconditionersType = response;
+
+                    for (var a = 0; a < asdaq.length; a++) {
+                        for (var i = 0; i < asdaq[a].NiDevices.length; i++) {
+                            for (var x = 0; x < asdaq[a].NiDevices[i].CompatibleTerminalConfigurations.length; x++) {
+                                // Le hacemos Trim() a cada palabra que contiene este Array para ser comparada
+                                asdaq[a].NiDevices[i].CompatibleTerminalConfigurations[x] = asdaq[a].NiDevices[i].CompatibleTerminalConfigurations[x].trim();
+                            }
+                        }
+                    }
+
+                    var dsAsdaq= JSON.parse(JSON.stringify(asdaq));
+                    CreateGridAsdaq(dsAsdaq);
+                },
+                error: function (jqXHR, textStatus) {
+                    popUp("error","Error al obtener A-ConditionersType");
+                },
+            });
+        }
+
+        // Codigo de apoyo
+        function EnableCheckboxes(idChildGrid) {
+            // Habilita todos los checkbox que permiten des-relacionar puntos de medición de un canal Asdaq
+            $($(idChildGrid + ".e-gridcontent table tbody")[0].children).each(function (ind,val){
+                var tr=this;
+                $(tr).children('td').each(function(i,v){
+                    if(i==0)
+                        $(this).find('input').removeAttr("disabled");
+                });
+            });
+        }
+
+        // Actualiza o agregama un Dto que indica el tipo de calculo que se le debe hacer a un punto de medición relacionado con un canal Asdaq y su respectivo Aconditioner
+        function getAcconditioner(channelAsdaq, recalculate, asdaqId) {
+            // Obtenemos todos los Aconditioners relacionados al Asdaq seleccionado para buscar la ganancia y displazamiento de un canal en especifico y realizar despues en el servidor el calculo de M y B de un punto de medición o varios cuando estos son editados
+            var aconditioners = ej.DataManager(asdaq).executeLocal(ej.Query().where("Id","equal",asdaqId,false))[0].Aconditioners;
+            var aconChannels = ej.DataManager(aconditioners).executeLocal(ej.Query().where("Serial","equal", channelAsdaq.SerialAcon, false));
+            if (aconChannels.length > 0) {
+                var channel = ej.DataManager(aconChannels[0].AconChannels).executeLocal(ej.Query().where("Number","equal", channelAsdaq.AconChannel, false));
+                if (channel.length > 0){
+
+                    var point = ej.DataManager(_dto).executeLocal(ej.Query().where(ej.Predicate("MdVariableId", "equal", channelAsdaq.MdVariableId, true).and("Recalculate", "equal", recalculate, true)));
+                    if (point.length == 1) {
+                        point[0].Gain = channel[0].Gain;
+                        point[0].Displacement = channel[0].Displacement;
+                        point[0].Recalculate = recalculate;
+                        point[0].Channel = channelAsdaq.AconChannel;
+                        point[0].Serial = channelAsdaq.SerialAcon;
+                    }
+                    else if (point.length == 0) {
+                        _dto.push({
+                            MdVariableId: channelAsdaq.MdVariableId,
+                            Gain: channel[0].Gain,
+                            Displacement: channel[0].Displacement,
+                            AsdaqId: asdaqId,
+                            Recalculate: recalculate,
+                            Channel : channelAsdaq.AconChannel,
+                            Serial : channelAsdaq.SerialAcon,
+                        });
+                    }
+                }
+            }
+            else{
+                for (var d = 0; d < _dto.length; d++) {
+                    if((_dto[d].MdVariableId == channelAsdaq.MdVariableId) && (_dto[d].Recalculate == recalculate)){
+                        _dto.splice(d,1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Agrega y valida los valores que puede contener una lista de número de líneas dependiendo al rango de frecuencia seleccionado.
+        function toListNumberOfLines(frecuencyRange, numberOfLines, eventType, productType) {
+            var lineMax= frecuencyRange * 4;
+            var lineMin= frecuencyRange * 0.4;
+            // Frecuencia de muestreo
+            var sampleRate = frecuencyRange * 2;
+
+            if (productType != "9205")
+                sampleRate= ej.DataManager(_dsReferencesNI.fs).executeLocal(ej.Query().where("value", "greaterThanOrEqual", sampleRate, false))[0].value;
+            else
+                (sampleRate != 0 ) ? _dsReferencesNI.fs.push({ text: sampleRate, value: sampleRate }) : 0;
+
+            if (frecuencyRange == 0) {
+                return;
+            }
+
+            var firstValueNLine= frecuencyRange * 1024 / sampleRate; // 1er valor obtenido para el ddl de número de lineas
+            _dsNol=[];
+            _dsNol.push({ text: "Otro", value: 0 });
+
+            for (firstValueNLine; firstValueNLine <= lineMax; firstValueNLine*=2) {
+                // Si el primer valor obtenido como número de línea es 0, quiere decir que en base de datos no existia la propiedad FrecuencyRange ó estaba en 0
+                //y obliga a salirse del for para que no cree un bucle infinito
+                if (firstValueNLine == 0)
+                    break;
+
+                if (firstValueNLine >= lineMin) {
+                    firstValueNLine = Math.round(firstValueNLine);
+                    _dsNol.push({ text: firstValueNLine, value: firstValueNLine });
+                }
+            }
+
+
+            // Agregamos el valor actual si está en el rango mínimo y máximo de número de líneas
+            var existNol = ej.DataManager(_dsNol).executeLocal(ej.Query().where("value", "equal", numberOfLines, false)).length;
+            if (existNol == 0){
+                if ((numberOfLines >= lineMin) && (numberOfLines <= lineMax))
+                    _dsNol.push({ text: numberOfLines, value: numberOfLines });
+            }
+
+            // Actualizamos la lista de número de líneas
+            $('#GridNiDevicesNumberOfLines').ejDropDownList( "option","dataSource",_dsNol);
+
+            if (eventType == "beginedit"){
+                $('#GridNiDevicesNumberOfLines').ejDropDownList("option", {
+                    value : (ej.DataManager(_dsNol).executeLocal(ej.Query().where("value","equal", numberOfLines,false)).length) == 0 ? 0 : numberOfLines,
+                    //selectedIndex: (ej.DataManager(_dsNol).executeLocal(ej.Query().where("value","equal", numberOfLines,false)).length) == 0 ? 0 : null,
+                });
+            }
+        }
+
+        // Crea el popUp donde se puede configurar un rango de frecuencia o número de líneas personalizado
+        function createEjDialogOtherValue(title,minV, maxV, controlType, productType) {
+
+            $("#ejntOtherValue").ejNumericTextbox({
+                width: "75%",
+                minValue: minV,
+                maxValue: maxV,
+            });
+
+            $("#lblMin").text(Math.round(minV));
+            $("#lblMax").text(Math.round(maxV));
+
+            $("#ejbAccept").ejButton({
+                size: "small",
+                type: "button",
+                imagePosition: "imageleft",
+                contentType: "textandimage",
+                showRoundedCorner: true,
+                prefixIcon: "e-icon e-checkmark",
+                click: function (args) {
+                    var otherValue= $("#ejntOtherValue").ejNumericTextbox("getValue");
+                    if (otherValue) {
+                        if (controlType == "fr") {
+                            toListNumberOfLines(otherValue, null, null, productType);
+                            var dataList= $('#GridNiDevicesFrecuencyRange').ejDropDownList("getListData");
+                            var exist= ej.DataManager(dataList).executeLocal(ej.Query().where("value","equal",otherValue,false )).length;
+                            if (exist == 0) {
+                                $('#GridNiDevicesFrecuencyRange').ejDropDownList("addItem", { text : otherValue, value: otherValue});
+                            }
+                            $('#GridNiDevicesFrecuencyRange').ejDropDownList("selectItemByValue", otherValue);
+                            $('#GridNiDevicesNumberOfLines').ejDropDownList("enable");
+                        }
+                        else{
+                            var dataList= $('#GridNiDevicesNumberOfLines').ejDropDownList("getListData");
+                            var exist= ej.DataManager(dataList).executeLocal(ej.Query().where("value","equal",otherValue,false )).length;
+                            // Agregamos el item al dropdownlist si este valor no existe en la lista
+                            if (exist == 0) {
+                                $('#GridNiDevicesNumberOfLines').ejDropDownList("addItem", { text : otherValue, value: otherValue});
+                            }
+                            $('#GridNiDevicesNumberOfLines').ejDropDownList("selectItemByValue", otherValue); // Seleccionamos el item anteriormente agregado
+                        }
+
+                        $("#ejdOtherValue").addClass("hidden");
+                        $("#ejdOtherValue").ejDialog("close");
+                    }
+                    else
+                        popUp("error","El campo debe contener un valor entre " + minV + " y " + maxV);
+                },
+            });
+
+            $("#ejbCancel").ejButton({
+                size: "small",
+                type: "button",
+                imagePosition: "imageleft",
+                contentType: "textandimage",
+                showRoundedCorner: true,
+                prefixIcon: "e-icon e-cancel",
+                click: function (args) {
+                    $("#ejdOtherValue").addClass("hidden");
+                    $("#ejdOtherValue").ejDialog("close");
+                }
+            });
+
+            $("#ejdOtherValue").ejDialog({
+                showOnInit: false,
+                isResponsive: true,
+                title: title,
+                allowDraggable: true,
+                enableAnimation: true,
+                width: "15%",
+                height: "23%",
+                enableResize: true,
+                showHeader: true,
+                enableModal: true,
+                showRoundedCorner: true,
+                animation: { show: { effect: "slide", duration: 500 }, hide: { effect: "fade", duration: 500 } },
+                beforeOpen: function (args) {
+                },
+                close: function (args) {
+                    $("#ejdOtherValue").addClass('hidden');
+                    $("#ejntOtherValue").ejNumericTextbox("destroy");
+                    $("#ejbCancel").ejButton("destroy");
+                    $("#ejbAccept").ejButton("destroy");
+                },
+            });
+
+            $("#ejdOtherValue").removeClass('hidden');
+            $("#ejdOtherValue").ejDialog("open");
+        }
+
+        //Obtiene el productType que tiene un Asdaq
+        function getProductType(pt){
+            var _pt = "";
+            var n = ["0","1","2","3","4","5","6","7","8","9"];
+
+            for (i = 0; i < pt.length; i++) {
+                if (n.includes(pt[i])) {
+                    _pt += pt[i];
+                }
+            }
+            return _pt;
+        }
+    </script>
+}

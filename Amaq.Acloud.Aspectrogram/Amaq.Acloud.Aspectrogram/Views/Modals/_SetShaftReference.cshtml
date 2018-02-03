@@ -1,0 +1,123 @@
+﻿<div id="setShaftReferenceAreaDialog" style="display:none;">
+    <div class="control">
+        <div id="setShaftReference" title="Definir referencia">
+            <div>
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="padding-top: 5px; padding-bottom: 5px;">
+                        <b id="shaftReferenceName" style="font-size:12px;"></b>
+                    </div>
+                </div>
+                <form role="form">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label for="StartPointClearance" style="font-size:12px;">Punto de in&iacute;cio</label>
+                            </div>
+                            <div class="col-md-7">
+                                @Html.DropDownList("StartPointClearance",
+                                                   EnumHelper.GetSelectList(typeof(Amaq.Acloud.Aspectrogram.Entities.Enums.ClearanceStartingPoint)),
+                                                   null,
+                                                   new { @class = "form-control" }
+                                )
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label for="xDiameter" style="font-size:12px;">Diametro X</label>
+                            </div>
+                            <div class="col-md-7">
+                                <input type="text" id="xDiameter" name="xDiameter" style="width:100%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label for="yDiameter" style="font-size:12px;">Diametro Y</label>
+                            </div>  
+                            <div class="col-md-7">
+                                <input type="text" id="yDiameter" name="yDiameter" style="width:100%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label for="xReferenceGap" style="font-size:12px;">Ref X</label>
+                            </div>
+                            <div class="col-md-7">
+                                <input type="text" id="xReferenceGap" name="xReferenceGap" style="width:100%;" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label for="yReferenceGap" style="font-size:12px;">Ref Y</label>
+                            </div>
+                            <div class="col-md-7">
+                                <input type="text" id="yReferenceGap" name="yReferenceGap" style="width:100%;" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group zeroMarginBottom">
+                        <div class="row">
+                            <div style="text-align: center;">
+                                <a id="btnSaveReference" class="btn btn-sm btn-primary" href="#">
+                                    <i class="fa fa-save"></i> Guardar
+                                </a>
+                                <a id="btnCancelReference" class="btn btn-sm btn-primary" href="#">
+                                    <i class="fa fa-close"></i> Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div id="showOrbitAreaDialog" style="display:none;">
+    <div class="control">
+        <div id="showOrbitArea" title="Mostrar órbita">
+            <div>
+                <form role="form">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label for="orbitLapsOnShaft" style="font-size:12px;">N&uacute;mero de vueltas</label>
+                            </div>
+                            <div class="col-md-7">
+                                <input type="number" id="orbitLapsOnShaft" name="orbitLapsOnShaft" min="1" style="width:100%;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group zeroMarginBottom">
+                        <div class="row">
+                            <div style="text-align: center;">
+                                <a id="btnSaveShowOrbit" class="btn btn-sm btn-primary" href="#">
+                                    <i class="fa fa-save"></i> Guardar
+                                </a>
+                                <a id="btnCancelShowOrbit" class="btn btn-sm btn-primary" href="#">
+                                    <i class="fa fa-close"></i> Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

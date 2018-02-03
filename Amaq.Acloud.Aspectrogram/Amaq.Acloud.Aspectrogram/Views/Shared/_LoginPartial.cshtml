@@ -1,0 +1,105 @@
+﻿@using Microsoft.AspNet.Identity
+@if (Request.IsAuthenticated)
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown">
+                <a data-toggle="dropdown" class="dropdown-toggle">
+                    <i class="fa fa-location-arrow" aria-hidden="true"></i>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                    <li><a href="#" class="mainDropDownMenu" id="navigateLocations">Navegación Ubicaciones</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown">
+                <a data-toggle="dropdown" class="dropdown-toggle">
+                    <i class="fa fa-cog" aria-hidden="true"></i>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                    <li><a href="#" class="mainDropDownMenu" id="filterMenu">Activar Filtro</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#" class="mainDropDownMenu">Mosaico horizontal</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#" class="mainDropDownMenu">Mosaico vertical</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#" class="mainDropDownMenu" id="eventListMenu">Listado de eventos</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown">
+                <a data-toggle="dropdown" class="dropdown-toggle">
+                    <i class="fa fa-font" aria-hidden="true"></i>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                    <li><a href="#" class="mainDropDownMenu" id="newTextReport">Nuevo Texto</a></li>
+                    <li><a href="#" class="mainDropDownMenu" id="newHeaderReport">Nuevo Encabezado</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown">
+                <a data-toggle="dropdown" class="dropdown-toggle">
+                    <i class="fa fa-print" aria-hidden="true"></i>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                    <li><a href="#" class="mainDropDownMenu" id="generateReport">Generar Reporte</a></li>
+                    <li><a href="#" class="mainDropDownMenu" id="previewReport">Vista Previa Reporte</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown">
+                <a data-toggle="dropdown" class="dropdown-toggle">
+                    <i class="fa fa-question-circle" aria-hidden="true"></i>
+                </a>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown">
+                <a data-toggle="dropdown" class="dropdown-toggle">
+                    @User.Identity.GetUserName() <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>@Html.ActionLink("Configuración Asdaq", "Asdaq", "Config")</li>
+                    <li>@Html.ActionLink("Configuración Atr", "Atr", "Config")</li>
+                    <li class="divider"></li>
+                    <li><a href="javascript:document.getElementById('logoutForm').submit();">Salir</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <img id="imgBmp" width="3" height="380" style="display:none;">
+        <canvas id="canvasBmp" width="3" height="380" style="position: absolute; top: 0px; left: 0px; display:none;"></canvas>
+    }
+}
+else
+{
+    <ul class="nav navbar-nav navbar-right">
+        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    </ul>
+}
+
+
+<script>
+    $(document).ready(function () {
+        // Busqueda dentro del arbol
+        $("#searchBox").on("keydown", function (event) {
+            var keycode = (event.keyCode ? event.keyCode : event.which);
+            if (keycode == "13") {
+                treeViewControl.SearchNodes();
+            }
+            event.stopPropagation();
+        });
+    });
+</script>

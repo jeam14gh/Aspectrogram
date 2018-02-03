@@ -1,0 +1,89 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amaq.Acloud.Aspectrogram.WebSite", "Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.WebSite.csproj", "{4C6A0658-5073-43A6-BAAF-1626394BF863}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amaq.Acloud.Aspectrogram.Entities", "Amaq.Acloud.Aspectrogram.Entities\Amaq.Acloud.Aspectrogram.Entities.csproj", "{56DD05B0-0216-4B02-8D6D-3C895C21193D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amaq.Acloud.AsdaqService", "Amaq.Acloud.AsdaqService\Amaq.Acloud.AsdaqService.csproj", "{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amaq.Acloud.Aspectrogram.Proxy", "Amaq.Acloud.Aspectrogram.Proxy\Amaq.Acloud.Aspectrogram.Proxy.csproj", "{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amaq.Acloud.AsdaqViewer", "Amaq.Acloud.AsdaqViewer\Amaq.Acloud.AsdaqViewer.csproj", "{FB8BA981-6A93-4525-B083-6F344A9D55C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4C6A0658-5073-43A6-BAAF-1626394BF863}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C6A0658-5073-43A6-BAAF-1626394BF863}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C6A0658-5073-43A6-BAAF-1626394BF863}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4C6A0658-5073-43A6-BAAF-1626394BF863}.Debug|x64.Build.0 = Debug|Any CPU
+		{4C6A0658-5073-43A6-BAAF-1626394BF863}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C6A0658-5073-43A6-BAAF-1626394BF863}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C6A0658-5073-43A6-BAAF-1626394BF863}.Release|x64.ActiveCfg = Release|Any CPU
+		{4C6A0658-5073-43A6-BAAF-1626394BF863}.Release|x64.Build.0 = Release|Any CPU
+		{56DD05B0-0216-4B02-8D6D-3C895C21193D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56DD05B0-0216-4B02-8D6D-3C895C21193D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56DD05B0-0216-4B02-8D6D-3C895C21193D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{56DD05B0-0216-4B02-8D6D-3C895C21193D}.Debug|x64.Build.0 = Debug|Any CPU
+		{56DD05B0-0216-4B02-8D6D-3C895C21193D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56DD05B0-0216-4B02-8D6D-3C895C21193D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56DD05B0-0216-4B02-8D6D-3C895C21193D}.Release|x64.ActiveCfg = Release|Any CPU
+		{56DD05B0-0216-4B02-8D6D-3C895C21193D}.Release|x64.Build.0 = Release|Any CPU
+		{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}.Debug|x64.Build.0 = Debug|Any CPU
+		{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}.Release|x64.ActiveCfg = Release|Any CPU
+		{C2FF5562-5E55-4D5A-8DA2-3CC6F6736E52}.Release|x64.Build.0 = Release|Any CPU
+		{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}.Debug|x64.Build.0 = Debug|Any CPU
+		{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}.Release|x64.ActiveCfg = Release|Any CPU
+		{CC90FEC6-CF08-470F-B7FD-F5E901A8F184}.Release|x64.Build.0 = Release|Any CPU
+		{FB8BA981-6A93-4525-B083-6F344A9D55C7}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{FB8BA981-6A93-4525-B083-6F344A9D55C7}.Debug|Any CPU.Build.0 = Debug|x64
+		{FB8BA981-6A93-4525-B083-6F344A9D55C7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FB8BA981-6A93-4525-B083-6F344A9D55C7}.Debug|x64.Build.0 = Debug|Any CPU
+		{FB8BA981-6A93-4525-B083-6F344A9D55C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB8BA981-6A93-4525-B083-6F344A9D55C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB8BA981-6A93-4525-B083-6F344A9D55C7}.Release|x64.ActiveCfg = Release|Any CPU
+		{FB8BA981-6A93-4525-B083-6F344A9D55C7}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 6
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://wow:8080/tfs/amaq
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Amaq.Acloud.AsdaqService\\Amaq.Acloud.AsdaqService.csproj
+		SccProjectName1 = Amaq.Acloud.AsdaqService
+		SccLocalPath1 = Amaq.Acloud.AsdaqService
+		SccProjectUniqueName2 = Amaq.Acloud.Aspectrogram.Entities\\Amaq.Acloud.Aspectrogram.Entities.csproj
+		SccProjectName2 = Amaq.Acloud.Aspectrogram.Entities
+		SccLocalPath2 = Amaq.Acloud.Aspectrogram.Entities
+		SccProjectUniqueName3 = Amaq.Acloud.Aspectrogram\\Amaq.Acloud.Aspectrogram.WebSite.csproj
+		SccProjectName3 = Amaq.Acloud.Aspectrogram
+		SccLocalPath3 = Amaq.Acloud.Aspectrogram
+		SccProjectUniqueName4 = Amaq.Acloud.Aspectrogram.Proxy\\Amaq.Acloud.Aspectrogram.Proxy.csproj
+		SccProjectName4 = Amaq.Acloud.Aspectrogram.Proxy
+		SccLocalPath4 = Amaq.Acloud.Aspectrogram.Proxy
+		SccProjectUniqueName5 = Amaq.Acloud.AsdaqViewer\\Amaq.Acloud.AsdaqViewer.csproj
+		SccProjectName5 = Amaq.Acloud.AsdaqViewer
+		SccLocalPath5 = Amaq.Acloud.AsdaqViewer
+	EndGlobalSection
+EndGlobal

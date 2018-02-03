@@ -1,0 +1,380 @@
+﻿html, body {
+    height: 100% !important;
+}
+
+.container-fluid, .container {
+    height: 100% !important;
+}
+
+.container {
+    max-width: 98% !important;
+}
+
+body {
+    padding-top: 50px;
+    font-family: Segoe UI;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.disabled {
+    pointer-events: none;
+    cursor: default;
+    opacity: 0.6;
+}
+
+.zeroMarginBottom {
+    margin-bottom: 0px !important;
+}
+
+.icon-logo-small {
+    background-image: url('images/logo-amaq-medio-w.png');
+    background-repeat: no-repeat;
+    background-size: 40px;
+    width: 50px;
+    height: 20px;
+    position: absolute;
+    top: 12px;
+}
+
+.icon-logo {
+    background-image: url('images/Logo-3-SR.png');
+    background-size: 220px;
+    width: 220px;
+    height: 140px;
+    background-repeat: no-repeat;
+    margin-top: 80px;
+}
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+.s-hidden {
+    visibility: hidden;
+    padding-right: 10px;
+}
+
+.locker {
+    background-color: #000;
+    position: absolute;
+    height: 100%;
+    min-height: 100%;
+    width: 100%;
+    opacity: 0.20;
+    font-family: Verdana, Geneva, sans-serif;
+    color: #FFF;
+    top: 0px;
+    z-index: 1;
+}
+
+.draggableDiv {
+    float: left;
+    padding: 5px 5px 2px 0px;
+}
+
+.sortable {
+    display: inline-grid;
+}
+
+.fullHeight {
+    height: 100%;
+}
+
+.fullWidth {
+    width: 100%;
+}
+
+.widgetLock {
+    position: absolute;
+    z-index: 9000;
+    width: 99.8%;
+    height: 99.8%;
+    left: 0;
+    top: 0;
+    background: #ccc;
+    opacity: 0.7;
+}
+
+.divLock {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    filter: alpha(opacity=80);
+    opacity: 0.8;
+}
+
+.ui-resizable-handle {
+    z-index: 9001 !important;
+}
+
+.principalRow {
+    height: 100%;
+    min-height: 100%;
+    margin-right: 0px;
+    margin-left: 0px;
+}
+
+.e-splitter .e-h-pane {
+    overflow-y: hidden;
+}
+
+[class^=slider] {
+    display: inline-block;
+    margin-bottom: 30px;
+}
+
+.output {
+    color: #888;
+    font-size: 14px;
+    padding-top: 1px;
+    margin-left: 5px;
+    vertical-align: top;
+}
+
+.titleSlider {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+#sliderToolbar {
+    clear: both;
+    margin-left: 10px;
+    position: fixed;
+    top: 52px;
+    z-index: 999;
+    padding-right: 5px;
+    height: 55px;
+}
+
+    #sliderToolbar .row {
+        clear: both;
+        height: 50px;
+        margin-left: 0px;
+        background-color: white;
+    }
+
+/* enable absolute positioning */
+.inner-addon {
+    position: relative;
+}
+
+    /* style glyph */
+    .inner-addon .glyphicon {
+        position: absolute;
+        padding: 6px 10px;
+        pointer-events: none;
+    }
+
+/* align glyph */
+.right-addon .glyphicon {
+    right: 0px;
+}
+
+/* add padding  */
+.right-addon input {
+    padding-right: 30px;
+}
+
+/*add padding in */
+.e-rowcell:nth-child(n) {
+    padding: 0px !important;
+}
+
+/*Compactar altos de celdas de header en ejGrid*/
+.e-headercell {
+    height: 24px !important;
+}
+
+/*Compactar boton "reconfigure" del Grid Atr*/
+#btnReconfigure {
+    height: auto !important;
+}
+
+/*Compactar barra de paginacion en ejGrid*/
+.e-pager {
+    padding: 0px !important;
+}
+
+/*Estilos header ejGrid*/
+.e-stackedHeaderRow {
+    color: #179bd7 !important;
+}
+
+.e-stackedHeaderCell {
+    background-color: #222222 !important;
+    color: white;
+    font-weight: bold;
+}
+
+.e-detailheadercell {
+    background-color: #222222 !important;
+}
+
+.grid-stack .grid-stack-item .grid-stack-item-content {
+    overflow: hidden;
+}
+
+/*Para que no oculte los dygraph legend*/
+.grid-stack-item-content {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
+
+/*.e-scroller .e-vscrollbar {
+    float: none !important;
+}*/
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.3em 1em !important;
+}
+
+.unreadEvent {
+    font-weight: bold !important;
+    background-color: aliceblue !important;
+}
+
+h4 {
+    margin-top: 3px !important;
+    margin-bottom: 1px !important;
+}
+
+.table thead,
+.table th {
+    text-align: center;
+}
+
+/*Labels verticales en el eje x de las gráficas dygraphs que implementen la clase .vertical-x-labels. Por ejemplo el gráfico de barras*/
+.vertical-x-labels > div > div {
+    overflow: visible !important;
+    margin-top: 10px !important;
+}
+
+    .vertical-x-labels > div > div .dygraph-axis-label-x {
+        -webkit-transform: rotate(-90deg);
+        -moz-transform: rotate(-90deg);
+    }
+
+.lineBreaking {
+    white-space: nowrap;
+    overflow-x: hidden;
+}
+
+
+/* JHC: Aqui defino para todo el sitio el tamaño de letra a 10px ==> Si todo va bien usar este o personalizar para cada uno segun se vea mejor */
+
+body {
+    font-size: 10px;
+}
+
+.e-treeview .e-text {
+    font-size: 10px !important;
+}
+
+.e-ddl .e-input, .e-ddl-popup, .e-ddl .e-options {
+    font-size: 10px !important;
+}
+
+.dropdown-menu {
+    font-size: 10px !important;
+}
+
+.e-dialog .e-header, .e-dialog .e-widget-content, .e-dialog .e-input, .e-grid {
+    font-size: 12px !important;
+}
+
+/**********Syncfusion Hacks**********/
+/*Evita que se desaparezcan los widgets abiertos en el área de contenido principal de la aplicación*/
+.e-splitter {
+    border: none !important;
+}
+
+/*Evita que los splitter del árbol se muestren por delante del menú contextual*/
+.e-menu {
+    z-index: 111111 !important;
+}
+/**********Syncfusion Hacks**********/
+
+/*Margen del childgrid incrustada dentro de una fila al momento de expandirla*/
+.e-grid .e-detailcell {
+    padding: 0 !important;
+}
+
+/*Alto del Toolbar de los grid's*/
+.e-toolbar.e-toolbarspan {
+    height: 25px !important;
+}
+
+/*Padding de cada uno de los iconos pertenecientes dentro de un Toolbar grid*/
+.e-grid .e-gridtoolbar li {
+    padding: 0px 0px 4px 6px !important;
+}
+
+.custom-panel-filter {
+    width: 215px;
+    display: inline-block;
+}
+
+.custom-panel-filter:nth-child(even) {
+    margin-left: 15px;
+}
+
+/*Textarea en plantilla de correo*/
+#txtMessage {
+    resize: vertical;
+    max-height: 180px;
+    height: 130px;
+}
+
+/*Grid Bandas en catálogo de pto de medición*/
+#gridBands table.e-table {
+    width: 100% !important;
+}
+
+/*Ancho de cada item en los listbox de configuración de pares xy*/
+ul#lbPointsX > li {
+    min-height: 12px !important;
+}
+
+ul#lbPointsY > li {
+    min-height: 12px !important;
+}
+
+ul#lbPointsXY > li {
+    min-height: 12px !important;
+}
+
+/*Para encapsular cada uno de los grid's por tipo de sensor a partir de un activo principal en la vista resumen*/
+fieldset {
+    padding: 5px !important;
+    margin: 0px !important;
+    border: 1px solid #000 !important;
+}
+
+fieldset > legend {
+    width: auto !important;
+    border-bottom: 0px !important;
+    margin-bottom: 0px !important;
+    font-size: 15px !important;
+    font-weight: bold !important;
+}
+
+.validateField{
+    border-color: red;
+    border-width: 2px;
+    border-style: solid;
+}
+
+/*Alto del header de columnas del grid de NiDevices*/
+#GridNiDevices table thead>tr:nth-child(2){
+    height: 35px;
+}

@@ -1,0 +1,1158 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Amaq.Acloud.Business</name>
+    </assembly>
+    <members>
+        <member name="T:Amaq.Acloud.Business.Administration.CompanyBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad Company
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Administration.CompanyBl._companyRepository">
+            <summary>
+            Contiene una referencia al repositorio de CompanyRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.CompanyBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio CompanyRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.CompanyBl.Add(Amaq.Acloud.Entities.Administration.Company)">
+            <summary>
+            Inserta una nueva empresa en la base de datos.
+            </summary>
+            <param name="company">Empresa a insertar</param>
+            <returns>La empresa insertada con el Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.CompanyBl.Find(System.Collections.Generic.List{System.String})">
+            <summary>
+            Busca las empresas correspondientes a cada Id especificado.
+            </summary>
+            <param name="companyIdList">Listado de Ids de empresa</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.CompanyBl.GetAll">
+            <summary>
+            Obtiene el listado completo de empresas en la base de datos.
+            </summary>
+            <returns>Listado de todas las empresas</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.CompanyBl.ValidateDbName(System.String)">
+            <summary>
+            Valida si el nombre de la base de datos existe.
+            </summary>
+            <param name="dbName">Nombre de la base de datos</param>
+            <returns>Verdadero o falso</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.CompanyBl.GetCompanyId(System.String)">
+            <summary>
+            Obtener el Id de empresa basado en el nombre de la base de datos.
+            </summary>
+            <param name="dbName">Nombre de la base de datos</param>
+            <returns>Id de la empresa</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.CompanyBl.GetByDbName(System.String)">
+            <summary>
+            Obtiene la empresa con el DbName especificado
+            </summary>
+            <param name="dbName">Nombre de la base de datos</param>
+            <returns>La empresa</returns>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Administration.SyncfusionControlBl._syncfusionControlRepository">
+            <summary>
+            Contiene una referencia al repositorio de SyncfusionControlRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.SyncfusionControlBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio SyncfusionControlRepository.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Administration.UserBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad User
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Administration.UserBl._userRepository">
+            <summary>
+            Contiene una referencia al repositorio de UserRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio UserRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.Add(Amaq.Acloud.Entities.Administration.User)">
+            <summary>
+            Inserta un nuevo usuario en la base de datos.
+            </summary>
+            <param name="user">Usuario a insertar</param>
+            <returns>Usuario insertado con el Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.RegisterInCompany(System.String,System.String)">
+            <summary>
+            Asocia un usuario existente en la base de datos a una empresa igualmente existente.
+            </summary>
+            <param name="userId">Id del usuario</param>
+            <param name="companyId">Id de la empresa</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.Find(Amaq.Acloud.Entities.Dtos.BasicCredentialsDto)">
+            <summary>
+            Busca el usuario con el userName y password especificados. Adicionalmente
+            busca los tenant a los cuales está asociado el usuario.
+            </summary>
+            <param name="model">Nombre de usuario en la base de datos</param>
+            <returns>La informacion del usuario con todos las empresas asociadas</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.Find(System.String,System.String,System.String)">
+            <summary>
+            Busca el usuario con el userName, password y dbName especificados.
+            Este método se usa en la generación del bearer token para validar la identidad del usuario
+            </summary>
+            <param name="userName">Nombre de usuario en la base de datos</param>
+            <param name="password">Clave cifrada del usuario en el sistema</param>
+            <param name="dbName">Nombre de la base de datos de la empresa seleccionada por el usuario</param>
+            <returns>Verdadero o falso si la informacion del usuario es correcta</returns>
+            <note>JHC: De ser necesario retornar la informacion del usuario, cambiar el 'boolean' por 'User' y retornar 'user'.</note>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.GetAll">
+            <summary>
+            Obtiene el listado completo de usuarios en la base de datos.
+            </summary>
+            <returns>Listado de todas los usuarios</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.GetUserId(System.String)">
+            <summary>
+            Obtiene el Id del usuario en el sistema.
+            Si no se especifica un usuario por defecto se selecciona el usuario actualmente autenticado.
+            </summary>
+            <param name="userName">Nombre de usuario unico en el sistema</param>
+            <returns>Id del usuario</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.GetCurrentCompany">
+            <summary>
+            Obtiene la empresa en la cual está actualmente conectado el usuario
+            </summary>
+            <returns>La empresa</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.FindByUserName(System.String)">
+            <summary>
+            Encuentra un usuario basado en el nombre de usuario registrado.
+            </summary>
+            <param name="userName">Nombre de usuario unico en el sistema</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Administration.UserBl.FindById(System.String)">
+            <summary>
+            Encuentra un usuario basado en el Id de usuario.
+            </summary>
+            <param name="userId">Id de usuario en el sistema</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.CoreBl`1">
+            <summary>
+            Clase base que contiene los metodos basicos de gestion en la BD.
+            </summary>
+            <typeparam name="T">El tipo de entidad contenido en el repositorio</typeparam>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio CoreRepository
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.#ctor(System.String)">
+            <summary>
+            Inicializa una nueva instancia CoreRepository con la URL especificada.
+            </summary>
+            <param name="url">Cadena de texto con la cadena de conexion a la base de datos</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.Add(`0)">
+            <summary>
+            Inserta un nuevo documento en la base de datos.
+            </summary>
+            <param name="entity">Documento a insertar</param>
+            <returns>El documento insertado, incluido el Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.AddSingle(`0)">
+            <summary>
+            Inserta un nuevo documento en la base de datos.
+            </summary>
+            <param name="entity">Documento a insertar</param>
+            <returns>El Id generado para el documento insertado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.Add(System.Collections.Generic.List{`0})">
+            <summary>
+            Inserta una lista de documentos en la base de datos.
+            </summary>
+            <param name="entityList">Listado de documentos a insertar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.AddMany(System.Collections.Generic.List{`0})">
+            <summary>
+            Inserta una lista de documentos en la base de datos.
+            </summary>
+            <param name="entityList">Listado de documentos a insertar</param>
+            <returns>Listado de Ids generados</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.GetById(System.String)">
+            <summary>
+            Obtiene un documento segun su Id en la base de datos.
+            </summary>
+            <param name="id">Id del documento en la base datos</param>
+            <returns>El documento requerido</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.GetAll">
+            <summary>
+            Obtiene la lista completa de documentos que pertenecen a la entidad.
+            </summary>
+            <returns>Listado de documentos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.Update(`0)">
+            <summary>
+            Actualizar un documento de una entidad.
+            </summary>
+            <param name="entity">Entidad a actualizar</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.Find(`0)">
+            <summary>
+            Encuentra un documento (el primero caso exista mas de una coincidencia) segun las propiedades conocidas del mismo.
+            </summary>
+            <param name="entity">Entidad con los valores conocidos con los que se realizara la busqueda</param>
+            <returns>El primer documento que coincida con los valores conocidos de la entidad</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.GetFilterContent(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)">
+            <summary>
+            Obtiene el contenido de un filtro segun una expresion de tipo BsonDocument almacenada en la base datos.
+            El contenido de un filtro depende de una unica entidad, por lo que se realiza un llamado dinamico
+            basado en la coleccion del metodo Queryable.
+            </summary>
+            <param name="collection">Coleccion en la que se realiza la consulta del contenido del filtro</param>
+            <param name="expression">Expresion que determina el contenido del filtro</param>
+            <param name="conditions">Condiciones adicionales configuradas como OrderBy, GroupBy, Select, etc</param>
+            <returns>Objeto en forma de lista con el contenido del filtro</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.InvokeBlMethod(System.String,System.String,System.Object[])">
+            <summary>
+            Realiza la invocacion de el metodo Bl de la coleccion especificada y los parametros necesarios para el metodo.
+            </summary>
+            <param name="collection">Coleccion asociada al objeto Bl</param>
+            <param name="method">Metodo a invocar</param>
+            <param name="parameters">Parametros del metodo Bl a invocar</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.Queryable(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)">
+            <summary>
+            Metodo que realiza las consultas dinamicas configuradas en base de datos
+            segun la entidad que realiza la invocacion del mismo.
+            </summary>
+            <param name="expression">Expresion a ser evaluada</param>
+            <param name="conditions">Condiciones adicionales a la expresion como OrderBy, GroupBy, Select, etc</param>
+            <returns>Listado de documentos que coinciden con la expresion y las condiciones configuradas</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.EvaluateExpression(System.String,System.Object[])">
+            <summary>
+            Evalua expresiones que contienen variables y que toman valores dependiendo de los parametros ingresados.
+            </summary>
+            <param name="expression">Expresion a ser evaluada</param>
+            <param name="parameters">Parametros como variables en la expresion</param>
+            <returns>Objeto con el resultado de evaluar la expresion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.GetIndicatorOutPut(System.Collections.Generic.Dictionary{System.String,System.Object},System.Collections.Generic.List{Amaq.Acloud.Entities.ValueObjects.JoinEntities},System.String)">
+            <summary>
+            Obtiene la salida del indicador.
+            </summary>
+            <param name="filterContentArray">Array con el contenido de los diferentes filtros que componen el indicador</param>
+            <param name="join">Propiedades que componen la configuracion de la union entre los filtros</param>
+            <param name="outputNamespace">Entidad de salida en la que se representa el indicador</param>
+            <returns>Objeto en forma de lista del tipo de entidad indicado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.CoreBl`1.GetForeignKey(System.String,Amaq.Acloud.Entities.Core.Node)">
+            <summary>
+            Obtiene la propiedad que relaciona una entidad con el arbol principal de la aplicacion.
+            </summary>
+            <param name="collection">Coleccion o entidad a relacionar</param>
+            <param name="node">Informacion del nodo del arbol</param>
+            <returns>El valor definido en propiedad ForeignKey</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.AssetBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad Asset
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.AssetBl._assetRepository">
+            <summary>
+            Contiene una referencia al repositorio de AssetRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.AssetBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio AssetRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.AssetBl.FindByNodeId(System.String)">
+            <summary>
+            Busca un activo especifico segun su Id de nodo.
+            </summary>
+            <param name="nodeId">Id de nodo que identifica el activo</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.AssetBl.FindWithProperties3d(System.Collections.Generic.List{System.String})">
+            <summary>
+            Busca los activos correspondientes a cada Id especificado siempre y cuando tengan propiedades 3d
+            </summary>
+            <param name="nodeIdList">Lista de nodeId</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.CategoryBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad Category
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.CategoryBl._categoryRepository">
+            <summary>
+            Contiene una referencia al repositorio de CategoryRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.CategoryBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio CategoryRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.CategoryBl.GetByDescription(System.String)">
+            <summary>
+            Busca una categoria especifica segun su descripcion.
+            </summary>
+            <param name="description">Cadena de texto que identifica la descripcion de categoria</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.CategoryBl.GetByManyDescriptions(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene un listado de categorias segun un listado de descripciones.
+            </summary>
+            <param name="descriptions">Listado de descripciones</param>
+            <returns>Listado de las diferentes categorias que coinciden con el listado de descripciones</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.CategoryBl.GetAssetCategories">
+            <summary>
+            Obtiene el Id de las categoria de Activo
+            </summary>
+            <returns>Listado de Ids de las categorias de Activo</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.ConceptBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad Concept
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.ConceptBl._conceptRepository">
+            <summary>
+            Contiene una referencia al repositorio de ConceptRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.ConceptBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio ConceptRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.ConceptBl.SaveConcept(Amaq.Acloud.Entities.Dtos.SaveConceptDto)">
+            <summary>
+            Inserta un nuevo concepto en la base de datos a partir de un objeto SaveConceptDto
+            </summary>
+            <param name="saveConceptDto">Dto con la información necesaria para almacenar el nuevo concepto</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.ConceptBl.GetConceptsGroupByUser(System.String)">
+            <summary>
+            Obtiene las Variables Md que tienen como categoria principal Vibracion.
+            </summary>
+            <param name="nodeId">Id del nodo asociado al Activo padre de las Variables Md</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.ConceptBl.GetHistoricalConcepts(System.String,System.String)">
+            <summary>
+            Obtiene el historico de conceptos de un experto en particular.
+            </summary>
+            <param name="nodeId">Id del nodo que representa el activo padre de los conceptos</param>
+            <param name="userName">Nombre del usuario experto</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.DashboardAndWidget.DashboardBl._dashboardRepository">
+            <summary>
+            Contiene una referencia al repositorio de DashboardRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.DashboardAndWidget.DashboardBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio DashboardRepository
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.DashboardAndWidget.DashboardBl.GetDashboard(System.String)">
+            <summary>
+            Obtiene la informacion relacionada al dashboard.
+            </summary>
+            <param name="dashboardId">Id del dashboard</param>
+            <returns>Informacion en base de datos del Dashboard requerido</returns>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.DashboardAndWidget.WidgetBl._widgetRepository">
+            <summary>
+            Contiene una referencia al repositorio de WidgetRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.DashboardAndWidget.WidgetBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio WidgetRepository
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.DashboardAndWidget.WidgetBl.GetWidgets(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene un listado de widgets ordenados segun la posicion (index).
+            </summary>
+            <param name="widgetIdList">Listado de Ids de widgets requeridos</param>
+            <returns>Listado de widgets</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.DashboardAndWidget.WidgetBl.GetGanttContent(System.String,System.String,System.String,System.String)">
+            <summary>
+            Obtiene la informacion relacionada a un widget Gantt
+            </summary>
+            <param name="nodeId">Id del nodo seleccionado</param>
+            <param name="startDate">Fecha de inicio para la consulta, por defecto se utiliza 1 año atras</param>
+            <param name="endDate">Fecha fin en el rango de la consulta, por defecto la fecha actual</param>
+            <param name="widgetId">Id del widget</param>
+            <returns>Contenido del widget Gantt segun el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.DashboardAndWidget.WidgetBl.GetPieContent(System.String,System.String)">
+            <summary>
+            Obtiene la informacion relacionada a un widget Pie Chart
+            </summary>
+            <param name="nodeId">Id del nodo seleccionado</param>
+            <param name="widgetId">Id del widget</param>
+            <returns>Contenido del widget Gantt segun el criterio de busqueda</returns>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.IndicatorAndFilter.FilterBl._filterRepository">
+            <summary>
+            Contiene una referencia al repositorio de FilterRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.FilterBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio FilterRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.FilterBl.Add(Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter)">
+            <summary>
+            Inserta un nuevo filtro en la base de datos.
+            </summary>
+            <param name="filter">Filtro a insertar</param>
+            <returns>El filtro insertado con el Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.FilterBl.AddSingle(Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter)">
+            <summary>
+            Inserta un nuevo filtro en la base de datos.
+            </summary>
+            <param name="filter">Filtro a insertar</param>
+            <returns>El valor del Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.FilterBl.Add(System.Collections.Generic.List{Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter})">
+            <summary>
+            Inserta una lista de filtros en la base de datos.
+            </summary>
+            <param name="filter">Listado de filtros a insertar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.FilterBl.AddMany(System.Collections.Generic.List{Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter})">
+            <summary>
+            Inserta una lista de filtros en la base de datos.
+            </summary>
+            <param name="filter">Listado de filtros a insertar</param>
+            <returns>Listado de Ids generados</returns>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.IndicatorAndFilter.IndicatorBl._indicatorRepository">
+            <summary>
+            Contiene una referencia al repositorio de IndicatorRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.IndicatorBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio IndicatorRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.IndicatorBl.Add(Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator)">
+            <summary>
+            Inserta un nuevo indicador en la base de datos.
+            </summary>
+            <param name="indicator">Indicador a insertar</param>
+            <returns>El indicador insertado con el Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.IndicatorBl.AddSingle(Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator)">
+            <summary>
+            Inserta un nuevo indicador en la base de datos.
+            </summary>
+            <param name="indicator">Indicador a insertar</param>
+            <returns>El valor del Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.IndicatorBl.Add(System.Collections.Generic.List{Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator})">
+            <summary>
+            Inserta una lista de indicadores en la base de datos.
+            </summary>
+            <param name="filter">Listado de indicadores a insertar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.IndicatorAndFilter.IndicatorBl.AddMany(System.Collections.Generic.List{Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator})">
+            <summary>
+            Inserta una lista de indicadores en la base de datos.
+            </summary>
+            <param name="indicator">Listado de indicadores a insertar</param>
+            <returns>Listado de Ids generados</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.LocationBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad Location
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.LocationBl._locationRepository">
+            <summary>
+            Contiene una referencia al repositorio de LocationRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.LocationBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio LocationRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.LocationBl.FindByNodeId(System.String)">
+            <summary>
+            Busca una ubicacion especifica segun su Id de nodo.
+            </summary>
+            <param name="nodeId">Id de nodo que identifica la ubicacion</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.LocationBl.FindWithProperties3d(System.Collections.Generic.List{System.String})">
+            <summary>
+            Busca las ubicaciones correspondientes a cada Id especificado siempre y cuando tengan propiedades 3d
+            </summary>
+            <param name="nodeIdList">Lista de nodeId</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.MaintenanceOrderBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad MaintenanceOrder
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.MaintenanceOrderBl._maintenanceOrderRepository">
+            <summary>
+            Contiene una referencia al repositorio de MaintenanceOrderRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.MaintenanceOrderBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio MaintenanceOrderRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.MaintenanceOrderBl.DropCollection">
+            <summary>
+            Borra la colleccion de Ordenes de Mantenimiento.
+            </summary>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.MaintenanceOrderBl.SaveOrders(System.Collections.Generic.List{Amaq.Acloud.Entities.Core.MaintenanceOrder})">
+            <summary>
+            Inserta una lista de ordenes de mantenimiento.
+            </summary>
+            <param name="maintenanceOrders">Lista de ordenes de mantenimiento a insertar</param>
+            <returns>Cantidad de ordenes de mantenimiento insertadas</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.MaintenanceOrderBl.GetMaintenanceOrders(System.String,System.String,System.String)">
+            <summary>
+            Obtiene las ordenes de mantenimiento asociadas al Id de nodo seleccionado.
+            </summary>
+            <param name="nodeId">Id del nodo seleccionado</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.MdVariableBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad MdVariable
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.MdVariableBl._mdVariableRepository">
+            <summary>
+            Contiene una referencia al repositorio de MdVariableRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.MdVariableBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio MdVariableRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.MdVariableBl.FindByNodeId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Busca las variables Md correspondientes a cada NodeId especificado
+            </summary>
+            <param name="nodeIdList">Lista de nodeId</param>
+            <returns>Lista de variables Md</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.MdVariableBl.UpdateStatusBasedOnSubVariable(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Actualiza el estado de una Variable Md, basado en el estado de las SubVariables hijos.
+            </summary>
+            <param name="mdVariableId">Id de la Variable Md padre</param>
+            <param name="subVariableStatus">Estado previamente resuelto y a definir como el nuevo valor</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.MdVariableBl.GetMdVariableCategories(System.String)">
+            <summary>
+            Obtiene las Variables Md que tienen como categoria principal Vibracion.
+            </summary>
+            <param name="nodeId">Id del nodo asociado al Activo padre de las Variables Md</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.NodeBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad Node
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.NodeBl._nodeRepository">
+            <summary>
+            Contiene una referencia al repositorio de NodeRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio NodeRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetByPrincipalCategories(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene todos los nodos asociadas al listado de categorias principales.
+            </summary>
+            <param name="categoryIdList">Listado de Ids de la categoria principal</param>
+            <returns>Listado de nodos pertenecientes a la categoria principal especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetParent(System.String)">
+            <summary>
+            Obtiene el nodo padre de un nodo especifico.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>El nodo padre</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetByEntity(Amaq.Acloud.Entities.Enums.EntityType)">
+            <summary>
+            Obtiene todos los nodos asociadas a un tipo de entidad.
+            </summary>
+            <param name="type">Tipo de entidad</param>
+            <returns>Listado de nodos pertenecientes al tipo de entidad especificado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetByPrincipalCategory(System.String)">
+            <summary>
+            Obtiene todos los nodos asociadas a la categoria principal especificada.
+            </summary>
+            <param name="categoryId">Id de categoria</param>
+            <returns>Listado de Ids de nodos pertenecientes a la categoria especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetAllNodes">
+            <summary>
+            Obtiene todos los nodos en el arbol.
+            </summary>
+            <returns>Listado total de nodos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetParentNodes">
+            <summary>
+            Obtiene todos los nodos principales o padres en el arbol.
+            </summary>
+            <returns>Listado total de nodos padres en el arbol</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetNodeById(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene un listado de nodos segun un listado de Ids especificos.
+            </summary>
+            <param name="nodeIdList">Listado de Ids de nodos a consultar</param>
+            <returns>Listado de nodos basado en el criterio especificado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetChildren(System.String)">
+            <summary>
+            Obtiene todos los nodos hijos asociados al nodo especificado.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>Listado de nodos hijos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetChildren(System.String,System.Collections.Generic.List{System.Int32})">
+            <summary>
+            Obtiene los nodos hijos usando el parentLevel y un filtro adicional para indicar cuales tipos de nodo
+            se van a buscar
+            </summary>
+            <param name="parentLevel">Cadena de texto que representa el Level del nodo. Ejemplo: "1.1"</param>
+            <param name="entityTypes">Tipos de nodo a filtrar</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetMdVariableChildrenByCategory(System.String,System.String)">
+            <summary>
+            Obtiene todos los nodos hijos asociados al nodo y a la categoria especificados.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <param name="categoryId">Id de la categoria</param>
+            <returns>Listado de nodos de Variables Md hijos, pertenecientes a la categoria especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.HasChild(System.String)">
+            <summary>
+            Verifica si un nodo tiene asociados hijos.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>Verdadero si tiene hijos, falso en el caso contrario</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetProperties3d(System.String,Amaq.Acloud.Entities.Enums.EntityType)">
+            <summary>
+            Obtiene las propiedades 3d del nodo especificado
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <param name="entityType">Tipo de entidad</param>
+            <returns>Un objeto con las propiedades 3d</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetConcerningTree">
+            <summary>
+            Obtiene los nodos concernientes al usuario logueado.
+            </summary>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.OperatorConcernign">
+            <summary>
+             Resuelve la concernencia de un usuario Operator
+            </summary>
+            <returns>Toda la lista de nodos asociada al usuario Operator</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.UpdateStatusId(System.String,System.String)">
+            <summary>
+            Actualiza el estado de un nodo especifico.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <param name="statusId">Id del estado a definir</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.UpdateFirstTimeStatusId(System.String,System.String)">
+            <summary>
+            Actualiza el estado de un nodo especifico el cual no contiene informacion previamente.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <param name="statusId">Id del estado a definir</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetParentsOfMdVariables">
+            <summary>
+            Obtiene la lista de ParentIds de las MdVariables que tienen definidas un estado.
+            </summary>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.SetStatusToNode(System.String)">
+            <summary>
+            Define el estado de un nodo especifico, basado en la informacion de sus nodos hijos.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>Entidad del nodo sobre el que se define el estado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetMajorStatus(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene el mayor de los estados (mayor severidad) basado en una lista de estados.
+            </summary>
+            <param name="allStatus">Lista de estados a comparar</param>
+            <returns>Id del estado con la mayor severidad</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.SetAsPrincipalLocation(System.String)">
+            <summary>
+            Define un nodo especifico como una ubicacion principal.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetPrincipalUnitsGeneration(System.String)">
+            <summary>
+            Obtiene la lista de Ids de los nodos marcados como principales.
+            </summary>
+            <param name="nodeId">Id del nodo seleccionado</param>
+            <returns>Listado de Ids</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetAlarmedAndCriticalStatusColor(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="parentNodeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetTreeChildren(Amaq.Acloud.Entities.Core.Node,System.Collections.Generic.HashSet{Amaq.Acloud.Entities.Dtos.TreeDto})">
+            <summary>
+            
+            </summary>
+            <param name="node"></param>
+            <param name="allChildren"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.ResolveChildren3d(System.String)">
+            <summary>
+            Resuelve los hijos 3d del nodo especificado
+            </summary>
+            <param name="parentNodeId">Id del nodo</param>
+            <returns>Lista de hijos 3d como objetos Properties3dDto</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.NodeBl.GetIEntity3d(System.String,Amaq.Acloud.Entities.Enums.EntityType)">
+            <summary>
+            Obtiene solo las propiedades 3d del nodo especificado
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <param name="entityType">Tipo de entidad</param>
+            <returns>Objeto de tipo IEntity3d con las propiedades 3d</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.ProfileBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad Profile
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.ProfileBl._profileRepository">
+            <summary>
+            Contiene una referencia al repositorio de ProfileRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.ProfileBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio ProfileRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.ProfileBl.ResolveAccessNodes(System.Collections.Generic.List{Amaq.Acloud.Entities.ValueObjects.AccessNode})">
+            <summary>
+            Obtiene una lista de nodos que el usuario tiene acceso y los respectivos permisos de cada nodo.
+            El permiso por defecto es Ver.
+            </summary>
+            <param name="profileId">Id del perfil asociado al usuario</param>
+            <returns>Listado de nodos que el usuario tiene acceso y sus permisos asociados</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.ProfileBl.ResolveUserConcerning">
+            <summary>
+            Resuelve la concerniencia de los nodos a los cuales tiene acceso un usuario.
+            </summary>
+            <returns>Lista de nodos de acceso concernientes al usuario (se incluye las categorias)</returns>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.ProjectableDataBl._projectableDataRepository">
+            <summary>
+            Contiene una referencia al repositorio de ProjectableDataRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.ProjectableDataBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio ProjectableDataRepository.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.StatusBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad Status
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.StatusBl._statusRepository">
+            <summary>
+            Contiene una referencia al repositorio de StatusRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.StatusBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio StatusRepository
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.StatusBl.GetByCategory(System.String)">
+            <summary>
+            Obtiene todos los estados asociados a una categoria.
+            </summary>
+            <param name="categoryId">Id de categoria</param>
+            <returns>Listado de estados pertenecientes a la categoria especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.StatusBl.GetBySeverity(System.Int32)">
+            <summary>
+            Obtiene todos los estados por severidad.
+            </summary>
+            <param name="severity">Severidad</param>
+            <returns>Listado de estados con la severidad especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.StatusBl.GetBySeverityAndCategory(System.Int32,System.String)">
+            <summary>
+            Obtiene todos los estados asociados a una categoria y severidad indicada.
+            </summary>
+            <param name="severity">Severidad</param>
+            /// <param name="categoryId">Id de categoria</param>
+            <returns>Listado de estados pertenecientes a la categoria y severidad especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.StatusBl.CompareStatusId(System.String,System.String)">
+            <summary>
+            Compara los Ids de estado especificados y retorna el de mayor severidad.
+            </summary>
+            <param name="firstStatusId">Primer Id de estado a comparar</param>
+            <param name="secondStatusId">Segundo Id de estado a comparar</param>
+            <returns>El Id del estado con la mayor severidad</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.StatusBl.CompareStatusColor(System.Collections.Generic.List{System.String})">
+            <summary>
+            
+            </summary>
+            <param name="statusColorList"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.StatusBl.GetStatusColor(System.String)">
+            <summary>
+            Obtiene el color del estado
+            </summary>
+            <param name="statusId">Id del estado</param>
+            <returns>Cadena de texto que representa el color del estado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.StatusBl.GetAlarmedAndCriticalStatusColor">
+            <summary>
+            Obtiene el Color de los estados definidos como alarmados y criticos.
+            </summary>
+            <returns>Listado de estados alarmados y criticos</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.SubVariableBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad SubVariable
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.SubVariableBl._subVariableRepository">
+            <summary>
+            Contiene una referencia al repositorio de SubVariableRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio SubVariableRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.#ctor(System.String)">
+            <summary>
+            Inicializa la referencia al repositorio SubVariableRepository.
+            </summary>
+            <param name="dbUrl">Url de la base datos a conectar encriptada</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.Add(Amaq.Acloud.Entities.Core.SubVariable)">
+            <summary>
+            Inserta una nueva sub-variable en la base de datos.
+            </summary>
+            <param name="subVariable">Sub-Variable a insertar</param>
+            <returns>La sub-variable insertada con el Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.AddSingle(Amaq.Acloud.Entities.Core.SubVariable)">
+            <summary>
+            Inserta una nueva sub-variable en la base de datos.
+            </summary>
+            <param name="subVariable">Sub-Variable a insertar</param>
+            <returns>El valor del Id generado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.Add(System.Collections.Generic.List{Amaq.Acloud.Entities.Core.SubVariable})">
+            <summary>
+            Inserta una lista de sub-variables en la base de datos.
+            </summary>
+            <param name="subVariable">Listado de sub-variables a insertar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.AddMany(System.Collections.Generic.List{Amaq.Acloud.Entities.Core.SubVariable})">
+            <summary>
+            Inserta una lista de sub-variables en la base de datos.
+            </summary>
+            <param name="subVariable">Listado de sub-variables a insertar</param>
+            <returns>Listado de Ids generados</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.FindById(System.String)">
+            <summary>
+            Encuentra una SubVariable basado en su Id.
+            </summary>
+            <param name="subVariableId">Id de la SubVariable</param>
+            <returns>La SubVariable que tiene el Id especificado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.ChangeValueToDouble(System.String,System.Double)">
+            <summary>
+            Realiza el cambio del tipo de objecto que se encuentra el valor de la SubVariable a Double.
+            </summary>
+            <param name="subVariableId">Id de la SubVariable</param>
+            <param name="subVariableValue">Valor de la SubVariable como Double</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.ChangeHistoricalValuesToDouble(System.String)">
+            <summary>
+            Realiza el cambio del tipo de objecto que se encuentra el valor de la SubVariable a Double.
+            </summary>
+            <param name="subVariableId">Id de la SubVariable</param>
+            <param name="subVariableValue">Valor de la SubVariable como Double</param>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.UpdateValue(System.String,System.Object)">
+            <summary>
+            Actualiza el valor de la SubVariable basado en su Id y retorna la entidad de SubVariable
+            existente antes de la actualizacion del valor.
+            </summary>
+            <param name="subVariableId">Id de la SubVariable</param>
+            <param name="subVariableValue">Valor a actualizar en la SubVariable</param>
+            <returns>
+            La entidad de SubVariable existente antes de la actualizacion del valor,
+            esta entidad se retorna para realizar la insercion del historico.
+            </returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.UpdateMultipleValues(System.Collections.Generic.List{Amaq.Acloud.Entities.Dtos.UpdateValueDto})">
+            <summary>
+            Actualiza un listado de SubVariables especificada.
+            </summary>
+            <param name="listValuesToUpdate">Listado de par-valor</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.ResolveStatus(System.Collections.Generic.List{Amaq.Acloud.Entities.ValueObjects.Threshold},System.Object)">
+            <summary>
+            Resuelve el estado de la SubVariable basado en el nuevo valor de la SubVariable ingresado.
+            </summary>
+            <param name="thresholds">Umbral definido para la SubVariable especifica</param>
+            <param name="subVariableValue">Nuevo valor de la SubVariable a actualizar</param>
+            <returns>Listado de los estados resueltos para la SubVariable</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.UpdateHystorical(Amaq.Acloud.Entities.Core.SubVariable,System.Collections.Generic.List{System.String},System.Object)">
+            <summary>
+            Actualiza el historico de SubVariable.
+            </summary>
+            <param name="currentSubVariable">Entidad SubVariable antes de la actualizacion del valor</param>
+            <param name="status">Estado resuelto basado en el valor a ser enviado como respuesta</param>
+            <param name="subVariableValue">Valor actualizado de la SubVariable</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.UpdateStatusParentId(Amaq.Acloud.Entities.Core.SubVariable,System.Collections.Generic.List{System.String},System.Object)">
+            <summary>
+            Actualiza el estado de la Variable Md padre de la SubVariable cuyo estado es mas severo.
+            </summary>
+            <param name="currentSubVariable">Entidad SubVariable antes de la actualizacion del valor</param>
+            <param name="subVariableStatus">>Estado resuelto basado en el valor a ser enviado como respuesta</param>
+            <param name="subVariableValue">Valor actualizado de la SubVariable</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.GetSubVariablesWithThreshold">
+            <summary>
+            Obtiene las SubVariables que tienen definidas un umbral para la toma de decisiones de estado.
+            </summary>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.GetSubVariableChildren(System.String)">
+            <summary>
+            Obtiene todas las SubVariables que tienen como padre el Id de Variable Md especificado.
+            </summary>
+            <param name="mdVariableId">Id de la Variable Md</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.GetSubVariablesRealTime(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene las Variables Md que estan definidas como tiempo real.
+            </summary>
+            <param name="mdVariableId">Id del nodo asociado al Activo padre de las Variables Md</param>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.SubVariableBl.GetHistoric(System.String)">
+             <summary>
+             Obtiene el histórico de la SubVariable con el Id especificado
+             </summary>
+            <param name="subVariableId">Id de la SubVariable</param>
+             <returns>Respuesta con el resultado de la operación y el histórico de la SubVariable</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Business.Core.UserConfigurationBl">
+            <summary>
+            Reglas y operaciones de negocio de la entidad UserByProfile
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Business.Core.UserConfigurationBl._userConfigurationRepository">
+            <summary>
+            Contiene una referencia al repositorio de UserByProfileRepository y sus metodos/atributos.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.UserConfigurationBl.#ctor">
+            <summary>
+            Inicializa la referencia al repositorio UserByProfileRepository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.UserConfigurationBl.GetByUserId">
+            <summary>
+            Obtiene la configuracion del usuario autenticado en el sistema (un usuario esta asociado a un unico perfil).
+            </summary>
+            <returns>Id del perfil de usuario</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.UserConfigurationBl.GetDashboardConfiguration">
+            <summary>
+            Obtiene la informacion/configuracion de todos los dashboards asociados al usuario actual.
+            </summary>
+            <returns>ApiResponseDto con el listado de dashboards asociados al usuario</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.UserConfigurationBl.GetDashboardDto(System.String,System.Int32,Amaq.Acloud.Business.Core.DashboardAndWidget.DashboardBl,Amaq.Acloud.Business.Core.DashboardAndWidget.WidgetBl)">
+            <summary>
+            Obtiene la informacion detallada del dashboard y lo retorna como un tipo DashboardDto
+            </summary>
+            <param name="dashboardId">Id del dashboard a consultar</param>
+            <param name="dashboardIndex">Indice del dashboard</param>
+            <param name="dashboardBl">Referencia del objeto DashboardBl para evitar instanciarlo en cada iteracion</param>
+            <param name="widgetBl">Referencia del objeto WidgetBl para evitar instanciarlo en cada iteracion</param>
+            <returns>Toda la informacion de widgets y su contenido</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.Core.UserConfigurationBl.GetContent(Amaq.Acloud.Entities.Enums.ContentType,System.String)">
+            <summary>
+            Obtiene el contenido asociado a cada widget.
+            </summary>
+            <param name="contentType">Tipo de contenido que determina si es un filtro, un indicador o un grafico 3D</param>
+            <param name="contentTypeId">Id en la coleccion (determinada por el tipo de contenido) con la informacion/contenido</param>
+            <returns>Contenido del control grafico del widget</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.FileStoreBl.GetFile(System.String)">
+            <summary>
+            Obtiene un archivo a partir de su ruta
+            </summary>
+            <param name="filePath">Ruta del archivo</param>
+            <returns>FileDto con el contenido del archivo y su MIME Type</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.LinqDynamicExtension.Join(System.Linq.IQueryable,System.Collections.IEnumerable,System.String,System.String,System.String,System.Object[])">
+            <summary>
+            Realiza la union de dos tipos de entidades diferentes.
+            </summary>
+            <param name="outer">Objeto a la izquierda de la union</param>
+            <param name="inner">Objeto a la derecha de la union</param>
+            <param name="outerSelector">Parametro coincidente a la izquierda de la union</param>
+            <param name="innerSelector">Parametro coincidente a la derecha de la union</param>
+            <param name="resultsSelector">Valores requeridos a la salida de la union</param>
+            <param name="values">Parametros adicionales</param>
+            <returns>Objeto IQueryable con el resultado de la union y los valores requeridos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.LinqDynamicExtension.Join``1(System.Linq.IQueryable{``0},System.Collections.Generic.IEnumerable{``0},System.String,System.String,System.String,System.Object[])">
+            <summary>
+            Realiza la union de dos tipos de entidades diferentes.
+            </summary>
+            <typeparam name="T">Tipo de entidad del objeto a la izquierda de la union</typeparam>
+            <param name="outer">Objeto a la izquierda de la union</param>
+            <param name="inner">Objeto a la derecha de la union</param>
+            <param name="outerSelector">Parametro coincidente a la izquierda de la union</param>
+            <param name="innerSelector">Parametro coincidente a la derecha de la union</param>
+            <param name="resultsSelector">Valores requeridos a la salida de la union</param>
+            <param name="values">Parametros adicionales (opcionales)</param>
+            <returns>Objeto IQueryable con el resultado de la union y los valores requeridos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.LinqDynamicExtension.GetType(System.String)">
+            <summary>
+            Realiza una busqueda en los Dll en memoria y selecciona el tipo de entidad requerido.
+            </summary>
+            <param name="typeName">Cadena de texto que representa el tipo de entidad</param>
+            <returns>Tipo de entidad</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.LinqDynamicExtension.ObjectListToTypedList(System.String,System.Object)">
+            <summary>
+            Convierte una lista de objetos a una lista del tipo de entidad.
+            </summary>
+            <param name="fullName">Cadena de texto que representa el tipo de entidad requerido</param>
+            <param name="value">Lista de objetos</param>
+            <returns>Lista del tipo de entidad requerido</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Business.LinqDynamicExtension.IQueryableToTypedList(System.String,System.Linq.IQueryable)">
+            <summary>
+            Convierte un objeto IQueryable a una lista del tipo de entidad.
+            </summary>
+            <param name="fullName">Cadena de texto que representa el tipo de entidad requerido</param>
+            <param name="query">Objeto IQueryable a convertir</param>
+            <returns>Lista del tipo de entidad requerido</returns>
+        </member>
+        <member name="P:Amaq.Acloud.Business.Properties.CurrentCoreDbName">
+            <summary>
+            Url base de datos o tenant en el cual está autenticado el usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Business.Properties.CurrentUserName">
+            <summary>
+            UserName del usuario actualmente autenticado en el sistema
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Business.Properties.FileStorePath">
+            <summary>
+            Ruta del almacén de archivos del sistema A-CLOUD
+            </summary>
+        </member>
+    </members>
+</doc>

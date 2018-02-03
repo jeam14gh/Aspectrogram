@@ -1,0 +1,638 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Amaq.Acloud.Data</name>
+    </assembly>
+    <members>
+        <member name="T:Amaq.Acloud.Data.Administration.CompanyRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio CompanyRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.CompanyRepository.#ctor">
+            <summary>
+            Indica la base de datos de Administracion.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.CompanyRepository.Find(System.Collections.Generic.List{System.String})">
+            <summary>
+            Busca las empresas correspondientes a cada Id especificado
+            </summary>
+            <param name="companyIdList">Lista de companyId</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.CompanyRepository.GetCompanyId(System.String)">
+            <summary>
+            Obtener el Id de empresa basado en el nombre de la base de datos.
+            </summary>
+            <param name="dbName">Nombre de la base de datos</param>
+            <returns>Id de la empresa</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.CompanyRepository.GetByDbName(System.String)">
+            <summary>
+            Obtiene la empresa con el DbName especificado
+            </summary>
+            <param name="dbName">Nombre de la base de datos</param>
+            <returns>La empresa</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.SyncfusionControlRepository.#ctor">
+            <summary>
+            Indica la base de datos segun la concernencia del usuario de la aplicacion.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Administration.UserRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio UserRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.UserRepository.#ctor">
+            <summary>
+            Indica la base de datos segun la concernencia del usuario de la aplicacion (empresa asociada).
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.UserRepository.Find(System.String,System.String)">
+            <summary>
+            Busca el usuario con el userName y password especificados
+            </summary>
+            <param name="userName"></param>
+            <param name="passwordHash">Clave de acceso encriptada</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.UserRepository.Find(System.String,System.String,System.String)">
+            <summary>
+            Busca el usuario con el userName, password y dbName especificados
+            </summary>
+            <param name="userName"></param>
+            <param name="passwordHash">Clave de acceso encriptada</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.UserRepository.RegisterInCompany(System.String,System.String)">
+            <summary>
+            Registra en una empresa a un usuario existente
+            </summary>
+            <param name="userId">Id del usuario</param>
+            <param name="companyId">Id de la empresa</param>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.UserRepository.GetUserId(System.String)">
+            <summary>
+            Obtiene el Id del usuario basado en el nombre de usuario unico.
+            </summary>
+            <param name="userName">Nombre de usuario unico en el sistema</param>
+            <returns>Id del usuario</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.UserRepository.FindByUserName(System.String)">
+            <summary>
+            Encuentra un usuario basado en el nombre de usuario registrado.
+            </summary>
+            <param name="userName">Nombre de usuario unico en el sistema</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Administration.UserRepository.FindById(System.String)">
+            <summary>
+            Encuentra un usuario basado en el Id de usuario.
+            </summary>
+            <param name="userId">Id de usuario en el sistema</param>
+            <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.CoreRepository`1">
+            <summary>
+            Repositorio base que extiende la funcionalidad de MongoRepository.
+            </summary>
+            <typeparam name="T">El tipo de entidad contenido en el repositorio</typeparam>
+        </member>
+        <member name="M:Amaq.Acloud.Data.CoreRepository`1.#ctor">
+            <summary>
+            Inicializa una nueva instancia MongoRepository con la URL por defecto obtenida de Properties.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Data.CoreRepository`1.#ctor(System.String)">
+            <summary>
+            Inicializa una nueva instancia MongoRepository con la URL especificada.
+            </summary>
+            <param name="url">Cadena de texto con la cadena de conexion a la base de datos</param>
+        </member>
+        <member name="M:Amaq.Acloud.Data.CoreRepository`1.Queryable(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+            <summary>
+            Funciones de agregacion para Mongo personalizadas.
+            </summary>
+            <param name="expression">Condicion inicial para la funcion de agregacion Where</param>
+            <param name="conditions">Condiciones adicionales, OrderBy, GroupBy, etc</param>
+            <returns>Listado de documentos que coinciden con los criterios de busqueda configurados</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.AssetRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio AssetRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.AssetRepository.FindByNodeId(System.String)">
+            <summary>
+            Busca un activo especifico segun su Id de nodo.
+            </summary>
+            <param name="nodeId">Id de nodo que identifica el activo</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.AssetRepository.FindWithProperties3d(System.Collections.Generic.List{System.String})">
+            <summary>
+            Busca los activos correspondientes a cada Id especificado siempre y cuando tengan propiedades 3d
+            </summary>
+            <param name="nodeIdList">Lista de nodeId</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.AssetRepository.FindByExternalId(System.String)">
+            <summary>
+            Busca un activo especifico segun su Id en el sistema externo.
+            </summary>
+            <param name="externalId">Id en el sistema externo que identifica el activo</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.CategoryRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio CategoryRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.CategoryRepository.GetByDescription(System.String)">
+            <summary>
+            Busca una categoria especifica segun su descripcion.
+            </summary>
+            <param name="description">Cadena de texto que identifica la descripcion de categoria</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.CategoryRepository.FindByType(Amaq.Acloud.Entities.Enums.EntityType)">
+            <summary>
+            Busca las categorias asociadas a un tipo.
+            </summary>
+            <param name="type">Cadena de texto que identifica el tipo de categoria</param>
+            <returns>Listado de documentos, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.CategoryRepository.GetByManyDescriptions(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene un listado de categorias segun un listado de descripciones.
+            </summary>
+            <param name="descriptions">Listado de descripciones</param>
+            <returns>Listado de las diferentes categorias que coinciden con el listado de descripciones</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.CategoryRepository.GetAssetCategories">
+            <summary>
+            Obtiene un listado de Ids de las categoria de Activo.
+            </summary>
+            <returns>listado de Ids de las categoria de Activo</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.ConceptRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio ConceptRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.ConceptRepository.FindByConceptId(System.String)">
+            <summary>
+            Busca un concepto especifico segun su Id.
+            </summary>
+            <param name="conceptId">Id de concepto</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.ConceptRepository.GetLastConceptByResponsible(System.String)">
+            <summary>
+            Busca una variable Md especifica segun el Id de activo al que pertenece.
+            </summary>
+            <param name="assetId">Id del activo (nodo padre) al que pertenece la variable Md</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.ConceptRepository.GetHistoricalConcepts(System.String,System.String)">
+            <summary>
+            Obtiene el historico de conceptos de un experto en particular.
+            </summary>
+            <param name="assetId">Id del activo padre de los conceptos</param>
+            <param name="userResponsible">Id del usuario responsable por el historico de conceptos</param>
+            <returns>El listado de documentos, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.DashboardRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio DashboardRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.DashboardRepository.GetDashboard(System.String)">
+            <summary>
+            Obtiene toda la informacion asociada a un dashboard especifico.
+            </summary>
+            <param name="dashboardId">Id del dashboard requerido</param>
+            <returns>Retorna la entidad encontrada en el repositorio segun su Id</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.DashboardRepository.SetNewWidget(System.String,System.String)">
+            <summary>
+            Define un nuevo widget dentro del repositorio de Dashboard.
+            Referencia el widgetId previamente creado.
+            </summary>
+            <param name="dashboardId">Id del dashboard a actualizar</param>
+            <param name="widgetId">Id del widget previamente creado</param>
+            <returns>Retorna un </returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.WidgetRepository.GetWidgets(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene un listado de widgets ordenados segun la posicion (index).
+            </summary>
+            <param name="widgetIdList">Listado de Ids de widgets requeridos</param>
+            <returns>Listado de widgets</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.IndicatorAndFilter.FilterRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio FilterRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.IndicatorAndFilter.FilterRepository.#ctor">
+            <summary>
+            Indica la base de datos segun la concernencia del usuario de la aplicacion (empresa asociada).
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.IndicatorAndFilter.IndicatorRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio IndicatorRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.IndicatorAndFilter.IndicatorRepository.#ctor">
+            <summary>
+            Indica la base de datos segun la concernencia del usuario de la aplicacion (empresa asociada).
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.LocationRepository">
+            <summary>                      
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio LocationRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.LocationRepository.FindByNodeId(System.String)">
+            <summary>
+            Busca una ubicacion especifica segun su Id de nodo.
+            </summary>
+            <param name="nodeId">Id de nodo que identifica la ubicacion</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.LocationRepository.FindWithProperties3d(System.Collections.Generic.List{System.String})">
+            <summary>
+            Busca las ubicaciones correspondientes a cada Id especificado siempre y cuando tengan propiedades 3d
+            </summary>
+            <param name="nodeIdList">Lista de nodeId</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.LocationRepository.FindByExternalId(System.String)">
+            <summary>
+            Busca una ubicacion especifica segun su Id en el sistema externo.
+            </summary>
+            <param name="externalId">Id en el sistema externo que identifica la ubicacion</param>
+            <returns>El primer documento o por defecto, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.MaintenanceOrderRepository.GetMaintenanceOrders(System.String,System.String,System.String,Amaq.Acloud.Entities.Enums.EntityType)">
+            <summary>
+            Obtiene todas las ordenes de mantenimiento asociadas al ExternalId de un nodo seleccionado.
+            </summary>
+            <param name="externalId">Id del sistema externo</param>
+            <returns>Listado de Ordenes de mantenimiento</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.MdVariableRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio MdVariableRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.MdVariableRepository.FindByNodeId(System.Collections.Generic.List{System.String})">
+            <summary>
+            Busca las variables Md correspondientes a cada NodeId especificado
+            </summary>
+            <param name="nodeIdList">Lista de nodeId</param>
+            <returns>Lista de variables Md</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.MdVariableRepository.FindByParentId(System.String)">
+            <summary>
+            Encuentra todas las variable Md que tienen como padre el activo especificado.
+            </summary>
+            <param name="assetId">Id del activo al que pertenece la variable Md</param>
+            <returns>Listado de documentos basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.MdVariableRepository.GetMdVariableRealTime(System.String)">
+            <summary>
+            Obtiene las variable Md que tienen como padre el activo especificado y son de tiempo real.
+            </summary>
+            <param name="assetId">Id del activo al que pertenece la variable Md</param>
+            <returns>Listado de documentos basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetByPrincipalCategories(System.Collections.Generic.List{Amaq.Acloud.Entities.ValueObjects.CategoryNode})">
+            <summary>
+            Obtiene todos los nodos asociadas a una categoria.
+            </summary>
+            <param name="categoryList">Id de categoria</param>
+            <returns>Listado de nodos pertenecientes a la categoria especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetParent(System.String)">
+            <summary>
+            Obtiene el nodo padre de un nodo especifico.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>El nodo padre</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetByEntity(Amaq.Acloud.Entities.Enums.EntityType)">
+            <summary>
+            Obtiene todos los nodos asociadas a un tipo de entidad.
+            </summary>
+            <param name="type">Tipo de entidad</param>
+            <returns>Listado de nodos pertenecientes al tipo de entidad especificado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetByPrincipalCategory(System.String)">
+            <summary>
+            Obtiene todos los nodos asociadas a una categoria.
+            </summary>
+            <param name="categoryId">Id de categoria</param>
+            <returns>Listado de Ids de nodos pertenecientes a la categoria especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetNodeById(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtener un nodo basado en una lista de Ids.
+            </summary>
+            <param name="nodeIdList">Id del nodo</param>
+            <returns>Listado de entidades de nodo</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetChildren(System.String)">
+            <summary>
+            Obtiene todos los nodos hijos asociados al nodo especificado.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>Listado de nodos hijos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetChildren(System.String,System.Collections.Generic.List{System.Int32})">
+            <summary>
+            Obtiene los nodos hijos usando el parentLevel y un filtro adicional para indicar cuales tipos de nodo
+            se van a buscar
+            </summary>
+            <param name="parentLevel">Cadena de texto que representa el Level del nodo. Ejemplo: "1.1"</param>
+            <param name="entityTypes">Tipos de nodo a filtrar</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetMdVariableChildrenByCategory(System.String,System.String)">
+            <summary>
+            Obtiene todos los nodos hijos asociados al nodo y a la categoria especificados.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <param name="categoryId">Id de la categoria</param>
+            <returns>Listado de nodos de Variables Md hijos, pertenecientes a la categoria especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetParentNodes">
+            <summary>
+            Obtiene todos los nodos principales o padres en el arbol.
+            </summary>
+            <returns>Listado total de nodos padres en el arbol</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.HasChild(System.String)">
+            <summary>
+            Verifica si un nodo tiene asociados hijos.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>Verdadero si tiene hijos, falso en el caso contrario</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.UpdateFirstTimeStatusId(System.String,System.String)">
+            <summary>
+            Actualiza el estado de un nodo especifico el cual no contiene informacion previamente.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <param name="statusId">Id del estado a definir</param>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.UpdateStatusId(System.String,System.String)">
+            <summary>
+            Actualiza el estado de un nodo especifico.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <param name="statusId">Id del estado a definir</param>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetParentsOfMdVariables">
+            <summary>
+            Obtiene la lista de ParentIds de las MdVariables que tienen definidas un estado.
+            </summary>
+            <returns>Respuesta con el resultado de la transaccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetDifferentStatus(System.String)">
+            <summary>
+            Obtiene los estados distinguiendo entre los diferentes estados de los nodos hijos.
+            </summary>
+            <param name="nodeId">Id del nodo padre</param>
+            <returns>Listado de los diferentes estados que tienen asociados los hijos</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetPrincipalUnitsGeneration(System.String,System.String)">
+            <summary>
+            Obtiene el listado de Unidades principales de generacion segun el nodeId seleccionado.
+            </summary>
+            <param name="nodeId">Id del nodo</param>
+            <returns>Listado de las unidades principales de generacion asociadas al nodeId</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.NodeRepository.GetNodeIdListByStatus(System.String,System.String)">
+            <summary>
+            Obtiene el listado los primeros hijos equipos y activos alarmados o criticos segun el nodeId seleccionado.
+            </summary>
+            <param name="parentNodeId">Id del nodo padre</param>
+            <param name="statusId">Id del estado de los nodos hijos</param>
+            <returns>Listado de los nodos por estado</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.ProfileRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio ProfileRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.StatusRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio StatusRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.StatusRepository.GetByCategory(System.String)">
+            <summary>
+            Obtiene todos los estados asociados a una categoria.
+            </summary>
+            <param name="categoryId">Id de categoria</param>
+            <returns>Listado de estados pertenecientes a la categoria especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.StatusRepository.GetBySeverity(System.Int32)">
+            <summary>
+            Obtiene todos los estados por severidad.
+            </summary>
+            <param name="severity">Severidad</param>
+            <returns>Listado de estados con la severidad especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.StatusRepository.GetBySeverityAndCategory(System.Int32,System.String)">
+            <summary>
+            Obtiene todos los estados asociados a una categoria y severidad indicada.
+            </summary>
+            <param name="severity">Severidad</param>
+            /// <param name="categoryId">Id de categoria</param>
+            <returns>Listado de estados pertenecientes a la categoria y severidad especificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.StatusRepository.CompareStatusId(System.String,System.String)">
+            <summary>
+            Compara los Ids de estado especificados y retorna el de mayor severidad.
+            </summary>
+            <param name="firstStatusId">Primer Id de estado a comparar</param>
+            <param name="secondStatusId">Segundo Id de estado a comparar</param>
+            <returns>El Id del estado con la mayor severidad</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.StatusRepository.CompareStatusColor(System.Collections.Generic.List{System.String})">
+            <summary>
+            Compara los colores de estado especificados y retorna el de mayor severidad.
+            </summary>
+            <param name="firstStatusColor">Primer color de estado a comparar</param>
+            <param name="secondStatusColor">Segundo color de estado a comparar</param>
+            <returns>El color del estado con la mayor severidad</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.StatusRepository.GetStatusColor(System.String)">
+            <summary>
+            Obtiene el color del estado
+            </summary>
+            <param name="statusId">Id del estado</param>
+            <returns>Cadena de texto que representa el color del estado</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.StatusRepository.GetAlarmedAndCriticalStatusColor">
+            <summary>
+            Obtiene el Color de los estados definidos como alarmados y criticos.
+            JHC: IMPORTANTE NO TENER LA SEVERIDAD FIJA COMO LA USO ABAJO!
+            </summary>
+            <returns>Listado de estados alarmados y criticos</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.SubVariableRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio SubVariableRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.#ctor">
+            <summary>
+            Indica la base de datos segun la concernencia del usuario de la aplicacion (empresa asociada).
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.GetNumericSubVariables">
+            <summary>
+            Obtiene todas las SubVariables de tipo numero.
+            </summary>
+            <returns>Listado de SubVariables</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.FindByParentId(System.String)">
+            <summary>
+            Encuenstra una SubVariable especifica segun el Id de la Variable Md a la que pertenece.
+            </summary>
+            <param name="mdVariableId">Id de la Variable Md a la que pertenece</param>
+            <returns>Listado de SubVariables, basado en el criterio de busqueda</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.UpdateValue(Amaq.Acloud.Entities.Core.SubVariable,System.Collections.Generic.List{System.String},System.Object)">
+            <summary>
+            Actualiza el valor de la SubVariable basado en su Id y retorna verdadero si es necesario
+            actualizar el historico de SubVariable o falso segun el caso.
+            </summary>
+            <param name="currentSubVariable">Entidad SubVariable antes de actualizar el valor</param>
+            <param name="status">Estado resuelto a actualizar</param>
+            <param name="value">Valor a actualizar</param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.UpdateValue(System.String,System.Object)">
+            <summary>
+            Actualiza el valor de una SubVariable la cual no requiere definir un estado para la SubVariable en cuestion.
+            </summary>
+            <param name="subVariableId">Id de la SubVariable</param>
+            <param name="value">Valor a actualizar</param>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.UpdateHystorical(Amaq.Acloud.Entities.Core.SubVariable)">
+            <summary>
+            Actualiza el historico de SubVariable.
+            </summary>
+            <param name="currentSubVariable">Entidad SubVariable antes de la actualizacion del valor</param>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.GetSubVariablesWithThreshold">
+            <summary>
+            Obtiene las SubVariables que tienen definidas un umbral para la toma de decisiones de estado.
+            </summary>
+            <returns>Listado de SubVariables con umbral definido</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.SubVariableRepository.GetHistoric(System.String)">
+             <summary>
+             Obtiene el histórico de la SubVariable con el Id especificado
+             </summary>
+            <param name="subVariableId">Id de la SubVariable</param>
+             <returns>Histórico de la SubVariable</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.Core.UserConfigurationRepository">
+            <summary>
+            Repositorio que extiene las funcionalidades de MongoRepository,
+            segun las necesidades asociadas al repositorio UserConfigurationRepository.
+            </summary>
+            <note>La variable 'builder' se obtiene por herencia de MongoRepository</note>
+        </member>
+        <member name="M:Amaq.Acloud.Data.Core.UserConfigurationRepository.GetByUserId(System.String)">
+            <summary>
+            Obtiene la configuracion del usuario especifico (un usuario esta asociado a un unico perfil).
+            </summary>
+            <param name="userId">Id del usuario en la base de datos</param>
+            <returns>Id del perfil de usuario</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Data.LinqDynamicMongo`1">
+            <summary>
+            Extension de LinqDynamic para ser usado con MongoDB.
+            </summary>
+            <typeparam name="T">El tipo de entidad contenido en el repositorio</typeparam>
+        </member>
+        <member name="M:Amaq.Acloud.Data.LinqDynamicMongo`1.Where(MongoDB.Driver.IAggregateFluent{`0},System.String)">
+            <summary>
+            Busca dentro de una coleccion de datos los documentos que contienen los campos especificados en la condicion.
+            </summary>
+            <param name="_aggregate">Interfaz fluida de autorreferencia a la coleccion</param>
+            <param name="where">Expresion que debe coincidir con los campos del documento</param>
+            <returns>La interfaz fluida de autorreferencia a la coleccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.LinqDynamicMongo`1.OrderBy(MongoDB.Driver.IAggregateFluent{`0},System.String)">
+            <summary>
+            Ordena los documentos de una coleccion de datos segun la condicion.
+            </summary>
+            <param name="_aggregate">Interfaz fluida de autorreferencia a la coleccion</param>
+            <param name="orderBy">Campo del documento por el que se debe ordenar y su valor ASCENDENTE o DESCENDENTE</param>
+            <returns>La interfaz fluida de autorreferencia a la coleccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.LinqDynamicMongo`1.Select(MongoDB.Driver.IAggregateFluent{`0},System.String)">
+            <summary>
+            Obtiene los campos especificados en la condicion para los documentos en la coleccion.
+            </summary>
+            <param name="_aggregate">Interfaz fluida de autorreferencia a la coleccion</param>
+            <param name="select">Campos a seleccionar dentro de la coleccion</param>
+            <returns>La interfaz fluida de autorreferencia a la coleccion</returns>
+        </member>
+        <member name="M:Amaq.Acloud.Data.LinqDynamicMongo`1.GroupBy(MongoDB.Driver.IAggregateFluent{`0},System.String)">
+            <summary>
+            Agrupa los documentos en una coleccion de datos segun el campo especificado.
+            </summary>
+            <param name="_aggregate">Interfaz fluida de autorreferencia a la coleccion</param>
+            <param name="groupBy">Campo del documento por el que se debe agrupar</param>
+            <returns>La interfaz fluida de autorreferencia a la coleccion</returns>
+        </member>
+        <member name="P:Amaq.Acloud.Data.Properties.CoreDbUrl">
+            <summary>
+            Url base de datos o tenant en el cual está autenticado el usuario
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,101 @@
+﻿    .infoGralWaterfall3d {
+        background-color: rgba(20, 20, 20, 1);
+        position: absolute;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color:  white;        
+        font-size: 10px;
+        opacity: 0.8;
+    }
+    .modalPersonalize-Waterfall3d-{
+        margin: 10px 10px 10px 10px;
+        padding: 10px 10px 10px 10px;
+         background-color: rgba(20, 20, 20, 1);
+         opacity: 0.95;
+         overflow: hidden;
+    }
+
+    .groupsWaterfall {
+        position: relative;
+        display: block;
+        color: whitesmoke; 
+        border-width: 1px;
+        border-style: solid;
+        margin: 2px 2px 2px 2px;
+        padding: 2px 1px 2px 1px; /*top right bottom left*/
+    }
+    .gralConfigWaterfall3d {
+        background-color: rgba(20, 20, 20, 0.6);
+        position: absolute;
+        font-family:sans-serif;
+        color: whitesmoke;        
+        background-size: 25px;
+        font-size: 12px;
+        opacity: 1.0;
+    }
+    .groupsArmonics {
+        position: relative;
+        display: block;
+        color: whitesmoke; 
+        margin: 2px 2px 2px 2px;
+        padding: 2px 1px 2px 1px; /*top right bottom left*/
+    }
+    .cdPartArmonic {
+        position: relative;
+        display: inline;
+        padding: 2px 4px 2px 4px;
+    }
+
+
+    .menuWaterfall3d {
+        background-color: rgba(20, 20, 20, 0.6);
+        position: absolute;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: whitesmoke;        
+        background-size: 25px;
+        font-size: 12px;
+        opacity: 0.8;
+        right: 55px;
+        top: 10px !important;
+        border: dashed;
+        border-width: 0.5px;
+    }
+
+
+    .btnMenuWaterfall3d:hover{
+        background-color: rgba(80, 80, 80, 0.7);
+        cursor: pointer;
+    }
+
+   /*InBtn-Waterfall - InColor-Waterfall - ImgBmp-Waterfall - InCB-Waterfall - InNum-Waterfall*/
+
+   .InBtn-Waterfall{
+       width: 50px;
+       margin: 5px 20px 15px 20px;
+   }
+   .InColor-Waterfall{
+       width: 18px;
+       height: 18px;
+       padding: 0px 0px 0px 0px;
+       margin: 5px 0px 15px 0px;
+       border: none;
+   }
+   .ImgBmp-Waterfall{
+       width:15px;
+       height: 80px;
+       margin: 0px 15px 15px 15px;
+   }
+   .InCB-Waterfall{
+       padding: 15px 0px 15px 0px;
+       margin-top: 20px!important;
+   }
+   .InRange-Waterfall{
+       width: 140px;
+       height:20px;
+       padding: 15px 0px 15px 0px;
+       margin: 0px 15px 15px 15px;
+   }
+   .InNum-Waterfall{
+       width: 50px;
+       right: 20px !important;
+       margin: 5px 0px 5px 0px;
+   }

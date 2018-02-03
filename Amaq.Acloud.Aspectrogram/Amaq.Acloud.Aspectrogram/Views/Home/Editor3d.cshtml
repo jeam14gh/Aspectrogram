@@ -1,0 +1,252 @@
+﻿
+@{
+    ViewBag.Title = "Editor 3D";
+    Layout = "~/Views/Shared/_LayoutEditor3d.cshtml";
+}
+
+
+
+@Scripts.Render("~/Scripts/jquery-ui-1.11.4.min.js")
+
+@Scripts.Render("~/Scripts/jquery-ui-1.11.4.min.js")
+
+@Scripts.Render("~/Scripts/babylon/babylon.2.4.max.js")
+@Scripts.Render("~/Scripts/babylon/babylon.stlFileLoader.js")
+@Scripts.Render("~/Scripts/babylon/babylon.math.js")
+
+@Scripts.Render("~/Scripts/app/amaq3d/loadMeshes.js")
+@Scripts.Render("~/Scripts/app/amaq3d/app3d.js")
+@Scripts.Render("~/Scripts/app/amaq3d/manageCanvas3d.js")
+@Scripts.Render("~/Scripts/app/amaq3d/events3d.js")
+@Scripts.Render("~/Scripts/app/amaq3d/editor3d/globals.js")
+@Scripts.Render("~/Scripts/app/amaq3d/editor3d/functionsEd3d.js")
+@Scripts.Render("~/Scripts/app/amaq3d/editor3d/helpersEd3d.js")
+@Scripts.Render("~/Scripts/app/amaq3d/editor3d/uiEditor3d.js")
+@Scripts.Render("~/Scripts/app/amaq3d/editor3d/treeEd3d.js")
+
+
+<div id="containerEd3d" width= "100%" height="100%">
+
+</div>
+
+<script>
+
+    var _parentDiv, _containerParentId, _container, result, i, j, totalPoints, jsonTree, jsonTree2, selectedTreeNode, selectedId, entityType, idEntity, properties3d, assetsId = [], assetId, locationId, mdVariableId, parentId, principalAssetId, principalNodeId, parentNodeId, orientation, nodesId = [], isPrincipal, gralInfo, assetsWithProp3d = [], assetIdProp3d, jsonTreeAssets = [];
+
+    var treePiecesObj, treeMeasurementsPointsObj, treeAssetsLibraryObj;
+
+    idEntity = "@ViewBag.selectedId";
+
+    _parentDiv = $("#containerEd3d");
+
+    _parentDiv.append('<div id="containerParent-' + idEntity + '" width="100%" height="100%"></div>');
+    _containerParentId = "containerParent-" + idEntity;
+    /*
+    _containerParentId = "containerParent-" + idEntity;
+    _container = document.createElement("div");
+    _container.id = _containerParentId;
+    _container.style.width = "100%";
+    _container.style.height = "100%";
+    
+    console.log(_container);*/
+    totalPoints = [];
+    $.ajax({
+        url: "/Home/GetNodes",
+        method: "GET",
+        success: function (result) {
+            selectedId = "@ViewBag.selectedId";
+            jsonTree = JSON.parse(JSON.stringify(result));
+
+            for (var i = 0; i < jsonTree.length; i++) {
+                if (jsonTree[i].Id === selectedId) {
+                    selectedTreeNode = jsonTree[i];
+                    parentNodeId = jsonTree[i].ParentId;
+                }
+                if (jsonTree[i].EntityType == 2 || jsonTree[i].EntityType == 1) {
+                    jsonTreeAssets.push(jsonTree[i]);
+                }
+            }
+
+            nodesId.push(selectedTreeNode.Id);
+
+            for (var i = 0; i < jsonTree.length; i++) {
+                if (jsonTree[i].ParentId === selectedTreeNode.Id && jsonTree[i].EntityType === 2 ) {
+                    //assetsId.push(jsonTree[i].Id);
+                    nodesId.push(jsonTree[i].Id);
+                }
+            }
+
+            entityType = selectedTreeNode.EntityType;
+            idEntity = selectedTreeNode.Id;
+
+            var countPId = 0, countProp3dPoints = 0;
+            if (selectedTreeNode.EntityType === 1) {
+
+            }
+                      
+           // for (var h = 0; h < nodesId.length; h++) {
+                if (selectedTreeNode.EntityType == 2) {
+                    $.ajax({
+                        url: "/Home/GetAssetIdAndAsdaqId",
+                        method: "GET",
+                        data: {
+                            nodeId: idEntity
+                        },
+                        success: function (result) {
+                            result = JSON.parse(JSON.stringify(result));
+                            for (var i = 0; i < result.length; i++) {
+                                if (selectedTreeNode.Id == result[i].NodeId) {
+                                    assetId = result[i].AssetId;
+                                    if (!result[i].IsPrincipal) {
+                                        principalNodeId = parentNodeId;
+                                        isPrincipal = false;
+                                    } else {
+                                        principalNodeId = selectedTreeNode.Id;
+                                        assetId = result[i].AssetId;
+                                        isPrincipal = true;
+                                    }
+
+                                }
+                                assetsId.push(result[i].AssetId);
+                            }
+                            $.ajax({
+                                url: "/Home/GetAssetProperties3d",
+                                method: "GET",
+                                data: {
+                                    assetId: assetId
+                                },
+                                success: function (result) {
+                                    if (result && result != "") {
+                                        //new App3d(0, 12, 6, false, selectedTreeNode.Id, "Editor").Show();
+                                        result = JSON.parse(result);
+                                        
+                                        globalsMenuEd.prop3d = result;
+
+                                        properties3d = result;
+
+                                        if (globalsMenuEd.prop3d.gralInfo.idCloned == "") {
+                                            globalsMenuEd.prop3d.gralInfo.idCloned = principalNodeId;
+                                            globalsMenuEd.prop3d.gralInfo.isCloned = false;
+                                        }
+                                        globalsMenuEd.prop3d.gralInfo.id
+
+                                        globalsMenuEd.prop3d.points.children = [];
+                                    }
+
+                                    for (var i = 0; i < assetsId.length; i++) {
+                                        $.ajax({
+                                            url: "/Home/GetMeasurementPointsByAsset",
+                                            method: "GET",
+                                            data: {
+                                                assetId: assetsId[i]
+                                            },
+                                            async: false,
+                                            success: function (msResult) {
+                                                if (msResult.length > 0) {
+                                                    for (j = 0; j < msResult.length; j += 1) {
+                                                        // Para guardar referencia del nodeId del asset padre de los measurement points
+
+                                                        msResult[j].ParentNodeId = assetId;
+                                                        totalPoints.push(msResult[j]);
+                                                        totalPoints[countPId].ParentId = idEntity;
+
+                                                        if (msResult[j].Orientation == 1 && msResult[j].AssociatedMeasurementPointId) {
+                                                            orientation = "X";
+                                                        }
+                                                        else if (msResult[j].Orientation == 2 && msResult[j].AssociatedMeasurementPointId) {
+                                                            orientation = "Y";
+                                                        }
+                                                        else if (msResult[j].Orientation == 3) {
+                                                            orientation = "axial";
+                                                        } else {
+                                                            orientation = "radial";
+                                                        }
+
+                                                        if (msResult[j].Properties3d) {
+                                                            globalsMenuEd.prop3d.points.children.push(JSON.parse(msResult[j].Properties3d));
+                                                            globalsMenuEd.prop3d.points.children[countProp3dPoints].idPoint = msResult[j].Id;
+
+                                                            globalsMenuEd.prop3d.points.children[countProp3dPoints].info.angle = msResult[j].SensorAngle * Math.PI / 180;
+                                                            globalsMenuEd.prop3d.points.children[countProp3dPoints].info.orientation = orientation;
+                                                            globalsMenuEd.prop3d.points.children[countProp3dPoints].info.relatedIdPoint = msResult[j].AssociatedMeasurementPointId;
+
+                                                            countProp3dPoints++;
+                                                        }
+                                                        countPId++;
+                                                    }
+                                                }
+                                                
+                                                if (i === assetsId.length - 1) {
+
+                                                    var editor = new ManageCanvas3d(idEntity, "Editor", _containerParentId, idEntity, "");
+                                                    editor.openCanvas();
+
+                                                    var functionsEd3d = new FunctionsEd3d(idEntity, 2);
+
+                                                    functionsEd3d.isPrincipal = isPrincipal;
+                                                    functionsEd3d.initializateProp3d(properties3d);
+                                                    
+                                                    var treeEd3d = new TreeEd3d(idEntity, 2, functionsEd3d);
+
+                                                    if (properties3d) {
+                                                        var uiEditor = new UiEditor3d(idEntity, functionsEd3d, treeEd3d, true, entityType);
+                                                    }
+                                                    else {
+                                                        var uiEditor = new UiEditor3d(idEntity, functionsEd3d, treeEd3d, false, entityType);
+                                                    }
+                                                    
+
+                                                    uiEditor.initializateProp3d(globalsMenuEd.prop3d);
+                                                    treeEd3d.createTreeEditor();
+
+                                                    functionsEd3d.treeEd3d = treeEd3d;
+                                                    functionsEd3d.uiEd3d = uiEditor;
+                                                    uiEditor.createMenu();
+                                                    
+                                                    var helperEd = new HelpersEd3d(idEntity);
+                                                    helperEd.createAxisHelpers();
+
+                                                    uiEditor.helperEd3d = helperEd;
+                                                    uiEditor.loadAxisHelperAxis();
+                                                    //functionsEd3d.loadAssetMeshes(principalNodeId);
+                                                    functionsEd3d.loadAssetMeshes();
+
+                                                    setTimeout(function () {
+                                                        treePiecesObj.checkAll();
+                                                        treePiecesObj.expandAll();
+                                                    }, 3000);
+
+                                                }
+                                            },
+                                            error: function (jqXHR, textStatus) {
+                                                console.error("Error: ");
+                                            }
+                                        });
+                                    }
+                                },
+                                error: function (jqXHR, textStatus) {
+                                    console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
+                                }
+                            });
+                        },
+                        error: function (jqXHR, textStatus) {
+                            console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
+                        }
+                    });
+
+                    
+                    
+                
+                }
+
+
+        },
+        error: function (jqXHR, textStatus) {
+            console.log("Error desconocido 100%");
+        }
+    });
+
+
+
+
+</script>

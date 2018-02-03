@@ -1,0 +1,279 @@
+﻿@{
+    ViewBag.Title = "Inicio";
+}
+
+<div style="overflow-y:scroll;">
+
+    <div id="sliderToolbar" class="hidden">
+        <div class="row" style="margin:0px !important;">
+            <div class="col-md-12">
+                <h2 class="titleSlider">Frecuencia de corte</h2>
+                <div id="stopFrecuency" style="width:95%;float:left;"></div>
+                <div class="sliderValue" style="float:right;margin-top:-5px;width:5%;padding-left:10px;">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="aspectrogramMainContent" class="container-fluid fullHeight">
+        <div id="awContainer" class="fullHeight fullWidth grid-stack" style="margin: 10px 0px;">  
+            @Html.Partial("../Modals/_TrendSeriesVisibility")
+            @Html.Partial("../Modals/_HistoricalTrendFilter")
+            @Html.Partial("../Modals/_LiveTrendFilter")
+            @Html.Partial("../Modals/_BarFilter")
+            @Html.Partial("../Modals/_SetShaftReference")
+            @Html.Partial("../Modals/_graphConfigurationModal")
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @Scripts.Render("~/Scripts/helpers/widgetHelper.js")
+    @Scripts.Render("~/Scripts/controls/listboxControl.js")
+    @Scripts.Render("~/Scripts/helpers/binaryReader.js")
+    @Scripts.Render("~/Scripts/helpers/streamParser.js")
+    @Scripts.Render("~/Scripts/helpers/concurrentThread.js")
+    @Scripts.Render("~/Scripts/helpers/publishSubscriber.js")
+
+    @Scripts.Render("~/Scripts/helpers/cursors.js")
+    <!--Scripts de PDS-->
+    @Scripts.Render("~/Scripts/helpers/fourierTransform.js")
+    @Scripts.Render("~/Scripts/helpers/fftFilter.js")
+    @Scripts.Render("~/Scripts/helpers/firFilter.js")
+    @Scripts.Render("~/Scripts/helpers/oscillator.js")
+    <!--Scripts A-SPECTROGRAM-->
+    @Scripts.Render("~/Scripts/app/helpers/helpers.js")
+    @Scripts.Render("~/Scripts/app/realTimeMode.js")
+    @Scripts.Render("~/Scripts/app/historicalTimeMode.js")
+    @Scripts.Render("~/Scripts/app/eventTimeMode.js")
+
+    @Scripts.Render("~/Scripts/app/helpers/aspectrogramWidget.js")
+    @Scripts.Render("~/Scripts/app/helpers/dataMock.js")
+    @Scripts.Render("~/Scripts/app/graphs/barChartGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/bodeGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/fullSpectrumGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/historicalTrendGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/liveTrendGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/orbitGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/shaftPositionGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/polarGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/scatterGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/waveformGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/spectrumGraph.js")
+
+    @Scripts.Render("~/Scripts/math.js")
+    @Scripts.Render("~/Scripts/jspdf.debug.js")
+    @Scripts.Render("~/Scripts/babylon/babylon.max.js")
+
+    @Scripts.Render("~/Scripts/app/amaq3d/globals.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/properties3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/dummyInfo.js")
+
+    @Scripts.Render("~/Scripts/app/amaq3d/editor3d/globals.js")
+
+    @Scripts.Render("~/Scripts/app/amaq3d/viewer3d/drawChartsPlot2d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/manageCanvas3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/utilities3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/canvasPlot2d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/canvasText2d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/loadMeshes.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/viewer3d/shaftDeflection.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/viewer3d/loadDataViewer3d.js")
+
+    @Scripts.Render("~/Scripts/app/amaq3d/location3d/loadMeshesLoc3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/location3d/manageLocCanvas3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/location3d/eventsLoc3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/location3d/appNavigation3d.js")
+
+    @Scripts.Render("~/Scripts/app/amaq3d/viewer3d/imgViewer3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/viewer3d/uiVblesViewer3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/viewer3d/uiViewer3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/events3d.js")
+
+    @Scripts.Render("~/Scripts/app/amaq3d/waterfall/imgWaterfall3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/waterfall/uiWaterfall3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/waterfall/waterfall3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/app3d.js") 
+
+    @Scripts.Render("~/Scripts/filesaver.js")
+    @Scripts.Render("~/Scripts/html2canvas.js")
+    @Scripts.Render("~/Scripts/app/report/printReport.js")
+    @Scripts.Render("~/Scripts/app/report/textReport.js")
+    @Scripts.Render("~/Scripts/helpers/customContextMenu.js")
+    @Scripts.Render("~/Scripts/app/helpers/eventList.js")
+    @Scripts.Render("~/Scripts/helpers/jcEventPlayer.js")
+}
+
+@section applicationScripts {
+        
+    <script type="text/javascript">
+        // Instanciamos el helper de widget
+        var widgetHelper = new WidgetHelper(),
+        // Bandera que indica si el filtro dinamico esta activado o no
+        enableFilter = false,
+        // Frecuencia de corte a la cual se filtra.
+        stopFrecuency = 0,
+        // Lista de subVariables activas para consulta tiempo real en servidor
+        subVariableRTList = [],
+        // Lista de subVariables ya consultadas en el modo historico
+        subVariableHTList = [],
+        // Mantiene los datos tiempo real que se han consultado del servidor según subVariableRTList
+        //realTimeData = [],
+        //manageReport = new ManageReport(),
+        //loadData = new LoadDataViewer3d(idEntity),
+        // Tabla de puntos pares
+        arrayObjectPointPair = [],
+        // Mantiene las diferentes subVariables solicitadas para tiempo real agrupadas por asdaq
+        realTimeRequestsByAsdaqList = [],
+        // Mantiene las diferentes subVariables solicitadas para tiempo real agrupadas por atr
+        realTimeRequestsByAtrList = [],
+        cursorType = {
+            None: 0,
+            Normal: 1,
+            Harmonic: 2,
+            SideBand: 3
+        },
+        eventPlayerObj;
+
+        eventPlayerObj = new JcEventPlayer();
+
+        // Importante para la traduccion de los nombres de meses del año
+        Dygraph.SHORT_MONTH_NAMES_ = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+        $(window).on('visibilitychange', function (e) {
+            // Notifica a cada gráfica que contenga chart Dygraph para que aplique resize al respectivo chart para solucionar bug de Dygraph
+            PublisherSubscriber.publish('/resizechart', null);
+        });
+
+        $(window).on("beforeunload", function (e) {
+            e.returnValue = "Información importante se puede perder.";
+            return "Información importante se puede perder.";
+        });
+
+        var rt = new RealTimeMode;
+
+        function showValue(event, ui) {
+            var value = $(this).slider("option", "range") === true ? $(this).slider("values") : $(this).slider("value");
+            value = $.isArray(value) ? value[0] + " a " + value[1] : value;
+            stopFrecuency = value;
+            if ($(this).slider("option", "orientation") == "vertical") {
+                $(this).prev().children(".sliderValue").text(value);
+            }
+            else {
+                $(this).next(".sliderValue").text(value);
+            }
+
+            PublisherSubscriber.publish("/applyfilter", null); // Notificar a todas las gráficas para que apliquen el filtro y actualicen los chart
+        }
+
+        $("#stopFrecuency").slider({
+            animate: false,
+            max: 2000,
+            min: 0,
+            orientation: "horizontal",
+            step: 1,
+            value: 0,
+            disabled: true,
+            slide: showValue,
+            change: showValue,
+        });
+
+        $(document).ready(function () {
+            rt.Start();
+
+            $(".grid-stack").gridstack({
+                cellHeight: 80,
+                verticalMargin: 10,
+                disableDrag: true,
+                animate: false,
+                //disableResize: true,
+            });
+
+            // Mostrar toolbar
+            $("#mainToolbar").show();
+
+            $(document).click(function (e) {
+                // Cuando se trata del canvas ignorar la accion de click
+                if (e.target.localName == "canvas") return;
+                if (e.button == 0) {
+                    $(".customContextMenu").css("display", "none");
+                }
+            });
+            
+            $(document).keydown(function (e) {
+                if (e.keyCode == 27) {
+                    $(".customContextMenu").css("display", "none");
+                }
+            });
+
+            $(".userMenu").click(function (event) {
+                event.preventDefault();
+                popUp("warning", "Funcionalidad desactivada temporalmente.");
+            });
+
+            $(".mainDropDownMenu").click(function (event) {
+                event.preventDefault();
+                var menuId = this.id;
+
+                switch (menuId) {
+                    case "navigateLocations":
+                        if (!globalsLocation.flagOpen) {
+                            var appNavigation3d = new AppNavigation3d(12, 6, true).Show();
+                        }
+                        
+                        break;
+                    case "filterMenu":
+                        enableFilter = !enableFilter;
+                        PublisherSubscriber.publish("/applyfilter", null); // Notificar a todas las gráficas para que apliquen el filtro y actualicen los chart
+                        
+                        // Adecuamos el ancho del slider del filtro dinámico
+                        var size = $("#aspectrogramMainContent").width()-6;
+                        $("#sliderToolbar").css('width', size);
+
+                        if (enableFilter) {
+                            $("#filterMenu").html("Desactivar Filtro");
+                            // Mostrar slider para el filtro dinamico
+                            $("#sliderToolbar").removeClass("hidden");
+                            $("#stopFrecuency").slider({ disabled: false });
+                            $("#aspectrogramMainContent").css({ 'position': 'relative', 'top': '52px' });
+                        } else {
+                            $("#filterMenu").html("Activar Filtro");
+                            // Mostrar slider para el filtro dinamico
+                            $("#sliderToolbar").addClass("hidden");
+                            $("#stopFrecuency").slider({ disabled: true });
+                            $("#aspectrogramMainContent").css({ 'position': 'static', 'top': '55px' });
+                        }
+                        break;
+                    case "newHeaderReport":
+                        if (!globalsReport.flagHeader) {
+                            var headerReport = new TextReport(12, 1, false, true).Show();
+                        }
+                        break;
+                    case "newTextReport":
+                        var headerReport = new TextReport(12, 1, false, false).Show();
+                        break;
+                    case "generateReport":
+                        var generateReport = new PrintReport();
+                        generateReport.savePDFReport();
+
+                        break;
+                    case "previewReport":
+                        //$("#dialogPDFPreview").ejDialog("open");
+                        var previewReport = new PrintReport();
+                        previewReport.createDialogPreview();
+                        //var printReport = new PrintReport().loadDataToGlobalsReport();
+                        break;
+                    //case "eventListMenu":
+                    //    new EventList(selectedAsset.Name, 12, 5).GetAll(selectedAsset.Id);
+                    //    break;
+                    default:
+                        popUp("warning", "Funcionalidad desactivada temporalmente.");
+                        break;
+                }
+            });
+        });
+
+
+
+        
+    </script>
+}

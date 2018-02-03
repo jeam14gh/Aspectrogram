@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - A-SPECTROGRAM</title>
+
+    @Styles.Render("~/Content/jquery")
+   <!--@Styles.Render("~/Content/syncfusion")-->
+
+    @Styles.Render("~/Content/ej/web/default-theme/ej.theme.min.css")
+    @Styles.Render("~/Content/ej/web/default-theme/ej.web.all.css")
+
+    @Styles.Render("~/Content/bootstrap")
+    @Styles.Render("~/Content/themes/editor3d/style.css")
+    @Styles.Render("~/Content/toastr.css")
+
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/syncfusion")
+    @Scripts.Render("~/Scripts/toastr.min.js")
+
+
+</head>
+<body>
+    <div>
+        @RenderBody()
+    </div>
+
+    @RenderSection("scripts", required: false)
+
+    <!--Scripts de la aplicacion-->
+    @RenderSection("applicationScripts", required: false)
+
+    <script type="text/javascript">
+        //Popup de notificaciones
+        var popUp = function (type, message) {
+            toastr.options = {
+                "closeButton": false,
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": false,
+                "positionClass": "eighty-percent-width",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+            toastr[type](message);
+        };
+    </script>
+</body>
+</html>

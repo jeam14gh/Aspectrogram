@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{56DD05B0-0216-4B02-8D6D-3C895C21193D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Amaq.Acloud.Aspectrogram.Entities</RootNamespace>
+    <AssemblyName>Amaq.Acloud.Aspectrogram.Entities</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Amaq.Acloud.Aspectrogram.Entities.XML</DocumentationFile>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Amaq.Acloud.Entities">
+      <HintPath>..\References\Amaq.Acloud.Entities.dll</HintPath>
+    </Reference>
+    <Reference Include="Amaq.Libraries.MongoRepository, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\Amaq.Libraries.MongoRepository.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Bson, Version=2.2.2.10, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=2.2.2.10, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core, Version=2.2.2.10, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\MongoDB.Driver.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Account.cs" />
+    <Compile Include="Aconditioner.cs" />
+    <Compile Include="AconditionerType.cs" />
+    <Compile Include="AiChannelBase.cs" />
+    <Compile Include="Asdaq.cs" />
+    <Compile Include="AssetExtension.cs" />
+    <Compile Include="Atr.cs" />
+    <Compile Include="Dtos\AsdaqConfigDto.cs" />
+    <Compile Include="Dtos\AssetIdAndAsdaqIdDto.cs" />
+    <Compile Include="Dtos\AssetToUpdateDto.cs" />
+    <Compile Include="Dtos\ChangeRequestsDto.cs" />
+    <Compile Include="Dtos\CredentialDtos.cs" />
+    <Compile Include="Dtos\LastSavedEventDto.cs" />
+    <Compile Include="Dtos\MdVariableNodeStatusDto.cs" />
+    <Compile Include="Dtos\MdVariableUpdateMBDto.cs" />
+    <Compile Include="Dtos\MeasurementPointDto.cs" />
+    <Compile Include="Dtos\NewEventPackageDto.cs" />
+    <Compile Include="Dtos\NewRecordedEventDto.cs" />
+    <Compile Include="Dtos\NodeAndMdVariableDto.cs" />
+    <Compile Include="Dtos\NodeAssetMdVarAndSubVarDto.cs" />
+    <Compile Include="Dtos\NodeToDeleteDto.cs" />
+    <Compile Include="Dtos\NodeToUpdateDto.cs" />
+    <Compile Include="Dtos\RealTimeDataItemDto.cs" />
+    <Compile Include="Dtos\RealTimeRequestsByAsdaqDto.cs" />
+    <Compile Include="Dtos\RealTimeRequestsByAtrDto.cs" />
+    <Compile Include="Dtos\SubVariableToClone.cs" />
+    <Compile Include="Dtos\UpdateAngularReferenceIdDto.cs" />
+    <Compile Include="Enums\AtrModuleType.cs" />
+    <Compile Include="Enums\ClearanceStartingPoint.cs" />
+    <Compile Include="Enums\DynamicActionOnEvent.cs" />
+    <Compile Include="Enums\EventStatus.cs" />
+    <Compile Include="Enums\EventType.cs" />
+    <Compile Include="Enums\MaterialType.cs" />
+    <Compile Include="Enums\MeasureType.cs" />
+    <Compile Include="Enums\RotationDirection.cs" />
+    <Compile Include="Enums\AmaqDataType.cs" />
+    <Compile Include="Enums\SensorOrientation.cs" />
+    <Compile Include="Enums\StreamType.cs" />
+    <Compile Include="Enums\TripMultiply.cs" />
+    <Compile Include="RecordedEvent.cs" />
+    <Compile Include="MdVariableExtension.cs" />
+    <Compile Include="NodeExtension.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SensorType.cs" />
+    <Compile Include="StatusExtension.cs" />
+    <Compile Include="SubVariableExtension.cs" />
+    <Compile Include="ValueObjects\AiMeasureMethod.cs" />
+    <Compile Include="ValueObjects\AngularReferenceConfig.cs" />
+    <Compile Include="ValueObjects\AxesProperties.cs" />
+    <Compile Include="ValueObjects\BandWithSeverity.cs" />
+    <Compile Include="ValueObjects\ChangeRequest.cs" />
+    <Compile Include="ValueObjects\CurrentParams.cs" />
+    <Compile Include="ValueObjects\EventConfiguration.cs" />
+    <Compile Include="ValueObjects\AssetInfo.cs" />
+    <Compile Include="ValueObjects\EventPackageFilesId.cs" />
+    <Compile Include="ValueObjects\HistoricalConfigurationByStatus.cs" />
+    <Compile Include="ValueObjects\MagneticFlowParams.cs" />
+    <Compile Include="ValueObjects\MailAccountConfiguration.cs" />
+    <Compile Include="ValueObjects\MailLayout.cs" />
+    <Compile Include="ValueObjects\NotificationReceiver.cs" />
+    <Compile Include="ValueObjects\RealTimeRequest.cs" />
+    <Compile Include="ValueObjects\RTDParams.cs" />
+    <Compile Include="ValueObjects\SclOptions.cs" />
+    <Compile Include="ValueObjects\VoltageParams.cs" />
+    <Compile Include="XYMeasurementPointPair.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

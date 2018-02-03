@@ -1,0 +1,186 @@
+﻿/* ==========================================================================
+   Estilos personalizados acloud
+   ========================================================================== */
+
+/*Fuentes*/
+@font-face {
+    font-family: "Lato Black";
+    src: url(../fonts/lato/lato-black.ttf);
+}
+
+@font-face {
+    font-family: "Lato Bold";
+    src: url(../fonts/lato/lato-bold.ttf);
+}
+
+@font-face {
+    font-family: "Lato Bold Italic";
+    src: url(../fonts/lato/lato-bolditalic.ttf);
+}
+
+@font-face {
+    font-family: "Lato Italic";
+    src: url(../fonts/lato/lato-italic.ttf);
+}
+
+@font-face {
+    font-family: "Lato Light";
+    src: url(../fonts/lato/lato-light.ttf);
+}
+
+@font-face {
+    font-family: "Lato Regular";
+    src: url(../fonts/lato/lato-regular.ttf);
+}
+
+* {
+    list-style: none;
+    border: none;
+    margin: 0 auto;
+    padding: 0;
+    text-decoration: none;
+    font-family: "Lato Regular";
+    outline: 0 !important;
+}
+
+
+i {
+    font-size: 16px;
+}
+
+/*Estilos del login*/
+.logoAcloud {
+    height: 120px;
+    text-align: center;
+    color: #1d87e4;
+    font-size: 200px;
+}
+
+.cajaIniSesion {
+    width: 360px;
+    height: auto;
+    background: #dfdfdf;
+    margin: 0 auto;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+.formulario {
+    overflow: auto;
+}
+
+.formulario input[type="text"], input[type="password"] {
+    width: 100%;
+    height: 45px;
+    border-radius: 5px;
+    padding-left: 10px;
+    font-family: "Lato Regular";
+    color: #323232;
+    font-size: 18px;
+    border: solid 2px #ccc;
+}
+
+.formulario input:focus {
+    border: solid 2px #1d87e4;
+    transition: all 0.2s ease;
+    box-shadow: none !important;
+    outline: 0;
+}
+
+.contenidoFormulario {
+    position: relative;
+    width: 90%;
+    height: 40px;
+    margin-top: 25px;
+}
+
+.usuario {
+    position: absolute;
+}
+
+.clave {
+    position: absolute;
+}
+
+.recordar {
+    font-family: "Lato Regular";
+    width: 90%;
+    height: 5px;
+    font-size: 14px;
+}
+
+.icono {
+    position: absolute;
+    color: #a7b1b7;
+    font-size: 26px;
+    right: 13px;
+    top: 9px;
+}
+
+.btn-iniSesion {
+    font-size: 18px;
+    width: 100%;
+    height: 47px;
+}
+
+.ayuda {
+    font-family: "Lato Bold";
+    text-align: center;
+    font-size: 14px;
+    margin-top: 30px;
+}
+
+.ayuda a {
+    color: #7a7a7a;
+}
+
+.ayuda a:hover {
+    text-decoration: none;
+    color: #1d87e4;
+    transition: all 0.4s ease;
+}
+
+/*
+.amaq {
+    color: #1d87e4;
+    font-family: "Lato Black";
+    font-size: 12px;
+}
+*/
+
+.amaq {
+    background-size: 20px;
+   
+}
+
+.reservados {
+    font-family: "Lato Regular";
+    color: gray;
+    font-size: 12px;
+}
+
+.btn-aceptar {
+    font-family: "Lato Regular";
+    font-size: 16px;
+    float: right;
+    width: initial !important;
+}
+
+.cabezaModal {
+    background: #dfdfdf !important;
+    border-radius: 4px 4px 0px 0px;
+    font-family: "Lato Regular";
+    padding-bottom: 20px;
+}
+
+.cabezaModal h4 {
+    margin-top: 5px;
+    font-size: 20px;
+}
+
+.pieModal {
+    background: #dfdfdf !important;
+    border-radius: 0px 0px 4px 4px;
+    font-family: "Lato Regular";
+}
+/*Fin de estilos login*/

@@ -1,0 +1,248 @@
+﻿@{ 
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+}
+
+
+@Styles.Render("~/Content/login-css")
+
+<!--Logo acloud
+<h1 class="logoAcloud">
+    <i class="icon-logo" style="font-size:245px;"></i>
+</h1>
+-->
+<div class="icon-logo"></div>
+
+<div class="cajaIniSesion form-box">
+    <div class="formulario">
+        <div style="width: 90%;margin: 5px auto;">
+            <span id="login-failure" class="alert-danger"></span>
+            <span id="falta-empresa" class="alert-danger"></span>
+        </div>
+        <form>
+            <div class="contenidoFormulario form-group">
+                <input type="text" id="txtUserName" class="usuario" placeholder="Usuario" />
+                <i class="icon-user icono"></i>
+            </div>
+
+            <div class="contenidoFormulario form-group">
+                <input type="password" id="txtClave" class="clave" placeholder="Contraseña" />
+                <i class="icon-lock icono"></i>
+            </div>
+
+            <input type="hidden" id="dbName" />
+
+            <div class="checkbox recordar">
+                @*<label style="padding-left: 20px">*@
+                <label>
+                    <input type="checkbox" id="ckbRecordarme" /> No cerrar sesión
+                </label>
+            </div>           
+
+            <div class="contenidoFormulario form-group">
+                <button id="iniciar-sesion" class="btn btn-primary btn-iniSesion" type="button">Iniciar sesión</button>
+                <button id="loadingButton" class="btn btn-primary btn-iniSesion" type="button" style="display: none;" disabled><i class="fa fa-spinner fa-pulse fa-2x"></i></button>
+            </div>
+        </form>
+
+        <h4 class="ayuda"><a class="" href="#">¿Necesitas ayuda?</a></h4>
+    </div>
+</div>
+
+<br>
+<footer class="text-center">
+   
+        <a href="http://www.a-maq.com/" target="_blank" class="amaq" >
+<img src="~/Content/images/Logo amaq2.png"/> </a>
+        <br>
+        <h5 class="reservados">Todos los derechos reservados</h5>
+
+</footer>
+
+@*<a id="linkApiRoot" href="" />
+
+<a id="lnkEmpresas" href="#" class="hide" data-toggle="modal" data-target="#modalCompanies"></a>
+<div id="modalCompanies" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="gridModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header cabezaModal">
+                <h4 class="modal-title" id="gridModalLabel">Selecciona la empresa<a class="anchorjs-link" href="#gridModalLabel"><span class="anchorjs-icon"></span></a></h4>
+            </div>
+            <div class="modal-body">
+                <div id="GrupoEmpresas" class="list-group">
+                </div>
+            </div>
+            <div class="modal-footer pieModal">
+                <a aria-hidden="true" class="btn btn-ok hvr-fade" data-dismiss="modal" href="#" id="empresaSeleccionada">Seleccionar</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="hiddenContent" hidden="hidden">
+    @using (Html.BeginForm("CerrarSesionSinToken", "Account", FormMethod.Post, new { id = "cerrarSesionSinSeleccionarEmpresa" })) { }
+</div>*@
+
+@section scripts {
+    <script type="text/javascript">
+        showLoadingIndicator(false); // Por defecto no aparece el indicador de que se está iniciando sesión
+        $('#txtUserName').focus();
+
+        // Cambia el color del icono del placeholder para dar la sensación de que el campo no está activo y por lo tanto no tiene el foco actualmente
+        $("#txtUserName, #txtClave").blur(function (e) {
+            var iconoUsuario = document.querySelector(".icon-user");
+            var iconoClave = document.querySelector(".icon-lock");
+
+            if (e.target.id == 'txtUserName') {
+                iconoUsuario.style.color = "#a7b1b7";
+                iconoUsuario.style.transition = "all 0.2s ease";
+            } else {
+                iconoClave.style.color = "#a7b1b7";
+                iconoClave.style.transition = "all 0.2s ease";
+            }
+        });
+
+        // Activar la tecla 'Enter' para el envio de los datos de inicio de sesion
+        $(document).on("keydown", function (event) {
+            var keycode = (event.keyCode ? event.keyCode : event.which);
+            if (keycode == '13')
+            {
+                login();
+            }
+            event.stopPropagation();
+        });
+
+        // Cambia el color del icono del placeholder para dar la sensación de que el campo está activo y tiene el foco actualmente
+        $("#txtUserName, #txtClave").focus(function (e) {
+            var iconoUsuario = document.querySelector(".icon-user");
+            var iconoClave = document.querySelector(".icon-lock");
+
+            if (e.target.id == 'txtUserName') {
+                iconoUsuario.style.color = "#1d87e4";
+                iconoUsuario.style.transition = "all 0.2s ease";
+            } else {
+                iconoClave.style.color = "#1d87e4";
+                iconoClave.style.transition = "all 0.2s ease";
+            }
+        });
+
+        function showLoadingIndicator(show) {
+            if (show) {
+                $('#loadingButton').show();
+                $('#iniciar-sesion').hide();
+            }
+            else {
+                $('#loadingButton').hide();
+                $('#iniciar-sesion').show();
+            }
+        }
+
+        // Inicio de sesion
+        function login() {
+            var userName = $("#txtUserName").val();
+            var password = $("#txtClave").val();
+            var dbName = $("#dbName").val();
+            var rememberMe = $("#ckbRecordarme").prop("checked");
+
+            if (userName && password) {
+                showLoadingIndicator(true);
+
+                if (dbName) {
+                    // Credenciales de acceso completas
+                    var data = {
+                        "UserName": btoa(userName),
+                        "Password": btoa(password),
+                        "GrantType": "password",
+                        "DbName": dbName,
+                        "RememberMe": rememberMe,
+                        "ReturnUrl" : "@ViewBag.ReturnUrl",
+                    };
+
+                    $.ajax({
+                        url: "/Account/Login",
+                        type: "POST",
+                        data: JSON.stringify(data),
+                        dataType: "json",
+                        contentType: "application/json",
+                        success: function (response) {
+                            if (response.Message == "Ok")
+                            {
+                                window.location.href = response.ReturnUrl; // Redirecciona
+                            }
+                            else
+                            {
+                                $("#login-failure").text(response.Message);
+                                showLoadingIndicator(false);
+                            }
+                        },
+                        error: function () {
+                            $("#login-failure").text("Ha ocurrido un error inesperado!");
+                            showLoadingIndicator(false);
+                        }
+                    });
+                }
+                else {
+                    // Credenciales de acceso básicas para obtener las empresas a las que el usuario está asociado
+                    var data = {
+                        "UserName": btoa(userName),
+                        "Password": btoa(password)
+                    };
+
+                    $.ajax({
+                        url: "/Account/GetCompanies",
+                        type: "POST",
+                        data: JSON.stringify(data),
+                        dataType: "json",
+                        contentType: "application/json",
+                        success: function (companies) {
+                            companies = atob(companies);
+                            if (IsJsonString(companies)) {
+                                var companyArray = JSON.parse(companies);
+                                if (companyArray.length > 0)
+                                {
+                                    if (companyArray.length > 1) {
+                                        // Mostrar aquí modal de empresas
+                                    }
+                                    else {
+                                        $("#dbName").val(btoa(companyArray[0].DbName));
+                                        login(); // Login definitivo con las credenciales completas
+                                    }
+                                }
+                                else
+                                {
+                                    $("#login-failure").text("Usuario o clave invalido!");
+                                    showLoadingIndicator(false);
+                                }
+                            }
+                            else {
+                                $("#login-failure").text(companies);
+                                showLoadingIndicator(false);
+                            }
+                        },
+                        error: function () {
+                            $("#login-failure").text("Ha ocurrido un error inesperado!");
+                            showLoadingIndicator(false);
+                        }
+                    });
+                }
+            }
+        }
+
+        $("#iniciar-sesion").click(login);
+
+        function IsJsonString(str) {
+            try {
+                var json = JSON.parse(str);
+                if (typeof (str) == 'string') {
+                    if (str.length == 0) {
+                        return false;
+                    }
+                }
+            }
+            catch (e) {
+                return false;
+            }
+            return true;
+        }
+    </script>
+}

@@ -1,0 +1,509 @@
+﻿@*@model Amaq.Acloud.Aspectrogram.Models.EnumerationsModel*@
+<!--Inicio contenedor principal arbol-->
+
+<div id="mainTreeContainer" style="height: 100%; min-height: 100%; margin: 0px; padding: 0px; /*max-width:20%;*/">
+    <div>
+        <div>
+            <!--Inicio animacion carga del arbol-->
+            <div id="treeLoadingIndicator" class="text-center">
+                <i class="fa fa-spinner fa-pulse fa-2x"></i>
+            </div>
+            <!--Fin animacion carga del arbol-->
+
+            <div class="treeViewFilter hidden" style="height:80%;">
+                <!--Inicio vista arbol principal-->
+                <!-- Inicio buscador para arbol -->
+                <div class="inner-addon right-addon">
+                    <input type="text" id="searchBox" class="form-control" placeholder="Buscar" />
+                    <i class="glyphicon glyphicon-search"></i>
+                </div>
+                <!-- Fin buscador para arbol -->
+                <!-- Elementos de la vista arbol -->
+                <div id="treeView"></div>
+
+                <!-- Html del menú contextual de opciones de ubicación -->
+                @Html.Partial("../Menus/_LocationMenu")
+
+                <!-- Html del menú contextual de opciones de activo -->
+                @Html.Partial("../Menus/_AssetMenu")
+
+                <!-- Html del menú contextual de opciones de puntos de medición -->
+                @Html.Partial("../Menus/_MeasurementPointMenu")
+
+                <!--Formulario para copiar o editar un punto de medicion-->
+                <div class="container hidden" id="formMdVariable">
+                    <div class="row">
+                        <div class="col-lg-3 form-horizontal">
+                            <div class="form-group">
+                                <label class="col-lg-4" id="lblNombre">Etiqueta:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="text" id="txtName">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-4">Descripción:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="text" id="txtDescription">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-4">Sensor:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="text" id="ddlSensorType">
+                                </div>
+                            </div>
+                            <div class="form-group" id="divUnit">
+                                <label class="col-lg-4">Unidad:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="text" id="txtUnit">
+                                </div>
+                            </div>
+                            <div class="form-group" id="divSensibility">
+                                <label class="col-lg-4" id="lblSensibility">Sensibilidad [mV/unidad]:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="text" id="txtSensibility">
+                                </div>
+                            </div>
+                            <div class="form-group" id="divCheckbox">
+                                <label class="col-lg-4">Integrar a velocidad [mm/s]:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="checkbox" id="chbIntegrate" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-4">Orientación:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="text" id="ddlOrientation">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-4">Ángulo [°]:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="text" id="txtSensorAngle">
+                                </div>
+                            </div>
+                            <div class="form-group" id="divSaveWaveform">
+                                <label class="col-lg-4">¿Guardar forma de onda?</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="checkbox" id="chbWaveform" />
+                                </div>
+                            </div>
+
+                            <!--Div de Proximidad, Acelerometro, Velocimetro-->
+                            <div class="form-group" id="notRefenceAngularFields">
+                                <label class="col-lg-4">Referencia Angular:</label>
+                                <div class="col-lg-offset-1 col-lg-7">
+                                    <input type="text" id="ddlAngularReference">
+                                </div>
+                            </div>
+                            <!--Fin Div Proximidad, Acelerometro, Velocimetro-->
+                            <!--Div de Voltaje y Corriente-->
+                            <div id="voltageOrCurrentFields" class="hidden">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" style="padding-top: 5px !important; padding-bottom: 5px !important;"><b>RANGO DE ENTRADA</b></div>
+                                    <div class="panel-body" style="padding-top: 5px !important; padding-bottom: 0px !important;">
+
+                                        <div class="form-group">
+                                            <label class="col-lg-4" id="lblEntryMax"></label>
+                                            <div class="col-lg-offset-1 col-lg-7">
+                                                <input type="text" id="txtEntryMax" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-lg-4" id="lblEntryMin"></label>
+                                            <div class="col-lg-offset-1 col-lg-7">
+                                                <input type="text" id="txtEntryMin" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" style="padding-top: 5px !important; padding-bottom: 5px !important;"><b>RANGO DE VARIABLE</b></div>
+                                    <div class="panel-body" style="padding-top: 5px !important; padding-bottom: 0px !important;">
+
+                                        <div class="form-group">
+                                            <label class="col-lg-4" id="lblVarMax">Xmáx [Unidad]:</label>
+                                            <div class="col-lg-offset-1 col-lg-7">
+                                                <input type="text" id="txtVarMax" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-lg-4" id="lblVarMin">Xmín [Unidad]:</label>
+                                            <div class="col-lg-offset-1 col-lg-7">
+                                                <input type="text" id="txtVarMin" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Fin Div de Voltaje y Corriente-->
+                            <!--Div RTD-->
+                            <div id="rtdFields" class="hidden">
+                                <div class="form-group">
+                                    <label class="col-lg-4">Material:</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="ddlMaterial" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-4">Ro [&Omega;]:</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="txtRo" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-4"> Coeficiente [&alpha;]:</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="ddlCoefficient" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-4">Iex [mA]:</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="txtIex" />
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Fin Div RTD-->
+                            <!--Div sensor Personalizado-->
+                            <div class="panel panel-default hidden" id="sensorCustomFields">
+                                <div class="panel-heading" style="padding-top: 5px !important; padding-bottom: 5px !important;"><b>Ajuste lineal</b></div>
+                                <div class="panel-body" style="padding-top: 5px !important; padding-bottom: 0px !important;">
+                                    <div class="form-group">
+                                        <label class="col-lg-3">M:</label>
+                                        <div class="col-lg-offset-2 col-lg-7">
+                                            <input type="text" id="txtRefAngularM">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-3">B:</label>
+                                        <div class="col-lg-offset-2 col-lg-7">
+                                            <input type="text" id="txtRefAngularB">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Fin Div sensor Personalizado-->
+                            <!--Div Referencia Angular-->
+                            <div id="refenceAngularFields">
+                                <div class="form-group">
+                                    <label class="col-lg-4">Rotación:</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="ddlRotationDirection">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-4">Ruido Mínimo [V]:</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="txtMinimumNoiseInVolts">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-4">Umbral:</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="txtTresholdPercentage">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-lg-4">Histéresis:</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="txtHysteresisTresholdPercentage">
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Fin Div Referencia Angular-->
+                            <!--Div Position cero-->
+                            <div class="hidden" id="divPositionCero">
+                                <div class="form-group">
+                                    <label class="col-lg-4">Posición Cero (V):</label>
+                                    <div class="col-lg-offset-1 col-lg-7">
+                                        <input type="text" id="txtPositionCero" />
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Fin Div Position cero-->
+
+                            <div class="form-group">
+                                <div class="col-sm-offset-4 col-sm-8">
+                                    <button id="btnCloneOrEditMdVariable" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-9">
+                            <!--Grid Subvariables-->
+                            <div id="gridSubVariables"></div>
+                            <!--Fin GridSubvariables-->
+                        </div>
+                    </div>
+                </div>
+                <!--Fin formulario punto de medición-->
+                <!--Formulario Bandas-->
+                <div class="hidden" id="formBands">
+                    <div class="container">
+                        <div class="row" style="margin-left: -6% !important;">
+                            <div class="col-lg-4">
+                                <div class="form-group col-lg-12">
+                                    <label>Banda Muerta (%):</label>
+                                    <input type="text" id="txtDeadBand">
+                                </div>
+                                <div class="form-group col-lg-12">
+                                    <label>Retardo Umbral (seg):</label>
+                                    <input type="text" id="txtThresholdLatency">
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" style="padding-top: 5px !important; padding-bottom: 5px !important;"><b>BANDA MÍNIMA</b></div>
+                                    <div class="panel-body" style="padding-top: 5px !important; padding-bottom: 0px !important;">
+                                        <div class="row">
+                                            <div class="form-group col-lg-6">
+                                                <label>Umbral Máximo:</label>
+                                                <input type="text" id="txtUpperThreshold">
+                                            </div>
+                                            <div class="form-group col-lg-6">
+                                                <label>Umbral Mínimo:</label>
+                                                <input type="text" id="txtLowerThreshold">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div id="gridBands"></div>
+                        </div>
+                        <p></p>
+                        <div class="row">
+                            <button id="btnSaveBands" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                            <button id="btnCancelBands" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                <!--Fin formulario Bandas-->
+                <!--Formulario Asset-->
+                <div id="formAsset" class="hidden">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-lg-4" id="lblNameAsset">Etiqueta:</label>
+                                        <div class="col-lg-offset-1 col-lg-7">
+                                            <input type="text" id="txtNameAsset">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-4">Descripción:</label>
+                                        <div class="col-lg-offset-1 col-lg-7">
+                                            <input type="text" id="txtDescriptionAsset">
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="divNormalInterval">
+                                        <label class="col-lg-4">Almacenar datos históricos de los puntos de medición cada (seg):</label>
+                                        <div class="col-lg-offset-1 col-lg-7">
+                                            <input type="text" id="txtNormalInterval">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-4 col-sm-8">
+                                            <button id="btnCloneOrEditAsset" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Fin formulario Asset-->
+                <!--Formulario de configuración Pares XY-->
+                <div id="formPairsXY" class="hidden">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Puntos en X:</label>
+                                    <ul id="lbPointsX"></ul>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Puntos en Y:</label>
+                                    <ul id="lbPointsY"></ul>
+                                </div>
+                            </div>
+                            <div class="col-md-2" style="margin-top:18%; padding-left: 7%;">
+                                <button id="btnAddPairXY"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                                <p></p>
+                                <button id="btnDeletePairXY"><span class="glyphicon glyphicon-chevron-left"></span></button>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Pares XY:</label>
+                                    <ul id="lbPointsXY"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <p></p>
+                        <div class="row" style="margin-left:0px">
+                            <button id="btnSavePairsXY" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                            <button id="btnCancelPairsXY" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                <!--Fin formulario de configuración Pares XY-->
+                <!--Formulario Location-->
+                <div id="formLocation" class="hidden">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-lg-4" id="lblNameLocation">Etiqueta:</label>
+                                        <div class="col-lg-offset-1 col-lg-7">
+                                            <input type="text" id="txtNameLocation">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-4">Descripción:</label>
+                                        <div class="col-lg-offset-1 col-lg-7">
+                                            <input type="text" id="txtDescriptionLocation">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-4 col-sm-8">
+                                            <button id="btnCreateOrEditLocation" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Fin formulario Location-->
+                <!--Formulario Event Velocity-->
+                <div id="formEventVelocity" class="hidden">
+                    <div class="container">
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label>Referencia Angular:</label>
+                                <input type="text" id="ddlAngularReferenceInAssetPpl">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Habilitado:</label>
+                                <input type="checkbox" id="chbEnabled" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label>Delta RPM:</label>
+                                <input type="text" id="txtDeltaRpm">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>RPM inferior:</label>
+                                <input type="text" id="txtLowRpm">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>RPM superior:</label>
+                                <input type="text" id="txtUpperRpm">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label>Tiempo antes (min):</label>
+                                <input type="text" id="txtMinutesBefore">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Tiempo despues (min):</label>
+                                <input type="text" id="txtMinutesAfter">
+                            </div>
+                        </div>
+
+                        <div class="row col-md-12">
+                            <button id="btnSaveEventVelocity" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                            <button id="btnCancelEventVelocity" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                <!--Fin formulario Event Velocity-->
+                <!--Formulario Event Condition Status-->
+                <div id="formEventConditionStatus" class="hidden">
+                    <div class="container">
+                        <div class="row">
+                            <div id="gridConditionStatus"> </div>
+                        </div>
+                        <p></p>
+                        <div class="row">
+                            <div id="gridNotifyList"> </div>
+                        </div>
+                        <p></p>
+                        <div class="row">
+                            <button id="btnSaveECS" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                            <button id="btnCancelECS" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                <!--Fin formulario Event Condition Status-->
+                <!-- Configuración Plantilla de Correo-->
+                <div id="configurationTemplateMail" class="hidden">
+                    <div class="container">
+                        <div class="row">
+                            <button id="btnPathAsset" class="btn btn-primary">{RutaActivo}</button>
+                            <button id="btnStatuCondition" class="btn btn-primary">{EstadoCondicion}</button>
+                            <button id="btnTimeStamp" class="btn btn-primary">{EstampaTiempo}</button>
+                        </div>
+                        <p></p>
+                        <div class="row">
+                            <div class="form-inline">
+                                <div class="form-group col-md-12">
+                                    <label>Asunto:</label>
+                                    <input type="text" id="txtSubject" class="form-control">
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <label>Mensaje:</label>
+                                    <textarea id="txtMessage" rows="5" class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <p></p>
+                        <div class="row">
+                            <button id="btnOkTemplateMail" class="btn btn-primary"><i class="fa fa-check" aria-hidden="true"></i> Aceptar</button>
+                            <button id="btnCancelTemplateMail" class="btn btn-primary"><i class="fa fa-times" aria-hidden="true"></i> Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fin Configuración Plantilla de Correo-->
+                @Html.Partial("../Modals/_ConfirmDialog")
+
+                <!-- Inicio Animacion carga filtros para arbol -->
+                <div id="treeFilterLoadingIndicator" class="text-center" style="padding-top: 15px; display: none;">
+                    <i class="fa fa-spinner fa-pulse fa-2x"></i>
+                </div>
+                <!-- Fin Animacion carga filtros para arbol -->
+
+            </div><!--Fin vista arbol principal-->
+        </div>
+    </div>
+
+    <div>
+        <div>
+            <div>
+                <!--Inicio animacion carga de los puntos de medicion-->
+                <div id="listboxLoadingIndicator" class="text-center hidden">
+                    <i class="fa fa-spinner fa-pulse fa-2x"></i>
+                </div>
+                <!--Fin animacion carga del arbol-->
+                <div id="measurementPoints"></div>
+
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div id="jcEventPlayerParent" style="padding:1%;"></div>
+    </div>
+
+</div><!--Fin contenedor principal arbol-->

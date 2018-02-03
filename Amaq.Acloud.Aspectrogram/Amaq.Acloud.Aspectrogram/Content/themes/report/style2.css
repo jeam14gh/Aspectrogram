@@ -1,0 +1,205 @@
+﻿body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 100;
+}
+
+#contGeneralReport{
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#reportImgMin{
+    overflow-y: scroll;
+    width: 20%;
+    border-right-width: 2px;
+    border-right-color: gray;
+    height: 100%;
+    left: 0px;
+    position: absolute;
+    padding: 5px 5px 5px 5px;
+        top: 45px;
+    background-color: aliceblue;
+}
+
+#reportContent{
+    overflow: scroll;
+    width: 79%;
+    height: 100%;
+    position: absolute;
+    right: 0px;
+    background-color: aliceblue;
+    top: 45px;
+}
+
+.divImgMiniReport{
+    margin: 5px 5px 5px 5px;
+    padding: 5px 5px 5px 5px;    
+    border-style: dotted;
+    border-width: 1px;
+    width: 90%;
+    height: auto;
+    background-size: 100px;
+    background-color: white;
+}
+.imgMiniReport{
+    height: 100%; 
+    width: 100%; 
+    object-fit: contain;
+}
+
+.pageReport {
+    width: 816px;
+    height: 1056px;
+    border-style: solid;
+    border-width: 1px;
+    top: 20px;
+    margin: 20px 20px 20px 20px;
+    border-color: lightgray;
+    box-shadow: 3px;
+    background-color: white;
+    -webkit-box-shadow: 5px 5px 2px 1px rgba(90,90,90,0.75);
+    -moz-box-shadow: 5px 5px 2px 1px rgba(90,90,90,0.75);
+    box-shadow: 5px 5px 2px 1px rgba(90,90,90,0.75);
+}
+
+.contentPage{
+    border-style: dotted;
+    border-width: 1px;
+    margin: 106px 78px 5px 78px;
+    width: 648px;
+    height: 893px;
+    border-color: lightgray;
+}
+
+.headerPage{
+    margin: 10px 10px 10px 10px;
+}
+
+.logoCompanyRep{
+    display: inline-block;
+    float: right;
+    top: 10px;
+}
+
+.infoContentRep{
+    width: 300px !important;
+    padding: 5px 5px 5px 5px;
+    top: 0px;
+    display: inline-block;
+    float: left;
+    text-align: left;
+}
+
+.iCRfooter{
+    margin: 15px 0px 10px 0px;
+}
+
+.contImgTxtRep{
+    margin: 10px 10px 10px 10px;   
+    border-style: dotted;
+    border-width: 1px;
+    display:  inline-block !important;
+    width: 290px;
+    height: 290px;
+    max-width:  635px !important;
+    min-width: 280px;
+    min-height: 15px;
+}
+.classTxtRep{
+     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+     padding: 5px 5px 5px 5px;
+     margin: 10px 10px 10px 10px; 
+     white-space:nowrap;
+     max-width:  620px !important;
+     height: 15px;
+     overflow: hidden;
+     cursor:text;
+     resize: both;
+}
+
+
+.contRectangle{
+    width: 630px;
+    height: 400px;
+}
+.contSquare{
+    width: 290px;
+    height: 290px;
+}
+
+.menuReportAS {
+        background-color: rgb(225, 225, 225);
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: black;       
+        background-size: 40px;
+        font-size: 11px;
+        opacity: 0.9;
+        border-color: aliceblue;
+        border-width: 2px;
+        -webkit-box-shadow: 2px 2px 2px 2px rgba(190,190,190,0.75);
+        -moz-box-shadow: 2px 2px 2px 2px rgba(190,190,190,0.75);
+        box-shadow: 2px 2px 2px 2px rgba(190,190,190,0.75);
+        margin: 0 auto;
+        padding: 4px 4px 4px 4px; /*top right bottom left*/
+        width: 100%;        
+        position: absolute;
+        top:0px;
+        left: 0px;
+}
+
+.groupsBtnsMenuReport{
+        position: relative;
+        display: block;
+        border-color: rgba(80, 80, 80, 0.7);
+        color: whitesmoke; 
+        border-width: 2px;
+        border-style: solid;
+        width: auto;
+        margin: 0 auto;
+}
+
+.btnMenuReport:hover{
+        background-color: rgba(80, 80, 80, 0.7);
+        cursor: pointer;
+    }
+
+.btnMenuReport{
+        margin: 2px 2px 2px 2px;
+        padding: 2px 2px 2px 2px; /*top right bottom left*/
+}
+
+.cbMenuReport{
+        margin: 2px 2px 2px 2px;
+        padding: 2px 2px 2px 2px; /*top right bottom left*/
+        display: inline;
+}
+
+    .contentCBFontTypeReport{
+        cursor: pointer;
+        display: none;
+        z-index: 1;
+        background-color: rgba(120, 120, 120, 1);
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 0px;
+        padding: 2px 8px 2px 8px;
+        opacity: 1 !important
+    }
+
+#cMDelContReport{
+    cursor: pointer;
+        z-index: 1;
+        background-color: rgba(220, 220, 220, 1);
+        border-width: 1px;
+        border-style: solid;
+        position: absolute;
+        border-color: rgb(151, 151, 151);
+        font-size: 10px;
+        color:  rgb(151, 151, 151);
+}
+#cMDelContReport :hover{
+        background-color:  aliceblue;
+}
+

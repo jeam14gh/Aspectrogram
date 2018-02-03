@@ -1,0 +1,700 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Amaq.Libraries.MongoRepository</name>
+    </assembly>
+    <members>
+        <member name="T:Amaq.Libraries.MongoRepository.Admin.Shell">
+            <summary>
+            Representa una shell de mongoDB con comandos disponibles para la gestión de bases de datos
+            </summary>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Admin.Shell.#ctor(System.String)">
+            <summary>
+            Inicializa una nueva instancia de Shell
+            </summary>
+            <param name="connectionString"></param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Admin.Shell.CreateCappedCollection(System.String,System.Int32,System.Int32)">
+            <summary>
+            Crea una capped collection
+            </summary>
+            <param name="collectionName">Nombre de la colección</param>
+            <param name="size">Tamaño en bytes</param>
+            <param name="max">Cantidad de documentos</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Admin.Shell.DropCollection(System.String)">
+            <summary>
+            Elimina la colección con el nombre especificado
+            </summary>
+            <param name="collectionName">Nombre de la colección</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Admin.Shell.ConvertToCapped(System.String,System.Int32)">
+            <summary>
+            Convierte una colección en una capped collection
+            </summary>
+            <param name="collectionName">Nombre de la colección</param>
+            <param name="size">Tamaño en bytes</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Admin.Shell.RunCommand(System.String)">
+            <summary>
+            Ejecuta el comando de mongoDB especificado
+            </summary>
+            <param name="command">Comando a ejecutar</param>
+        </member>
+        <member name="T:Amaq.Libraries.MongoRepository.Attributes.IgnoreDefaultProperty">
+            <summary>
+            Ignora una propiedad que tiene valor por defecto en el Update
+            </summary>
+        </member>
+        <member name="T:Amaq.Libraries.MongoRepository.Attributes.IgnorePropertyAttribute">
+            <summary>
+            Ignora una propiedad que tiene definido este atributo cuando se actualiza la entidad.
+            </summary>
+        </member>
+        <member name="T:Amaq.Libraries.MongoRepository.Attributes.TypeExtensions">
+            <summary>
+            Extension de la clase Type.
+            </summary>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Attributes.TypeExtensions.GetFilteredProperties(System.Type)">
+            <summary>
+            Metodo para obtener todas las propiedades de una entidad,
+            excepto las que tienen definido el atributo IgnoreProperty.
+            </summary>
+            <param name="type">Tipo de entidad</param>
+            <returns>Listado de propiedades filtradas por el atributo IgnoreProperty</returns>
+        </member>
+        <member name="T:Amaq.Libraries.MongoRepository.Repository.GridFSRepository">
+            <summary>
+            Representa un repositorio de archivos para una base de datos Mongo especificada utilizando GridFS
+            </summary>
+        </member>
+        <member name="P:Amaq.Libraries.MongoRepository.Repository.GridFSRepository._builder">
+            <summary>
+            Constructor de filtros
+            </summary>
+        </member>
+        <member name="P:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.Bucket">
+            <summary>
+            Obtiene el objeto Mongo GridFS Bucket (para realizar operaciones avanzadas o personalizadas con GridFS).
+            </summary>
+            <value>Objeto Mongo GridFS Bucket (para realizar operaciones avanzadas o personalizadas con GridFS).</value>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.#ctor(System.String)">
+            <summary>
+            Incializa una nueva instancia de GridFSRepository
+            </summary>
+            <param name="connectionString">Cadena de conexión Mongo</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.Upload(System.String,System.Byte[])">
+            <inheritdoc />
+            <summary>
+            Guarda un nuevo archivo en GridFS
+            </summary>
+            <param name="fileName">Nombre del archivo</param>
+            <param name="bytes">Flujo de bytes del archivo</param>
+            <returns>El id generado para el archivo almacenado</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.Download(System.String)">
+            <summary>
+            Descarga el archivo con el id especificado y lo retorna como un flujo de bytes
+            </summary>
+            <param name="id">Id del archivo en GridFS</param>
+            <returns>El valor del ObjectId creado</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.Download(System.Collections.Generic.List{System.String})">
+            <summary>
+            Descarga los archivos con los id especificados y los retorna cada uno como un flujo de bytes
+            </summary>
+            <param name="idList">Lista de ids de archivos en GridFS</param>
+            <returns>El valor del ObjectId creado</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.GetById(System.String)">
+            <summary>
+            Obtiene la información del archivo con el id especificado
+            </summary>
+            <param name="id">Id el archivo en GridFS</param>
+            <returns>Objeto de tipo GridFSFileInfo con la información del archivo</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.GetById(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene la información de los archivos con los id especificados
+            </summary>
+            <param name="idList">Lista de ids de archivos en GridFS</param>
+            <returns>Lista de objetos de tipo GridFSFileInfo con la información de los archivos</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.Delete(System.String)">
+            <summary>
+            Elimina de GridFS el archivo con el id especificado
+            </summary>
+            <param name="id">Id del archivo en GridFS</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.GridFSRepository.Delete(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina de GridFS los archivos con los id especifiados
+            </summary>
+            <param name="idList">Lista de ids de archivos en GridFS</param>
+        </member>
+        <member name="T:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository">
+            <summary>
+            Definición IGridFSRepository
+            </summary>
+        </member>
+        <member name="P:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository.Bucket">
+            <summary>
+            Obtiene el objeto Mongo GridFS Bucket (para realizar operaciones avanzadas o personalizadas con GridFS).
+            </summary>
+            <value>Objeto Mongo GridFS Bucket (para realizar operaciones avanzadas o personalizadas con GridFS).</value>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository.Upload(System.String,System.Byte[])">
+            <inheritdoc />
+            <summary>
+            Guarda un nuevo archivo en GridFS
+            </summary>
+            <param name="fileName">Nombre del archivo</param>
+            <param name="bytes">Flujo de bytes del archivo</param>
+            <returns>El id generado para el archivo almacenado</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository.Download(System.String)">
+            <summary>
+            Descarga el archivo con el id especificado y lo retorna como un flujo de bytes
+            </summary>
+            <param name="id">Id del archivo en GridFS</param>
+            <returns>El valor del ObjectId creado</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository.Download(System.Collections.Generic.List{System.String})">
+            <summary>
+            Descarga los archivos con los id especificados y los retorna cada uno como un flujo de bytes
+            </summary>
+            <param name="idList">Lista de ids de archivos en GridFS</param>
+            <returns>El valor del ObjectId creado</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository.GetById(System.String)">
+            <summary>
+            Obtiene la información del archivo con el id especificado
+            </summary>
+            <param name="id">Id el archivo en GridFS</param>
+            <returns>Objeto de tipo GridFSFileInfo con la información del archivo</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository.GetById(System.Collections.Generic.List{System.String})">
+            <summary>
+            Obtiene la información de los archivos con los id especificados
+            </summary>
+            <param name="idList">Lista de ids de archivos en GridFS</param>
+            <returns>Lista de objetos de tipo GridFSFileInfo con la información de los archivos</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository.Delete(System.String)">
+            <summary>
+            Elimina de GridFS el archivo con el id especificado
+            </summary>
+            <param name="id">Id del archivo en GridFS</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoRepository.Repository.IGridFSRepository.Delete(System.Collections.Generic.List{System.String})">
+            <summary>
+            Elimina de GridFS los archivos con los id especifiados
+            </summary>
+            <param name="idList">Lista de ids de archivos en GridFS</param>
+        </member>
+        <member name="T:Amaq.Libraries.MongoDbRepository.Entity">
+            <summary>
+            Abstract Entity for all the BusinessEntities.
+            </summary>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Entity.Id">
+            <summary>
+            Gets or sets the id for this object (the primary record for an entity).
+            </summary>
+            <value>The id for this object (the primary record for an entity).</value>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Entity.GroupCounter">
+            <summary>
+            Necesario para obtener el total de entidadas agrupadas - $group
+            </summary>
+        </member>
+        <member name="T:Amaq.Libraries.MongoDbRepository.IEntity`1">
+            <summary>
+            Generic Entity interface.
+            </summary>
+            <typeparam name="TKey">The type used for the entity's Id.</typeparam>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.IEntity`1.Id">
+            <summary>
+            Gets or sets the Id of the Entity.
+            </summary>
+            <value>Id of the Entity.</value>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.IEntity`1.GroupCounter">
+            <summary>
+            Necesario para obtener el total de entidadas agrupadas - $group
+            </summary>
+        </member>
+        <member name="T:Amaq.Libraries.MongoDbRepository.IEntity">
+            <summary>
+            "Default" Entity interface.
+            </summary>
+            <remarks>Entities are assumed to use strings for Id's.</remarks>
+        </member>
+        <member name="T:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2">
+            <summary>
+            IRepository definition.
+            </summary>
+            <typeparam name="T">The type contained in the repository.</typeparam>
+            <typeparam name="TKey">The type used for the entity's Id.</typeparam>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Collection">
+            <summary>
+            Gets the Mongo collection (to perform advanced operations).
+            </summary>
+            <remarks>
+            One can argue that exposing this property (and with that, access to it's Database property for instance
+            (which is a "parent")) is not the responsibility of this class. Use of this property is highly discouraged;
+            for most purposes you can use the MongoRepositoryManager&lt;T&gt;
+            </remarks>
+            <value>The Mongo collection (to perform advanced operations).</value>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.GetById(`1)">
+            <summary>
+            Returns the T by its given id.
+            </summary>
+            <param name="id">The value representing the ObjectId of the entity to retrieve.</param>
+            <returns>The Entity T.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Add(`0)">
+            <summary>
+            Adds the new entity in the repository.
+            </summary>
+            <param name="entity">The entity to add.</param>
+            <returns>The added entity including its new ObjectId.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.AddSingle(`0)">
+            <summary>
+            Inserta una nueva entitidad en el repositorio.
+            </summary>
+            <param name="entity">Entidad a insertar</param>
+            <returns>El valor del ObjectId creado</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Add(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Adds the new entities in the repository.
+            </summary>
+            <param name="entities">The entities of type T.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.AddMany(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Inserta una lista de nuevas entitidades en el repositorio.
+            </summary>
+            <param name="entities">Listado de entidades a insertar</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Update(`0)">
+            <summary>
+            Upserts an entity.
+            </summary>
+            <param name="entity">The entity.</param>
+            <returns>The updated entity.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Update(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Upserts the entities.
+            </summary>
+            <param name="entities">The entities to update.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Delete(`1)">
+            <summary>
+            Deletes an entity from the repository by its id.
+            </summary>
+            <param name="id">The entity's id.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.DeleteMany(System.Collections.Generic.List{`1})">
+            <summary>
+            Deletes entities from the repository by its id.
+            </summary>
+            <param name="idList">The entity's id list</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Delete(`0)">
+            <summary>
+            Deletes the given entity.
+            </summary>
+            <param name="entity">The entity to delete.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Delete(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            Deletes the entities matching the predicate.
+            </summary>
+            <param name="predicate">The expression.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.DeleteAll">
+            <summary>
+            Deletes all entities in the repository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Count">
+            <summary>
+            Counts the total entities in the repository.
+            </summary>
+            <returns>Count of entities in the repository.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.IRepository`2.Exists(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            Checks if the entity exists for given predicate.
+            </summary>
+            <param name="predicate">The expression.</param>
+            <returns>True when an entity matching the predicate exists, false otherwise.</returns>
+        </member>
+        <member name="T:Amaq.Libraries.MongoDbRepository.Repository.IRepository`1">
+            <summary>
+            IRepository definition.
+            </summary>
+            <typeparam name="T">The type contained in the repository.</typeparam>
+            <remarks>Entities are assumed to use strings for Id's.</remarks>
+        </member>
+        <member name="T:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2">
+            <summary>
+            Realiza el acuerdo con las entidades MongoDB
+            </summary>
+            <typeparam name="T">El tipo de entidad contenido en el repositorio</typeparam>
+            <typeparam name="TKey">El tipo usado para los Ids de entidad</typeparam>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.builder">
+            <summary>
+            Definicion de filtros basado en la entidad generica.
+            </summary>
+        </member>
+        <member name="F:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.collection">
+            <summary>
+            Campo MongoCollection.
+            </summary>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.#ctor">
+            <summary>
+            Inicializa una nueva instancia de la clase MongoRepository.
+            Usa el connectionstrings por defecto en App/Web.Config para cada uno de los connectionString y nombres de bases de datos.
+            </summary>
+            <remarks>Default constructor defaults to "MongoServerSettings" key for connectionstring.</remarks>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.#ctor(System.String)">
+            <summary>
+            Inicializa una nueva instancia de la clase MongoRepository.
+            </summary>
+            <param name="connectionString">Cadena de conexion a usar para conectar con MongoDB.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the MongoRepository class.
+            </summary>
+            <param name="connectionString">Connectionstring to use for connecting to MongoDB.</param>
+            <param name="collectionName">The name of the collection to use.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.#ctor(MongoDB.Driver.MongoUrl)">
+            <summary>
+            Initializes a new instance of the MongoRepository class.
+            </summary>
+            <param name="url">Url to use for connecting to MongoDB.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.#ctor(MongoDB.Driver.MongoUrl,System.String)">
+            <summary>
+            Initializes a new instance of the MongoRepository class.
+            </summary>
+            <param name="url">Url to use for connecting to MongoDB.</param>
+            <param name="collectionName">The name of the collection to use.</param>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Collection">
+            <summary>
+            Gets the Mongo collection (to perform advanced operations).
+            </summary>
+            <remarks>
+            One can argue that exposing this property (and with that, access to it's Database property for instance
+            (which is a "parent")) is not the responsibility of this class. Use of this property is highly discouraged;
+            for most purposes you can use the MongoRepositoryManager&lt;T&gt;
+            </remarks>
+            <value>The Mongo collection (to perform advanced operations).</value>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.CollectionName">
+            <summary>
+            Gets the name of the collection
+            </summary>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.GetById(`1)">
+            <summary>
+            Returns the T by its given id.
+            </summary>
+            <param name="id">The Id of the entity to retrieve.</param>
+            <returns>The Entity T.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.GetById(MongoDB.Bson.ObjectId)">
+            <summary>
+            Returns the T by its given id.
+            </summary>
+            <param name="id">The Id of the entity to retrieve.</param>
+            <returns>The Entity T.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Add(`0)">
+            <summary>
+            Adds the new entity in the repository.
+            </summary>
+            <param name="entity">The entity T.</param>
+            <returns>The added entity including its new ObjectId.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.AddSingle(`0)">
+            <summary>
+            Inserta una nueva entitidad en el repositorio.
+            </summary>
+            <param name="entity">Entidad a insertar</param>
+            <returns>El valor del ObjectId creado como cadena de texto</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Add(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Adds the new entities in the repository.
+            </summary>
+            <param name="entities">The entities of type T.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.AddMany(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Inserta una lista de nuevas entitidades en el repositorio.
+            </summary>
+            <param name="entities">Entidades a insertar</param>
+            <returns>Una lista de los ObjectId creados como cadena de texto</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Update(`0)">
+            <summary>
+            Upserts an entity.
+            </summary>
+            <param name="entity">The entity.</param>
+            <returns>The updated entity.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.IsDefault(System.Reflection.PropertyInfo,System.Object)">
+            <summary>
+            Verifica si la propiedad tiene el atributo BsonIgnoreIfDefault
+            </summary>
+            <param name="property">Propiedad a comparar</param>
+            <param name="value">Valor a comparar</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.IsList(System.Object)">
+            <summary>
+            Valida si un objeto es de tipo lista.
+            </summary>
+            <param name="obj">Objeto a validar</param>
+            <returns>Verdadero si es de tipo lista, falso en otro caso</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.IsObjectId(System.Object)">
+            <summary>
+            Determina si un objeto es de tipo ObjectId
+            </summary>
+            <param name="obj">Objeto a validar</param>
+            <returns>Verdadero si es de tipo lista, falso en otro caso</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Update(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Upserts the entities.
+            </summary>
+            <param name="entities">The entities to update.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Find(`0)">
+            <summary>
+            Encontrar un documento segun los parametros en la entidad.
+            </summary>
+            <param name="entity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Delete(`1)">
+            <summary>
+            Deletes an entity from the repository by its id.
+            </summary>
+            <param name="id">The entity's id.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.DeleteMany(System.Collections.Generic.List{`1})">
+            <summary>
+            Deletes entities from the repository by its id.
+            </summary>
+            <param name="idList">The entity's id list</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Delete(MongoDB.Bson.ObjectId)">
+            <summary>
+            Deletes an entity from the repository by its ObjectId.
+            </summary>
+            <param name="id">The ObjectId of the entity.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Delete(`0)">
+            <summary>
+            Deletes the given entity.
+            </summary>
+            <param name="entity">The entity to delete.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Delete(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            Deletes the entities matching the predicate.
+            </summary>
+            <param name="predicate">The expression.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.DeleteAll">
+            <summary>
+            Deletes all entities in the repository.
+            </summary>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Count">
+            <summary>
+            Counts the total entities in the repository.
+            </summary>
+            <returns>Count of entities in the collection.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Exists(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            Checks if the entity exists for given predicate.
+            </summary>
+            <param name="predicate">The expression.</param>
+            <returns>True when an entity matching the predicate exists, false otherwise.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through a collection.
+            </summary>
+            <returns>An IEnumerator&lt;T&gt; object that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through a collection.
+            </summary>
+            <returns>An IEnumerator object that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.ElementType">
+            <summary>
+            Gets the type of the element(s) that are returned when the expression tree associated with this instance of IQueryable is executed.
+            </summary>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Expression">
+            <summary>
+            Gets the expression tree that is associated with the instance of IQueryable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`2.Provider">
+            <summary>
+            Gets the query provider that is associated with this data source.
+            </summary>
+        </member>
+        <member name="T:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`1">
+            <summary>
+            Deals with entities in MongoDb.
+            </summary>
+            <typeparam name="T">The type contained in the repository.</typeparam>
+            <remarks>Entities are assumed to use strings for Id's.</remarks>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`1.#ctor">
+            <summary>
+            Initializes a new instance of the MongoRepository class.
+            Uses the Default App/Web.Config connectionstrings to fetch the connectionString and Database name.
+            </summary>
+            <remarks>Default constructor defaults to "MongoServerSettings" key for connectionstring.</remarks>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`1.#ctor(MongoDB.Driver.MongoUrl)">
+            <summary>
+            Initializes a new instance of the MongoRepository class.
+            </summary>
+            <param name="url">Url to use for connecting to MongoDB.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`1.#ctor(MongoDB.Driver.MongoUrl,System.String)">
+            <summary>
+            Initializes a new instance of the MongoRepository class.
+            </summary>
+            <param name="url">Url to use for connecting to MongoDB.</param>
+            <param name="collectionName">The name of the collection to use.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`1.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the MongoRepository class.
+            </summary>
+            <param name="connectionString">Connectionstring to use for connecting to MongoDB.</param>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Repository.MongoRepository`1.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the MongoRepository class.
+            </summary>
+            <param name="connectionString">Connectionstring to use for connecting to MongoDB.</param>
+            <param name="collectionName">The name of the collection to use.</param>
+        </member>
+        <member name="T:Amaq.Libraries.MongoDbRepository.Util`1">
+            <summary>
+            Internal miscellaneous utility functions.
+            </summary>
+        </member>
+        <member name="F:Amaq.Libraries.MongoDbRepository.Util`1.DefaultConnectionstringName">
+            <summary>
+            The default key MongoRepository will look for in the App.config or Web.config file.
+            </summary>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetDefaultConnectionString">
+            <summary>
+            Retrieves the default connectionstring from the App.config or Web.config file.
+            </summary>
+            <returns>Returns the default connectionstring from the App.config or Web.config file.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetDatabaseFromUrl(MongoDB.Driver.MongoUrl)">
+            <summary>
+            Creates and returns a MongoDatabase from the specified url.
+            </summary>
+            <param name="url">The url to use to get the database from.</param>
+            <returns>Returns a MongoDatabase from the specified url.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetCollectionFromConnectionString``1(System.String)">
+            <summary>
+            Creates and returns a MongoCollection from the specified type and connectionstring.
+            </summary>
+            <typeparam name="T">The type to get the collection of.</typeparam>
+            <param name="connectionString">The connectionstring to use to get the collection from.</param>
+            <returns>Returns a MongoCollection from the specified type and connectionstring.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetCollectionFromConnectionString``1(System.String,System.String)">
+            <summary>
+            Creates and returns a MongoCollection from the specified type and connectionstring.
+            </summary>
+            <typeparam name="T">The type to get the collection of.</typeparam>
+            <param name="connectionString">The connectionstring to use to get the collection from.</param>
+            <param name="collectionName">The name of the collection to use.</param>
+            <returns>Returns a MongoCollection from the specified type and connectionstring.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetCollectionFromUrl``1(MongoDB.Driver.MongoUrl)">
+            <summary>
+            Creates and returns a MongoCollection from the specified type and url.
+            </summary>
+            <typeparam name="T">The type to get the collection of.</typeparam>
+            <param name="url">The url to use to get the collection from.</param>
+            <returns>Returns a MongoCollection from the specified type and url.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetCollectionFromUrl``1(MongoDB.Driver.MongoUrl,System.String)">
+            <summary>
+            Creates and returns a MongoCollection from the specified type and url.
+            </summary>
+            <typeparam name="T">The type to get the collection of.</typeparam>
+            <param name="url">The url to use to get the collection from.</param>
+            <param name="collectionName">The name of the collection to use.</param>
+            <returns>Returns a MongoCollection from the specified type and url.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetGridFSBuketFromConnectionString(System.String)">
+            <summary>
+            Crea y retorna un objeto GridFSBuket a partir de la cadena de conexión especificada
+            </summary>
+            <param name="connectionString">Cadena de conexión Mongo</param>
+            <returns>Retorna un objeto GridFSBuket a partir de la cadena de conexión especificada</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetCollectionName``1">
+            <summary>
+            Determines the collectionname for T and assures it is not empty
+            </summary>
+            <typeparam name="T">The type to determine the collectionname for.</typeparam>
+            <returns>Returns the collectionname for T.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetCollectioNameFromInterface``1">
+            <summary>
+            Determines the collectionname from the specified type.
+            </summary>
+            <typeparam name="T">The type to get the collectionname from.</typeparam>
+            <returns>Returns the collectionname from the specified type.</returns>
+        </member>
+        <member name="M:Amaq.Libraries.MongoDbRepository.Util`1.GetCollectionNameFromType(System.Type)">
+            <summary>
+            Determines the collectionname from the specified type.
+            </summary>
+            <param name="entitytype">The type of the entity to get the collectionname from.</param>
+            <returns>Returns the collectionname from the specified type.</returns>
+        </member>
+    </members>
+</doc>
