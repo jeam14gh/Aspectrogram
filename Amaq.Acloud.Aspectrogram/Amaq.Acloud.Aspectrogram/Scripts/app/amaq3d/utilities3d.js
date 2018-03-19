@@ -166,12 +166,14 @@ Utilities3d = function () {
             var element = document.getElementById(_containerId);
 
             if (element.requestFullScreen) {
-                element.requestFullScreen();              
+                element.requestFullScreen();
             } else if (element.mozRequestFullScreen) {
                 element.mozRequestFullScreen();
             } else if (element.webkitRequestFullScreen) {
                 element.webkitRequestFullScreen();
             }
+            _flags.various.fullScreen = false;
+
         };
 
         /*

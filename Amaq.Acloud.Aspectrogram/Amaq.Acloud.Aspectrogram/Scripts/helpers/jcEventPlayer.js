@@ -54,6 +54,8 @@ JcEventPlayer = (function () {
             _currentPosition,
             // Id de la tendencia historica
             _historicTrendId,
+            // Id del nodo del activo que contiene la informacion a mostrar
+            _assetNodeId,
             // Referencia al modo evento que hace solicitudes al servidor
             _eventMode,
             // Tiempo del evento que se ha cargado, disponible para reproduccion
@@ -101,7 +103,7 @@ JcEventPlayer = (function () {
         _eventMode = new EventTimeMode();
         _this = this;
 
-        this.Create = function (path, timeStampArray, mdVariableIdList, historicTrendId) {
+        this.Create = function (path, timeStampArray, mdVariableIdList, historicTrendId, assetNodeId) {
             var
                 parent,
                 timeStamp;
@@ -111,7 +113,7 @@ JcEventPlayer = (function () {
             _historicTrendId = historicTrendId.toString();
             _mdVariableIdList = clone(mdVariableIdList);
             _timeStampArray = clone(timeStampArray);
-
+            _assetNodeId = assetNodeId;
             // Creamos el DIV contenedor del reproductor de eventos
             _container = document.createElement("div");
             _container.id = "player" + _playerId;
@@ -159,10 +161,8 @@ JcEventPlayer = (function () {
                     }
                     _currentPosition = ui.value;
                     timeStamp = new Date(_timeStampArray[_currentPosition]).getTime();
-                    //if (_loadedData.length > 0 && (typeof _loadedData[_currentPosition] !== "undefined")) {
                         PublisherSubscriber.publish("/player/refresh", timeStamp);
                         _changeTimerFeedback();
-                    //}
                 },
                 change: function (ev, ui) {
                     if (ui.value >= _loadedTime) {
@@ -170,10 +170,8 @@ JcEventPlayer = (function () {
                     }
                     _currentPosition = ui.value;
                     timeStamp = new Date(_timeStampArray[_currentPosition]).getTime();
-                    //if (_loadedData.length > 0 && (typeof _loadedData[_currentPosition] !== "undefined")) {
                         PublisherSubscriber.publish("/player/refresh", timeStamp);
                         _changeTimerFeedback();
-                    //}
                 }
             });
             $(_progressBar).progressbar({
@@ -280,11 +278,9 @@ JcEventPlayer = (function () {
             $(parent).append(_container);
             $("#mainTreeContainer").data("ejSplitter").expand(2);
             if (_timeStampArray.length > 0) {
-                //_enabled = true;
-                _eventMode.GetAllValues(_mdVariableIdList, _timeStampArray, _playerId);
+                _eventMode.GetDynamicHistoricalData(_mdVariableIdList, _assetNodeId, _timeStampArray, _playerId);
                 _loadValues(_mdVariableIdList);
             } else {
-                //_loadedData = [];
                 $(_loadIndicator).children().eq(0).hide();
                 $(_progressBar).progressbar({ value: 100 });
                 $(_progressBar).find(".ui-progressbar-value").css({
@@ -318,15 +314,6 @@ JcEventPlayer = (function () {
             var
                 data;
 
-            //for (key in _loadedData[_currentPosition]) {
-            //    if (_loadedData[_currentPosition].hasOwnProperty(key)) {
-            //        _timerFeedback.innerHTML = _loadedData[_currentPosition][key].SubVariables[0].TimeStamp;
-            //        data = [];
-            //        data[_historicTrendId] = _loadedData[_currentPosition][key].SubVariables[0].RawTimeStamp;
-            //        PublisherSubscriber.publish("/player/timeStamp", data);
-            //        break;
-            //    }
-            //}
             _timerFeedback.innerHTML = formatDate(new Date(_timeStampArray[_currentPosition]));
             data = [];
             data[_historicTrendId] = new Date(_timeStampArray[_currentPosition]);
@@ -338,7 +325,6 @@ JcEventPlayer = (function () {
                 _subscriptionValues.remove();
             }
 
-            //_loadedData = [];
             _subscriptionValues = PublisherSubscriber.subscribe("/historicValues/refresh", [_playerId], function (data) {
                 var
                     // Indice de la posicion de data
@@ -358,7 +344,6 @@ JcEventPlayer = (function () {
                 if (_loadedTime === _timeStampArray.length) {
                     _enabled = true;
                 }
-                //_loadedData.push(data);
                 _updateProgressBar();
             });
         };
@@ -418,7 +403,6 @@ JcEventPlayer = (function () {
 
                 _pause();
                 _currentPosition = 0;
-                //_loadedData = [];
                 _loadedTime = 0;
                 _loadValues(_mdVariableIdList);
                 _eventMode.Stop();
@@ -429,15 +413,12 @@ JcEventPlayer = (function () {
                 pub[_historicTrendId] = true;
                 // Suscribo la respuesta
                 _newRangeSubscription = PublisherSubscriber.subscribe("/newTrendRange/refresh", [_historicTrendId], function (data) {
-                    timeStampArray = data[_historicTrendId];
-                    if (timeStampArray && timeStampArray.length > 0) {
-                        _duration = timeStampArray.length;
-                        $(_slider).slider("option", "max", _duration);
-                        _enabled = false;
-                        $(_loadIndicator).children().eq(0).show();
-                        _eventMode.GetAllValues(_mdVariableIdList, timeStampArray, _playerId);
+                    _timeStampArray = data[_historicTrendId];
+                    _duration = _timeStampArray.length;
+                    if (_timeStampArray.length > 0) {
+                        _eventMode.GetDynamicHistoricalData(_mdVariableIdList, _assetNodeId, _timeStampArray, _playerId);
+                        _loadValues(_mdVariableIdList);
                     } else {
-                        //_loadedData = [];
                         $(_loadIndicator).children().eq(0).hide();
                         $(_progressBar).progressbar({ value: 100 });
                         $(_progressBar).find(".ui-progressbar-value").css({

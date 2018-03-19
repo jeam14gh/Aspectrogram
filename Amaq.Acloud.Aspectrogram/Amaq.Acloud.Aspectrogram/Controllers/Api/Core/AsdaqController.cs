@@ -7,6 +7,7 @@
     using Entities.Dtos;
     using System.Collections.Generic;
     using Entities.ValueObjects;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Controlador Asdaq
@@ -21,9 +22,9 @@
         /// <returns></returns>
         [HttpGet]
         [Roles("Admin")]
-        public IHttpActionResult ShouldReconfigure(string asdaqId)
+        public async Task<IHttpActionResult> ShouldReconfigure(string asdaqId)
         {
-            return Ok(new AsdaqBl(CoreDbUrl).ShouldReconfigure(asdaqId));
+            return await Task.FromResult(Ok(new AsdaqBl(CoreDbUrl).ShouldReconfigure(asdaqId)));
         }
 
         /// <summary>
@@ -32,10 +33,10 @@
         /// <param name="asdaqId">Id Asdaq</param>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult ResetReconfigureFlag([FromBody]string asdaqId)
+        public async Task<IHttpActionResult> ResetReconfigureFlag([FromBody]string asdaqId)
         {
             new AsdaqBl(CoreDbUrl).ResetReconfigureFlag(asdaqId);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -43,19 +44,19 @@
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetAllWithMdVariableTag()
+        public async Task<IHttpActionResult> GetAllWithMdVariableTag()
         {
-            return Ok(new AsdaqBl(CoreDbUrl).GetAllWithMdVariableTag());
+            return await Task.FromResult(Ok(new AsdaqBl(CoreDbUrl).GetAllWithMdVariableTag()));
         }
 
         /// <summary>
         /// Actualiza todos los dispositivos de adquisición (NiDevices y NiCompactDaqs) asociados a un AsdaqId
         /// </summary>
         [HttpPost]
-        public IHttpActionResult UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
+        public async Task<IHttpActionResult> UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
         {
             new AsdaqBl(CoreDbUrl).UpdateDevice(asdaqId, devices);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -64,9 +65,9 @@
         /// <param name="asdaqId">Id de asdaq</param>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetRealTimeRequests(string asdaqId)
+        public async Task<IHttpActionResult> GetRealTimeRequests(string asdaqId)
         {
-            return Ok(new AsdaqBl(CoreDbUrl).GetRealTimeRequests(asdaqId));
+            return await Task.FromResult(Ok(new AsdaqBl(CoreDbUrl).GetRealTimeRequests(asdaqId)));
         }
 
         /// <summary>
@@ -74,10 +75,10 @@
         /// </summary>
         /// <param name="realTimeRequestsByAsdaqList">Lista de solicitudes tiempo por asdaq</param>
         [HttpPost]
-        public IHttpActionResult UpdateRealTimeRequests(List<RealTimeRequestsByAsdaqDto> realTimeRequestsByAsdaqList)
+        public async Task<IHttpActionResult> UpdateRealTimeRequests(List<RealTimeRequestsByAsdaqDto> realTimeRequestsByAsdaqList)
         {
             new AsdaqBl(CoreDbUrl).UpdateRealTimeRequests(realTimeRequestsByAsdaqList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -87,10 +88,10 @@
         /// <param name="subVariableIdList">Lista de id de subVariables a eliminar de la lista de solicitudes tiempo real</param>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteRealTimeRequests(string asdaqId, List<string> subVariableIdList)
+        public async Task<IHttpActionResult> DeleteRealTimeRequests(string asdaqId, List<string> subVariableIdList)
         {
             new AsdaqBl(CoreDbUrl).DeleteRealTimeRequests(asdaqId, subVariableIdList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -98,10 +99,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteRelationshipMdVariableWithAiChannels(string asdaqId, NiDeviceDto device)
+        public async Task<IHttpActionResult> DeleteRelationshipMdVariableWithAiChannels(string asdaqId, NiDeviceDto device)
         {
             new AsdaqBl(CoreDbUrl).DeleteRelationshipMdVariableWithAiChannels(asdaqId, device);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -111,9 +112,9 @@
         /// <returns></returns>
         [HttpGet]
         [Roles("Admin")]
-        public IHttpActionResult GetChangeRequests(string asdaqId)
+        public async Task<IHttpActionResult> GetChangeRequests(string asdaqId)
         {
-            return Ok(new AsdaqBl(CoreDbUrl).GetChangeRequests(asdaqId));
+            return await Task.FromResult(Ok(new AsdaqBl(CoreDbUrl).GetChangeRequests(asdaqId)));
         }
 
         /// <summary>
@@ -123,10 +124,10 @@
         /// <param name="changeRequests">Objeto con las solicitudes de cambio de subVariables y assets</param>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateChangeRequests(string asdaqId, ChangeRequestsDto changeRequests)
+        public async Task<IHttpActionResult> UpdateChangeRequests(string asdaqId, ChangeRequestsDto changeRequests)
         {
             new AsdaqBl(CoreDbUrl).UpdateChangeRequests(asdaqId, changeRequests);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -135,10 +136,10 @@
         /// <param name="asdaqId">Id de asdaq</param>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteAllChangeRequests(string asdaqId)
+        public async Task<IHttpActionResult> DeleteAllChangeRequests(string asdaqId)
         {
             new AsdaqBl(CoreDbUrl).DeleteAllChangeRequests(asdaqId);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -148,20 +149,20 @@
         /// <param name="changeRequests">Lista de id de subVariables a eliminar de la lista SubVariableChangeRequests</param>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteChangeRequests(string asdaqId, ChangeRequestsDto changeRequests)
+        public async Task<IHttpActionResult> DeleteChangeRequests(string asdaqId, ChangeRequestsDto changeRequests)
         {
             new AsdaqBl(CoreDbUrl).DeleteChangeRequests(asdaqId, changeRequests);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
         /// <summary>
         /// Reconfigura un Asdaq
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult Reconfigure(Asdaq asdaq)
+        public async Task<IHttpActionResult> Reconfigure(Asdaq asdaq)
         {
             new AsdaqBl(CoreDbUrl).Reconfigure(asdaq);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -169,10 +170,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateAliasAndMailAccountAsdaq(Asdaq asdaq)
+        public async Task<IHttpActionResult> UpdateAliasAndMailAccountAsdaq(Asdaq asdaq)
         {
             new AsdaqBl(CoreDbUrl).UpdateAliasAndMailAccountAsdaq(asdaq);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -181,13 +182,13 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateAconditionerByAsdaq([FromBody]dynamic model)
+        public async Task<IHttpActionResult> UpdateAconditionerByAsdaq([FromBody]dynamic model)
         {
             var asdaqId = model.asdaqId.ToObject<string>();
             var aconditioners = model.aconditioners.ToObject<List<Aconditioner>>();
             var mdVariablesToUpdate = model.mdVariablesToUpdate.ToObject<List<MdVariableUpdateMBDto>>();
             new AsdaqBl(CoreDbUrl).UpdateAconditionerByAsdaq(asdaqId,aconditioners,mdVariablesToUpdate);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -195,13 +196,13 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteAconditionerBySerial([FromBody]dynamic model)
+        public async Task<IHttpActionResult> DeleteAconditionerBySerial([FromBody]dynamic model)
         {
             string asdaqId = model.asdaqId.ToObject<string>();
             string serial = model.serial.ToObject<string>();
             var niDevices = model.niDevices.ToObject<List<NiDeviceDto>>();
             new AsdaqBl(CoreDbUrl).DeleteAconditionerBySerial(asdaqId, serial, niDevices);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
     }
 }

@@ -245,6 +245,11 @@
             Actualiza una lsita de puntos de medición
             </summary>
         </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.MdVariableExtensionController.GetAllReferenceAngular">
+            <summary>
+            Retorna todas las referencias angulares
+            </summary>
+        </member>
         <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Controllers.Api.NodeController">
             <summary>
             Controlador Api Node
@@ -917,6 +922,16 @@
         <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.UpdateSummaryView(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension},System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.AssetExtension})">
             <summary>
             Actualiza una lista de activos y puntos de medición
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetPathNode(System.String)">
+            <summary>
+            Retorna la ruta completa de un nodo
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetAllReferenceAngular">
+            <summary>
+            Retorna todas las referencias angulares
             </summary>
         </member>
         <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl">
@@ -1834,7 +1849,7 @@
             <param name="isAcelerometerChannel">Indica si el tipo de canal es aceleración o no de un módulo de un Asdaq</param>
             <param name="aiCurrentExcitationValue">Valor de corriente de excitación del módulo Asdaq</param>
         </member>
-        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.CalculateMandB(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto})">
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.CalculateMandB(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto},System.String)">
             <summary>
             Calcula los parametros M y B de cada punto de medición a partir de una lista obtenida en la configuración de canales de un Asdaq
             </summary>
@@ -1866,7 +1881,22 @@
         </member>
         <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.UpdatePoints(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension})">
             <summary>
-            Actualiza una lista de puntos de medición
+            Actualiza una lista de puntos de medición en algunas de sus propiedades y en la subVariable directa si existe 
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.GetAllReferenceAngular">
+            <summary>
+            Retorna todas las referencias angulares
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.CalculateAgainMandB(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension)">
+            <summary>
+            Cálcula de nuevo la M y B de un punto de medición anteriormente editado, si éste está relacionado con un canal Asdaq.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.RegisterInLog(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension,System.Boolean,System.String,System.String)">
+            <summary>
+            Registra todos lo errores de cálculos respecto a la M y B de un punto de medición en un archivo de texto plano.
             </summary>
         </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl">
@@ -2563,7 +2593,7 @@
             <param name="amplitude">Amplitud 1X de referencia</param>
             <param name="phase">Fase 1X de referencia</param>
         </member>
-        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.UpdateDirect(System.String,System.Collections.Generic.List{Amaq.Acloud.Entities.ValueObjects.Band})">
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.UpdateDirect(Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension,System.Collections.Generic.List{Amaq.Acloud.Entities.ValueObjects.Band})">
             <summary>
             Actualiza la subvariable de Directa 
             </summary>

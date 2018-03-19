@@ -6,6 +6,8 @@
     using MongoDB.Bson.Serialization.Attributes;
     using Acloud.Entities.Serializers;
     using Enums;
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Representa la configuración de grabación de evento para un estado de condición específico
     /// </summary>

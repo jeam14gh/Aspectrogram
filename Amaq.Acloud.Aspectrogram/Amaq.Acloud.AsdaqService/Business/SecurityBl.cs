@@ -17,6 +17,7 @@
         public static volatile bool TokenIsValid;
 
         private static object _lock = new object();
+        private static object _lockHMI = new object();
 
         /// <summary>
         /// Informacion de la identidad del usuario en el servicio Web API
@@ -25,11 +26,18 @@
         {
             get
             {
-                return _userState;
+                lock (_lock)
+                {
+                    return _userState;
+                }
+
             }
             set
             {
-                _userState = value;
+                lock (_lock)
+                {
+                    _userState = value;
+                }
             }
         }
 
@@ -40,11 +48,18 @@
         {
             get
             {
-                return _userStateForHMI;
+                lock (_lockHMI)
+                {
+                    return _userStateForHMI;
+                }
+               
             }
             set
             {
-                _userStateForHMI = value;
+                lock (_lockHMI)
+                {
+                    _userStateForHMI = value;
+                }                
             }
         }
 
@@ -57,15 +72,18 @@
             var passwordBase64 = Encoding.UTF8.EncodeBase64(AsdaqProperties.Password);
             var serializedCredentials = JsonConvert.SerializeObject(new FullCredentialsDto(serialBase64, passwordBase64, "", true));
 
-            AppUserState = null;
-            var response = new AccountProxy().GetTokenAsync(serializedCredentials).GetAwaiter().GetResult();
-            if (response == null)
+            lock (_lock)
             {
-                throw new SecurityException("No se pudo obtener el token de seguridad. Por favor verifique las credenciales de acceso.");
-            }
+                AppUserState = null;
+                var response = new AccountProxy().GetTokenAsync(serializedCredentials).GetAwaiter().GetResult();
+                if (response == null)
+                {
+                    throw new SecurityException("No se pudo obtener el token de seguridad. Por favor verifique las credenciales de acceso.");
+                }
 
-            AppUserState = response;
-            TokenIsValid = true;
+                AppUserState = response;
+                TokenIsValid = true;
+            }
         }
 
         /// <summary>
@@ -78,14 +96,17 @@
             var passwordBase64 = Encoding.UTF8.EncodeBase64(AsdaqProperties.Password);
             var serializedCredentials = JsonConvert.SerializeObject(new FullCredentialsDto(serialBase64, passwordBase64, "", true));
 
-            AppUserStateForHMI = null;
-            var response = new AccountProxy(true).GetTokenAsync(serializedCredentials).GetAwaiter().GetResult();
-            if (response == null)
+            lock (_lockHMI)
             {
-                throw new SecurityException("No se pudo obtener el token de seguridad. Por favor verifique las credenciales de acceso.");
-            }
+                AppUserStateForHMI = null;
+                var response = new AccountProxy(true).GetTokenAsync(serializedCredentials).GetAwaiter().GetResult();
+                if (response == null)
+                {
+                    throw new SecurityException("No se pudo obtener el token de seguridad. Por favor verifique las credenciales de acceso.");
+                }
 
-            AppUserStateForHMI = response;
+                AppUserStateForHMI = response;
+            }
         }
 
         /// <summary>

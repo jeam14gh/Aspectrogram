@@ -6,6 +6,7 @@
     using Entities;
     using Aspectrogram.Controllers.Api.Attributes;
     using Entities.Dtos;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Controlador Api MdVariableExtension
@@ -19,9 +20,9 @@
         /// <param name="assetId">Id del activo</param>
         /// <returns>Listado de MdVariableExtension</returns>
         [HttpGet]
-        public IHttpActionResult GetByAssetId(string assetId)
+        public async Task<IHttpActionResult> GetByAssetId(string assetId)
         {
-            return Ok(new MdVariableExtensionBl(CoreDbUrl).GetByAssetId(assetId));
+            return await Task.FromResult(Ok(new MdVariableExtensionBl(CoreDbUrl).GetByAssetId(assetId)));
         }
 
         /// <summary>
@@ -30,9 +31,9 @@
         /// <param name="assetIdList">Lista de id asset</param>
         /// <returns>Lista de objetos de tipo MdVariableExtension</returns>
         [HttpPost]
-        public IHttpActionResult GetByAssetId(List<string> assetIdList)
+        public async Task<IHttpActionResult> GetByAssetId(List<string> assetIdList)
         {
-            return Ok(new MdVariableExtensionBl(CoreDbUrl).GetByAssetId(assetIdList));
+            return await Task.FromResult(Ok(new MdVariableExtensionBl(CoreDbUrl).GetByAssetId(assetIdList)));
         }
 
         /// <summary>
@@ -42,9 +43,9 @@
         /// <param name="assetId">Id del activo</param>
         /// <returns>Lista de objetos de tipo MdVariableExtension</returns>
         [HttpGet]
-        public IHttpActionResult GetMeasurementPointsByAsset(string assetId)
+        public async Task<IHttpActionResult> GetMeasurementPointsByAsset(string assetId)
         {
-            return Ok(new MdVariableExtensionBl(CoreDbUrl).GetMeasurementPointsByAsset(assetId));
+            return await Task.FromResult(Ok(new MdVariableExtensionBl(CoreDbUrl).GetMeasurementPointsByAsset(assetId)));
         }
 
         /// <summary>
@@ -53,9 +54,9 @@
         /// <param name="mdVariableIdList">Lista de id de mdVariable</param>
         /// <returns>Lista de tipo MeasurementPointDto</returns>
         [HttpPost]
-        public IHttpActionResult GetOverallMeasure(List<string> mdVariableIdList)
+        public async Task<IHttpActionResult> GetOverallMeasure(List<string> mdVariableIdList)
         {
-            return Ok(new MdVariableExtensionBl(CoreDbUrl).GetOverallMeasure(mdVariableIdList));
+            return await Task.FromResult(Ok(new MdVariableExtensionBl(CoreDbUrl).GetOverallMeasure(mdVariableIdList)));
         }
 
         /// <summary>
@@ -64,9 +65,9 @@
         /// <param name="mdVariableIdList">Lista de id de mdVariable</param>
         /// <returns>Lista de tipo MeasurementPointDto</returns>
         [HttpPost]
-        public IHttpActionResult GetSignal(List<string> mdVariableIdList)
+        public async Task<IHttpActionResult> GetSignal(List<string> mdVariableIdList)
         {
-            return Ok(new MdVariableExtensionBl(CoreDbUrl).GetSignal(mdVariableIdList));
+            return await Task.FromResult(Ok(new MdVariableExtensionBl(CoreDbUrl).GetSignal(mdVariableIdList)));
         }
 
         /// <summary>
@@ -85,10 +86,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateIncludingParameterValues(MdVariableExtension mdVariable)
+        public async Task<IHttpActionResult> UpdateIncludingParameterValues(MdVariableExtension mdVariable)
         {
             new MdVariableExtensionBl(CoreDbUrl).UpdateIncludingParameterValues(mdVariable);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -96,10 +97,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult Create(MdVariableExtension mdVariable)
+        public async Task<IHttpActionResult> Create(MdVariableExtension mdVariable)
         {
             var _mdVariable = new MdVariableExtensionBl(CoreDbUrl).Add(mdVariable);
-            return Ok(_mdVariable);
+            return await Task.FromResult(Ok(_mdVariable));
         }
 
         /// <summary>
@@ -107,9 +108,9 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult GetByNodeId(List<string> nodeIdList)
+        public async Task<IHttpActionResult> GetByNodeId(List<string> nodeIdList)
         {
-            return Ok(new MdVariableExtensionBl(CoreDbUrl).GetByNodeId(nodeIdList));
+            return await Task.FromResult(Ok(new MdVariableExtensionBl(CoreDbUrl).GetByNodeId(nodeIdList)));
         }
 
         /// <summary>
@@ -117,10 +118,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteManyByIdAndSubVaribles(List<MdVariableExtension> mdVariableList)
+        public async Task<IHttpActionResult> DeleteManyByIdAndSubVaribles(List<MdVariableExtension> mdVariableList)
         {
             new MdVariableExtensionBl(CoreDbUrl).DeleteManyByIdAndSubVaribles(mdVariableList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -128,10 +129,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto)
+        public async Task<IHttpActionResult> CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto)
         {
-            new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesDto);
-            return Ok();
+            new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesDto,"Relación punto de medición - canal Asdaq");
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -139,10 +140,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateOrderPositionPoints(List<MdVariableExtension> mdVariables)
+        public async Task<IHttpActionResult> UpdateOrderPositionPoints(List<MdVariableExtension> mdVariables)
         {
             new MdVariableExtensionBl(CoreDbUrl).UpdateOrderPositionPoints(mdVariables);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -154,6 +155,16 @@
         {
             new MdVariableExtensionBl(CoreDbUrl).UpdatePoints(points);
             return Ok();
+        }
+
+        /// <summary>
+        /// Retorna todas las referencias angulares
+        /// </summary>
+        [HttpGet]
+        [Roles("Admin")]
+        public IHttpActionResult GetAllReferenceAngular()
+        {
+            return Ok(new MdVariableExtensionBl(CoreDbUrl).GetAllReferenceAngular());
         }
     }
 }

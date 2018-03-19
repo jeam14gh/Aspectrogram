@@ -156,6 +156,16 @@
             Cuando se tengan diferentes modulos con diferente configuracion se debe cambiar esta propiedad
             </summary>
         </member>
+        <member name="P:Amaq.Acloud.AsdaqService.AsdaqProperties.HistoricalDataUploadLimit">
+            <summary>
+            Cantidad limite de registros de datos históricos que se suben al servidor principal por cada transacción. Por defecto 3000
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.AsdaqService.AsdaqProperties.HistoricalDataStreamUploadLimit">
+            <summary>
+            Cantidad limite de registros de datos dinámicos históricos que se suben al servidor principal por cada transacción. Por defecto 80
+            </summary>
+        </member>
         <member name="T:Amaq.Acloud.AsdaqService.AsdaqService">
             <summary>
             Servicio que gestiona toda la adquisicion y la sincroniza con el servidor de base de datos

@@ -4,7 +4,7 @@
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort>44382</IISExpressSSLPort>
     <WebStackScaffolding_ViewDialogWidth>600</WebStackScaffolding_ViewDialogWidth>
-    <ProjectView>ProjectFiles</ProjectView>
+    <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
   <ProjectExtensions>
     <VisualStudio>

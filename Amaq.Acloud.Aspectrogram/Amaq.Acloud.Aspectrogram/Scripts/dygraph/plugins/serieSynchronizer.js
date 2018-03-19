@@ -22,9 +22,15 @@ SerieSynchronizer = (function () {
             // Auto-referencia a la clase SerieReflectionSynchronizer
             _this,
             // Referencia al grafico a sincronizar
-            _chart;
+            _chart,
+            _lastPoint,
+            _findClosestPoint;
 
         _this = this;
+
+        this.SetChartReference = function (chart) {
+            _chart = chart;
+        };
 
         /*
          * @param {String} axis Eje sobre el cual se realiza la sincronizacion basada en la reflexion del eje
@@ -34,20 +40,63 @@ SerieSynchronizer = (function () {
                 points,
                 selectionChanged,
                 canvasCoords,
-                canvasx,
-                xValue,
+                closestPoint,
                 idxList,
                 callback;
 
             _chart = g;
             points = g.layout_.points;
-            if (points === undefined || points === null) return;
-
+            if (points === undefined || points === null) {
+                return;
+            }
             selectionChanged = false;
             canvasCoords = g.eventToDomCoords(e);
-            canvasx = canvasCoords[0];
-            xValue = Math.round(g.toDataXCoord(canvasx));
-            idxList = [_this.getRowForX(xValue), _this.getRowForX(-xValue)];
+            closestPoint = _findClosestPoint(canvasCoords[0], canvasCoords[1], g.layout_);
+            idxList = [closestPoint.row, _this.getRowForX(-closestPoint.point.xval)];
+            if (idxList[0] < _chart.boundaryIds_[0][0]) {
+                return;
+            }
+            selectionChanged = _this.setSelection(idxList);
+            callback = _chart.getFunctionOption("highlightCallback");
+            if (callback && selectionChanged) {
+                callback.call(_chart, e,
+                    _chart.lastx_,
+                    _chart.selPoints_,
+                    _chart.lastRow_,
+                    _chart.highlightSet_);
+            }
+            _lastPoint = closestPoint;
+        };
+        /*
+ * @param {String} axis Eje sobre el cual se realiza la sincronizacion basada en la reflexion del eje
+ */
+        this.YReflectionKey = function (e, g) {
+            var
+                points,
+                selectionChanged,
+                canvasCoords,
+                closestPoint,
+                idxList,
+                callback;
+
+            _chart = g;
+
+            _chart.cascadeEvents_("select", {
+                selectedRow: _chart.lastRow_,
+                selectedX: _chart.lastx_,
+                selectedPoints: _chart.selPoints_
+            });
+
+            if (e.which == 37) {
+                _lastPoint.row -= 1;
+                idxList = [_lastPoint.row, _this.getRowForX(-_lastPoint.point.xval) + 1];
+            } else if (e.which == 39) {
+                _lastPoint.row += 1;
+                idxList = [_lastPoint.row, _this.getRowForX(-_lastPoint.point.xval) - 1];
+            }
+            _lastPoint.point.xval = _chart.file_[_lastPoint.row][0];
+
+
             if (idxList[0] < _chart.boundaryIds_[0][0]) {
                 return;
             }
@@ -61,6 +110,7 @@ SerieSynchronizer = (function () {
                     _chart.highlightSet_);
             }
         };
+
 
         this.ReflectByIndex = function (e, g, ctx) {
             var
@@ -80,8 +130,9 @@ SerieSynchronizer = (function () {
             currentIdx = closestPoint.row;
             totalPoints = g.file_.length;
             points = g.layout_.points;
-            if (points === undefined || points === null) return;
-
+            if (points === undefined || points === null) {
+                return;
+            }
             selectionChanged = false;
             idxList = [currentIdx, (currentIdx + totalPoints / 2) % totalPoints];
             selectionChanged = _this.setSelection(idxList);
@@ -254,29 +305,37 @@ SerieSynchronizer = (function () {
             _chart.selPoints_ = [];
         };
 
-        var _findClosestPoint = function (domX, domY, layout) {
-            var minDist = Infinity;
-            var dist, dx, dy, point, closestPoint, closestSeries, closestRow;
-            for (var setIdx = layout.points.length - 1 ; setIdx >= 0 ; --setIdx) {
-                var pts = layout.points[setIdx];
-                for (var i = 0; i < pts.length; ++i) {
-                    point = pts[i];
-                    if (!Dygraph.isValidPoint(point)) continue;
-                    dx = point.canvasx - domX;
-                    dy = point.canvasy - domY;
+        _findClosestPoint = function (domX, domY, layout) {
+            var
+                minDist,
+                setIdx,
+                pts, i,
+                dist, dx, dy,
+                closestPoint,
+                closestSeries,
+                closestRow;
+
+            minDist = Infinity;
+            for (setIdx = layout.points.length - 1; setIdx >= 0; --setIdx) {
+                pts = layout.points[setIdx];
+                for (i = 0; i < pts.length; ++i) {
+                    if (!Dygraph.isValidPoint(pts[i])) {
+                        continue;
+                    }
+                    dx = pts[i].canvasx - domX;
+                    dy = pts[i].canvasy - domY;
                     dist = dx * dx + dy * dy;
                     if (dist < minDist) {
                         minDist = dist;
-                        closestPoint = point;
+                        closestPoint = pts[i];
                         closestSeries = setIdx;
-                        closestRow = point.idx;
+                        closestRow = pts[i].idx;
                     }
                 }
             }
-            var name = layout.setNames[closestSeries];
             return {
                 row: closestRow,
-                seriesName: name,
+                seriesName: layout.setNames[closestSeries],
                 point: closestPoint
             };
         };

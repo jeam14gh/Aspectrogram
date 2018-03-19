@@ -81,11 +81,11 @@ CustomContextMenu = (function () {
                     // Gestionamos la accion especifica
                     switch (e.target.id) {
                         case "menuWaveform" + _rnd:
-                            graph = new WaveformGraph(1, 6, 4, true);
+                            graph = new WaveformGraph(1, 12, 4, true);
                             graph.Show($(_currentMeasurementPoint).val(), $(_currentTimeStamp).val());
                             break;
                         case "menuSpectrum" + _rnd:
-                            graph = new SpectrumGraph(1, 6, 4, true);
+                            graph = new SpectrumGraph(1, 12, 4, true);
                             graph.Show($(_currentMeasurementPoint).val(), $(_currentTimeStamp).val());
                             break;
                         case "menuFullSpectrum" +_rnd:
@@ -143,10 +143,10 @@ CustomContextMenu = (function () {
             _containerByRange.id = "historicRangeCtxMenu" + _rnd;
             _containerByRange.className = "customContextMenu";
             ulEl = document.createElement("ul");
-            //$(ulEl).append("<li id=\"saveAsPng" + _rnd + "\" class=\"saveAsPng\">Guardar imagen</li>");
             $(ulEl).append("<li id=\"shaftPlot" + _rnd + "\" class=\"shaftPositionMenu\">Posición del eje</li>");
             $(ulEl).append("<li id=\"bodePlot" + _rnd + "\" class=\"bodePlotMenu\">Bode</li>");
             $(ulEl).append("<li id=\"polarPlot" + _rnd + "\" class=\"polarPlotMenu\">Polar</li>");
+            $(ulEl).append("<li id=\"amplitudePhasePlot" + _rnd + "\" class=\"amplitudePhasePlotMenu\">Amplitud-Fase 1X</li>");
             $(ulEl).append("<li id=\"cascadePlot" + _rnd + "\" class=\"cascadePlotMenu\">Cascada</li>");
             $(ulEl).append("<li id=\"fSCascadePlot" + _rnd + "\" class=\"fSCascadePlotMenu\">Cascada de Órbita</li>");
             $(ulEl).append("<li id=\"cascadeRPMPlot" + _rnd + "\" class=\"cascadeRPMPlotMenu\">Cascada RPM</li>");
@@ -176,12 +176,17 @@ CustomContextMenu = (function () {
                             break;
                         case "bodePlot" + _rnd:
                             currentColor = $(_currentMeasurementPoint).attr("currentColor");
-                            graph = new BodeGraph(1, 6, 4, true);
+                            graph = new BodeGraph(6, 4, true);
                             graph.Show($(_currentMeasurementPoint).val(), currentColor, _historicalRange, _rpmPositions);
-                            break;
+                            break;                      
                         case "polarPlot" + _rnd:
                             currentColor = $(_currentMeasurementPoint).attr("currentColor");
-                            graph = new PolarGraph(1, 5, 5, true);
+                            graph = new PolarGraph(5, 5, true);
+                            graph.Show($(_currentMeasurementPoint).val(), currentColor, _historicalRange, _rpmPositions);
+                            break;
+                        case "amplitudePhasePlot" +_rnd:
+                            currentColor = $(_currentMeasurementPoint).attr("currentColor");
+                            graph = new AmplitudePhaseGraph(1, 6, 4, true);
                             graph.Show($(_currentMeasurementPoint).val(), currentColor, _historicalRange, _rpmPositions);
                             break;
                         case "fSCascadePlot" + _rnd:
@@ -206,7 +211,7 @@ CustomContextMenu = (function () {
                             break;
                         case "scatterPlot" + _rnd:
                             currentColor = $(_currentMeasurementPoint).attr("currentColor");
-                            graph = new ScatterGraph(1, 12, 6, false);
+                            graph = new ScatterGraph(12, 6, false);
                             graph.Show($(_currentMeasurementPoint).val(), currentColor, _historicalRange);
                             break;
                     }

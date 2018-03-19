@@ -5,6 +5,7 @@
     using WebSite.Controllers.Api;
     using Entities;
     using Attributes;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Controlador Api StatusExtension
@@ -17,9 +18,9 @@
         /// </summary>
         /// <returns>Lista de objetos de tipo StatusExtension</returns>
         [HttpGet]
-        public IHttpActionResult GetSetOfRiskStates()
+        public async Task<IHttpActionResult> GetSetOfRiskStates()
         {
-            return Ok(new StatusExtensionBl(CoreDbUrl).GetSetOfRiskStates());
+            return await Task.FromResult(Ok(new StatusExtensionBl(CoreDbUrl).GetSetOfRiskStates()));
         }
     }
 }

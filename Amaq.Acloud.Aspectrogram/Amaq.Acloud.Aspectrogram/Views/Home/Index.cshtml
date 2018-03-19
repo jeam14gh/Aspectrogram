@@ -1,20 +1,19 @@
 ﻿@{
     ViewBag.Title = "Inicio";
 }
-
 <div style="overflow-y:scroll;">
 
     <div id="sliderToolbar" class="hidden">
         <div class="row" style="margin:0px !important;">
             <div class="col-md-12">
                 <h2 class="titleSlider">Frecuencia de corte</h2>
-                <div id="stopFrecuency" style="width:95%;float:left;"></div>
+                <div id="stopFrequency" style="width:95%;float:left;"></div>
                 <div class="sliderValue" style="float:right;margin-top:-5px;width:5%;padding-left:10px;">0</div>
             </div>
         </div>
     </div>
 
-    <div id="aspectrogramMainContent" class="container-fluid fullHeight">
+    <div id="aspectrogramMainContent" class="container-fluid">
         <div id="awContainer" class="fullHeight fullWidth grid-stack" style="margin: 10px 0px;">  
             @Html.Partial("../Modals/_TrendSeriesVisibility")
             @Html.Partial("../Modals/_HistoricalTrendFilter")
@@ -22,6 +21,7 @@
             @Html.Partial("../Modals/_BarFilter")
             @Html.Partial("../Modals/_SetShaftReference")
             @Html.Partial("../Modals/_graphConfigurationModal")
+            @Html.Partial("../Modals/_BodeSeriesVisibility")
         </div>
     </div>
 </div>
@@ -34,6 +34,7 @@
     @Scripts.Render("~/Scripts/helpers/concurrentThread.js")
     @Scripts.Render("~/Scripts/helpers/publishSubscriber.js")
 
+    @Scripts.Render("~/Scripts/helpers/managementIndexedDB.js")
     @Scripts.Render("~/Scripts/helpers/cursors.js")
     <!--Scripts de PDS-->
     @Scripts.Render("~/Scripts/helpers/fourierTransform.js")
@@ -55,6 +56,7 @@
     @Scripts.Render("~/Scripts/app/graphs/liveTrendGraph.js")
     @Scripts.Render("~/Scripts/app/graphs/orbitGraph.js")
     @Scripts.Render("~/Scripts/app/graphs/shaftPositionGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/amplitudePhaseGraph.js")
     @Scripts.Render("~/Scripts/app/graphs/polarGraph.js")
     @Scripts.Render("~/Scripts/app/graphs/scatterGraph.js")
     @Scripts.Render("~/Scripts/app/graphs/waveformGraph.js")
@@ -106,66 +108,71 @@
 @section applicationScripts {
         
     <script type="text/javascript">
-        // Instanciamos el helper de widget
-        var widgetHelper = new WidgetHelper(),
-        // Bandera que indica si el filtro dinamico esta activado o no
-        enableFilter = false,
-        // Frecuencia de corte a la cual se filtra.
-        stopFrecuency = 0,
-        // Lista de subVariables activas para consulta tiempo real en servidor
-        subVariableRTList = [],
-        // Lista de subVariables ya consultadas en el modo historico
-        subVariableHTList = [],
-        // Mantiene los datos tiempo real que se han consultado del servidor según subVariableRTList
-        //realTimeData = [],
-        //manageReport = new ManageReport(),
-        //loadData = new LoadDataViewer3d(idEntity),
-        // Tabla de puntos pares
-        arrayObjectPointPair = [],
-        // Mantiene las diferentes subVariables solicitadas para tiempo real agrupadas por asdaq
-        realTimeRequestsByAsdaqList = [],
-        // Mantiene las diferentes subVariables solicitadas para tiempo real agrupadas por atr
-        realTimeRequestsByAtrList = [],
+        var
+            // Referencia al helper widget
+            widgetHelper,
+            // Bandera que indica si el filtro dinamico esta activado o no
+            enableFilter,
+            // Frecuencia de corte a la cual se filtra.
+            stopFrequency,
+            // Lista de subVariables activas para consulta tiempo real en servidor
+            subVariableRTList,
+            // Lista de subVariables ya consultadas en el modo historico
+            subVariableHTList,
+            // Tabla de puntos pares
+            arrayObjectPointPair,
+            // Mantiene las diferentes subVariables solicitadas para tiempo real agrupadas por asdaq
+            realTimeRequestsByAsdaqList,
+            // Mantiene las diferentes subVariables solicitadas para tiempo real agrupadas por atr
+            realTimeRequestsByAtrList,
+            // Tipos de cursores incluidos en los graficos de espectros
+            cursorType,
+            // Referencia al objeto del reproductor
+            eventPlayerObj,
+            // Referencia al objeto RealTimeMode
+            rt,
+            // Funcion que realiza el renderizado del valor en el filtro dinamico
+            showValue;
+
+        eventPlayerObj = new JcEventPlayer();
+        widgetHelper = new WidgetHelper();
+        enableFilter = false;
+        stopFrequency = 0;
+        subVariableRTList = [];
+        subVariableHTList = [];
+        realTimeRequestsByAsdaqList = [];
+        realTimeRequestsByAtrList = [];
         cursorType = {
             None: 0,
             Normal: 1,
             Harmonic: 2,
             SideBand: 3
-        },
-        eventPlayerObj;
-
-        eventPlayerObj = new JcEventPlayer();
-
-        // Importante para la traduccion de los nombres de meses del año
-        Dygraph.SHORT_MONTH_NAMES_ = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-
-        $(window).on('visibilitychange', function (e) {
+        };
+        $(window).on("visibilitychange", function (e) {
             // Notifica a cada gráfica que contenga chart Dygraph para que aplique resize al respectivo chart para solucionar bug de Dygraph
             PublisherSubscriber.publish('/resizechart', null);
         });
-
         $(window).on("beforeunload", function (e) {
             e.returnValue = "Información importante se puede perder.";
             return "Información importante se puede perder.";
         });
+        rt = new RealTimeMode;
+        showValue = function (event, ui) {
+            var
+                value;
 
-        var rt = new RealTimeMode;
-
-        function showValue(event, ui) {
-            var value = $(this).slider("option", "range") === true ? $(this).slider("values") : $(this).slider("value");
+            value = $(this).slider("option", "range") === true ? $(this).slider("values") : $(this).slider("value");
             value = $.isArray(value) ? value[0] + " a " + value[1] : value;
-            stopFrecuency = value;
+            stopFrequency = value;
             if ($(this).slider("option", "orientation") == "vertical") {
                 $(this).prev().children(".sliderValue").text(value);
-            }
-            else {
+            } else {
                 $(this).next(".sliderValue").text(value);
             }
-
-            PublisherSubscriber.publish("/applyfilter", null); // Notificar a todas las gráficas para que apliquen el filtro y actualicen los chart
-        }
-
-        $("#stopFrecuency").slider({
+            // Notificar a todas las graficas para que apliquen el filtro y actualicen los chart
+            PublisherSubscriber.publish("/applyfilter", null);
+        };
+        $("#stopFrequency").slider({
             animate: false,
             max: 2000,
             min: 0,
@@ -179,18 +186,14 @@
 
         $(document).ready(function () {
             rt.Start();
-
             $(".grid-stack").gridstack({
                 cellHeight: 80,
                 verticalMargin: 10,
                 disableDrag: true,
-                animate: false,
-                //disableResize: true,
+                animate: false
             });
-
             // Mostrar toolbar
             $("#mainToolbar").show();
-
             $(document).click(function (e) {
                 // Cuando se trata del canvas ignorar la accion de click
                 if (e.target.localName == "canvas") return;
@@ -198,18 +201,15 @@
                     $(".customContextMenu").css("display", "none");
                 }
             });
-            
             $(document).keydown(function (e) {
                 if (e.keyCode == 27) {
                     $(".customContextMenu").css("display", "none");
                 }
             });
-
             $(".userMenu").click(function (event) {
                 event.preventDefault();
                 popUp("warning", "Funcionalidad desactivada temporalmente.");
             });
-
             $(".mainDropDownMenu").click(function (event) {
                 event.preventDefault();
                 var menuId = this.id;
@@ -219,28 +219,26 @@
                         if (!globalsLocation.flagOpen) {
                             var appNavigation3d = new AppNavigation3d(12, 6, true).Show();
                         }
-                        
                         break;
                     case "filterMenu":
                         enableFilter = !enableFilter;
-                        PublisherSubscriber.publish("/applyfilter", null); // Notificar a todas las gráficas para que apliquen el filtro y actualicen los chart
-                        
-                        // Adecuamos el ancho del slider del filtro dinámico
-                        var size = $("#aspectrogramMainContent").width()-6;
-                        $("#sliderToolbar").css('width', size);
-
+                        // Notificar a todas las graficas para que apliquen el filtro y actualicen los chart
+                        PublisherSubscriber.publish("/applyfilter", null);
+                        // Adecuamos el ancho del slider del filtro dinamico
+                        var size = $("#aspectrogramMainContent").width() - 6;
+                        $("#sliderToolbar").css("width", size);
                         if (enableFilter) {
                             $("#filterMenu").html("Desactivar Filtro");
                             // Mostrar slider para el filtro dinamico
                             $("#sliderToolbar").removeClass("hidden");
-                            $("#stopFrecuency").slider({ disabled: false });
-                            $("#aspectrogramMainContent").css({ 'position': 'relative', 'top': '52px' });
+                            $("#stopFrequency").slider({ disabled: false });
+                            $("#aspectrogramMainContent").css({ "position": "relative", "top": "52px" });
                         } else {
                             $("#filterMenu").html("Activar Filtro");
                             // Mostrar slider para el filtro dinamico
                             $("#sliderToolbar").addClass("hidden");
-                            $("#stopFrecuency").slider({ disabled: true });
-                            $("#aspectrogramMainContent").css({ 'position': 'static', 'top': '55px' });
+                            $("#stopFrequency").slider({ disabled: true });
+                            $("#aspectrogramMainContent").css({ "position": "static", "top": "55px" });
                         }
                         break;
                     case "newHeaderReport":
@@ -254,7 +252,6 @@
                     case "generateReport":
                         var generateReport = new PrintReport();
                         generateReport.savePDFReport();
-
                         break;
                     case "previewReport":
                         //$("#dialogPDFPreview").ejDialog("open");
@@ -262,18 +259,10 @@
                         previewReport.createDialogPreview();
                         //var printReport = new PrintReport().loadDataToGlobalsReport();
                         break;
-                    //case "eventListMenu":
-                    //    new EventList(selectedAsset.Name, 12, 5).GetAll(selectedAsset.Id);
-                    //    break;
                     default:
                         popUp("warning", "Funcionalidad desactivada temporalmente.");
-                        break;
                 }
             });
         });
-
-
-
-        
     </script>
 }

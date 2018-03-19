@@ -40,13 +40,26 @@ Array.prototype.pushArray = function (arr) {
 
 Array.prototype.isArray = function (obj) {
     return !!obj && obj.constructor === Array;
-}
+};
 
 Array.prototype.range = function (start, count) {
     return Array.apply(0, Array(count)).map(function (element, index) {
-          return index + start;
+        return index + start;
     });
-}
+};
+
+Array.prototype.clean = function () {
+    var
+        i;
+
+    for (i = 0; i < this.length; i += 1) {
+        if (this[i] == undefined) {
+            this.splice(i, 1);
+            i -= 1;
+        }
+    }
+    return this;
+};
 
 var arrayColumn = (arr, n) => arr.map(x => x[n]);
 

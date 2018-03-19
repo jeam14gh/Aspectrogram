@@ -4,6 +4,10 @@
  * @author Jorge Calderon
  */
 
+/* globals ImageExport, createTableToExcel, tableToExcel, clone, DygraphOps, Dygraph, isEmpty, PublisherSubscriber, ej,
+   aidbManager, HistoricalTimeMode, formatDate, GetXYDataOnTime, GetKeyphasorOnTime, parseAng, selectedMeasurementPoint,
+   selectedAsset, popUp, mainCache, AspectrogramWidget*/
+
 var OrbitGraph = {};
 
 OrbitGraph = (function () {
@@ -43,8 +47,10 @@ OrbitGraph = (function () {
             _yWaveformChart,
             // Referencia al Id del widget
             _widgetId,
-            // Tipo de grafico Aspectrogram, necesario en AspectrogramWidget para gestionar la cache de elementos abiertos
-            _graphType,
+            // Mantiene el ultimo evento mousemove que se realizo sobre la grafica
+            _lastMousemoveEvt,
+            // Valor booleano que indica si el usuario tiene el mouse sobre la grafica
+            _mouseover,
             // Dimension del cuadrado
             _side,
             // Rango maximo y minimo del grafico, tanto en el eje X como en el eje Y
@@ -55,58 +61,71 @@ OrbitGraph = (function () {
             _assetData,
             // Objeto cuyas propiedades corresponden a informacion relacionada a los puntos de medicion (x, y)
             _measurementPoints,
-            // Referencia a las subvariables del punto de medicion en X (forma de onda, directa)
+            // Referencia a las subvariables del punto de medicion en X (forma de onda, directa, fase 1x, amplitud 1x)
             _xSubvariables,
-            // Referencia a las subvariables del punto de medicion en Y (forma de onda, directa)
+            // Referencia a las subvariables del punto de medicion en Y (forma de onda, directa, fase 1x, amplitud 1x)
             _ySubvariables,
             // Referencia a la subvariable de velocidad (caso exista)
             _angularSubvariable,
+            // Tipo de grafico Aspectrogram, necesario en AspectrogramWidget para gestionar la cache de elementos abiertos
+            _graphType,
             // Bandera que identifica si se esta mostrando la grafica filtrada 1x o sin filtro
             _filtered1x,
+            // Sentido de giro (Nomenclatura usada en libros y documentos, abreviacion de RotationDirection)
+            _rotn,
             // Gestiona el numero de vueltas a mostrar sobre el grafico de orbita
             _laps,
             // Frecuencia caracteristica/fundamental 1X
             _fundamentalFrequency,
-            // Metodo privado que realiza el control de los modelos de interaccion de eventos sobre la grafica
-            _customInteractionModel,
-            // Metodo complementario a los modelos de interaccion para encontrar el punto sobre la grafica mas proximo
-            _findClosestPoint,
-            // Metodo complementario a los modelos de interaccion para seleccionar el punto mas proximo sobre la grafica
-            _updateSelection,
-            // Metodo privado que calcula las margenes deseadas
-            _setMargins,
-            // Metodo privado que construye el chart caso no exista
-            _buildGraph,
             // Almacena la referencia de la subscripcion de nuevos datos
             _newDataSubscription,
-            // Metodo privado que realiza la suscripcion a los nuevos datos
-            _subscribeToNewData,
-            // Metodo privado que aplica filtro a la frecuencia caracteristica 1X
-            _applyFilter,
-            // Referencia a la suscripcion para aplicar resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
-            _resizeChartSubscription,
-            // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
-            _subscribeToResizeChart,
             // Referencia a la suscripcion para sincronizacion de los datos del reproductor
             _playerSubscription,
-            // Metodo privado que se ejecuta para actualizar la informacion a graficar
-            _refresh,
-            // Metodo privado que gestiona el evento clic sobre los items del menu de opciones
-            _onSettingsMenuItemClick,
-            // Metodo privado que obtiene la informacion a graficar de la orbita
-            _getOrbitData,
-            // Metodo privado que oculta el eje de la grafica Y1 intercambiandolo por el Y2
-            _showY2Axis,
+            // Referencia a la suscripcion para aplicar resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
+            _resizeChartSubscription,
+            // Metodo privado que aplica filtro a la frecuencia caracteristica 1X
+            _applyFilter,
+            // Metodo privado que construye el chart caso no exista
+            _buildGraph,
             // Metodo privado que re-calcula las posiciones de referencia angular para orbita filtrada 1x
             _calculateAngularPositions,
+            // Metodo privado que realiza el control de los modelos de interaccion de eventos sobre la grafica
+            _customInteractionModel,
+            // Metodo privado que gestiona la graficacion de los charts
+            _drawCharts,
+            // Metodo complementario a los modelos de interaccion para encontrar el punto sobre la grafica mas proximo
+            _findClosestPoint,
             // Metodo privado que obtiene la fase inicial de una forma de onda
             _getInitialPhase,
-            _drawCharts;
+            // Metodo privado que obtiene la informacion a graficar de la orbita
+            _getOrbitData,
+            // Metodo privado que obtiene los valores maximos y minimos de las graficas de orbita y formas de onda
+            _getRangeGraph,
+            // Metodo privado que obtiene la informacion de los puntos seleccionados en el conjunto de graficas
+            _getSelectedPoints,
+            // Metodo privado que gestiona el evento clic sobre los items del menu de opciones
+            _onSettingsMenuItemClick,
+            // Metodo privado que se ejecuta para actualizar la informacion a graficar
+            _refresh,
+            // Metodo privado que calcula las margenes deseadas
+            _setMargins,
+            // Metodo privado que gestiona el numero de vueltas a graficar en la orbita
+            _setOrbitLaps,
+            // Metodo privado que permite mostrar/ocultar la orbita filtrada 1X
+            _showHideFilteredOrbit,
+            // Metodo privado que oculta el eje de la grafica Y1 intercambiandolo por el Y2
+            _showY2Axis,
+            // Metodo privado que realiza la suscripcion a los nuevos datos
+            _subscribeToNewData,
+            // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
+            _subscribeToResizeChart,
+            // Metodo complementario a los modelos de interaccion para seleccionar el punto mas proximo sobre la grafica
+            _updateSelection;
 
         /*
          * Definimos el modo, la auto-referencia y demas valores por defecto
          */
-        _pause = (timeMode == 0) ? false : true;
+        _pause = (timeMode === 0) ? false : true;
         _movableGrid = false;
         _filtered1x = false;
         _this = this;
@@ -116,7 +135,7 @@ OrbitGraph = (function () {
         _measurementPoints = {};
         _xSubvariables = {};
         _ySubvariables = {};
-        _laps = 1;
+        _laps = 4;
 
         /*
          * Creamos el contenedor HTML de la grafica
@@ -145,9 +164,11 @@ OrbitGraph = (function () {
         _contentXWaveform = document.createElement("div");
         _contentXWaveform.id = "xWaveform" + _widgetId;
         _contentXWaveform.style.height = "41.5%";
-        $(_contentBody).children().children().eq(1).append("<div style=\"height:4%\"></div>");
+        $(_contentBody).children().children().eq(1).append("<div id=\"waveformXLabel" + _widgetId +
+            "\" style=\"height:4%;padding-left:5px;margin-right:2px;\"><span></span><span></span></div>");
         $(_contentBody).children().children().eq(1).append(_contentXWaveform);
-        $(_contentBody).children().children().eq(1).append("<div style=\"height:4%\"></div>");
+        $(_contentBody).children().children().eq(1).append("<div id=\"waveformYLabel" + _widgetId +
+            "\" style=\"height:4%;padding-left:5px;margin-right:2px;\"><span></span><span></span></div>");
         _contentYWaveform = document.createElement("div");
         _contentYWaveform.id = "yWaveform" + _widgetId;
         _contentYWaveform.style.height = "50%";
@@ -161,8 +182,8 @@ OrbitGraph = (function () {
             var
                 w, h,
                 mrg,
-                width,
-                height,
+                widthContent,
+                heightContent,
                 header;
 
             header = (_contentHeader.clientHeight + 4) * 100 / _container.clientHeight;
@@ -171,251 +192,273 @@ OrbitGraph = (function () {
             h = _contentBody.clientHeight;
             _side = [w, h].min();
             mrg = ([w, h].max() - _side) / 2;
-            width = (w == _side) ? (_side * 100) / w : ((_side + 40) * 100) / w;
-            width = (width > 100) ? 100 : width;
-            height = (h == _side) ? (_side * 100) / h : ((_side - 40) * 100) / h;
-            $(_contentOrbit).css("width", width + "%");
-            $(_contentOrbit).css("height", height + "%");
-            if (w == _side) {
-                $(_contentOrbit).css("margin-top", ((100 - height) / 2) + "%");
+            widthContent = (w === _side) ? (_side * 100) / w : ((_side + 40) * 100) / w;
+            widthContent = (widthContent > 100) ? 100 : widthContent;
+            heightContent = (h === _side) ? (_side * 100) / h : ((_side - 40) * 100) / h;
+            $(_contentOrbit).css("width", widthContent + "%");
+            $(_contentOrbit).css("height", heightContent + "%");
+            if (w === _side) {
+                $(_contentOrbit).css("margin-top", ((100 - heightContent) / 2) + "%");
                 $(_contentOrbit).css("margin-left", "0%");
             } else {
-                $(_contentOrbit).css("margin-left", ((100 - width) / 2) + "%");
+                $(_contentOrbit).css("margin-left", ((100 - widthContent) / 2) + "%");
                 $(_contentOrbit).css("margin-top", ((100 - ((_side * 100) / h)) / 2.2) + "%");
             }
         };
 
         /*
          * Callback de evento clic sobre algun item del menu de opciones
-         * @param {Object} event Argumentos del evento
+         * @param {Object} evt Argumentos del evento
          */
-        _onSettingsMenuItemClick = function (e) {
-            e.preventDefault();
+        _onSettingsMenuItemClick = function (evt) {
+            evt.preventDefault();
             var
                 target,
                 item,
-                size,
-                width,
-                dialog,
-                position,
-                container;
+                imgExport,
+                contId,
+                name,
+                labels,
+                i;
 
-            target = $(e.currentTarget);
+            target = $(evt.currentTarget);
             item = target.attr("data-value");
             switch (item) {
-                case "setOrbitLaps":
-                    width = $("#" + _container.id).width();
-                    position = $("#" + _container.id).parents(".grid-stack-item").first().position();
-                    size = { width: 350, height: 150 };
-                    dialog = { top: position.top + 10, left: (position.left + (width / 2) - (size.width / 2)) };
-                    container = $("#graphConfigAreaDialog").clone();
-                    container.css("display", "block");
-                    container[0].id = _widgetId + "orbit";
-                    $("#awContainer").append(container);
-                    $("#" + container[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
-                    $("#" + container[0].id + " > div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-5\"><label for=\"orbitLapsToShow\" " +
-                      "style=\"font-size:12px;\">N&uacute;mero de vueltas</label></div>");
-                    $("#" + container[0].id + " > div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-7\"><input type=\"number\" " +
-                      "id=\"orbitLapsToShow\" name=\"orbitLapsToShow\" style=\"width:100%;\"></div>");
-                    $("#" + container[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group zeroMarginBottom\"><div class=\"row\"></div></div>");
-                    $("#" + container[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div").append("<div style=\"text-align: center;\"></div>");
-                    $("#" + container[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div > div:nth-child(1)").append("\n<a id=\"btnSaveLaps" +
+                case "setLaps" + _widgetId:
+                    _setOrbitLaps();
+                    break;
+                case "filteredOrbit" + _widgetId:
+                    _showHideFilteredOrbit(true, target);
+                    break;
+                case "unfilteredOrbit" + _widgetId:
+                    _showHideFilteredOrbit(false, target);
+                    break;
+                case "saveImage" + _widgetId:
+                    imgExport = new ImageExport(_orbitChart, _graphType);
+                    imgExport.asPNG();
+                    break;
+                case "exportToExcel" + _widgetId:
+                    labels = [];
+                    if (timeMode === 0) {
+                        name = "Tiempo Real, Órbita: " + _assetData.Name;
+                    } else if (timeMode === 1) {
+                        name = "Histórico, Órbita: " + _assetData.Name;
+                    }
+                    contId = "tableToExcelOrbitGraph" + _widgetId;
+                    for (i = 0; i < _orbitChart.user_attrs_.labels.length; i += 1) {
+                        labels.push(_orbitChart.user_attrs_.labels[i]);
+                    }
+                    createTableToExcel(_container, contId, name, labels, _orbitChart.file_, false);
+                    tableToExcel("tableToExcelOrbitGraph" + _widgetId, name);
+                    break;
+            }
+        };
+
+        _setOrbitLaps = function () {
+            var
+                widgetWidth,
+                widgetPosition,
+                dialogSize,
+                dialogPosition,
+                configContainer,
+                x, y,
+                phaseIni,
+                sampleTime,
+                positions;
+
+            widgetWidth = $("#" + _container.id).width();
+            widgetPosition = $("#" + _container.id).parents(".grid-stack-item").first().position();
+            dialogSize = { width: 350, height: 150 };
+            dialogPosition = { top: widgetPosition.top + 10, left: (widgetPosition.left + (widgetWidth / 2) - (dialogSize.width / 2)) };
+            configContainer = $("#graphConfigAreaDialog").clone();
+            configContainer.css("display", "block");
+            configContainer[0].id = _widgetId + "orbit";
+            $("#awContainer").append(configContainer);
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-5\"><label for=\"orbitLapsToShow\" " +
+              "style=\"font-size:12px;\">N&uacute;mero de vueltas</label></div>");
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-7\"><input type=\"number\" " +
+              "id=\"orbitLapsToShow\" name=\"orbitLapsToShow\" style=\"width:100%;\"></div>");
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group zeroMarginBottom\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div").append("<div style=\"text-align: center;\"></div>");
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div > div:nth-child(1)").append("\n<a id=\"btnSaveLaps" +
+              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnSaveLaps" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div > div:nth-child(1)").append("\n<a id=\"btnCancelLaps" +
+              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnCancelLaps" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
+            $("#orbitLapsToShow").val(_laps);
+            $("#" + configContainer[0].id + " > div.graphConfigArea").ejDialog({
+                enableResize: false,
+                width: dialogSize.width,
+                height: dialogSize.height,
+                zIndex: 2000,
+                close: function () {
+                    $("#btnCancelLaps" + _widgetId).off("click");
+                    $("#btnSaveLaps" + _widgetId).off("click");
+                    $("#" + configContainer[0].id).remove();
+                },
+                content: "#" + configContainer[0].id,
+                tooltip: {
+                    close: "Cerrar"
+                },
+                actionButtons: ["close"],
+                position: {
+                    X: dialogPosition.left,
+                    Y: dialogPosition.top
+                }
+            });
+            // Abrir el dialogo
+            $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("open");
+            // Boton cancelar
+            $("#btnCancelLaps" + _widgetId).click(function (e) {
+                e.preventDefault();
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
+            });
+            // Botono aceptar
+            $("#btnSaveLaps" + _widgetId).click(function (e) {
+                e.preventDefault();
+                _laps = parseFloat($("#orbitLapsToShow").val());
+                if (_laps < 1) {
+                    return;
+                }
+                x = clone(_xSubvariables.waveform.RawValue);
+                y = clone(_ySubvariables.waveform.RawValue);
+                phaseIni = 0;
+                if (_filtered1x) {
+                    if (_angularSubvariable && _angularSubvariable.Value > 0) {
+                        phaseIni = _getInitialPhase(clone(_xSubvariables.waveform), _xSubvariables.phase);
+                    }
+                    x = _applyFilter(x, _xSubvariables.waveform.SampleRate, _xSubvariables.overall.MeasureType, _xSubvariables.amplitude, phaseIni);
+                    if (_angularSubvariable && _angularSubvariable.Value > 0) {
+                        phaseIni = _getInitialPhase(clone(_ySubvariables.waveform), _ySubvariables.phase);
+                    }
+                    y = _applyFilter(y, _ySubvariables.waveform.SampleRate, _ySubvariables.overall.MeasureType, _ySubvariables.amplitude, phaseIni);
+                }
+                sampleTime = (_xSubvariables.waveform.Value.length / _xSubvariables.waveform.SampleRate);
+                positions = _calculateAngularPositions(x);
+                _drawCharts(x, y, positions, sampleTime);
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
+            });
+        };
+
+        _showHideFilteredOrbit = function (visible, target) {
+            var
+                txt,
+                x, y,
+                phaseIni,
+                positions,
+                measure,
+                sampleTime,
+                widgetWidth,
+                widgetPosition,
+                dialogSize,
+                dialogPosition,
+                configContainer;
+
+            _filtered1x = visible;
+            sampleTime = (_xSubvariables.waveform.RawValue.length / _xSubvariables.waveform.SampleRate);
+            txt = "<b style=\"color:" + _measurementPoints.x.Color + ";\">" + _measurementPoints.x.Name + "</b>&nbsp;&nbsp;Ang:&nbsp;";
+            txt += parseAng(_measurementPoints.x.SensorAngle) + "&deg;" + ", " + _xSubvariables.overall.Name + ": ";
+            txt += _xSubvariables.overall.Value.toFixed(2) + " " + _xSubvariables.overall.Units + ", &nbsp;";
+            if (_filtered1x) {
+                txt += "(" + _xSubvariables.amplitude.Value.toFixed(2) + "&ang;" + _xSubvariables.phase.Value.toFixed(2) + "&deg;), &nbsp;";
+            }
+            txt += _currentTimeStamp;
+            $("#" + _measurementPoints.x.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+            txt = "<b style=\"color:" + _measurementPoints.y.Color + ";\">" + _measurementPoints.y.Name + "</b>&nbsp;&nbsp;Ang:&nbsp;";
+            txt += parseAng(_measurementPoints.y.SensorAngle) + "&deg;" + ", " + _ySubvariables.overall.Name + ": ";
+            txt += _ySubvariables.overall.Value.toFixed(2) + " " + _ySubvariables.overall.Units + ", &nbsp;"
+            if (_filtered1x) {
+                txt += "(" + _ySubvariables.amplitude.Value.toFixed(2) + "&ang;" + _ySubvariables.phase.Value.toFixed(2) + "&deg;), &nbsp;";
+            }
+            txt += _currentTimeStamp;
+            $("#" + _measurementPoints.y.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+            if (visible) {
+                measure = _xSubvariables.overall.MeasureType;
+                if (_angularSubvariable && _angularSubvariable.Value > 0 && _fundamentalFrequency > 0) {
+                    phaseIni = _getInitialPhase(clone(_xSubvariables.waveform), _xSubvariables.phase);
+                    x = _applyFilter(_xSubvariables.waveform.RawValue, _xSubvariables.waveform.SampleRate, measure, _xSubvariables.amplitude, phaseIni);
+                    phaseIni = _getInitialPhase(clone(_ySubvariables.waveform), _ySubvariables.phase);
+                    y = _applyFilter(_ySubvariables.waveform.RawValue, _ySubvariables.waveform.SampleRate, measure, _ySubvariables.amplitude, phaseIni);
+                    positions = _calculateAngularPositions(x);
+                    _drawCharts(x, y, positions, sampleTime);
+                    target[0].innerHTML = "Sin filtrar";
+                    target.attr("data-value", "unfilteredOrbit" + _widgetId);
+                } else {
+                    widgetWidth = $("#" + _container.id).width();
+                    widgetPosition = $("#" + _container.id).parents(".grid-stack-item").first().position();
+                    dialogSize = { width: 350, height: 150 };
+                    dialogPosition = { top: widgetPosition.top + 10, left: (widgetPosition.left + (widgetWidth / 2) - (dialogSize.width / 2)) };
+                    configContainer = $("#graphConfigAreaDialog").clone();
+                    configContainer.css("display", "block");
+                    configContainer[0].id = _widgetId + "orbit";
+                    $("#awContainer").append(configContainer);
+                    $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
+                    $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-5\"><label for=\"fundamentalFreq\" " +
+                      "style=\"font-size:12px;\">Frecuencia fundamental</label></div>");
+                    $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-7\"><input type=\"number\" " +
+                      "id=\"fundamentalFreq\" name=\"fundamentalFreq\" style=\"width:100%;\"></div>");
+                    $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group zeroMarginBottom\"><div class=\"row\"></div></div>");
+                    $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div").append("<div style=\"text-align: center;\"></div>");
+                    $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div > div:nth-child(1)").append("\n<a id=\"btnSaveFreq" +
                       _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
-                    $("#btnSaveLaps" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
-                    $("#" + container[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div > div:nth-child(1)").append("\n<a id=\"btnCancelLaps" +
+                    $("#btnSaveFreq" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
+                    $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div > div:nth-child(1)").append("\n<a id=\"btnCancelFreq" +
                       _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
-                    $("#btnCancelLaps" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
-                    $("#orbitLapsToShow").val(_laps);
-                    $("#" + container[0].id + " > div.graphConfigArea").ejDialog({
+                    $("#btnCancelFreq" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
+                    $("#fundamentalFreq").val(_fundamentalFrequency ? _fundamentalFrequency : 0);
+                    $("#" + configContainer[0].id + " > div.graphConfigArea").ejDialog({
                         enableResize: false,
-                        width: size.width,
-                        height: size.height,
+                        width: dialogSize.width,
+                        height: dialogSize.height,
                         zIndex: 2000,
                         close: function () {
-                            $("#btnCancelLaps" + _widgetId).off("click");
-                            $("#btnSaveLaps" + _widgetId).off("click");
-                            $("#" + container[0].id).remove();
+                            $("#btnCancelFreq" + _widgetId).off("click");
+                            $("#btnSaveFreq" + _widgetId).off("click");
+                            $("#" + configContainer[0].id).remove();
                         },
-                        content: "#" + container[0].id,
+                        content: "#" + configContainer[0].id,
                         tooltip: {
                             close: "Cerrar"
                         },
                         actionButtons: ["close"],
                         position: {
-                            X: position.left,
-                            Y: position.top
+                            X: dialogPosition.left,
+                            Y: dialogPosition.top
                         }
                     });
-
-                    $("#btnCancelLaps" + _widgetId).click(function (event) {
+                    // Abrir el dialogo
+                    $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("open");
+                    // Boton cancelar
+                    $("#btnCancelFreq" + _widgetId).click(function (event) {
                         event.preventDefault();
-                        $("#" + container[0].id + " div.graphConfigArea").ejDialog("close");
+                        $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
                     });
-
-                    $("#btnSaveLaps" + _widgetId).click(function (event) {
+                    // Boton aceptar
+                    $("#btnSaveFreq" + _widgetId).click(function (event) {
                         event.preventDefault();
-                        _laps = parseFloat($("#orbitLapsToShow").val());
-                        if (_laps < 1) {
+                        _fundamentalFrequency = parseFloat($("#fundamentalFreq").val());
+                        if (_fundamentalFrequency <= 0) {
                             return;
                         }
-                        $("#" + container[0].id + " div.graphConfigArea").ejDialog("close");
-                        switch (timeMode) {
-                            case 1:
-                                var
-                                    x, y,
-                                    sampleTime,
-                                    waveformX,
-                                    waveformY,
-                                    positions,
-                                    xAngularPos,
-                                    yAngularPos,
-                                    data;
-
-                                x = clone(_xSubvariables.waveform.RawValue);
-                                y = clone(_ySubvariables.waveform.RawValue);
-                                if (_filtered1x) {
-                                    sampleTime = (_xSubvariables.waveform.Value.length / _xSubvariables.waveform.SampleRate);
-                                    waveformX = _applyFilter(x, _xSubvariables.waveform.SampleRate, _xSubvariables.overall.MeasureType);
-                                    waveformY = _applyFilter(y, _ySubvariables.waveform.SampleRate, _ySubvariables.overall.MeasureType);
-                                    positions = _calculateAngularPositions(
-                                        clone(_xSubvariables.waveform.KeyphasorPositions), waveformX,
-                                        clone(_ySubvariables.waveform.KeyphasorPositions), waveformY);
-                                    xAngularPos = positions[0];
-                                    yAngularPos = positions[1];
-                                    data = _getOrbitData(waveformX, waveformY, _orbitChart.phiX_, _orbitChart.phiY_, xAngularPos, yAngularPos, _laps);
-                                } else {
-                                    positions = _calculateAngularPositions(
-                                        clone(_xSubvariables.waveform.KeyphasorPositions), x,
-                                        clone(_ySubvariables.waveform.KeyphasorPositions), y);
-                                    xAngularPos = positions[0];
-                                    yAngularPos = positions[1];
-                                    data = _getOrbitData(x, y, _orbitChart.phiX_, _orbitChart.phiY_, xAngularPos, yAngularPos, _laps);
-                                }
-                                _graphRange.X = data.rangeX;
-                                _graphRange.Y = data.rangeY;
-                                _orbitChart.updateOptions({
-                                    "file": data.value,
-                                    "dateWindow": [_graphRange.X[0], _graphRange.X[1]],
-                                    "valueRange": [_graphRange.Y[0], _graphRange.Y[1]]
-                                });
-                                break;
-                            default:
-                                break;
-                        }
-                    });
-                    break;
-                case "filteredOrbit" + _widgetId:
-                    var
-                        x, y,
-                        phaseIni,
-                        positions,
-                        measure,
-                        xAngularPos,
-                        yAngularPos,
-                        sampleTime;
-
-                    _filtered1x = true;
-                    sampleTime = (_xSubvariables.waveform.Value.length / _xSubvariables.waveform.SampleRate);
-                    measure = _xSubvariables.overall.MeasureType;
-                    if (_angularSubvariable && _fundamentalFrequency > 0) {
+                        $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
                         phaseIni = _getInitialPhase(clone(_xSubvariables.waveform), _xSubvariables.phase);
                         x = _applyFilter(_xSubvariables.waveform.RawValue, _xSubvariables.waveform.SampleRate, measure, _xSubvariables.amplitude, phaseIni);
                         phaseIni = _getInitialPhase(clone(_ySubvariables.waveform), _ySubvariables.phase);
                         y = _applyFilter(_ySubvariables.waveform.RawValue, _ySubvariables.waveform.SampleRate, measure, _ySubvariables.amplitude, phaseIni);
-                        positions = _calculateAngularPositions(
-                            clone(_xSubvariables.waveform.KeyphasorPositions), x, _xSubvariables.phase,
-                            clone(_ySubvariables.waveform.KeyphasorPositions), y, _ySubvariables.phase);
-                        xAngularPos = positions[0];
-                        yAngularPos = positions[1];
-                        _drawCharts(x, y, xAngularPos, yAngularPos, sampleTime);
+                        positions = _calculateAngularPositions(x);
+                        _drawCharts(x, y, positions, sampleTime);
                         target[0].innerHTML = "Sin filtrar";
                         target.attr("data-value", "unfilteredOrbit" + _widgetId);
-                    } else {
-                        width = $("#" + _container.id).width();
-                        position = $("#" + _container.id).parents(".grid-stack-item").first().position();
-                        size = { width: 350, height: 150 };
-                        dialog = { top: position.top + 10, left: (position.left + (width / 2) - (size.width / 2)) };
-                        container = $("#graphConfigAreaDialog").clone();
-                        container.css("display", "block");
-                        container[0].id = _widgetId + "orbit";
-                        $("#awContainer").append(container);
-                        $("#" + container[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
-                        $("#" + container[0].id + " > div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-5\"><label for=\"fundamentalFreq\" " +
-                          "style=\"font-size:12px;\">Frecuencia fundamental</label></div>");
-                        $("#" + container[0].id + " > div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-7\"><input type=\"number\" " +
-                          "id=\"fundamentalFreq\" name=\"fundamentalFreq\" style=\"width:100%;\"></div>");
-                        $("#" + container[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group zeroMarginBottom\"><div class=\"row\"></div></div>");
-                        $("#" + container[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div").append("<div style=\"text-align: center;\"></div>");
-                        $("#" + container[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div > div:nth-child(1)").append("\n<a id=\"btnSaveFreq" +
-                          _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
-                        $("#btnSaveFreq" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
-                        $("#" + container[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div > div:nth-child(1)").append("\n<a id=\"btnCancelFreq" +
-                          _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
-                        $("#btnCancelFreq" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
-                        $("#fundamentalFreq").val(_fundamentalFrequency ? _fundamentalFrequency : 0);
-                        $("#" + container[0].id + " > div.graphConfigArea").ejDialog({
-                            enableResize: false,
-                            width: size.width,
-                            height: size.height,
-                            zIndex: 2000,
-                            close: function () {
-                                $("#btnCancelFreq" + _widgetId).off("click");
-                                $("#btnSaveFreq" + _widgetId).off("click");
-                                $("#" + container[0].id).remove();
-                            },
-                            content: "#" + container[0].id,
-                            tooltip: {
-                                close: "Cerrar"
-                            },
-                            actionButtons: ["close"],
-                            position: {
-                                X: position.left,
-                                Y: position.top
-                            }
-                        });
-                        $("#btnCancelFreq" + _widgetId).click(function (event) {
-                            event.preventDefault();
-                            $("#" + container[0].id + " div.graphConfigArea").ejDialog("close");
-                        });
-
-                        $("#btnSaveFreq" + _widgetId).click(function (event) {
-                            event.preventDefault();
-                            _fundamentalFrequency = parseFloat($("#fundamentalFreq").val());
-                            if (_fundamentalFrequency <= 0) {
-                                return;
-                            }
-                            $("#" + container[0].id + " div.graphConfigArea").ejDialog("close");
-                            phaseIni = _getInitialPhase(clone(_xSubvariables.waveform), _xSubvariables.phase);
-                            x = _applyFilter(_xSubvariables.waveform.RawValue, _xSubvariables.waveform.SampleRate, measure, _xSubvariables.amplitude, phaseIni);
-                            phaseIni = _getInitialPhase(clone(_ySubvariables.waveform), _ySubvariables.phase);
-                            y = _applyFilter(_ySubvariables.waveform.RawValue, _ySubvariables.waveform.SampleRate, measure, _ySubvariables.amplitude, phaseIni);
-                            positions = _calculateAngularPositions(
-                                clone(_xSubvariables.waveform.KeyphasorPositions), x, _xSubvariables.phase,
-                                clone(_ySubvariables.waveform.KeyphasorPositions), y, _ySubvariables.phase);
-                            xAngularPos = positions[0];
-                            yAngularPos = positions[1];
-                            _drawCharts(x, y, xAngularPos, yAngularPos, sampleTime);
-                            target[0].innerHTML = "Sin filtrar";
-                            target.attr("data-value", "unfilteredOrbit" + _widgetId);
-                        });
-                    }
-                    break;
-                case "unfilteredOrbit" + _widgetId:
-                    var
-                        xAngularPos,
-                        yAngularPos;
-
-                    _filtered1x = false;
-                    xAngularPos = clone(_xSubvariables.waveform.KeyphasorPositions);
-                    yAngularPos = clone(_ySubvariables.waveform.KeyphasorPositions);
-                    _drawCharts(_xSubvariables.waveform.RawValue, _ySubvariables.waveform.RawValue, xAngularPos, yAngularPos, sampleTime);
-                    target[0].innerHTML = "Filtrar órbita";
-                    target.attr("data-value", "filteredOrbit" + _widgetId);
-                    break;
-                case "saveImageOrbit" + _widgetId:
-                    imgExport = new ImageExport(_orbitChart, _graphType);
-                    imgExport.asPNG();
-                    break;
+                    });
+                }
+            } else {
+                positions = clone(_xSubvariables.waveform.KeyphasorPositions);
+                _drawCharts(_xSubvariables.waveform.RawValue, _ySubvariables.waveform.RawValue, positions, sampleTime);
+                target[0].innerHTML = "Filtrar órbita";
+                target.attr("data-value", "filteredOrbit" + _widgetId);
+                _fundamentalFrequency = (_angularSubvariable && _angularSubvariable.Value > 0) ? _fundamentalFrequency : 0;
             }
         };
 
@@ -430,11 +473,12 @@ OrbitGraph = (function () {
         /*
          * Construye la grafica, caso no exista.
          */
-        _buildGraph = function (labels, rotn) {
+        _buildGraph = function (labels) {
             var
                 txt;
 
             _setMargins();
+            // Correlacion de las formas de onda en X e Y
             _orbitChart = new Dygraph(
                 _contentOrbit,
                 [[0, 0]],
@@ -442,29 +486,73 @@ OrbitGraph = (function () {
                     colors: ["#006ACB"],
                     digitsAfterDecimal: 4,
                     legend: "never",
+                    avoidMinZero: true,
+                    xRangePad: 1,
                     labels: labels,
                     axisLabelFontSize: 10,
-                    labelsDivWidth: 0,
                     hideOverlayOnMouseOut: false,
-                    axes: {
-                        x: {
-                            pixelsPerLabel: 30,
-                        },
-                        y: {
-                            pixelsPerLabel: 30,
-                            axisLabelWidth: 40
-                        }
-                    },
                     underlayCallback: function (canvas, area, g) {
                         canvas.strokeStyle = "black";
                         canvas.strokeRect(area.x, area.y, area.w, area.h);
                     },
                     highlightCallback: function (e, x, pts, row) {
                         if (pts.length > 0) {
-                            txt = "Amplitud X: " + (pts[0].yval < 0 ? "" : "&nbsp;") + pts[0].yval.toFixed(2) + " " + _xSubvariables.overall.Units;
-                            txt += ", Amplitud Y: " + pts[0].xval.toFixed(2) + " " + _ySubvariables.overall.Units;
-                            txt += (isEmpty(_angularSubvariable) || _angularSubvariable.Value === null) ? "" : ", " + _angularSubvariable.Value.toFixed(0) + " RPM";
+                            txt = "Amplitud X: " + (pts[0].yval < 0 ? "" : "&nbsp;") + pts[0].yval.toFixed(2) + " ";
+                            txt += _xSubvariables.overall.Units + ", Amplitud Y: ";
+                            txt += pts[0].xval.toFixed(2) + " " + _ySubvariables.overall.Units;
+                            if (!isEmpty(_angularSubvariable) && _angularSubvariable.Value !== null) {
+                                txt += ", " + _angularSubvariable.Value.toFixed(0) + " RPM";
+                            }
                             $("#" + pts[0].name + _widgetId + " > span").html(txt);
+                            row = pts[0].idx;
+                            // Informacion de la forma de onda en X
+                            pts = _xWaveformChart.file_[row];
+                            if (pts && pts.length > 0) {
+                                txt = "Amplitud: " + pts[1].toFixed(2) + "&nbsp;" + _xSubvariables.overall.Units + ", ";
+                                txt += "Tiempo: " + pts[0].toFixed(2) + " ms";
+                                $("#waveformXLabel" + _widgetId + ">span:nth-child(2)").html(txt);
+                            }
+                            // Informacion de la forma de onda en Y
+                            pts = _yWaveformChart.file_[row];
+                            if (pts && pts.length > 0) {
+                                txt = "Amplitud: " + pts[1].toFixed(2) + "&nbsp;" + _ySubvariables.overall.Units + ", ";
+                                txt += "Tiempo: " + pts[0].toFixed(2) + " ms";
+                                $("#waveformYLabel" + _widgetId + ">span:nth-child(2)").html(txt);
+                            }
+                        }
+                        _lastMousemoveEvt = e;
+                        _mouseover = true;
+                    },
+                    unhighlightCallback: function (e) {
+                        _mouseover = false;
+                    },
+                    drawCallback: function (g, is_initial) {
+                        var
+                            // DIVs contenedores de los labels en los ejes X e Y de la grafica
+                            axisLabelDivs,
+                            // Contador
+                            i;
+
+                        if (is_initial) {
+                            g.canvas_.style.zIndex = 1000;
+                        }
+                        // xlabel + ylabel
+                        $("#" + _contentOrbit.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1050);
+                        $("#" + _contentOrbit.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1050);
+                        // Recorrer todos los axis-labels
+                        axisLabelDivs = $("#" + _contentOrbit.id + " .dygraph-axis-label");
+                        for (i = 0; i < axisLabelDivs.length; i += 1) {
+                            axisLabelDivs.eq(i).parent().css("z-index", 1050);
+                        }
+                    },
+                    interactionModel: _customInteractionModel,
+                    axes: {
+                        x: {
+                            pixelsPerLabel: 30
+                        },
+                        y: {
+                            pixelsPerLabel: 30,
+                            axisLabelWidth: 40
                         }
                     },
                     series: {
@@ -472,20 +560,23 @@ OrbitGraph = (function () {
                             plotter: function (e) {
                                 var
                                     alpha,
-                                    beta;
+                                    beta,
+                                    xColor,
+                                    yColor;
 
                                 alpha = clone(_measurementPoints.x.SensorAngle);
                                 beta = clone(_measurementPoints.y.SensorAngle);
-                                Dygraph.Plugins.Plotter.prototype.drawRotationDirection(e, _side, rotn);
-                                Dygraph.Plugins.Plotter.prototype.drawSensorPositions(e, alpha, beta, rotn, _measurementPoints.x.Color, _measurementPoints.y.Color);
-                                Dygraph.Plugins.Plotter.prototype.drawOrbit(e, rotn, _laps, _fundamentalFrequency);
-                            },
-                        },
-                    },
-                    interactionModel: _customInteractionModel
+                                xColor = clone(_measurementPoints.x.Color);
+                                yColor = clone(_measurementPoints.y.Color);
+                                Dygraph.Plugins.Plotter.prototype.drawRotationDirection(e, _side, _rotn);
+                                Dygraph.Plugins.Plotter.prototype.drawSensorPositions(e, alpha, beta, _rotn, xColor, yColor);
+                                Dygraph.Plugins.Plotter.prototype.drawOrbit(e, _laps, _fundamentalFrequency);
+                            }
+                        }
+                    }
                 }
             );
-
+            // Forma de onda en X
             _xWaveformChart = new Dygraph(
                 _contentXWaveform,
                 [[0, 0]],
@@ -493,21 +584,36 @@ OrbitGraph = (function () {
                     colors: ["#006ACB"],
                     digitsAfterDecimal: 4,
                     legend: "never",
+                    y2label: "Amplitud [" + _xSubvariables.overall.Units + "]",
+                    avoidMinZero: true,
+                    xRangePad: 1,
                     labels: ["X", "Y"],
                     axisLabelFontSize: 10,
-                    y2label: "Amplitud [" + _xSubvariables.overall.Units + "]",
-                    labelsDivWidth: 0,
                     hideOverlayOnMouseOut: false,
-                    zoomCallback: function (minDate, maxDate, yRange) {
-                        _showY2Axis();
-                    },
                     underlayCallback: function (canvas, area, g) {
                         canvas.strokeStyle = "black";
                         canvas.strokeRect(area.x, area.y, area.w, area.h);
                     },
-                    series: {
-                        "Y": { axis: "y2" }
+                    drawCallback: function (g, is_initial) {
+                        var
+                            // DIVs contenedores de los labels en los ejes X e Y de la grafica
+                            axisLabelDivs,
+                            // Contador
+                            i;
+
+                        if (is_initial) {
+                            g.canvas_.style.zIndex = 1000;
+                        }
+                        // xlabel + y2label
+                        $("#" + _contentXWaveform.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1050);
+                        $("#" + _contentXWaveform.id + " .dygraph-y2label").eq(0).parent().parent().css("z-index", 1050);
+                        // Recorrer todos los axis-labels
+                        axisLabelDivs = $("#" + _contentXWaveform.id + " .dygraph-axis-label");
+                        for (i = 0; i < axisLabelDivs.length; i += 1) {
+                            axisLabelDivs.eq(i).parent().css("z-index", 1050);
+                        }
                     },
+                    interactionModel: _customInteractionModel,
                     axes: {
                         x: {
                             drawAxis: false
@@ -527,10 +633,16 @@ OrbitGraph = (function () {
                             pixelsPerLabel: 30,
                             axisLabelWidth: 40
                         }
+                    },
+                    series: {
+                        "Y": { axis: "y2" }
+                    },
+                    zoomCallback: function (minDate, maxDate, yRange) {
+                        _showY2Axis();
                     }
                 }
             );
-
+            // Forma de onda en Y
             _yWaveformChart = new Dygraph(
                 _contentYWaveform,
                 [[0, 0]],
@@ -538,22 +650,37 @@ OrbitGraph = (function () {
                     colors: ["#006ACB"],
                     digitsAfterDecimal: 4,
                     legend: "never",
-                    labels: ["X", "Y"],
-                    axisLabelFontSize: 10,
                     xlabel: "Tiempo [ms]",
                     y2label: "Amplitud [" + _xSubvariables.overall.Units + "]",
-                    labelsDivWidth: 0,
+                    avoidMinZero: true,
+                    xRangePad: 1,
+                    labels: ["X", "Y"],
+                    axisLabelFontSize: 10,
                     hideOverlayOnMouseOut: false,
-                    zoomCallback: function (minDate, maxDate, yRange) {
-                        _showY2Axis();
-                    },
                     underlayCallback: function (canvas, area, g) {
                         canvas.strokeStyle = "black";
                         canvas.strokeRect(area.x, area.y, area.w, area.h);
                     },
-                    series: {
-                        "Y": { axis: "y2" }
+                    drawCallback: function (g, is_initial) {
+                        var
+                            // DIVs contenedores de los labels en los ejes X e Y de la grafica
+                            axisLabelDivs,
+                            // Contador
+                            i;
+
+                        if (is_initial) {
+                            g.canvas_.style.zIndex = 1000;
+                        }
+                        // xlabel + y2label
+                        $("#" + _contentYWaveform.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1050);
+                        $("#" + _contentYWaveform.id + " .dygraph-y2label").eq(0).parent().parent().css("z-index", 1050);
+                        // Recorrer todos los axis-labels
+                        axisLabelDivs = $("#" + _contentYWaveform.id + " .dygraph-axis-label");
+                        for (i = 0; i < axisLabelDivs.length; i += 1) {
+                            axisLabelDivs.eq(i).parent().css("z-index", 1050);
+                        }
                     },
+                    interactionModel: _customInteractionModel,
                     axes: {
                         y: {
                             drawAxis: true,
@@ -570,17 +697,21 @@ OrbitGraph = (function () {
                             pixelsPerLabel: 30,
                             axisLabelWidth: 40
                         }
+                    },
+                    series: {
+                        "Y": { axis: "y2" }
+                    },
+                    zoomCallback: function (minDate, maxDate, yRange) {
+                        _showY2Axis();
                     }
                 }
             );
-            _showY2Axis();
-
             Dygraph.synchronize([_xWaveformChart, _yWaveformChart], {
                 zoom: true,
-                selection: true,
-                range: false
+                selection: false,
+                range: true
             });
-
+            _showY2Axis();
             $(".grid-stack-item").on("resizestop", function () {
                 setTimeout(function () {
                     _setMargins();
@@ -609,7 +740,9 @@ OrbitGraph = (function () {
             for (setIdx = layout.points.length - 1; setIdx >= 0; --setIdx) {
                 pts = layout.points[setIdx];
                 for (i = 0; i < pts.length; ++i) {
-                    if (!Dygraph.isValidPoint(pts[i])) continue;
+                    if (!Dygraph.isValidPoint(pts[i])) {
+                        continue;
+                    }
                     dx = pts[i].canvasx - domX;
                     dy = pts[i].canvasy - domY;
                     dist = dx * dx + dy * dy;
@@ -632,16 +765,10 @@ OrbitGraph = (function () {
          * Metodo usado para actualizar el punto seleccionado
          * Invacodo por la funcion _findClosestPoint
          */
-        _updateSelection = function () {
-            _orbitChart.cascadeEvents_("select", {
-                selectedRow: _orbitChart.lastRow_,
-                selectedX: _orbitChart.lastx_,
-                selectedPoints: _orbitChart.selPoints_
-            });
-
-            // Limpiar la vertical dibujada previamente, caso exista una
+        _updateSelection = function (chartArray) {
             var
-                ctx, i,
+                i, j,
+                ctx,
                 maxCircleSize,
                 labels,
                 currentRatio,
@@ -651,45 +778,99 @@ OrbitGraph = (function () {
                 circleSize,
                 callback;
 
-            // Contexto de canvas
-            ctx = _orbitChart.canvas_ctx_;
-            if (_orbitChart.previousVerticalX_ >= 0) {
-                // Determinar el radio maximo del circulo resaltado
-                maxCircleSize = 0;
-                labels = _orbitChart.attr_("labels");
-                for (i = 1; i < labels.length; i += 1) {
-                    currentRatio = _orbitChart.getNumericOption("highlightCircleSize", labels[i]);
-                    if (currentRatio > maxCircleSize) {
-                        maxCircleSize = currentRatio;
+            for (i = 0; i < chartArray.length; i += 1) {
+                chartArray[i].cascadeEvents_("select", {
+                    selectedRow: chartArray[i].lastRow_,
+                    selectedX: chartArray[i].lastx_,
+                    selectedPoints: chartArray[i].selPoints_
+                });
+
+                // Contexto de canvas
+                ctx = chartArray[i].canvas_ctx_;
+                if (chartArray[i].previousVerticalX_ >= 0) {
+                    // Determinar el radio maximo del circulo resaltado
+                    maxCircleSize = 0;
+                    labels = chartArray[i].attr_("labels");
+                    for (j = 1; j < labels.length; j += 1) {
+                        currentRatio = chartArray[i].getNumericOption("highlightCircleSize", labels[j]);
+                        if (currentRatio > maxCircleSize) {
+                            maxCircleSize = currentRatio;
+                        }
+                    }
+                    ctx.clearRect(0, 0, chartArray[i].width_, chartArray[i].height_);
+                }
+
+                if (chartArray[i].isUsingExcanvas_ && chartArray[i].currentZoomRectArgs_) {
+                    Dygraph.prototype.drawZoomRect_.apply(chartArray[i], chartArray[i].currentZoomRectArgs_);
+                }
+
+                colorSerie = (chartArray[i] && chartArray[i].colors_ && chartArray[i].colors_.length > 0) ? chartArray[i].colors_[0] : "#006ACB";
+                if (chartArray[i].selPoints_.length > 0) {
+                    // Dibuja circulos de colores sobre el centro de cada punto seleccionado
+                    canvasx = chartArray[i].selPoints_[0].canvasx;
+                    ctx.save();
+                    for (j = 0; j < chartArray[i].selPoints_.length; j += 1) {
+                        point = chartArray[i].selPoints_[j];
+                        if (!Dygraph.isOK(point.canvasy)) {
+                            continue;
+                        }
+                        circleSize = chartArray[i].getNumericOption("highlightCircleSize", point.name);
+                        callback = chartArray[i].getFunctionOption("drawHighlightPointCallback", point.name);
+                        if (!callback) {
+                            callback = Dygraph.Circles.DEFAULT;
+                        }
+                        ctx.lineWidth = chartArray[i].getNumericOption("strokeWidth", point.name);
+                        ctx.strokeStyle = colorSerie;
+                        ctx.fillStyle = colorSerie;
+                        callback.call(chartArray[i], chartArray[i], point.name, ctx, point.canvasx, point.canvasy, colorSerie, circleSize, point.idx);
+                    }
+                    ctx.restore();
+                    chartArray[i].previousVerticalX_ = canvasx;
+                }
+            }
+        };
+
+        _getSelectedPoints = function (row, chartArray) {
+            var
+                i,
+                setIdx,
+                points,
+                setRow,
+                point,
+                pointIdx;
+
+            for (i = 0; i < chartArray.length; i += 1) {
+                chartArray[i].lastRow_ = row;
+                chartArray[i].selPoints_ = [];
+                for (setIdx = 0; setIdx < chartArray[i].layout_.points.length; setIdx += 1) {
+                    points = chartArray[i].layout_.points[setIdx];
+                    setRow = row - chartArray[i].getLeftBoundary_(setIdx);
+                    if (!points[setRow]) {
+                        // Indica que la fila buscada no esta en la grafica (por ejemplo, zoom rectangular no igual para ambos lados)
+                        continue;
+                    }
+                    if (setRow < points.length && points[setRow].idx === row) {
+                        point = points[setRow];
+                        if (point.yval !== null && !Number.isNaN(point.yval)) {
+                            chartArray[i].selPoints_.push(point);
+                        }
+                    } else {
+                        for (pointIdx = 0; pointIdx < points.length; pointIdx += 1) {
+                            point = points[pointIdx];
+                            if (point.idx === row) {
+                                if (point.yval !== null && !Number.isNaN(point.yval)) {
+                                    chartArray[i].selPoints_.push(point);
+                                }
+                                break;
+                            }
+                        }
                     }
                 }
-                ctx.clearRect(0, 0, _orbitChart.width_, _orbitChart.height_);
-            }
-
-            if (_orbitChart.isUsingExcanvas_ && _orbitChart.currentZoomRectArgs_) {
-                Dygraph.prototype.drawZoomRect_.apply(_orbitChart, _orbitChart.currentZoomRectArgs_);
-            }
-
-            colorSerie = (_orbitChart && _orbitChart.colors_ && _orbitChart.colors_.length > 0) ? _orbitChart.colors_[0] : "#006ACB";
-            if (_orbitChart.selPoints_.length > 0) {
-                // Dibuja circulos de colores sobre el centro de cada punto seleccionado
-                canvasx = _orbitChart.selPoints_[0].canvasx;
-                ctx.save();
-                for (i = 0; i < _orbitChart.selPoints_.length; i += 1) {
-                    point = _orbitChart.selPoints_[i];
-                    if (!Dygraph.isOK(point.canvasy)) continue;
-                    circleSize = _orbitChart.getNumericOption("highlightCircleSize", point.name);
-                    callback = _orbitChart.getFunctionOption("drawHighlightPointCallback", point.name);
-                    if (!callback) {
-                        callback = Dygraph.Circles.DEFAULT;
-                    }
-                    ctx.lineWidth = _orbitChart.getNumericOption("strokeWidth", point.name);
-                    ctx.strokeStyle = colorSerie;
-                    ctx.fillStyle = colorSerie;
-                    callback.call(_orbitChart, _orbitChart, point.name, ctx, point.canvasx, point.canvasy, colorSerie, circleSize, point.idx);
+                if (chartArray[i].selPoints_.length) {
+                    chartArray[i].lastx_ = chartArray[i].selPoints_[0].xval;
+                } else {
+                    chartArray[i].lastx_ = -1;
                 }
-                ctx.restore();
-                _orbitChart.previousVerticalX_ = canvasx;
             }
         };
 
@@ -697,103 +878,48 @@ OrbitGraph = (function () {
          * Modelo de interaccion personalizado con los diferentes eventos del grafico
          */
         _customInteractionModel = {
-            mousedown: function (event, g, context) {
-                if (_pause) {
-                    // Evita que el clic derecho inicialice el zoom
-                    if (event.button && event.button == 2) return;
-                    context.initializeMouseDown(event, g, context);
-                    if (event.altKey || event.shiftKey || event.ctrlKey) {
-                        Dygraph.startPan(event, g, context);
-                    } else {
-                        Dygraph.startZoom(event, g, context);
+            mousedown: function (e, g, ctx) {
+                // Evita que el clic derecho inicialice el zoom
+                if (e.button && e.button === 2) {
+                    return;
+                }
+                ctx.initializeMouseDown(e, g, ctx);
+                if (e.altKey || e.shiftKey || e.ctrlKey) {
+                    Dygraph.startPan(e, g, ctx);
+                } else {
+                    Dygraph.startZoom(e, g, ctx);
+                }
+            },
+            mousemove: function (e, g, ctx) {
+                if (ctx.isZooming) {
+                    Dygraph.moveZoom(e, g, ctx);
+                } else if (ctx.isPanning) {
+                    Dygraph.movePan(e, g, ctx);
+                } else {
+                    var
+                        closestPoint,
+                        selectionChanged,
+                        chartArray,
+                        callback;
+
+                    closestPoint = _findClosestPoint(g.eventToDomCoords(e)[0], g.eventToDomCoords(e)[1], g.layout_);
+                    selectionChanged = (closestPoint.row !== g.lastRow_);
+                    chartArray = [_orbitChart, _xWaveformChart, _yWaveformChart];
+                    _getSelectedPoints(closestPoint.row, chartArray);
+                    if (selectionChanged) {
+                        _updateSelection(chartArray);
+                    }
+                    callback = _orbitChart.getFunctionOption("highlightCallback");
+                    if (callback && selectionChanged) {
+                        callback.call(_orbitChart, e, _orbitChart.lastx_, _orbitChart.selPoints_, _orbitChart.row);
                     }
                 }
             },
-            mousemove: function (event, g, context) {
-                if (_pause) {
-                    if (context.isZooming) {
-                        Dygraph.moveZoom(event, g, context);
-                    } else if (context.isPanning) {
-                        Dygraph.movePan(event, g, context);
-                    } else {
-                        var
-                            selectionChanged,
-                            closestPoint,
-                            row, point,
-                            setIdx, pointIdx,
-                            points, setRow,
-                            callback;
-
-                        selectionChanged = false;
-                        closestPoint = _findClosestPoint(g.eventToDomCoords(event)[0], g.eventToDomCoords(event)[1], g.layout_);
-                        row = closestPoint.row;
-                        if (row != _orbitChart.lastRow_) {
-                            selectionChanged = true;
-                        }
-                        _orbitChart.lastRow_ = row;
-                        _orbitChart.selPoints_ = [];
-                        for (setIdx = 0; setIdx < _orbitChart.layout_.points.length; ++setIdx) {
-                            points = _orbitChart.layout_.points[setIdx];
-                            setRow = row - _orbitChart.getLeftBoundary_(setIdx);
-                            if (!points[setRow]) {
-                                // Indica que la fila buscada no esta en la grafica (por ejemplo, zoom rectangular no igual para ambos lados)
-                                continue;
-                            }
-                            if (setRow < points.length && points[setRow].idx == row) {
-                                point = points[setRow];
-                                if (point.yval !== null && !isNaN(point.yval)) {
-                                    _orbitChart.selPoints_.push(point);
-                                }
-                            } else {
-                                for (pointIdx = 0; pointIdx < points.length; ++pointIdx) {
-                                    point = points[pointIdx];
-                                    if (point.idx == row) {
-                                        if (point.yval !== null && !isNaN(point.yval)) {
-                                            _orbitChart.selPoints_.push(point);
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (_orbitChart.selPoints_.length) {
-                            _orbitChart.lastx_ = _orbitChart.selPoints_[0].xval;
-                        } else {
-                            _orbitChart.lastx_ = -1;
-                        }
-                        if (selectionChanged) {
-                            _updateSelection(undefined);
-                        }
-                        callback = _orbitChart.getFunctionOption("highlightCallback");
-                        if (callback && selectionChanged) {
-                            callback.call(_orbitChart, event,
-                                _orbitChart.lastx_,
-                                _orbitChart.selPoints_,
-                                _orbitChart.lastRow_,
-                                _orbitChart.highlightSet_);
-                        }
-                    }
-                }
-            },
-            dblclick: function (event, g, context) {
-                if (context.cancelNextDblclick) {
-                    context.cancelNextDblclick = false;
-                    return;
-                }
-                if (event.altKey || event.shiftKey || event.ctrlKey) {
-                    return;
-                }
-
-                g.updateOptions({
-                    "dateWindow": [_graphRange.X[0], _graphRange.X[1]],
-                    "valueRange": [_graphRange.Y[0], _graphRange.Y[1]]
-                });
-            },
-            mouseup: function (event, g, context) {
-                if (context.isZooming) {
-                    Dygraph.endZoom(event, g, context);
-                } else if (context.isPanning) {
-                    Dygraph.endPan(event, g, context);
+            mouseup: function (e, g, ctx) {
+                if (ctx.isZooming) {
+                    Dygraph.endZoom(e, g, ctx);
+                } else if (ctx.isPanning) {
+                    Dygraph.endPan(e, g, ctx);
                 }
             },
             contextmenu: function (e, g, ctx) {
@@ -801,7 +927,36 @@ OrbitGraph = (function () {
                 return false;
             },
             click: function (e, g, ctx) {
-                $(".customContextMenu").css("display", "none");
+                e.preventDefault();
+                return false;
+            },
+            dblclick: function (e, g, ctx) {
+                var
+                    xRange,
+                    yRange;
+
+                if (ctx.cancelNextDblclick) {
+                    ctx.cancelNextDblclick = false;
+                    return;
+                }
+                if (e.altKey || e.shiftKey || e.ctrlKey) {
+                    return;
+                }
+                switch ($(g.canvas_).parent().parent()[0].id) {
+                    case _contentOrbit.id:
+                        xRange = _graphRange.orbit.X;
+                        yRange = _graphRange.orbit.Y;
+                        break;
+                    case _contentXWaveform.id:
+                    case _contentYWaveform.id:
+                        xRange = _graphRange.waveform.X;
+                        yRange = _graphRange.waveform.Y;
+                        break;
+                }
+                g.updateOptions({
+                    "dateWindow": xRange,
+                    "valueRange": yRange
+                });
             }
         };
 
@@ -811,14 +966,16 @@ OrbitGraph = (function () {
         _subscribeToNewData = function (timeStamp, subVariableIdList) {
             var
                 mdVariableIdList,
-                index,
+                i,
                 waveformX,
-                waveformY;
+                waveformY,
+                idList;
 
             timeStamp = new Date(timeStamp).getTime().toString();
             subVariableIdList = (timeMode === 0) ? subVariableIdList : [_xSubvariables.waveform.Id, _ySubvariables.waveform.Id];
+            // Subscripcion a evento para refrescar datos de grafica segun timeMode
             switch (timeMode) {
-                case 0: // RT
+                case 0: // Tiempo Real
                     _newDataSubscription = PublisherSubscriber.subscribe("/realtime/refresh", subVariableIdList, function (data) {
                         waveformX = data[_xSubvariables.waveform.Id];
                         waveformY = data[_ySubvariables.waveform.Id];
@@ -884,195 +1041,226 @@ OrbitGraph = (function () {
 
                             _orbitChart.phiX_ = _measurementPoints.x.SensorAngle * Math.PI / 180;
                             _orbitChart.phiY_ = _measurementPoints.y.SensorAngle * Math.PI / 180;
-                            _refresh(waveformX, waveformY, _orbitChart.phiX_, _orbitChart.phiY_);
+                            _refresh(waveformX, waveformY);
                         } else {
                             console.error("No se encontró datos de forma de onda");
                         }
                     });
                     break;
-                case 1: // HT
+                case 1: // Historico
                     _newDataSubscription = PublisherSubscriber.subscribe("/historic/refresh", subVariableIdList, function (data) {
-                        for (index in data) {
-                            if (data.hasOwnProperty(index)) {
-                                if (data[index].WidgetId !== _widgetId) {
-                                    return;
-                                }
-                            }
+                        if (Object.keys(data).length === 0) {
+                            return;
+                        }
+                        if (data[Object.keys(data)[0]].WidgetId !== _widgetId) {
+                            return;
                         }
                         waveformX = data[_xSubvariables.waveform.Id][timeStamp];
                         waveformY = data[_ySubvariables.waveform.Id][timeStamp];
                         if (!isEmpty(waveformX) && !isEmpty(waveformY)) {
-                            if (!waveformX.KeyphasorPositions || !waveformY.KeyphasorPositions) {
-                                _xSubvariables.waveform.KeyphasorPositions = [];
-                                _xSubvariables.waveform.KeyphasorPositionsOnTime = [];
-                                _ySubvariables.waveform.KeyphasorPositions = [];
-                                _ySubvariables.waveform.KeyphasorPositionsOnTime = [];
-                            } else {
-                                _xSubvariables.waveform.KeyphasorPositions = clone(waveformX.KeyphasorPositions);
-                                _xSubvariables.waveform.KeyphasorPositionsOnTime = clone(waveformX.KeyphasorPositionsOnTime);
-                                _ySubvariables.waveform.KeyphasorPositions = clone(waveformY.KeyphasorPositions);
-                                _ySubvariables.waveform.KeyphasorPositionsOnTime = clone(waveformY.KeyphasorPositionsOnTime);
-                            }
-
+                            // Forma de onda en X
                             _xSubvariables.waveform.Value = clone(waveformX.Value);
                             _xSubvariables.waveform.RawValue = clone(waveformX.RawValue);
                             _xSubvariables.waveform.SampleRate = clone(waveformX.SampleRate);
+                            _xSubvariables.waveform.KeyphasorPositions = clone(waveformX.KeyphasorPositions);
+                            _xSubvariables.waveform.KeyphasorPositionsOnTime = clone(waveformX.KeyphasorPositionsOnTime);
+                            // Forma de onda en Y
                             _ySubvariables.waveform.Value = clone(waveformY.Value);
                             _ySubvariables.waveform.RawValue = clone(waveformY.RawValue);
                             _ySubvariables.waveform.SampleRate = clone(waveformY.SampleRate);
-                            if (subVariableHTList[_xSubvariables.overall.Id][timeStamp]) {
-                                _xSubvariables.overall.Value = clone(subVariableHTList[_xSubvariables.overall.Id][timeStamp].Value);
+                            _ySubvariables.waveform.KeyphasorPositions = clone(waveformY.KeyphasorPositions);
+                            _ySubvariables.waveform.KeyphasorPositionsOnTime = clone(waveformY.KeyphasorPositionsOnTime);
+                            // Listado de Ids a consultar
+                            idList = [];
+                            if (_xSubvariables.overall) {
+                                idList.push(_xSubvariables.overall.Id);
                             }
-                            if (subVariableHTList[_ySubvariables.overall.Id][timeStamp]) {
-                                _ySubvariables.overall.Value = clone(subVariableHTList[_ySubvariables.overall.Id][timeStamp].Value);
+                            if (_xSubvariables.phase) {
+                                idList.push(_xSubvariables.phase.Id);
                             }
-                            
+                            if (_xSubvariables.amplitude) {
+                                idList.push(_xSubvariables.amplitude.Id);
+                            }
+                            if (_ySubvariables.overall) {
+                                idList.push(_ySubvariables.overall.Id);
+                            }
+                            if (_ySubvariables.phase) {
+                                idList.push(_ySubvariables.phase.Id);
+                            }
+                            if (_ySubvariables.amplitude) {
+                                idList.push(_ySubvariables.amplitude.Id);
+                            }
                             if (_angularSubvariable) {
-                                if (subVariableHTList[_xSubvariables.phase.Id][timeStamp]) {
-                                    _xSubvariables.phase.Value = clone(subVariableHTList[_xSubvariables.phase.Id][timeStamp].Value);
-                                }
-                                if (subVariableHTList[_xSubvariables.amplitude.Id][timeStamp]) {
-                                    _xSubvariables.amplitude.Value = clone(subVariableHTList[_xSubvariables.amplitude.Id][timeStamp].Value);
-                                }
-                                if (subVariableHTList[_ySubvariables.phase.Id][timeStamp]) {
-                                    _ySubvariables.phase.Value = clone(subVariableHTList[_ySubvariables.phase.Id][timeStamp].Value);
-                                }
-                                if (subVariableHTList[_ySubvariables.amplitude.Id][timeStamp]) {
-                                    _ySubvariables.amplitude.Value = clone(subVariableHTList[_ySubvariables.amplitude.Id][timeStamp].Value);
-                                }
-                                if (subVariableHTList[_angularSubvariable.Id][timeStamp]) {
-                                    _angularSubvariable.Value = clone(subVariableHTList[_angularSubvariable.Id][timeStamp].Value);
-                                }
+                                idList.push(_angularSubvariable.Id);
                             }
                             _orbitChart.phiX_ = _measurementPoints.x.SensorAngle * Math.PI / 180;
                             _orbitChart.phiY_ = _measurementPoints.y.SensorAngle * Math.PI / 180;
-                            _refresh(waveformX, waveformY, _orbitChart.phiX_, _orbitChart.phiY_);
+                            if (idList.length > 0) {
+                                aidbManager.GetNumericBySubVariableIdAndTimeStampList(idList, [parseInt(timeStamp)], _assetData.NodeId, function (resp) {
+                                    for (i = 0; i < resp.length; i += 1) {
+                                        if (_xSubvariables.overall && resp[i].subVariableId === _xSubvariables.overall.Id) {
+                                            _xSubvariables.overall.Value = clone(resp[i].value);
+                                        } else if (_xSubvariables.phase && resp[i].subVariableId === _xSubvariables.phase.Id) {
+                                            _xSubvariables.phase.Value = clone(resp[i].value);
+                                        } else if (_xSubvariables.amplitude && resp[i].subVariableId === _xSubvariables.amplitude.Id) {
+                                            _xSubvariables.amplitude.Value = clone(resp[i].value);
+                                        } else if (_ySubvariables.overall && resp[i].subVariableId === _ySubvariables.overall.Id) {
+                                            _ySubvariables.overall.Value = clone(resp[i].value);
+                                        } else if (_ySubvariables.phase && resp[i].subVariableId === _ySubvariables.phase.Id) {
+                                            _ySubvariables.phase.Value = clone(resp[i].value);
+                                        } else if (_ySubvariables.amplitude && resp[i].subVariableId === _ySubvariables.amplitude.Id) {
+                                            _ySubvariables.amplitude.Value = clone(resp[i].value);
+                                        } else if (_angularSubvariable && resp[i].subVariableId === _angularSubvariable.Id) {
+                                            _angularSubvariable.Value = clone(resp[i].value);
+                                        }
+                                    }
+                                    _refresh(waveformX, waveformY);
+                                });
+                            } else {
+                                _refresh(waveformX, waveformY);
+                            }
                         } else {
                             console.error("No se encontró datos de forma de onda");
                         }
                     });
                     mdVariableIdList = [_measurementPoints.x.Id, _measurementPoints.y.Id];
-                    new HistoricalTimeMode().GetSingleDynamicHistoricalData(mdVariableIdList, subVariableIdList, timeStamp, _widgetId);
+                    new HistoricalTimeMode().GetSingleDynamicHistoricalData(mdVariableIdList, _assetData.NodeId, subVariableIdList, timeStamp, _widgetId);
                     _playerSubscription = PublisherSubscriber.subscribe("/player/refresh", null, function (currentTimeStamp) {
                         if (!isNaN(currentTimeStamp)) {
-                            if (subVariableHTList[_xSubvariables.waveform.Id][currentTimeStamp]) {
-                                waveformX = clone(subVariableHTList[_xSubvariables.waveform.Id][currentTimeStamp]);
-                            } else {
-                                console.error("No se encontró datos de forma de onda en X.");
-                                return;
-                            }
-                            if (subVariableHTList[_ySubvariables.waveform.Id][currentTimeStamp]) {
-                                waveformY = clone(subVariableHTList[_ySubvariables.waveform.Id][currentTimeStamp]);
-                            } else {
-                                console.error("No se encontró datos de forma de onda en Y.");
-                                return;
-                            }
-
-                            if (!waveformX.KeyphasorPositions || !waveformY.KeyphasorPositions) {
-                                waveformX.KeyphasorPositions = [];
-                                waveformY.KeyphasorPositions = [];
-                                _xSubvariables.waveform.KeyphasorPositions = [];
-                                _xSubvariables.waveform.KeyphasorPositionsOnTime = [];
-                                _ySubvariables.waveform.KeyphasorPositions = [];
-                                _ySubvariables.waveform.KeyphasorPositionsOnTime = [];
-                            } else {
-                                _xSubvariables.waveform.KeyphasorPositions = clone(waveformX.KeyphasorPositions);
-                                _xSubvariables.waveform.KeyphasorPositionsOnTime = clone(waveformX.KeyphasorPositionsOnTime);
-                                _ySubvariables.waveform.KeyphasorPositions = clone(waveformY.KeyphasorPositions);
-                                _ySubvariables.waveform.KeyphasorPositionsOnTime = clone(waveformY.KeyphasorPositionsOnTime);
-                            }
-
-                            _xSubvariables.waveform.Value = clone(waveformX.Value);
-                            _xSubvariables.waveform.RawValue = clone(waveformX.RawValue);
-                            _xSubvariables.waveform.SampleRate = clone(waveformX.SampleRate);
-                            _ySubvariables.waveform.Value = clone(waveformY.Value);
-                            _ySubvariables.waveform.RawValue = clone(waveformY.RawValue);
-                            _ySubvariables.waveform.SampleRate = clone(waveformY.SampleRate);
-                            if (subVariableHTList[_xSubvariables.overall.Id][currentTimeStamp]) {
-                                _xSubvariables.overall.Value = clone(subVariableHTList[_xSubvariables.overall.Id][currentTimeStamp].Value);
-                            }
-                            if (subVariableHTList[_ySubvariables.overall.Id][currentTimeStamp]) {
-                                _ySubvariables.overall.Value = clone(subVariableHTList[_ySubvariables.overall.Id][currentTimeStamp].Value);
-                            }
-
-                            if (_angularSubvariable) {
-                                if (subVariableHTList[_xSubvariables.phase.Id][currentTimeStamp]) {
-                                    _xSubvariables.phase.Value = clone(subVariableHTList[_xSubvariables.phase.Id][currentTimeStamp].Value);
+                            aidbManager.GetStreamBySubVariableIdAndTimeStampList(subVariableIdList, [currentTimeStamp], _assetData.NodeId, function (data) {
+                                for (i = 0; i < data.length; i += 1) {
+                                    if (data[i].subVariableId === _xSubvariables.waveform.Id) {
+                                        waveformX.TimeStamp = formatDate(new Date(data[i].timeStamp));
+                                        waveformX.SampleTime = clone(data[i].sampleTime);
+                                        waveformX.RawValue = clone(data[i].value);
+                                        waveformX.Value = GetXYDataOnTime(waveformX.RawValue, waveformX.SampleTime);
+                                        waveformX.SampleRate = waveformX.RawValue.length / waveformX.SampleTime;
+                                        waveformX.KeyphasorPositionsOnTime = data[i].referencePositions ?
+                                            GetKeyphasorOnTime(data[i].referencePositions, data[i].sampleTime, data[i].value.length) : [];
+                                    } else if (data[i].subVariableId === _ySubvariables.waveform.Id) {
+                                        waveformY.TimeStamp = formatDate(new Date(data[i].timeStamp));
+                                        waveformY.SampleTime = clone(data[i].sampleTime);
+                                        waveformY.RawValue = clone(data[i].value);
+                                        waveformY.Value = GetXYDataOnTime(waveformY.RawValue, waveformY.SampleTime);
+                                        waveformY.SampleRate = waveformY.RawValue.length / waveformY.SampleTime;
+                                        waveformY.KeyphasorPositionsOnTime = data[i].referencePositions ?
+                                            GetKeyphasorOnTime(data[i].referencePositions, data[i].sampleTime, data[i].value.length) : [];
+                                    }
                                 }
-                                if (subVariableHTList[_xSubvariables.amplitude.Id][currentTimeStamp]) {
-                                    _xSubvariables.amplitude.Value = clone(subVariableHTList[_xSubvariables.amplitude.Id][currentTimeStamp].Value);
+                                if (!isEmpty(waveformX) && !isEmpty(waveformY)) {
+                                    // Forma de onda en X
+                                    _xSubvariables.waveform.Value = clone(waveformX.Value);
+                                    _xSubvariables.waveform.RawValue = clone(waveformX.RawValue);
+                                    _xSubvariables.waveform.SampleRate = clone(waveformX.SampleRate);
+                                    _xSubvariables.waveform.KeyphasorPositions = clone(waveformX.KeyphasorPositions);
+                                    _xSubvariables.waveform.KeyphasorPositionsOnTime = clone(waveformX.KeyphasorPositionsOnTime);
+                                    // Forma de onda en Y
+                                    _ySubvariables.waveform.Value = clone(waveformY.Value);
+                                    _ySubvariables.waveform.RawValue = clone(waveformY.RawValue);
+                                    _ySubvariables.waveform.SampleRate = clone(waveformY.SampleRate);
+                                    _ySubvariables.waveform.KeyphasorPositions = clone(waveformY.KeyphasorPositions);
+                                    _ySubvariables.waveform.KeyphasorPositionsOnTime = clone(waveformY.KeyphasorPositionsOnTime);
+                                    // Listado de Ids a consultar
+                                    idList = [];
+                                    if (_xSubvariables.overall) {
+                                        idList.push(_xSubvariables.overall.Id);
+                                    }
+                                    if (_xSubvariables.phase) {
+                                        idList.push(_xSubvariables.phase.Id);
+                                    }
+                                    if (_xSubvariables.amplitude) {
+                                        idList.push(_xSubvariables.amplitude.Id);
+                                    }
+                                    if (_ySubvariables.overall) {
+                                        idList.push(_ySubvariables.overall.Id);
+                                    }
+                                    if (_ySubvariables.phase) {
+                                        idList.push(_ySubvariables.phase.Id);
+                                    }
+                                    if (_ySubvariables.amplitude) {
+                                        idList.push(_ySubvariables.amplitude.Id);
+                                    }
+                                    if (_angularSubvariable) {
+                                        idList.push(_angularSubvariable.Id);
+                                    }
+                                    _orbitChart.phiX_ = _measurementPoints.x.SensorAngle * Math.PI / 180;
+                                    _orbitChart.phiY_ = _measurementPoints.y.SensorAngle * Math.PI / 180;
+                                    if (idList.length > 0) {
+                                        aidbManager.GetNumericBySubVariableIdAndTimeStampList(idList, [currentTimeStamp], _assetData.NodeId, function (resp) {
+                                            for (i = 0; i < resp.length; i += 1) {
+                                                if (_xSubvariables.overall && resp[i].subVariableId === _xSubvariables.overall.Id) {
+                                                    _xSubvariables.overall.Value = clone(resp[i].value);
+                                                } else if (_xSubvariables.phase && resp[i].subVariableId === _xSubvariables.phase.Id) {
+                                                    _xSubvariables.phase.Value = clone(resp[i].value);
+                                                } else if (_xSubvariables.amplitude && resp[i].subVariableId === _xSubvariables.amplitude.Id) {
+                                                    _xSubvariables.amplitude.Value = clone(resp[i].value);
+                                                } else if (_ySubvariables.overall && resp[i].subVariableId === _ySubvariables.overall.Id) {
+                                                    _ySubvariables.overall.Value = clone(resp[i].value);
+                                                } else if (_ySubvariables.phase && resp[i].subVariableId === _ySubvariables.phase.Id) {
+                                                    _ySubvariables.phase.Value = clone(resp[i].value);
+                                                } else if (_ySubvariables.amplitude && resp[i].subVariableId === _ySubvariables.amplitude.Id) {
+                                                    _ySubvariables.amplitude.Value = clone(resp[i].value);
+                                                } else if (_angularSubvariable && resp[i].subVariableId === _angularSubvariable.Id) {
+                                                    _angularSubvariable.Value = clone(resp[i].value);
+                                                }
+                                            }
+                                            _refresh(waveformX, waveformY);
+                                        });
+                                    } else {
+                                        _refresh(waveformX, waveformY);
+                                    }
+                                } else {
+                                    console.error("No se encontró datos de forma de onda");
                                 }
-                                if (subVariableHTList[_ySubvariables.phase.Id][currentTimeStamp]) {
-                                    _ySubvariables.phase.Value = clone(subVariableHTList[_ySubvariables.phase.Id][currentTimeStamp].Value);
-                                }
-                                if (subVariableHTList[_ySubvariables.amplitude.Id][currentTimeStamp]) {
-                                    _ySubvariables.amplitude.Value = clone(subVariableHTList[_ySubvariables.amplitude.Id][currentTimeStamp].Value);
-                                }
-                                if (subVariableHTList[_angularSubvariable.Id][currentTimeStamp]) {
-                                    _angularSubvariable.Value = clone(subVariableHTList[_angularSubvariable.Id][currentTimeStamp].Value);
-                                }
-                            }
-
-                            _orbitChart.phiX_ = _measurementPoints.x.SensorAngle * Math.PI / 180;
-                            _orbitChart.phiY_ = _measurementPoints.y.SensorAngle * Math.PI / 180;
-                            _refresh(waveformX, waveformY, _orbitChart.phiX_, _orbitChart.phiY_);
+                            });
                         }
                     });
                     break;
             }
         };
 
-        _drawCharts = function (x, y, xAngularPos, yAngularPos, sampleTime) {
+        _drawCharts = function (x, y, positions, sampleTime) {
             var
-                data,
-                kph;
+                // Conjunto de datos XY a graficar
+                xyData,
+                // Anotaciones de la grafica de forma de onda
+                annotations,
+                // Contador
+                i;
 
-            data = _getOrbitData(x, y, _orbitChart.phiX_, _orbitChart.phiY_, xAngularPos, yAngularPos, _laps);
-            if (_filtered1x) {
-                xAngularPos = GetKeyphasorOnTime(xAngularPos, sampleTime, x.length);
-                yAngularPos = GetKeyphasorOnTime(yAngularPos, sampleTime, y.length);
-            } else {
-                xAngularPos = clone(_xSubvariables.waveform.KeyphasorPositionsOnTime);
-                yAngularPos = clone(_ySubvariables.waveform.KeyphasorPositionsOnTime);
-            }
-            _graphRange.X = data.rangeX;
-            _graphRange.Y = data.rangeY;
+            // Informacion de orbita
+            xyData = _getOrbitData(x, y, sampleTime, positions);
+            _getRangeGraph(xyData);
             _orbitChart.updateOptions({
-                "file": data.value,
-                "dateWindow": [_graphRange.X[0], _graphRange.X[1]],
-                "valueRange": [_graphRange.Y[0], _graphRange.Y[1]]
+                "file": xyData.orbit,
+                "dateWindow": _graphRange.orbit.X,
+                "valueRange": _graphRange.orbit.Y
             });
-            // Formas de onda
+            // Informacion de forma de onda X
             _xWaveformChart.updateOptions({
-                "file": (_filtered1x) ? GetXYDataOnTime(x, sampleTime) : _xSubvariables.waveform.Value
+                "file": xyData.xWaveform,
+                "dateWindow": _graphRange.waveform.X,
+                "valueRange": _graphRange.waveform.Y
             });
-            kph = [];
-            if (xAngularPos) {
-                if (xAngularPos.length > 2) {
-                    for (i = 0; i < xAngularPos.length; i += 1) {
-                        kph.push({
-                            series: "Y",
-                            x: xAngularPos[i],
-                            text: xAngularPos[i].toString(),
-                            width: 10,
-                            height: 10,
-                            cssClass: "keyphasor-annotation"
-                        });
-                    }
-                }
-            }
-            _xWaveformChart.setAnnotations(kph);
+            // Informacion de forma de onda Y
             _yWaveformChart.updateOptions({
-                "file": (_filtered1x) ? GetXYDataOnTime(y, sampleTime) : _ySubvariables.waveform.Value
+                "file": xyData.yWaveform,
+                "dateWindow": _graphRange.waveform.X,
+                "valueRange": _graphRange.waveform.Y
             });
-            kph = [];
-            if (yAngularPos) {
-                if (yAngularPos.length > 2) {
-                    for (i = 0; i < yAngularPos.length; i += 1) {
-                        kph.push({
+            if (_filtered1x) {
+                positions = GetKeyphasorOnTime(positions, sampleTime, x.length);
+            } else {
+                positions = clone(_xSubvariables.waveform.KeyphasorPositionsOnTime);
+            }
+            annotations = [];
+            if (positions) {
+                if (positions.length > 2) {
+                    for (i = 0; i < positions.length; i += 1) {
+                        annotations.push({
                             series: "Y",
-                            x: yAngularPos[i],
-                            text: yAngularPos[i].toString(),
+                            x: positions[i],
+                            text: positions[i].toString(),
                             width: 10,
                             height: 10,
                             cssClass: "keyphasor-annotation"
@@ -1080,111 +1268,74 @@ OrbitGraph = (function () {
                     }
                 }
             }
-            _yWaveformChart.setAnnotations(kph);
+            _xWaveformChart.setAnnotations(annotations);
+            _yWaveformChart.setAnnotations(annotations);
         };
 
         /*
          * Actualiza los valores a graficar
          */
-        _refresh = function (xWaveform, yWaveform, phiX, phiY) {
+        _refresh = function (xWaveform, yWaveform) {
             if (timeMode === 1 || (timeMode === 0 && !_pause)) {
                 if (_currentTimeStamp !== xWaveform.TimeStamp && xWaveform.TimeStamp === yWaveform.TimeStamp) {
                     var
-                        txt, kph,
-                        sampleTime,
-                        measureType,
-                        xAngularPos,
-                        yAngularPos,
-                        yRange,
-                        phaseIni,
+                        // Texto que indentifica los puntos en la grafica
+                        txt,
+                        // Valores de la forma de onda en X
+                        xValue,
+                        // Valores de la forma de onda en Y
+                        yValue,
+                        // Posiciones de la marca de paso
                         positions,
-                        xVal, yVal,
-                        orbitData;
+                        // Tiempo total de graficacion
+                        sampleTime,
+                        // Fase inicial de la forma de onda
+                        phaseIni,
+                        // Tipo de medida global
+                        measureType;
 
                     _currentTimeStamp = xWaveform.TimeStamp;
-                    sampleTime = (xWaveform.Value.length / xWaveform.SampleRate);
                     if (_angularSubvariable) {
                         _fundamentalFrequency = _angularSubvariable.Value / 60;
                     }
-                    xVal = clone(xWaveform.RawValue);
-                    yVal = clone(yWaveform.RawValue);
-                    measureType = _xSubvariables.overall.MeasureType;
-                    if (_filtered1x) {
-                        phaseIni = _getInitialPhase(clone(xWaveform), _xSubvariables.phase);
-                        xVal = _applyFilter(xWaveform.RawValue, xWaveform.SampleRate, measureType, _xSubvariables.amplitude, phaseIni);
-                        phaseIni = _getInitialPhase(clone(yWaveform), _ySubvariables.phase);
-                        yVal = _applyFilter(yWaveform.RawValue, yWaveform.SampleRate, measureType, _ySubvariables.amplitude, phaseIni);
-                    }
-                    positions = _calculateAngularPositions(
-                        clone(_xSubvariables.waveform.KeyphasorPositions), xVal, _xSubvariables.phase,
-                        clone(_ySubvariables.waveform.KeyphasorPositions), yVal, _ySubvariables.phase);
-                    xAngularPos = positions[0];
-                    yAngularPos = positions[1];
-
-                    orbitData = _getOrbitData(xVal, yVal, phiX, phiY, xAngularPos, yAngularPos, _laps);
                     txt = "<b style=\"color:" + _measurementPoints.x.Color + ";\">" + _measurementPoints.x.Name + "</b>&nbsp;&nbsp;Ang:&nbsp;";
                     txt += parseAng(_measurementPoints.x.SensorAngle) + "&deg;" + ", " + _xSubvariables.overall.Name + ": ";
-                    txt += _xSubvariables.overall.Value.toFixed(2) + " " + _xSubvariables.overall.Units + ", &nbsp;" + _currentTimeStamp;
+                    txt += _xSubvariables.overall.Value.toFixed(2) + " " + _xSubvariables.overall.Units + ", &nbsp;";
+                    if (_filtered1x) {
+                        txt += "(" + _xSubvariables.amplitude.Value.toFixed(2) + "&ang;" + _xSubvariables.phase.Value.toFixed(2) + "&deg;), &nbsp;";
+                    }
+                    txt += _currentTimeStamp;
                     $("#" + _measurementPoints.x.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
                     txt = "<b style=\"color:" + _measurementPoints.y.Color + ";\">" + _measurementPoints.y.Name + "</b>&nbsp;&nbsp;Ang:&nbsp;";
                     txt += parseAng(_measurementPoints.y.SensorAngle) + "&deg;" + ", " + _ySubvariables.overall.Name + ": ";
-                    txt += _ySubvariables.overall.Value.toFixed(2) + " " + _ySubvariables.overall.Units + ", &nbsp;" + _currentTimeStamp;
+                    txt += _ySubvariables.overall.Value.toFixed(2) + " " + _ySubvariables.overall.Units + ", &nbsp;"
+                    if (_filtered1x) {
+                        txt += "(" + _ySubvariables.amplitude.Value.toFixed(2) + "&ang;" + _ySubvariables.phase.Value.toFixed(2) + "&deg;), &nbsp;";
+                    }
+                    txt += _currentTimeStamp;
                     $("#" + _measurementPoints.y.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
-
-                    yRange = [[xVal.min(), yVal.min()].min(), [xVal.max(), yVal.max()].max()];
-
-                    // Informacion Orbita
-                    _graphRange.X = orbitData.rangeX;
-                    _graphRange.Y = orbitData.rangeY;
-                    _orbitChart.updateOptions({
-                        "file": orbitData.value,
-                        "dateWindow": [_graphRange.X[0], _graphRange.X[1]],
-                        "valueRange": [_graphRange.Y[0], _graphRange.Y[1]]
-                    });
-
-                    // Informacion Forma de Onda X
-                    _xWaveformChart.updateOptions({
-                        "file": GetXYDataOnTime(xVal, sampleTime),
-                        "valueRange": yRange
-                    });
-                    kph = [];
-                    if (_xSubvariables.waveform.KeyphasorPositionsOnTime) {
-                        if (_xSubvariables.waveform.KeyphasorPositionsOnTime.length > 2) {
-                            for (i = 0; i < _xSubvariables.waveform.KeyphasorPositionsOnTime.length; i += 1) {
-                                kph.push({
-                                    series: "Y",
-                                    x: _xSubvariables.waveform.KeyphasorPositionsOnTime[i],
-                                    text: _xSubvariables.waveform.KeyphasorPositionsOnTime[i].toString(),
-                                    width: 10,
-                                    height: 10,
-                                    cssClass: "keyphasor-annotation"
-                                });
-                            }
+                    txt = "<b style=\"color:" + _measurementPoints.x.Color + ";\">" + _measurementPoints.x.Name + "</b>&nbsp;";
+                    $("#waveformXLabel" + _widgetId + ">span").html(txt);
+                    txt = "<b style=\"color:" + _measurementPoints.y.Color + ";\">" + _measurementPoints.y.Name + "</b>&nbsp;";
+                    $("#waveformYLabel" + _widgetId + ">span").html(txt);
+                    xValue = clone(xWaveform.RawValue);
+                    yValue = clone(yWaveform.RawValue);
+                    phaseIni = 0;
+                    if (_filtered1x) {
+                        if (_angularSubvariable && _angularSubvariable.Value > 0) {
+                            phaseIni = _getInitialPhase(clone(xWaveform), _xSubvariables.phase);
                         }
-                    }
-                    _xWaveformChart.setAnnotations(kph);
-
-                    // Informacion Forma de Onda Y
-                    _yWaveformChart.updateOptions({
-                        "file": GetXYDataOnTime(yVal, sampleTime),
-                        "valueRange": yRange
-                    });
-                    kph = [];
-                    if (_ySubvariables.waveform.KeyphasorPositionsOnTime) {
-                        if (_ySubvariables.waveform.KeyphasorPositionsOnTime.length > 2) {
-                            for (i = 0; i < _ySubvariables.waveform.KeyphasorPositionsOnTime.length; i += 1) {
-                                kph.push({
-                                    series: "Y",
-                                    x: _ySubvariables.waveform.KeyphasorPositionsOnTime[i],
-                                    text: _ySubvariables.waveform.KeyphasorPositionsOnTime[i].toString(),
-                                    width: 10,
-                                    height: 10,
-                                    cssClass: "keyphasor-annotation"
-                                });
-                            }
+                        measureType = clone(_xSubvariables.overall.MeasureType);
+                        xValue = _applyFilter(xValue, _xSubvariables.waveform.SampleRate, measureType, _xSubvariables.amplitude, phaseIni);
+                        if (_angularSubvariable && _angularSubvariable.Value > 0) {
+                            phaseIni = _getInitialPhase(clone(yWaveform), _ySubvariables.phase);
                         }
+                        measureType = clone(_ySubvariables.overall.MeasureType);
+                        yValue = _applyFilter(yValue, _ySubvariables.waveform.SampleRate, measureType, _ySubvariables.amplitude, phaseIni);
                     }
-                    _yWaveformChart.setAnnotations(kph);
+                    positions = _calculateAngularPositions(xValue);
+                    sampleTime = (xValue.length / xWaveform.SampleRate);
+                    _drawCharts(xValue, yValue, positions, sampleTime);
                     _showY2Axis();
                 }
             }
@@ -1232,52 +1383,72 @@ OrbitGraph = (function () {
             return resp;
         };
 
-        _getOrbitData = function (xVal, yVal, phiX, phiY, xAngularPos, yAngularPos, laps) {
+        _getOrbitData = function (u, v, sampleTime, positions) {
             var
-                data,
-                start,
+                // Datos de la orbita y formas de ondas
+                xyData,
+                // Angulo en radianes del sensor en X
+                phiX,
+                // Angulo en radianes del sensor en Y
+                phiY,
+                // Espaciamiento en el eje temporal (para las formas de onda)
+                step,
+                // Contadores
+                i, j,
+                // Punto de inicio y fin de la grafica
+                start, end,
+                // Valores de la transformacion de cordenadas
+                x, y;
+
+            xyData = {
+                orbit: [],
+                xWaveform: [],
+                yWaveform: []
+            };
+            _laps = (positions.length > _laps) ? _laps : positions.length;
+            _laps = (positions.length === 0) ? 1 : _laps;
+            if (_rotn === "CW") {
+                phiX = _orbitChart.phiX_;
+                phiY = _orbitChart.phiY_;
+            } else {
+                phiX = -_orbitChart.phiX_;
+                phiY = -_orbitChart.phiY_;
+            }
+            step = sampleTime * 1000 / u.length;
+            for (i = 0; i < _laps; i += 1) {
+                end = (positions.length > 1) ? positions[i + 1] : u.length;
+                //end = (_filtered1x) ? Math.round(end * 0.96) : end;
+                start = (positions.length > 1) ? positions[i] : 0;
+                for (j = start; j < end; j += 1) {
+                    x = -u[j] * Math.sin(phiX) - v[j] * Math.sin(phiY);
+                    y = u[j] * Math.cos(phiX) + v[j] * Math.cos(phiY);
+                    xyData.orbit.push([x, y]);
+                    xyData.xWaveform.push([RoundToPlaces((step * j), 6), u[j]]);
+                    xyData.yWaveform.push([RoundToPlaces((step * j), 6), v[j]]);
+                }
+                xyData.orbit.push([null, null]);
+                xyData.xWaveform.push([null, null]);
+                xyData.yWaveform.push([null, null]);
+            }
+            return xyData;
+        };
+
+        _getRangeGraph = function (xyData) {
+            var
+                // Valores maximo y minimo de los puntos graficados en X
                 xMax, xMin,
+                // Valores maximo y minimo de los puntos graficados en Y
                 yMax, yMin,
-                i, j, k,
+                // Valor maximo entre los ejes X e Y
                 largest,
-                largestX, largestY,
-                x, y, end,
+                // Valores delta complementarios para centrar la grafica
                 deltaX, deltaY;
 
-            data = {
-                value: [],
-                rangeX: [],
-                rangeY: []
-            };
-            largestX = 0;
-            largestY = 0;
-            laps = (xAngularPos.length > 1) ? laps : 1;
-            if (xAngularPos.length > 0) {
-                xMax = -xVal[xAngularPos[0]] * Math.sin(phiX) - yVal[xAngularPos[0]] * Math.sin(phiY);
-                yMax = xVal[xAngularPos[0]] * Math.cos(phiX) + yVal[xAngularPos[0]] * Math.cos(phiY);
-            } else {
-                xMax = -xVal[0] * Math.sin(phiX) - yVal[0] * Math.sin(phiY);
-                yMax = xVal[0] * Math.cos(phiX) + yVal[0] * Math.cos(phiY);
-            }
-            xMin = xMax;
-            yMin = yMax;
-            for (i = 0; i < laps; i += 1) {
-                end = (xAngularPos.length > 1) ? xAngularPos[i + 1] : xVal.length;
-                start = (xAngularPos.length > 1) ? xAngularPos[i] : 0;
-                for (j = start; j < end; j += 1) {
-                    x = -xVal[j] * Math.sin(phiX) - yVal[j] * Math.sin(phiY);
-                    y = xVal[j] * Math.cos(phiX) + yVal[j] * Math.cos(phiY);
-                    xMax = (x > xMax) ? x : xMax;
-                    xMin = (x < xMin) ? x : xMin;
-                    yMax = (y > yMax) ? y : yMax;
-                    yMin = (y < yMin) ? y : yMin;
-                    largestX = (Math.abs(x) > largestX) ? Math.abs(x) : largestX;
-                    largestY = (Math.abs(y) > largestY) ? Math.abs(y) : largestY;
-                    data.value.push([x, y]);
-                }
-                data.value.push([null, null]);
-            }
-
+            // Calculo para valores maximos y minimos de la orbita
+            xMax = arrayColumn(xyData.orbit, 0).max();
+            xMin = arrayColumn(xyData.orbit, 0).min();
+            yMax = arrayColumn(xyData.orbit, 1).max();
+            yMin = arrayColumn(xyData.orbit, 1).min();
             largest = [(xMax - xMin), (yMax - yMin)].max();
             largest = (largest === 0) ? 5 : largest;
             deltaX = (2 * largest - (xMax - xMin)) / 2;
@@ -1286,9 +1457,20 @@ OrbitGraph = (function () {
             xMax += deltaX;
             yMin -= deltaY;
             yMax += deltaY;
-            data.rangeX = [xMin, xMax];
-            data.rangeY = [yMin, yMax];
-            return data;
+            _graphRange.orbit = {
+                X: [xMin, xMax],
+                Y: [yMin, yMax]
+            };
+            // Calculo para valores maximos y minimos de las formas de onda
+            xMax = (xyData.xWaveform[xyData.xWaveform.length - 1][0] !== null) ?
+                xyData.xWaveform[xyData.xWaveform.length - 1][0] : xyData.xWaveform[xyData.xWaveform.length - 2][0];
+            xMin = xyData.xWaveform[0][0];
+            yMax = [arrayColumn(xyData.xWaveform, 1).max(), arrayColumn(xyData.yWaveform, 1).max()].max();
+            yMin = [arrayColumn(xyData.xWaveform, 1).min(), arrayColumn(xyData.yWaveform, 1).min()].min();
+            _graphRange.waveform = {
+                X: [xMin, xMax],
+                Y: [yMin, yMax]
+            };
         };
 
         _getInitialPhase = function (waveformData, phase1x) {
@@ -1305,32 +1487,40 @@ OrbitGraph = (function () {
             }
         };
 
-        _calculateAngularPositions = function (xAngularPos, xVal, xPha, yAngularPos, yVal, yPha) {
+        _calculateAngularPositions = function (xValue) {
             var
-                i,
-                delta,
-                firstMax,
+                // Valor inicial o existente de las posiciones de marca de paso
+                xAngularPos,
+                // Rango de datos o muestras donde se encuentra el pico maximo
                 range,
+                // Valor del primer maximo
+                firstMax,
+                // Espaciamiento entre puntos de marca de paso
+                delta,
+                // Posicion del primer maximo
+                firstPosition,
+                // Periodicidad en la que se desea ubicar las posiciones de marca de paso
                 period,
-                firstPosition;
+                // Contador
+                i;
 
+            xAngularPos = clone(_xSubvariables.waveform.KeyphasorPositions);
             if (_filtered1x && xAngularPos.length > 1) {
                 // Primero encontrar el primer pico maximo
-                range = xVal.slice(0, xAngularPos[1]);
+                range = xValue.slice(0, xAngularPos[1]);
                 firstMax = range.indexOf(range.max());
                 // Cantidad de datos que representan un giro completo del eje
                 delta = xAngularPos[1] - xAngularPos[0];
-                firstPosition = (360 - xPha.Value) * delta / 360 + firstMax;
+                firstPosition = (360 - _xSubvariables.phase.Value) * delta / 360 + firstMax;
                 if (firstPosition - delta > 0) {
                     firstPosition -= delta;
                 }
                 period = (xAngularPos[xAngularPos.length - 1] - xAngularPos[0]) / (xAngularPos.length - 1);
                 for (i = 0; i < xAngularPos.length; i += 1) {
                     xAngularPos[i] = Math.round(period * i + firstPosition);
-                    yAngularPos[i] = xAngularPos[i];
                 }
             }
-            return [xAngularPos, yAngularPos];
+            return xAngularPos;
         };
 
         _subscribeToResizeChart = function () {
@@ -1367,12 +1557,18 @@ OrbitGraph = (function () {
 
         this.Show = function (measurementPointId, timeStamp, currentColor, pairedColor) {
             var
-                // SubVariables del punto de medicion seleccionado, dependiendo del modo
-                subVariables,
                 // Punto de medicion de referencia en el par (x, y)
                 measurementPoint,
-                // Sentido de giro (Nomenclatura usada en libros y documentos, abreviacion de RotationDirection)
-                rotn,
+                // Sensor de referencia angular
+                angularReference,
+                // Listado de subVariables necesarias para actualizar los datos (aplica unicamente para RT)
+                subVariableIdList,
+                // SubVariables del punto de medicion seleccionado, dependiendo del modo
+                subVariables,
+                // Concatena las unidades configuradas para la SubVariable del punto de medicion en X con el valor global y su tipo de medida
+                overallUnits,
+                // Menu de opciones para la grafica
+                settingsMenu,
                 // Labels
                 labels;
 
@@ -1395,36 +1591,23 @@ OrbitGraph = (function () {
                         new ej.Query().where("AssetId", "equal", measurementPoint.ParentId, false))[0];
                     break;
                 default:
-                    break;
+                    console.log("Modo no soportado.");
             }
 
-            if (measurementPoint.AssociatedMeasurementPointId != null) {
-                var
-                    // Sensor de referencia angular
-                    angularReference,
-                    // Menu de opciones para la grafica
-                    settingsMenu,
-                    // Listado de subVariables necesarias para actualizar los datos (aplica unicamente para RT)
-                    subVariableIdList,
-                    // Concatena las unidades configuradas para la SubVariable del punto de medicion en X con el valor global y su tipo de medida
-                    overallUnits;
-
-                subVariableIdList = [];
+            if (measurementPoint.AssociatedMeasurementPointId !== null) {
                 if (measurementPoint.Orientation === 1) {
                     // Punto de medicion X
                     _measurementPoints.x = measurementPoint;
-                    // Punto de medicion Y.
+                    // Punto de medicion Y
                     _measurementPoints.y = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(
-                        new ej.Query().where("Id", "equal", measurementPoint.AssociatedMeasurementPointId, false)
-                    )[0];
+                        new ej.Query().where("Id", "equal", measurementPoint.AssociatedMeasurementPointId, false))[0];
                     // Colores
                     _measurementPoints.x.Color = (timeMode === 0) ? "#C68E17" : currentColor;
                     _measurementPoints.y.Color = (timeMode === 0) ? "#8D38C9" : pairedColor;
                 } else {
                     // Punto de medicion X
                     _measurementPoints.x = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(
-                        new ej.Query().where("Id", "equal", measurementPoint.AssociatedMeasurementPointId, false)
-                    )[0];
+                        new ej.Query().where("Id", "equal", measurementPoint.AssociatedMeasurementPointId, false))[0];
                     // Punto de medicion Y
                     _measurementPoints.y = measurementPoint;
                     // Colores
@@ -1433,16 +1616,16 @@ OrbitGraph = (function () {
                 }
                 // Referencia angular
                 angularReference = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(
-                    new ej.Query().where("Id", "equal", measurementPoint.AngularReferenceId, false)
-                )[0];
+                    new ej.Query().where("Id", "equal", measurementPoint.AngularReferenceId, false))[0];
                 if (!angularReference) {
                     popUp("info", "No se a configurado un sensor de referencia angular para " + _assetData.Name);
-                    rotn = "CW";
+                    _rotn = "CW";
                 } else {
-                    rotn = (angularReference.RotationDirection == 1) ? "CW" : "CCW";
-                    _angularSubvariable = clone(ej.DataManager(angularReference.SubVariables).executeLocal(new ej.Query().where("MeasureType", "equal", 9, false))[0]);
+                    _rotn = (angularReference.RotationDirection === 1) ? "CW" : "CCW";
+                    _angularSubvariable = clone(ej.DataManager(angularReference.SubVariables).executeLocal(
+                        new ej.Query().where("MeasureType", "equal", 9, false))[0]);
                 }
-
+                subVariableIdList = [];
                 // SubVariable que corresponde al punto de referencia angular
                 if (_angularSubvariable) {
                     subVariableIdList.push(_angularSubvariable.Id);
@@ -1450,53 +1633,61 @@ OrbitGraph = (function () {
                 // Total subvariables para el punto de medicion en X
                 subVariables = _measurementPoints.x.SubVariables;
                 // SubVariable que contiene la forma de onda en X
-                _xSubvariables.waveform = clone(ej.DataManager(subVariables).executeLocal(new ej.Query().where("ValueType", "equal", 3, false))[0]);
+                _xSubvariables.waveform = clone(ej.DataManager(subVariables).executeLocal(
+                    new ej.Query().where("ValueType", "equal", 3, false))[0]);
                 if (_xSubvariables.waveform) {
                     subVariableIdList.push(_xSubvariables.waveform.Id);
                 }
                 // SubVariable que contiene el valor global del sensor en X
-                _xSubvariables.overall = clone(ej.DataManager(subVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, false))[0]);
+                _xSubvariables.overall = clone(ej.DataManager(subVariables).executeLocal(
+                    new ej.Query().where("IsDefaultValue", "equal", true, false))[0]);
                 if (_xSubvariables.overall) {
                     subVariableIdList.push(_xSubvariables.overall.Id);
                 }
                 //SubVariable que contiene el valor de fase del sensor en X
-                _xSubvariables.phase = clone(ej.DataManager(subVariables).executeLocal(new ej.Query().where("MeasureType", "equal", 6, false))[0]);
+                _xSubvariables.phase = clone(ej.DataManager(subVariables).executeLocal(
+                    new ej.Query().where("MeasureType", "equal", 6, false))[0]);
                 if (_xSubvariables.phase) {
                     subVariableIdList.push(_xSubvariables.phase.Id);
                 }
                 //SubVariable que contiene el valor de amplitud del sensor en X
-                _xSubvariables.amplitude = clone(ej.DataManager(subVariables).executeLocal(new ej.Query().where("MeasureType", "equal", 4, false))[0]);
+                _xSubvariables.amplitude = clone(ej.DataManager(subVariables).executeLocal(
+                    new ej.Query().where("MeasureType", "equal", 4, false))[0]);
                 if (_xSubvariables.amplitude) {
                     subVariableIdList.push(_xSubvariables.amplitude.Id);
                 }
                 // Total subvariables para el punto de medicion en Y
                 subVariables = _measurementPoints.y.SubVariables;
                 // Subvariable que contiene la forma de onda en Y
-                _ySubvariables.waveform = clone(ej.DataManager(subVariables).executeLocal(new ej.Query().where("ValueType", "equal", 3, false))[0]);
+                _ySubvariables.waveform = clone(ej.DataManager(subVariables).executeLocal(
+                    new ej.Query().where("ValueType", "equal", 3, false))[0]);
                 if (_ySubvariables.waveform) {
                     subVariableIdList.push(_ySubvariables.waveform.Id);
                 }
                 // SubVariable que contiene el valor global del sensor en Y
-                _ySubvariables.overall = clone(ej.DataManager(subVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, false))[0]);
+                _ySubvariables.overall = clone(ej.DataManager(subVariables).executeLocal(
+                    new ej.Query().where("IsDefaultValue", "equal", true, false))[0]);
                 if (_ySubvariables.overall) {
                     subVariableIdList.push(_ySubvariables.overall.Id);
                 }
                 //SubVariable que contiene el valor de fase del sensor en X
-                _ySubvariables.phase = clone(ej.DataManager(subVariables).executeLocal(new ej.Query().where("MeasureType", "equal", 6, false))[0]);
+                _ySubvariables.phase = clone(ej.DataManager(subVariables).executeLocal(
+                    new ej.Query().where("MeasureType", "equal", 6, false))[0]);
                 if (_ySubvariables.phase) {
                     subVariableIdList.push(_ySubvariables.phase.Id);
                 }
                 //SubVariable que contiene el valor de amplitud del sensor en X
-                _ySubvariables.amplitude = clone(ej.DataManager(subVariables).executeLocal(new ej.Query().where("MeasureType", "equal", 4, false))[0]);
+                _ySubvariables.amplitude = clone(ej.DataManager(subVariables).executeLocal(
+                    new ej.Query().where("MeasureType", "equal", 4, false))[0]);
                 if (_ySubvariables.amplitude) {
                     subVariableIdList.push(_ySubvariables.amplitude.Id);
                 }
-
+                // VALIDAR QUE LAS UNIDADES DE AMBOS PUNTOS SEAN IGUALES
                 if (_xSubvariables.overall.Units !== _ySubvariables.overall.Units) {
                     popUp("info", "Unidades de las subvariable con valor global es diferente para el par de puntos de medición.");
                     return;
                 }
-
+                // CONCATENAMOS LAS UNIDADES CON EL TIPO DE MEDIDA (PICO-PICO, CERO-PICO Y RMS)
                 overallUnits = "";
                 switch (_xSubvariables.overall.MeasureType) {
                     case 1:
@@ -1511,12 +1702,11 @@ OrbitGraph = (function () {
                 }
                 _xSubvariables.overall.Units += overallUnits;
                 _ySubvariables.overall.Units += overallUnits;
-
                 // Agregamos los items al menu de opciones para la grafica
                 settingsMenu = [];
-                settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Número de vueltas...", "setOrbitLaps"));
+                settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Número de vueltas", "setLaps" + _widgetId));
                 settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Filtrar órbita", "filteredOrbit" + _widgetId));
-                settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Exportar imagen", "saveImageOrbit" + _widgetId));
+                settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Exportar imagen", "saveImage" + _widgetId));
                 settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Exportar a Excel", "exportToExcel" + _widgetId));
 
                 /*
@@ -1538,7 +1728,7 @@ OrbitGraph = (function () {
                     asset: _assetData.Name,
                     seriesName: ["Amplitud"],
                     measurementPointList: [_measurementPoints.x.Name.replace(/\s/g, ""), _measurementPoints.y.Name.replace(/\s/g, "")],
-                    pause: (timeMode == 0) ? true : false,
+                    pause: (timeMode === 0) ? true : false,
                     settingsMenu: settingsMenu,
                     onSettingsMenuItemClick: _onSettingsMenuItemClick,
                     onClose: function () {
@@ -1548,8 +1738,11 @@ OrbitGraph = (function () {
                         _pause = !_pause;
                     },
                     onMove: function () {
+                        var
+                            grid;
+
                         _movableGrid = !_movableGrid;
-                        var grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
+                        grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                         $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
                     }
                 });
@@ -1562,28 +1755,28 @@ OrbitGraph = (function () {
                 // Se suscribe a la notificacion de aplicacion de resize para el chart Dygraph
                 _subscribeToResizeChart();
                 // Construir y mostrar grafica
-                _buildGraph(labels, rotn);
+                _buildGraph(labels);
             } else {
                 popUp("info", "El punto de medición no tiene asociado ningún par.");
             }
         };
 
         this.Close = function () {
+            var
+                el;
+
             if (_newDataSubscription) {
                 // Eliminar suscripcion de notificacion de llegada de nuevos datos.
                 _newDataSubscription.remove();
             }
-
-            if (_resizeChartSubscription) {
-                // Eliminar suscripcion de notificaciones para aplicar resize al chart Dygraph
-                _resizeChartSubscription.remove();
-            }
-
             if (_playerSubscription) {
                 // Eliminar suscripcion de reproductor.
                 _playerSubscription.remove();
             }
-
+            if (_resizeChartSubscription) {
+                // Eliminar suscripcion de notificaciones para aplicar resize al chart Dygraph
+                _resizeChartSubscription.remove();
+            }
             if (_orbitChart) {
                 _orbitChart.destroy();
             }
@@ -1593,11 +1786,11 @@ OrbitGraph = (function () {
             if (_yWaveformChart) {
                 _yWaveformChart.destroy();
             }
-            var el = $(_container).parents().eq(2);
+            el = $(_container).parents().eq(2);
             $(".grid-stack").data("gridstack").removeWidget(el);
             $(_container).remove();
         };
-    }
+    };
 
     return OrbitGraph;
 })();

@@ -82,7 +82,6 @@
                             }
                             catch (SecurityException ex)
                             {
-                                SecurityBl.TokenIsValid = false;
                                 SecurityBl.Login();
                                 log.Debug(ex.Message);
                                 new AsdaqProxy(SecurityBl.AppUserState).DeleteChangeRequests(AsdaqProperties.AsdaqId, changeRequests);
@@ -213,15 +212,13 @@
                         try
                         {
                             log.Info("REINICIANDO SISTEMA...");
-
                             var asdaqConfig = _asdaqSystem.GetConfiguration(); // Config servidor
 
-                        // Proteger llamada concurrente a StartAcquisition
-                        lock (_startAcquisitionLock)
+                            // Proteger llamada concurrente a StartAcquisition
+                            lock (_startAcquisitionLock)
                             {
                                 StartAcquisition(asdaqConfig);
                             }
-
                             _asdaqSystem.ResetReconfigureFlag();
                         }
                         catch (Exception ex)

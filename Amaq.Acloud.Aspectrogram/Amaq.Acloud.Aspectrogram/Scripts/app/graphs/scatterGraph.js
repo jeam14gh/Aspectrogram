@@ -4,6 +4,8 @@
  * @author Jorge Calderon
  */
 
+/* globals Dygraph, ej, clone, aidbManager, formatDate, PublisherSubscriber, mainCache, AspectrogramWidget */
+
 var ScatterGraph = {};
 
 ScatterGraph = (function () {
@@ -12,7 +14,7 @@ ScatterGraph = (function () {
     /*
      * Constructor.
      */
-    ScatterGraph = function (timeMode, width, height, aspectRatio) {
+    ScatterGraph = function (width, height, aspectRatio) {
         // Propiedades privadas
         var
             // Contenedor HTML de la grafica
@@ -23,8 +25,6 @@ ScatterGraph = (function () {
             _contentHeader,
             // Referencia a AspectrogramWidget
             _aWidget,
-            // Bandera que determina si el grafico esta en pausa o no
-            _pause,
             // Bandera que determina habilita o deshabilita el draggable del grid
             _movableGrid,
             // Auto-referencia a la clase OrbitGraph
@@ -70,14 +70,13 @@ ScatterGraph = (function () {
             // Id de la subvariable seleccionada en el eje Y
             _selectedYSubVariableId,
             // Rango del historico que se esta mostrando
-            _historicalRange,
+            _timeStampArray,
             // Color del punto de medicion seleccionado en el grafico historico
             _currentColor;
 
         /*
          * Definimos el modo, la auto-referencia y demas valores por defecto
          */
-        _pause = (timeMode == 0) ? false : true;
         _movableGrid = false;
         _this = this;
         _graphType = "scatter";
@@ -108,20 +107,20 @@ ScatterGraph = (function () {
          * Callback de evento click sobre algun item del menu de opciones
          * @param {Object} event Argumentos del evento
          */
-        _onSettingsMenuItemClick = function (event) {
-            event.preventDefault();
+        _onSettingsMenuItemClick = function (evt) {
+            evt.preventDefault();
             var
                 target,
-                settingsMenuItem,
-                numericSubVariables;
+                menuItem,
+                numericList;
 
-            target = $(event.currentTarget);
-            settingsMenuItem = target.attr("data-value");
-            switch (settingsMenuItem) {
+            target = $(evt.currentTarget);
+            menuItem = target.attr("data-value");
+            switch (menuItem) {
                 case "refreshXY" + _widgetId:
-                    numericSubVariables = ej.DataManager(_measurementPoint.SubVariables).executeLocal(
+                    numericList = ej.DataManager(_measurementPoint.SubVariables).executeLocal(
                         new ej.Query().where("ValueType", "equal", 1, false));
-                    _menuXYSelection(numericSubVariables);
+                    _menuXYSelection(numericList);
                     break;
             }
         };
@@ -141,8 +140,8 @@ ScatterGraph = (function () {
             }
 
             var
-                // Dato dinamico por accion de movimiento del mouse sobre la grafica
-                dynamicData;
+                // Texto a mostrar de forma dinamica
+                txt;
 
             _chart = new Dygraph(
                 _contentBody,
@@ -168,15 +167,15 @@ ScatterGraph = (function () {
                     },
                     highlightCallback: function (e, x, pts, row) {
                         if (pts.length > 0 && _xUnit && _yUnit) {
-                            dynamicData = xName + ": " + (pts[0].xval < 0 ? "" : "&nbsp;") + pts[0].xval.toFixed(2) + " " + _xUnit;
-                            dynamicData += ", " + yName + ": " + pts[0].yval.toFixed(2) + " " + _yUnit;
-                            $("#XY" + _widgetId + " > span").html(dynamicData);
+                            txt = xName + ": " + (pts[0].xval < 0 ? "" : "&nbsp;") + pts[0].xval.toFixed(2) + " " + _xUnit;
+                            txt += ", " + yName + ": " + pts[0].yval.toFixed(2) + " " + _yUnit;
+                            $("#XY" + _widgetId + " > span").html(txt);
                         }
                     },
                     interactionModel: _customInteractionModel,
                     axes: {
                         y: {
-                            axisLabelWidth: 40,
+                            axisLabelWidth: 40
                         }
                     }
                 }
@@ -190,7 +189,7 @@ ScatterGraph = (function () {
 
             _chart.ready(function () {
                 // Crear dialogo para preguntar el rango de tiempo que se desea abrir y las subvariables X + Y
-                // Capturar tambien la unidad de X + Y (_xUnit, _yUnit)                
+                // Capturar tambien la unidad de X + Y (_xUnit, _yUnit)
                 if (isInitial) {
                     _menuXYSelection(subVariables);
                 }
@@ -214,7 +213,9 @@ ScatterGraph = (function () {
             for (setIdx = layout.points.length - 1; setIdx >= 0; --setIdx) {
                 pts = layout.points[setIdx];
                 for (i = 0; i < pts.length; ++i) {
-                    if (!Dygraph.isValidPoint(pts[i])) continue;
+                    if (!Dygraph.isValidPoint(pts[i])) {
+                        continue;
+                    }
                     dx = pts[i].canvasx - domX;
                     dy = pts[i].canvasy - domY;
                     dist = dx * dx + dy * dy;
@@ -282,7 +283,9 @@ ScatterGraph = (function () {
                 ctx.save();
                 for (i = 0; i < _chart.selPoints_.length; i += 1) {
                     point = _chart.selPoints_[i];
-                    if (!Dygraph.isOK(point.canvasy)) continue;
+                    if (!Dygraph.isOK(point.canvasy)) {
+                        continue;
+                    }
                     circleSize = _chart.getNumericOption("highlightCircleSize", point.name);
                     callback = _chart.getFunctionOption("drawHighlightPointCallback", point.name);
                     if (!callback) {
@@ -303,80 +306,78 @@ ScatterGraph = (function () {
          */
         _customInteractionModel = {
             mousedown: function (event, g, context) {
-                if (_pause) {
-                    // Evita que el clic derecho inicialice el zoom
-                    if (event.button && event.button == 2) return;
-                    context.initializeMouseDown(event, g, context);
-                    if (event.altKey || event.shiftKey || event.ctrlKey) {
-                        Dygraph.startPan(event, g, context);
-                    } else {
-                        Dygraph.startZoom(event, g, context);
-                    }
+                // Evita que el clic derecho inicialice el zoom
+                if (event.button && event.button === 2) {
+                    return;
+                }
+                context.initializeMouseDown(event, g, context);
+                if (event.altKey || event.shiftKey || event.ctrlKey) {
+                    Dygraph.startPan(event, g, context);
+                } else {
+                    Dygraph.startZoom(event, g, context);
                 }
             },
             mousemove: function (event, g, context) {
-                if (_pause) {
-                    if (context.isZooming) {
-                        Dygraph.moveZoom(event, g, context);
-                    } else if (context.isPanning) {
-                        Dygraph.movePan(event, g, context);
-                    } else {
-                        var
-                            selectionChanged,
-                            closestPoint,
-                            row, point,
-                            setIdx, pointIdx,
-                            points, setRow,
-                            callback;
+                if (context.isZooming) {
+                    Dygraph.moveZoom(event, g, context);
+                } else if (context.isPanning) {
+                    Dygraph.movePan(event, g, context);
+                } else {
+                    var
+                        selectionChanged,
+                        closestPoint,
+                        row, point,
+                        setIdx, pointIdx,
+                        points, setRow,
+                        callback;
 
-                        selectionChanged = false;
-                        closestPoint = _findClosestPoint(g.eventToDomCoords(event)[0], g.eventToDomCoords(event)[1], g.layout_);
-                        row = closestPoint.row;
-                        if (row != _chart.lastRow_) {
-                            selectionChanged = true;
+                    selectionChanged = false;
+                    closestPoint = _findClosestPoint(g.eventToDomCoords(event)[0], g.eventToDomCoords(event)[1], g.layout_);
+                    row = closestPoint.row;
+                    if (row !== _chart.lastRow_) {
+                        selectionChanged = true;
+                    }
+                    _chart.lastRow_ = row;
+                    _chart.selPoints_ = [];
+                    for (setIdx = 0; setIdx < _chart.layout_.points.length; ++setIdx) {
+                        points = _chart.layout_.points[setIdx];
+                        setRow = row - _chart.getLeftBoundary_(setIdx);
+                        if (!points[setRow]) {
+                            // Indica que la fila buscada no esta en la grafica (por ejemplo, zoom rectangular no igual para ambos lados)
+                            continue;
                         }
-                        _chart.lastRow_ = row;
-                        _chart.selPoints_ = [];
-                        for (setIdx = 0; setIdx < _chart.layout_.points.length; ++setIdx) {
-                            points = _chart.layout_.points[setIdx];
-                            setRow = row - _chart.getLeftBoundary_(setIdx);
-                            if (!points[setRow]) {
-                                // Indica que la fila buscada no esta en la grafica (por ejemplo, zoom rectangular no igual para ambos lados)
-                                continue;
+                        if (setRow < points.length && points[setRow].idx === row) {
+                            point = points[setRow];
+                            if (point.yval !== null && !Number.isNaN(point.yval)) {
+                                _chart.selPoints_.push(point);
                             }
-                            if (setRow < points.length && points[setRow].idx == row) {
-                                point = points[setRow];
-                                if (point.yval !== null && !isNaN(point.yval)) {
-                                    _chart.selPoints_.push(point);
-                                }
-                            } else {
-                                for (pointIdx = 0; pointIdx < points.length; ++pointIdx) {
-                                    point = points[pointIdx];
-                                    if (point.idx == row) {
-                                        if (point.yval !== null && !isNaN(point.yval)) {
-                                            _chart.selPoints_.push(point);
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (_chart.selPoints_.length) {
-                            _chart.lastx_ = _chart.selPoints_[0].xval;
                         } else {
-                            _chart.lastx_ = -1;
+                            for (pointIdx = 0; pointIdx < points.length; ++pointIdx) {
+                                point = points[pointIdx];
+                                if (point.idx === row) {
+                                    if (point.yval !== null && !Number.isNaN(point.yval)) {
+                                        _chart.selPoints_.push(point);
+                                    }
+                                    break;
+                                }
+                            }
                         }
-                        if (selectionChanged) {
-                            _updateSelection(undefined);
-                        }
-                        callback = _chart.getFunctionOption("highlightCallback");
-                        if (callback && selectionChanged) {
-                            callback.call(_chart, event,
-                                _chart.lastx_,
-                                _chart.selPoints_,
-                                _chart.lastRow_,
-                                _chart.highlightSet_);
-                        }
+                    }
+                    if (_chart.selPoints_.length) {
+                        _chart.lastx_ = _chart.selPoints_[0].xval;
+                    } else {
+                        _chart.lastx_ = -1;
+                    }
+                    if (selectionChanged) {
+                        _updateSelection(undefined);
+                    }
+                    callback = _chart.getFunctionOption("highlightCallback");
+                    if (callback && selectionChanged) {
+                        callback.call(_chart, event,
+                            _chart.lastx_,
+                            _chart.selPoints_,
+                            _chart.lastRow_,
+                            _chart.highlightSet_);
                     }
                 }
             },
@@ -462,7 +463,6 @@ ScatterGraph = (function () {
                 itemsCount: 5,
                 change: function (args) {
                     var
-                        i,
                         items,
                         indexToDisable;
 
@@ -494,7 +494,6 @@ ScatterGraph = (function () {
                 itemsCount: 5,
                 change: function onChange(args) {
                     var
-                        i,
                         items,
                         indexToDisable;
 
@@ -579,37 +578,55 @@ ScatterGraph = (function () {
          */
         _getHistoricalData = function (xName, yName, xMax, xMin, yMax, yMin) {
             var
-                i,
-                // Fecha actual durante la iteracion del rango historico
-                timeStamp,
+                // Listado de subvariables
+                idList,
+                // Valores de la serie de dispersion
+                data,
+                // Datos agrupados por fecha
+                group,
+                // Contadores
+                i, j, k,
+                // Informacion para cada una de las fechas consultada
+                items,
+                // Item no almacenado localmente
+                notStored,
                 // Texto informativo sobre el punto de medicion
                 txt,
                 // Fecha de inicio real, esto es segun el primer dato ordenado por estampa de tiempo que coincide con la consulta
                 startDate,
                 // Fecha de fin real, esto es segun el ultimo dato ordenado por estampa de tiempo que coincide con la consulta
-                endDate,
-                // Valores de la serie de dispersion
-                data,
-                // Valores en X,Y de cada iteracion
-                x, y;
+                endDate;
 
+            idList = [_selectedXSubVariableId, _selectedYSubVariableId];
             data = {
                 value: []
             };
-            for (i = 0; i < _historicalRange.length; i += 1) {
-                timeStamp = new Date(_historicalRange[i]).getTime();
-                x = subVariableHTList[_selectedXSubVariableId][timeStamp].Value;
-                y = subVariableHTList[_selectedYSubVariableId][timeStamp].Value;
-                data.value.push([x, y]);
-            }
-            data.rangeX = [xMin, xMax];
-            data.rangeY = [yMin, yMax];
-            startDate = new Date(_historicalRange[0]);
-            endDate = new Date(_historicalRange[_historicalRange.length - 1]);
-            txt = "<b style=\"color:" + _currentColor + ";\">" + _measurementPoint.Name + "</b>:&nbsp;";
-            txt += "(" + formatDate(startDate) + " - " + formatDate(endDate) + ")";
-            $("#" + _measurementPoint.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
-            _buildGraph(null, false, data, xName, yName);
+            aidbManager.GetNumericBySubVariableIdAndTimeStampList(idList, _timeStampArray, _assetData.NodeId, function (resp) {
+                group = ej.DataManager(resp).executeLocal(new ej.Query().group("timeStamp"));
+                for (i = 0; i < group.length; i += 1) {
+                    items = group[i].items;
+                    data.value[i] = [];
+                    notStored = clone(idList);
+                    for (j = 0; j < items.length; j += 1) {
+                        k = idList.indexOf(items[j].subVariableId);
+                        data.value[i][k] = items[j].value;
+                        k = notStored.indexOf(items[j].subVariableId);
+                        notStored.splice(k, 1);
+                    }
+                    for (j = 0; j < notStored.length; j += 1) {
+                        k = idList.indexOf(notStored[j]);
+                        data.value[i][k] = null;
+                    }
+                }
+                data.rangeX = [xMin, xMax];
+                data.rangeY = [yMin, yMax];
+                startDate = new Date(_timeStampArray[0]);
+                endDate = new Date(_timeStampArray[_timeStampArray.length - 1]);
+                txt = "<b style=\"color:" + _currentColor + ";\">" + _measurementPoint.Name + "</b>:&nbsp;";
+                txt += "(" + formatDate(startDate) + " - " + formatDate(endDate) + ")";
+                $("#" + _measurementPoint.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                _buildGraph(null, false, data, xName, yName);
+            });
         };
 
         /*
@@ -646,7 +663,7 @@ ScatterGraph = (function () {
         /*
          * Metodo de invocacion inicial que crea el widget e inicializa el chart
          */
-        this.Show = function (measurementPointId, currentColor, historicalRange) {
+        this.Show = function (measurementPointId, currentColor, timeStampArray) {
             var
                 // Listado de Ids de SubVariables
                 subVariableIdList,
@@ -662,7 +679,7 @@ ScatterGraph = (function () {
             _assetData = new ej.DataManager(mainCache.loadedAssets).executeLocal(
                 new ej.Query().where("AssetId", "equal", _measurementPoint.ParentId, false))[0];
             _seriesName = ["XY"];
-            _historicalRange = clone(historicalRange);
+            _timeStampArray = clone(timeStampArray);
             _currentColor = clone(currentColor);
             subVariableIdList = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().select("Id"));
             numericSubVariables = ej.DataManager(_measurementPoint.SubVariables).executeLocal(
@@ -684,27 +701,24 @@ ScatterGraph = (function () {
                 height: height,
                 aspectRatio: aspectRatio,
                 graphType: _graphType,
-                timeMode: timeMode,
+                timeMode: 1,
                 asdaqId: _assetData.AsdaqId,
                 atrId: _assetData.AtrId,
                 subVariableIdList: subVariableIdList,
                 asset: _assetData.Name,
                 seriesName: _seriesName,
                 measurementPointList: [_measurementPoint.Name.replace(/\s/g, "")],
-                pause: (timeMode == 0) ? true : false,
+                pause: false,
                 settingsMenu: settingsMenu,
                 onSettingsMenuItemClick: _onSettingsMenuItemClick,
                 onClose: function () {
                     _this.Close();
                 },
-                onPause: function () {
-                    _pause = !_pause;
-                },
                 onMove: function () {
-                    _movableGrid = !_movableGrid;
                     var
                         grid;
 
+                    _movableGrid = !_movableGrid;
                     grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                     $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
                 }
@@ -715,7 +729,7 @@ ScatterGraph = (function () {
             // Se suscribe a la notificacion de aplicacion de resize para el chart Dygraph
             _subscribeToResizeChart();
             // Construir y mostrar grafica.
-            initialData = [[0,0]];
+            initialData = [[0, 0]];
             _buildGraph(numericSubVariables, true, initialData);
         };
 
@@ -727,7 +741,6 @@ ScatterGraph = (function () {
                 // Eliminar suscripción de notificaciones para aplicar resize al chart Dygraph
                 _resizeChartSubscription.remove();
             }
-
             if (_chart) {
                 _chart.destroy();
             }

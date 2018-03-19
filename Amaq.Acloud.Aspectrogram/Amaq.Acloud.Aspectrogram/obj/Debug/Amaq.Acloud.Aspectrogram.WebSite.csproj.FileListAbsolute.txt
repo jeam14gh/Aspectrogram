@@ -1,3 +1,15 @@
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\csc.exe
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\Microsoft.CodeAnalysis.CSharp.dll
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\Microsoft.CodeAnalysis.dll
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\Microsoft.CodeAnalysis.VisualBasic.dll
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\Microsoft.CSharp.Core.targets
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\Microsoft.VisualBasic.Core.targets
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\System.Collections.Immutable.dll
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\System.Reflection.Metadata.dll
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\vbc.exe
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\VBCSCompiler.exe
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\roslyn\VBCSCompiler.exe.config
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Amaq.Acloud.Aspectrogram.dll.config
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Amaq.Acloud.Aspectrogram.XML
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Amaq.Acloud.Aspectrogram.dll
@@ -26,6 +38,7 @@ D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogra
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.AspNetCore.Http.Extensions.dll
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.AspNetCore.Http.Features.dll
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.AspNetCore.WebUtilities.dll
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.Extensions.Configuration.Abstractions.dll
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.Extensions.DependencyInjection.Abstractions.dll
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.Extensions.FileProviders.Abstractions.dll
@@ -85,6 +98,7 @@ D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogra
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.AspNetCore.Http.Extensions.xml
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.AspNetCore.Http.Features.xml
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.AspNetCore.WebUtilities.xml
+D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.Extensions.Configuration.Abstractions.xml
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.Extensions.DependencyInjection.Abstractions.xml
 D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\Microsoft.Extensions.FileProviders.Abstractions.xml
@@ -376,8 +390,3 @@ E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogra
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\obj\Debug\Amaq.Acloud.Aspectrogram.WebSite.csprojResolveAssemblyReference.cache
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\obj\Debug\Amaq.Acloud.Aspectrogram.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\obj\Debug\Amaq.Acloud.Aspectrogram.pdb
-D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\log4net.dll
-D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\System.Runtime.InteropServices.RuntimeInformation.dll
-D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\log4net.xml
-D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\MongoDB.Driver.Core.xml
-D:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram\bin\System.Buffers.xml

@@ -7,6 +7,7 @@
     using System;
     using Aspectrogram.Controllers.Api.Attributes;
     using Entities.Dtos;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Controlador Api SubVariableExtension
@@ -21,9 +22,9 @@
         /// <param name="includeRealTimeData">Indica si se incluyen los datos tiempo real en el resultado(Value y TimeStamp)</param>
         /// <returns>Lista de tipo SubVariableExtension</returns>
         [HttpPost]
-        public IHttpActionResult GetByMdVariableId(List<string> mdVariableIdList, bool includeRealTimeData = false)
+        public async Task<IHttpActionResult> GetByMdVariableId(List<string> mdVariableIdList, bool includeRealTimeData = false)
         {
-            return Ok(new SubVariableExtensionBl(CoreDbUrl).GetByMdVariableId(mdVariableIdList, includeRealTimeData));
+            return await Task.FromResult(Ok(new SubVariableExtensionBl(CoreDbUrl).GetByMdVariableId(mdVariableIdList, includeRealTimeData)));
         }
 
         /// <summary>
@@ -32,7 +33,7 @@
         /// <param name="subVariableExtensionList">Listado de subvariables a actualizar</param>
         /// <returns></returns>
         [HttpPost]
-        public IHttpActionResult UpdateMany([FromBody]List<SubVariableExtension> subVariableExtensionList)
+        public async Task<IHttpActionResult> UpdateMany([FromBody]List<SubVariableExtension> subVariableExtensionList)
         {
             // Los vectores de bytes enviados a traves de la web son codificados como Base64,
             // por lo cual para recuperar tales bytes se realiza lo siguiente:
@@ -43,7 +44,7 @@
             });
 
             new SubVariableExtensionBl(CoreDbUrl).Update(subVariableExtensionList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -53,12 +54,12 @@
         /// <returns>Datos tiempo real</returns>
         //public IHttpActionResult GetRealTimeData(List<RealTimeRequestsByAsdaqDto> realTimeRequestsByAsdaqList, List<RealTimeRequestsByAtrDto> realTimeRequestsByAtrList)
         [HttpPost]
-        public IHttpActionResult GetRealTimeData(dynamic model)
+        public async Task<IHttpActionResult> GetRealTimeData(dynamic model)
         {
             //return Ok(new SubVariableExtensionBl(CoreDbUrl).GetRealTimeData(realTimeRequestsByAsdaqList,realTimeRequestsByAtrList));
             var rtRequestsByAsdaqList= model.realTimeRequestsByAsdaqList?.ToObject<List<RealTimeRequestsByAsdaqDto>>();
             var rtRequestsByAtrList = model.realTimeRequestsByAtrList?.ToObject<List<RealTimeRequestsByAtrDto>>();
-            return Ok(new SubVariableExtensionBl(CoreDbUrl).GetRealTimeData(rtRequestsByAsdaqList, rtRequestsByAtrList));
+            return await Task.FromResult(Ok(new SubVariableExtensionBl(CoreDbUrl).GetRealTimeData(rtRequestsByAsdaqList, rtRequestsByAtrList)));
         }
 
         /// <summary>
@@ -66,10 +67,10 @@
         /// </summary>
         /// <param name="realTimeDataList">Lista de subVariables con los datos a actualizar</param>
         [HttpPost]
-        public IHttpActionResult UpdateManyRealTimeData([FromBody]List<RealTimeDataItemDto> realTimeDataList)
+        public async Task<IHttpActionResult> UpdateManyRealTimeData([FromBody]List<RealTimeDataItemDto> realTimeDataList)
         {
             new SubVariableExtensionBl(CoreDbUrl).UpdateManyRealTimeData(realTimeDataList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -77,20 +78,20 @@
         /// </summary>
         /// <param name="realTimeData">SubVariable con los datos a actualizar</param>
         [HttpPost]
-        public IHttpActionResult UpdateRealTimeData([FromBody]RealTimeDataItemDto realTimeData)
+        public async Task<IHttpActionResult> UpdateRealTimeData([FromBody]RealTimeDataItemDto realTimeData)
         {
             new SubVariableExtensionBl(CoreDbUrl).UpdateRealTimeData(realTimeData);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
         /// Actualiza una lista de SubVariables
         /// </summary>
         [HttpPost]
-        public IHttpActionResult UpdateMany2(List<SubVariableExtension> subVariables)
+        public async Task<IHttpActionResult> UpdateMany2(List<SubVariableExtension> subVariables)
         {
             new SubVariableExtensionBl(CoreDbUrl).UpdateMany(subVariables);
-            return Ok();
+             return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -101,10 +102,10 @@
         /// <param name="amplitude">Amplitud 1X de referencia</param>
         /// <param name="phase">Fase 1X de referencia</param>
         [HttpGet]
-        public IHttpActionResult SetCompesation(string mdVariableId, double amplitude, double phase)
+        public async Task<IHttpActionResult> SetCompesation(string mdVariableId, double amplitude, double phase)
         {
             new SubVariableExtensionBl(CoreDbUrl).SetCompesation(mdVariableId, amplitude, phase);
-            return Ok("Ok");
+            return await Task.FromResult(Ok("Ok"));
         }
 
         /// <summary>
@@ -112,10 +113,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteById(string subVariableId)
+        public async Task<IHttpActionResult> DeleteById(string subVariableId)
         {
             new SubVariableExtensionBl(CoreDbUrl).DeleteById(subVariableId);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -123,9 +124,9 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult Create(List<SubVariableExtension> subVariables)
+        public async Task<IHttpActionResult> Create(List<SubVariableExtension> subVariables)
         {            
-            return Ok(new SubVariableExtensionBl(CoreDbUrl).Create(subVariables));
+            return await Task.FromResult(Ok(new SubVariableExtensionBl(CoreDbUrl).Create(subVariables)));
         }
 
         /// <summary>
@@ -133,10 +134,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteMany(List<SubVariableExtension> subVariables)
+        public async Task<IHttpActionResult> DeleteMany(List<SubVariableExtension> subVariables)
         {
             new SubVariableExtensionBl(CoreDbUrl).DeleteMany(subVariables);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
     }
 }

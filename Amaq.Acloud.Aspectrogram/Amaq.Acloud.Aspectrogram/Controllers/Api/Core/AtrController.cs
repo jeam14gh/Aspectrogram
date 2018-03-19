@@ -5,6 +5,7 @@
     using Entities;
     using Aspectrogram.Models.Business;
     using Aspectrogram.Controllers.Api.Attributes;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Controlador Atransmitter
@@ -19,9 +20,9 @@
         /// <returns></returns>
         [HttpGet]
         [Roles("Admin")]
-        public IHttpActionResult ShouldReconfigure(string atrId)
+        public async Task<IHttpActionResult> ShouldReconfigure(string atrId)
         {
-            return Ok(new AtrBl(CoreDbUrl).ShouldReconfigure(atrId));
+            return await Task.FromResult(Ok(new AtrBl(CoreDbUrl).ShouldReconfigure(atrId)));
         }
 
         /// <summary>
@@ -32,10 +33,10 @@
         /// <returns></returns>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateModule(string atrId, [FromBody] List<AtrModule> modules)
+        public async Task<IHttpActionResult> UpdateModule(string atrId, [FromBody] List<AtrModule> modules)
         {            
             new AtrBl(CoreDbUrl).UpdateModule(atrId,modules);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -43,9 +44,9 @@
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetAllWithMdVariableTag()
+        public async Task<IHttpActionResult> GetAllWithMdVariableTag()
         {
-            return Ok(new AtrBl(CoreDbUrl).GetAllWithMdVariableTag());
+            return await Task.FromResult(Ok(new AtrBl(CoreDbUrl).GetAllWithMdVariableTag()));
         }
 
         /// <summary>
@@ -53,10 +54,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteRelationshipMdVariableWithAiChannels(string atrId, List<AtrModule> modules)
+        public async Task<IHttpActionResult> DeleteRelationshipMdVariableWithAiChannels(string atrId, List<AtrModule> modules)
         {
             new AtrBl(CoreDbUrl).DeleteRelationshipMdVariableWithAiChannels(atrId, modules);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -64,10 +65,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateReconfigure(Atr atr)
+        public async Task<IHttpActionResult> UpdateReconfigure(Atr atr)
         {
             new AtrBl(CoreDbUrl).UpdateReconfigure(atr);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -75,10 +76,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateAliasAndDescription(Atr atr)
+        public async Task<IHttpActionResult> UpdateAliasAndDescription(Atr atr)
         {
             new AtrBl(CoreDbUrl).UpdateAliasAndDescription(atr);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -86,19 +87,19 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult ResetReconfigureFlag([FromBody]string atrId)
+        public async Task<IHttpActionResult> ResetReconfigureFlag([FromBody]string atrId)
         {
             new AtrBl(CoreDbUrl).ResetReconfigureFlag(atrId);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
         /// Obtiene las solicitudes tiempo real del atr con el id especificado
         /// </summary>
         [HttpGet]
-        public IHttpActionResult GetRealTimeRequests(string atrId)
+        public async Task<IHttpActionResult> GetRealTimeRequests(string atrId)
         {
-            return Ok(new AtrBl(CoreDbUrl).GetRealTimeRequests(atrId));
+            return await Task.FromResult(Ok(new AtrBl(CoreDbUrl).GetRealTimeRequests(atrId)));
         }
 
         /// <summary>
@@ -108,10 +109,10 @@
         /// <param name="subVariableIdList">Lista de id de subVariables a eliminar de la lista de solicitudes tiempo real</param>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteRealTimeRequests(string atrId, List<string> subVariableIdList)
+        public async Task<IHttpActionResult> DeleteRealTimeRequests(string atrId, List<string> subVariableIdList)
         {
             new AtrBl(CoreDbUrl).DeleteRealTimeRequests(atrId, subVariableIdList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
     }
 }

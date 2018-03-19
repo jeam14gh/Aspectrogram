@@ -46,22 +46,15 @@ PublisherSubscriber = (function () {
                         // Contador
                         i, pos;
 
-                    //current = [];
-                    //for (i = 0; i < _topics[topic][index].items.length; i++) {
-                    //    current[_topics[topic][index].items[i]] = _topics[topic][index].items[i];
-                    //}
-                    //for (i = 0; i < items.length; i += 1) {
-                    //    if (current.hasOwnProperty.call(current, items[i])) {
-                    //        pos = _topics[topic][index].items.findIndex(x => x == items[i]);
-                    //        current.splice(pos, 1);
-                    //    }
-                    //}
                     for (i = 0; i < items.length; i += 1) {
                         pos = _topics[topic][index].items.findIndex(x => x == items[i]);
                         if (pos >= 0) {
                             _topics[topic][index].items.splice(pos, 1);
                         }
                     }
+                },
+                updateItems: function (items) {
+                    _topics[topic][index].items = clone(items);
                 }
             };
         },

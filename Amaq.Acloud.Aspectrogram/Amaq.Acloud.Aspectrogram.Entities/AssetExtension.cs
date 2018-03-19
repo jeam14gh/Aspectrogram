@@ -141,5 +141,12 @@
         [IgnoreProperty]
         [BsonIgnore]
         public int HistoricalDataUploadLimit { get; set; }
+
+        /// <summary>
+        /// Cantidad limite de registros de datos dinámicos históricos que se suben al servidor principal por cada transacción
+        /// </summary>
+        [IgnoreProperty]
+        [BsonIgnore]
+        public int HistoricalDataStreamUploadLimit { get; set; }
     }
 }

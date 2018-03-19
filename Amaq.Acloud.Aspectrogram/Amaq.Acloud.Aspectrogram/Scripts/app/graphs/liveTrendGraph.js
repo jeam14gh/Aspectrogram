@@ -91,7 +91,9 @@ LiveTrendGraph = (function ()
             // Método privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
             _subscribeToResizeChart,
             //creación de Modal para filtro
-            _createFilterMenu, 
+            _createFilterMenu,
+            // Método privado que crea el aspectrogramWidget con el chart para la tendencia tiempo real
+            _show,
             // Texto para el eje Y
             _ylabel;
 
@@ -157,9 +159,9 @@ LiveTrendGraph = (function ()
          * Callback de evento click sobre algún item del menú de opciones
          *@param {Object} event Argumentos del evento
          */
-        _onSettingsMenuItemClick = function (event) {
-            event.preventDefault();
-            var $target = $(event.currentTarget),
+        _onSettingsMenuItemClick = function (evt) {
+            evt.preventDefault();
+            var $target = $(evt.currentTarget),
                 settingsMenuItem = $target.attr("data-value"),
                 i, count,
                 widgetWidth,
@@ -499,7 +501,7 @@ LiveTrendGraph = (function ()
                     _currentTimeStamp = lastTimeStamp;
                 }
 
-                if (_buffer.length > 0) {
+                if (_buffer.length > 0 && _chart) {
                     _refresh(_buffer, _pause, _chart);
                 }
             });
@@ -689,7 +691,7 @@ LiveTrendGraph = (function ()
             widgetWidth = $("#" + _container.id).width();
             widgetPosition = $("#" + _container.id).parents(".grid-stack-item").first().position();
             dialogSize = { width: 250, height: 500 };
-            dialogPosition = { top: widgetPosition.top, left: (widgetPosition.left + (widgetWidth / 2) - (dialogSize.width / 2)) };
+            //dialogPosition = { top: widgetPosition.top, left: (widgetPosition.left + (widgetWidth / 2) - (dialogSize.width / 2)) };
 
             measureTypesGroupBySensorType = new ej.DataManager(_distinctMeasures).executeLocal(new ej.Query().group("SensorType"));
 
@@ -704,8 +706,6 @@ LiveTrendGraph = (function ()
 
             $("#liveTrendFilterAreaDialog #btnFilter").click(function (e) {
                 var
-                    mdVariableIdList,
-                    endDate,
                     filteredSubVariables,
                     filteredMeasurementPoints;
 
@@ -731,10 +731,21 @@ LiveTrendGraph = (function ()
                 _filteredMeasurementPoints = filteredMeasurementPoints;
 
                 var currentSubVariableIdList = ej.DataManager(_filteredSubVariables).executeLocal(new ej.Query().select("Id"));
-                // Eliminar de la cache las subVariables a consultar en el servidor
-                _aWidget.manageCache(currentSubVariableIdList, "delete");
+
+                if (!_aWidget) {
+                    //// Se suscribe a la notificacion de llegada de nuevos datos tiempo real
+                    _subscribeToRefresh();
+                    _show();
+                }
+
                 // Remover las subvariables especificadas dentro de la suscripcion
                 _subscription.detachItems(currentSubVariableIdList);
+
+                // Eliminar de la cache las subVariables a consultar en el servidor
+                _aWidget.manageCache(currentSubVariableIdList, "delete");
+
+                //// Remover las subvariables especificadas dentro de la suscripcion
+                //_subscription.detachItems(currentSubVariableIdList);
                 // Actualizar la lista de subVariables actuales
                 _filteredSubVariables = clone(filteredSubVariables);
                 _subVariableIdList = ej.DataManager(_filteredSubVariables).executeLocal(new ej.Query().select("Id"));
@@ -825,94 +836,18 @@ LiveTrendGraph = (function ()
                     $("#liveTrendFilterAreaDialog").css("display", "none"); // Ocultar de nuevo el html de la modal
                 },
                 content: "#liveTrendFilterAreaDialog",
-                actionButtons: ["close"],
-                position: { X: dialogPosition.left, Y: dialogPosition.top } // Posicionar el ejDialog
+                actionButtons: ["close"]
+                //position: { X: dialogPosition.left, Y: dialogPosition.top } // Posicionar el ejDialog
             });
 
             $("#liveTrendFilter").ejDialog("open");
         };
 
-        this.Show = function () {
-            if (!selectedAsset) {
-                popUp("info", "No se ha seleccionado un activo.");
-                return;
-            }
-
-            // Si el asset no tiene un asdaq asociado, significa que no se están actualizando los datos tiempo real de las subVariables
-            // de sus diferentes measurement points
-            if (!selectedAsset.AsdaqId && !selectedAsset.AtrId) {
-                popUp("info", "No hay datos tiempo real para el activo seleccionado.");
-                return;
-            }
-
-            _measurementPoints = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("ParentId", "equal", selectedAsset.AssetId));
-            if (_measurementPoints.length === 0) {
-                popUp("info", "El activo no tiene puntos de medición relacionados.");
-                return;
-            }
-
-
+        _show = function () {
             var
-                initialData,
-                subVar,
-                i,
                 // Menu de opciones para la grafica
-                settingsMenu,
-                subVariablesGroupBySensor,
-                currentMdVariable;
-
-            _distinctMeasures = clone(distinctMeasures);
-            _subVariables = clone(subVariableList);
-
-            // Aqui realizamos el filtrado de los puntos de medicion a graficar (por defecto: todos)
-            _filteredMeasurementPoints.pushArray(mdVariableList);
-
-            // Inicializar todas las series como visibles
-            for (i = 0; i < _filteredMeasurementPoints.length; i += 1) {
-                _filteredMeasurementPoints[i].Visible = true;
-            }
-
-            // Por el momento solo vamos a graficar de cada punto de medición su valor global,
-            // es decir la subVariable con la propiedad IsDefaultValue = true.
-            _filteredSubVariables = ej.DataManager(_subVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true));
-            _subVariableIdList = ej.DataManager(_filteredSubVariables).executeLocal(new ej.Query().select("Id"));
-
-            _selectedMeasureBySensor = [];
-            subVariablesGroupBySensor = new ej.DataManager(_filteredSubVariables).executeLocal(new ej.Query().group("SensorTypeCode"));
-
-            // Inicializar medida seleccionada por cada distinto sensor
-            for (i = 0; i < subVariablesGroupBySensor.length; i += 1) {
-                _selectedMeasureBySensor.push({
-                    sensorTypeCode: subVariablesGroupBySensor[i].key,
-                    selectedMeasureType: subVariablesGroupBySensor[i].items[0].MeasureType,
-                    fromIntegratedWaveform: subVariablesGroupBySensor[i].items[0].FromIntegratedWaveform
-                });
-            }
-           
-            // Los nombres de los puntos de medicion son los label para cada una de las series, incluyendo la estampa de tiempo
-            initialData = [];
-            _dict["Estampa de tiempo"] = {};
-
-            for (i = 0; i < _subVariableIdList.length; i += 1) {
-                subVar = new ej.DataManager(_subVariables).executeLocal(new ej.Query().where("Id", "equal", _subVariableIdList[i], false))[0];
-                currentMdVariable = new ej.DataManager(_measurementPoints).executeLocal(new ej.Query().where("Id", "equal", subVar.ParentId, false))[0];
-
-                _dict[currentMdVariable.Name] = {
-                    Id: subVar.Id,
-                    Units: subVar.Units,
-                    Name: subVar.Name,
-                    MeasureType: subVar.MeasureType,
-                    SensorTypeCode: currentMdVariable.SensorTypeCode
-                };
-
-                if (i == 0) {
-                    initialData[0] = [];
-                    initialData[0][0] = new Date();
-                    initialData[0][i + 1] = 0;
-                }
-                initialData[0][i + 1] = null;
-            }
-
+                settingsMenu
+         
             // Agregamos los items al menu de opciones para la grafica
             settingsMenu = [];
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Puntos de medición...", "measurementPointsMenuItem"));
@@ -949,27 +884,78 @@ LiveTrendGraph = (function ()
                     _pause = !_pause;
                 },
                 onMove: function () {
+                    var
+                            grid;
+
                     _movableGrid = !_movableGrid;
-                    var gridStack = $(".grid-stack").data("gridstack");
-                    var grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
-                    gridStack.movable(grid, _movableGrid);
+                    grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
+                    $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
                 },
                 onReload: function () {
                     _buffer = [];
                 }
             });
 
-            
-
             // Abrir AspectrogramWidget.
             _aWidget.open();
-            //Se crea modal con filtro filtro
-            _createFilterMenu();
-            // Se suscribe a la notificacion de llegada de nuevos datos tiempo real
-            _subscribeToRefresh();
-            // Se suscribe a la notificación de aplicación de resize para el chart Dygraph
+
+            //// Se suscribe a la notificación de aplicación de resize para el chart Dygraph
             _subscribeToResizeChart();
-            
+        }
+
+        this.Show = function () {
+            var
+                i,
+                subVariablesGroupBySensor;
+
+            if (!selectedAsset) {
+                popUp("info", "No se ha seleccionado un activo.");
+                return;
+            }
+
+            // Si el asset no tiene un asdaq asociado, significa que no se están actualizando los datos tiempo real de las subVariables
+            // de sus diferentes measurement points
+            if (!selectedAsset.AsdaqId && !selectedAsset.AtrId) {
+                popUp("info", "No hay datos tiempo real para el activo seleccionado.");
+                return;
+            }
+
+            _measurementPoints = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("ParentId", "equal", selectedAsset.AssetId));
+            if (_measurementPoints.length === 0) {
+                popUp("info", "El activo no tiene puntos de medición relacionados.");
+                return;
+            }
+
+            _distinctMeasures = clone(distinctMeasures);
+            _subVariables = clone(subVariableList);
+
+            // Aqui realizamos el filtrado de los puntos de medicion a graficar (por defecto: todos)
+            _filteredMeasurementPoints.pushArray(mdVariableList);
+
+            // Inicializar todas las series como visibles
+            for (i = 0; i < _filteredMeasurementPoints.length; i += 1) {
+                _filteredMeasurementPoints[i].Visible = true;
+            }
+
+            // Por el momento solo vamos a graficar de cada punto de medición su valor global,
+            // es decir la subVariable con la propiedad IsDefaultValue = true.
+            _filteredSubVariables = ej.DataManager(_subVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true));
+            _subVariableIdList = ej.DataManager(_filteredSubVariables).executeLocal(new ej.Query().select("Id"));
+
+            _selectedMeasureBySensor = [];
+            subVariablesGroupBySensor = new ej.DataManager(_filteredSubVariables).executeLocal(new ej.Query().group("SensorTypeCode"));
+
+            // Inicializar medida seleccionada por cada distinto sensor
+            for (i = 0; i < subVariablesGroupBySensor.length; i += 1) {
+                _selectedMeasureBySensor.push({
+                    sensorTypeCode: subVariablesGroupBySensor[i].key,
+                    selectedMeasureType: subVariablesGroupBySensor[i].items[0].MeasureType,
+                    fromIntegratedWaveform: subVariablesGroupBySensor[i].items[0].FromIntegratedWaveform
+                });
+            }
+
+            //Se crea modal con filtro
+            _createFilterMenu();                       
         };
 
         this.Close = function () {

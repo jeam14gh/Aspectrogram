@@ -727,7 +727,7 @@
                 // Eliminamos todas las MdVariablesId que estén en Null
                 mdVariablesToUpdate.RemoveAll(w => w.MdVariableId == null);
 
-                new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesToUpdate);
+                new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesToUpdate, "Actualización de canales Aconditioners");
             }
 
             _asdaqRepository.UpdateAconditionerByAsdaq(asdaqId, aconditioners);
@@ -761,7 +761,7 @@
                     });
                 }
 
-                new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(pointsToRecalculate);
+                new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(pointsToRecalculate, "Eliminación de canal Aconditioner con canal Asdaq");
             }
 
             niDevices

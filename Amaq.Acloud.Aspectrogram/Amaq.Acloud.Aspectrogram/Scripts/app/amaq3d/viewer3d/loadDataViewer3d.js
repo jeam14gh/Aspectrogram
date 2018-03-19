@@ -14,6 +14,8 @@ LoadDataViewer3d = function () {
 
         var _scene,
             _flags,
+            _filtered1x,
+            _fundamentalFrequency,
             _verifiyBandsSize,
             _verifyNormalColor,
             _verifyStatusColor,
@@ -21,12 +23,17 @@ LoadDataViewer3d = function () {
             _createCylStatesSensor,
             _calcuateStatus,
             _reloadTextValue,
+            _applyFilter,
             _drawOrbit,
             _loadSensorData,
             _verifyMaxXYValue,
+            _calculateAngularPositions,
             _convertToArrayVector3,
             _convertArrayYValuesToVector3,
+            _getInitialPhase,
+            _getOrbitData,
             _getOrbitPath,
+            _getOrbitPathFiltered1X,
             _getMaxXYOrbits,
             _arraySpects = [],
             _arrayOrbits = [],
@@ -320,6 +327,8 @@ LoadDataViewer3d = function () {
                 type = "sCL";
             } else if (globals3d.flags[idEntity + wId].plots.ShaftDef) {
                 type = "ShaftDef";
+            } else if (globals3d.flags[idEntity + wId].plots.orb1X) {
+                type = "orb1X";
             }
 
             for (i = 0; i < scope.dataPairs.length; i++) {
@@ -327,7 +336,7 @@ LoadDataViewer3d = function () {
                 idPoint = scope.dataPairs[i].idPoint;
                 data = new Object(scope.dataPairs[i].data);
                 plot = _scene.getMeshByName(globals3d.names.plots[type].canvas + idPoint + wId);
-                size = plot.scaling.x * 0.8;
+                size = plot.scaling.x * 0.95;
 
                 //globals3d.names.plots[type].canvas + idPoint + wId;
                 plot.visibility = true;
@@ -336,7 +345,12 @@ LoadDataViewer3d = function () {
                 }
 
                 if (data !== undefined) {
-                    _getOrbitPath(data, idPoint);                                     
+                    if (_flags.plots.orb1X || _flags.plots.ShaftDef) {
+                        _getOrbitPathFiltered1X(data, idPoint);
+                    } else {
+                        _getOrbitPath(data, idPoint);
+                    }
+                                                      
                 }
 
                 if (i == plot._children.length - 1 ) {
@@ -358,25 +372,188 @@ LoadDataViewer3d = function () {
                 _drawOrbit(data, idPoint, plot, size, type)
             }*/
 
-
-            if (type == "ShaftDef" && scope.dataPairs[0].data.flagDefShaft && _arrayOrbits.length > 1) {
-                if (_orientation === 0) {
-                    shaftDeflection.createCurveH();
-                } else {
-                    shaftDeflection.createCurveV();
+            if (scope.dataPairs.length > 0) {
+                if (type == "ShaftDef" && scope.dataPairs[0].data.flagDefShaft && _arrayOrbits.length > 1) {
+                    if (_orientation === 0) {
+                        shaftDeflection.createCurveH();
+                    } else {
+                        shaftDeflection.createCurveV();
+                    }
                 }
-            }
+            }         
         };
 
         _getOrbitPath = function (data, idPoint) {
             var signalX, signalY, dataOrb;
-
+            /*
+            if (_flags.plots.orb1X || _flags.plots.ShaftDef) {
+                signalX = GetFilterSignal(data.x, Math.round(data.vel), Math.round(data.sampleRate));
+                signalY = GetFilterSignal(data.y, Math.round(data.vel), Math.round(data.sampleRate));
+                
+            }*/
             signalX = (data.isFiltered) ? GetFilterSignal(data.x, data.fc, Math.round(data.sampleRate)) : data.x;
             signalY = (data.isFiltered) ? GetFilterSignal(data.y, data.fc, Math.round(data.sampleRate)) : data.y;
+            
             dataOrb = GetOrbitFull(signalX, signalY, data.kphX, data.kphY, data.xAngle * Math.PI / 180, data.yAngle * Math.PI / 180);
 
             _arrayOrbits.push({ idPoint: idPoint, dataOrb: dataOrb, tS: data.tS });
            
+        };
+
+        _getOrbitPathFiltered1X = function (data, idPoint) {
+            var
+                sampleTime,
+                phaseIni,
+                xVal,
+                yVal,
+                waveformX,
+                waveformY,
+                positions,
+                xAngularPos,
+                yAngularPos,
+                phiX,
+                phiY,
+                dataOrb;
+
+
+            if (data.vel ) {
+                _fundamentalFrequency = data.vel;
+            }
+
+            sampleTime = (data.x.length / data.sampleRate);
+
+
+
+            phaseIni = _getInitialPhase(clone(data.kphX), data.xPha1X);
+            xVal = _applyFilter(data.x, data.sampleRate, data.measureType, data.xAmp1X, phaseIni);
+            phaseIni = _getInitialPhase(clone(data.kphY), data.yPha1X);
+            yVal = _applyFilter(data.y, data.sampleRate, data.measureType, data.yAmp1X, phaseIni);
+
+
+            positions = _calculateAngularPositions(clone(data.kphX), data.x, data.xPha1X, clone(data.kphY), data.y, data.yPha1X);
+            xAngularPos = positions[0];
+            yAngularPos = positions[1];
+
+            phiX = data.xAngle * Math.PI / 180;
+            phiY = data.yAngle * Math.PI / 180;
+            dataOrb = _getOrbitData(xVal, yVal, phiX, phiY, xAngularPos, yAngularPos, 1);
+
+            _arrayOrbits.push({ idPoint: idPoint, dataOrb: dataOrb, tS: data.tS });
+
+        };
+
+        _getOrbitData = function (xVal, yVal, phiX, phiY, xAngularPos, yAngularPos, laps) {
+            var
+                data,
+                start,
+                xMax, xMin,
+                yMax, yMin,
+                i, j,
+                largest,
+                largestX, largestY,
+                x, y, end,
+                deltaX, deltaY;
+
+            data = {
+                value: [],
+                rangeX: [],
+                rangeY: []
+            };
+            largestX = 0;
+            largestY = 0;
+            laps = (xAngularPos.length > 1) ? laps : 1;
+            if (xAngularPos.length > 0) {
+                xMax = -xVal[Math.round(xAngularPos[0])] * Math.sin(phiX) - yVal[Math.round(xAngularPos[0])] * Math.sin(phiY);
+                yMax = xVal[Math.round(xAngularPos[0])] * Math.cos(phiX) + yVal[Math.round(xAngularPos[0])] * Math.cos(phiY);
+            } else {
+                xMax = -xVal[0] * Math.sin(phiX) - yVal[0] * Math.sin(phiY);
+                yMax = xVal[0] * Math.cos(phiX) + yVal[0] * Math.cos(phiY);
+            }
+            xMin = xMax;
+            yMin = yMax;
+            for (i = 0; i < laps; i += 1) {
+                end = (xAngularPos.length > 1) ? xAngularPos[i + 1] : xVal.length;
+                start = (xAngularPos.length > 1) ? xAngularPos[i] : 0;
+                for (j = Math.round(start); j < Math.round(end); j += 1) {
+                    x = -xVal[j] * Math.sin(phiX) - yVal[j] * Math.sin(phiY);
+                    y = xVal[j] * Math.cos(phiX) + yVal[j] * Math.cos(phiY);
+                    xMax = (x > xMax) ? x : xMax;
+                    xMin = (x < xMin) ? x : xMin;
+                    yMax = (y > yMax) ? y : yMax;
+                    yMin = (y < yMin) ? y : yMin;
+                    largestX = (Math.abs(x) > largestX) ? Math.abs(x) : largestX;
+                    largestY = (Math.abs(y) > largestY) ? Math.abs(y) : largestY;
+                    data.value.push([x, y]);
+                }
+                data.value.push([null, null]);
+            }
+
+            largest = [(xMax - xMin), (yMax - yMin)].max();
+            largest = (largest === 0) ? 5 : largest;
+            deltaX = (2 * largest - (xMax - xMin)) / 2;
+            deltaY = (2 * largest - (yMax - yMin)) / 2;
+            xMin -= deltaX;
+            xMax += deltaX;
+            yMin -= deltaY;
+            yMax += deltaY;
+            data.rangeX = [xMin, xMax];
+            data.rangeY = [yMin, yMax];
+            return data;
+        };
+
+        _getInitialPhase = function (KeyphasorPositions, phase1x) {
+            var
+                total,
+                initial;
+
+            if (KeyphasorPositions.length > 1) {
+                initial = KeyphasorPositions[0];
+                total = KeyphasorPositions[1] - initial;
+                return 360 - ((initial * 360 / total) + phase1x) % 360;
+            } else {
+                return 0;
+            }
+        };
+
+        _applyFilter = function (waveformValue, sampleRate, measureType, amp1x, phaIni) {
+            var
+                i, N,
+                omega,
+                resp,
+                periodCount,
+                sampleTime,
+                samplesToUse,
+                amp, pha,
+                sumX, sumY;
+
+            N = waveformValue.length;
+            resp = clone(waveformValue);
+            if (amp1x && phaIni > 0) {
+                pha = ((phaIni > 180) ? phaIni - 360 : phaIni) * Math.PI / 180;
+                for (i = 0; i < N; i += 1) {
+                    resp[i] = (amp1x / 2) * Math.cos(Math.PI * 2 * _fundamentalFrequency * (i / sampleRate) + pha);
+                }
+            } else if (_fundamentalFrequency && _fundamentalFrequency > 0) {
+                sampleTime = (N / sampleRate);
+                periodCount = Math.floor(sampleTime * _fundamentalFrequency);
+                samplesToUse = Math.round((periodCount * N) / (_fundamentalFrequency * sampleTime));
+                omega = 2.0 * Math.PI / samplesToUse;
+                sumX = 0;
+                sumY = 0;
+
+                for (i = 0; i < samplesToUse; i += 1) {
+                    sumX += resp[i] * Math.cos(omega * i * periodCount);
+                    sumY += resp[i] * (-1) * Math.sin(omega * i * periodCount);
+                }
+                pha = -Math.atan2(-sumY, sumX);// * 180 / Math.PI;
+                //pha = 360 - ((pha < 0) ? pha + 360 : pha) % 360;
+                //pha = ((pha > 180) ? pha - 360 : pha) * Math.PI / 180;
+                amp = 4 * Math.sqrt(sumX * sumX + sumY * sumY) / N;
+                for (i = 0; i < N; i += 1) {
+                    resp[i] = (amp / 2) * Math.cos(Math.PI * 2 * _fundamentalFrequency * (i / sampleRate) + pha);
+                }
+            }
+            return resp;
         };
 
         _getMaxXYOrbits = function (type) {
@@ -392,8 +569,8 @@ LoadDataViewer3d = function () {
             maxY = 0;
 
             for (var i = 0; i < _arrayOrbits.length; i++) {
-                rangeX = _arrayOrbits[i].dataOrb.rangeX[1] - _arrayOrbits[i].dataOrb.rangeX[0];
-                rangeY = _arrayOrbits[i].dataOrb.rangeY[1] - _arrayOrbits[i].dataOrb.rangeY[0];
+                rangeX = Math.abs(_arrayOrbits[i].dataOrb.rangeX[1] - _arrayOrbits[i].dataOrb.rangeX[0]);
+                rangeY = Math.abs(_arrayOrbits[i].dataOrb.rangeY[1] - _arrayOrbits[i].dataOrb.rangeY[0]);
                 
                 if (maxX < rangeX) {
                     maxX = rangeX;
@@ -404,20 +581,46 @@ LoadDataViewer3d = function () {
             }
 
             plot = _scene.getMeshByName(globals3d.names.plots[type].canvas +  _arrayOrbits[0].idPoint + wId);
-            size = plot.scaling.x * 0.8;
+            size = plot.scaling.x * 0.7 * 2;
 
             _factOrbits.x = size / (maxX);
             _factOrbits.y = size / (maxY);
         };
 
+        _calculateAngularPositions = function (xAngularPos, xVal, xPha, yAngularPos, yVal, yPha) {
+            var
+                i,
+                delta,
+                firstMax,
+                range,
+                period,
+                firstPosition;
 
+            if (xAngularPos.length > 1) {
+                // Primero encontrar el primer pico maximo
+                range = xVal.slice(0, xAngularPos[1]);
+                firstMax = range.indexOf(range.max());
+                // Cantidad de datos que representan un giro completo del eje
+                delta = xAngularPos[1] - xAngularPos[0];
+                firstPosition = (360 - xPha) * delta / 360 + firstMax;
+                if (firstPosition - delta > 0) {
+                    firstPosition -= delta;
+                }
+                period = (xAngularPos[xAngularPos.length - 1] - xAngularPos[0]) / (xAngularPos.length - 1);
+                for (i = 0; i < xAngularPos.length; i += 1) {
+                    xAngularPos[i] = Math.round(period * i + firstPosition);
+                    yAngularPos[i] = xAngularPos[i];
+                }
+            }
+            return [xAngularPos, yAngularPos];
+        };
 
         _drawOrbit = function (type) {
 
             var drawChart, path, plot, size;
 
             plot = _scene.getMeshByName(globals3d.names.plots[type].canvas + _arrayOrbits[0].idPoint + wId);
-            size = plot.scaling.x * 0.8;
+            size = plot.scaling.x * 0.80;
 
             for (var i = 0; i < _arrayOrbits.length; i++) {
                 drawChart = new DrawChartsPlot2d(idEntity, wId);
@@ -589,8 +792,6 @@ LoadDataViewer3d = function () {
                 });
             }
             
-            
-
             for (var i = 0; i < bands.length; i++) {
                
                 if (vbles[idPoint].SubVariables.DefaultValue.BandsType === "lower") {

@@ -5,7 +5,7 @@
 
 <div style="overflow-y:scroll;">
     <!--Inicio contenedor del detalle A-transmiter-->
-    <div id="aspectrogramMainContent" class="container-fluid fullHeight">
+    <div id="aspectrogramMainContent" class="container-fluid fullHeight cf">
         <div class="row">
             <div id="GridAtr"></div>
             <div id="GridModule"></div>
@@ -13,6 +13,10 @@
     </div>
     <!--Fin del detalle-->
 </div>
+
+@section scripts {
+    @Scripts.Render("~/Scripts/helpers/managementIndexedDB.js")
+}
 
 @section applicationScripts {
     <script id="Cancelar" type="text/x-jsrender">

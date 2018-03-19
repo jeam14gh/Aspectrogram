@@ -70,18 +70,18 @@
                         //SignInAsync(Base64.Decode(model.UserName), model.RememberMe, bearerData.AccessToken);
                         // Identidad confirmada
                         loginResponse.Message = "Ok";
-                        return Json(loginResponse, JsonRequestBehavior.AllowGet);
+                        return await Task.FromResult(Json(loginResponse, JsonRequestBehavior.AllowGet));
                     }
                 }
                 catch (SecurityException ex)
                 {
                     loginResponse.Message = ex.Message;
-                    return Json(loginResponse, JsonRequestBehavior.AllowGet);
+                    return await Task.FromResult(Json(loginResponse, JsonRequestBehavior.AllowGet));
                 }
             }
             // Identidad incorrecta
             loginResponse.Message = "Acceso denegado";
-            return Json(loginResponse, JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json(loginResponse, JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -107,7 +107,7 @@
             {
                 response = ex.Message;
             }
-            return Json(Base64.Encode(response), JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json(Base64.Encode(response), JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -137,10 +137,10 @@
                 if (bearerData != null)
                 {
                     SignInAsync(Base64.Decode(model.PhysicalAddress), true, bearerData.AccessToken, bearerData.RefreshToken);
-                    return Json("", JsonRequestBehavior.AllowGet);
+                    return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
                 }
             }
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>

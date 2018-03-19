@@ -64,13 +64,13 @@ var DrawChartsPlot2d = function () {
                 _scene.getMeshByName("point-" + globals3d.names.plots[type].canvas + idPoint + wId).dispose();
             }
 
-            if (type === "orb" || type === "ShaftDef") {
+            if (type === "orb" || type === "ShaftDef" || type === "orb1X") {
                 if (_orientation === 0) {
                     point = _createPointForOrb(type, idPoint, sizePlot, position.z, colors[type].lc);                    
                 } else {
                     point = _createPointForOrb(type, idPoint, sizePlot, position.y, colors[type].lc);
                 }                   
-          }            
+            }            
             if (path.length !== _lengthPath[type] || !_flagPath[type]) {
                 if (_scene.getMeshByName("line-Chart-" + globals3d.names.plots[type].canvas + idPoint + wId) !== null) {
                     _scene.getMeshByName("line-Chart-" + globals3d.names.plots[type].canvas + idPoint + wId).dispose();
@@ -85,7 +85,7 @@ var DrawChartsPlot2d = function () {
                 newLine = _scene.getMeshByName("line-Chart-" + globals3d.names.plots[type].canvas + idPoint + wId);
                 newLine = BABYLON.Mesh.CreateLines(null, path, null, null, newLine);
             }                                                  
-            if (type === "orb" || type === "ShaftDef") {
+            if (type === "orb" || type === "ShaftDef" || type === "orb1X") {
                 for (var i = 0; i < nodes[idEntity + wId].Properties3d.points.children.length; i++) {
                     if (nodes[idEntity + wId].Properties3d.points.children[i].idPoint === idPoint) {
                         indexPiece = nodes[idEntity + wId].Properties3d.points.children[i].indexPiece[idEntity];

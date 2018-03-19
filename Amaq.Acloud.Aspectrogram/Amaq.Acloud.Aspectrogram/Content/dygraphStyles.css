@@ -58,7 +58,7 @@
 }
 
 .statusBar span:nth-child(2) {
-    width: 30px;
+    /*width: 30px;*/
 }
 
 .scroll {
@@ -83,6 +83,7 @@
     border-style: none;
     color: black !important;
     font-size: 85% !important;
+    z-index: 3;
 }
 
 /* Hairline */

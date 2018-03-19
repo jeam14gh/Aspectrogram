@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims;
+@if (Request.IsAuthenticated)
+{
+    var identity = @User.Identity as ClaimsIdentity;
+    ViewBag.dbName = identity.FindFirst("dbName").Value;
+}
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -23,8 +29,6 @@
     @Scripts.Render("~/bundles/areaSelect")
     @Scripts.Render("~/bundles/toastr")
 
-    @*<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>*@
-
     <!--Scripts para Syncfusion, debido a las referencias a otros archivos no se pueden incluir como bundle-->
     <link rel="stylesheet" href="~/Content/ej/web/default-theme/ej.theme.css" />
     <link rel="stylesheet" href="~/Content/ej/web/default-theme/ej.web.all.css" />
@@ -35,19 +39,19 @@
     <script type="text/javascript" src="~/Scripts/properties.js"></script>
     <script type="text/javascript" src="~/Scripts/referencesNI.js"></script>
     @*<script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
-    <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>*@
+        <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>*@
 </head>
 <body>
 
     @Html.Partial("_MainHeaderPartial")
     <div class="container-fluid body-content">
         @*<div class="container-fluid">*@
-            <div class="row principalRow">
-                <div id="outterSpliter">
-                    @Html.Partial("../Templates/_MainTreeContainer")
-                    @RenderBody()
-                </div>
+        <div class="row principalRow">
+            <div id="outterSpliter">
+                @Html.Partial("../Templates/_MainTreeContainer")
+                @RenderBody()
             </div>
+        </div>
         @*</div>*@
     </div>
 
@@ -142,19 +146,19 @@
             selectedTreeNode,
             // Objeto que contiene todos los nodos correspondientes al usuario
             jsonTree,
+            // Referencia al objeto administrador de DB local
+            aidbManager,
             // Tabla de estados
-            arrayObjectStatus = [],
+            arrayObjectStatus,
             // Listado de las MdVariables correspondientes al activo seleccionado.
             mdVariableList,
             // Objeto contenedor del control ejTreeView de syncfusion
             treeObj,
-            // Referencia para la exportacion de imagenes como PNG
-            imgExport,
             /*
-            Cache principalmente para Home/Index  que almacena en RAM los measurement points y assets que ya se consultaron desde el servidor.
+            Cache principalmente para Home/Index que almacena en RAM los measurement points y assets que ya se consultaron desde el servidor.
             Esta información se borra cada vez que se refresca el navegador(PostBack)
             */
-            mainCache = { loadedMeasurementPoints: [], loadedAssets: [] },
+            mainCache,
             chartScaleY,
             // Diferentes tipos de medida de todas las subVariables de los measurement point del asset seleccionado
             distinctMeasures = [],
@@ -174,11 +178,20 @@
             eventStatusList,
             // Listado de subvariables que pertencen a un evento almacenado
             eventSubVariables,
-            // Lista de nodos copiados 
+            // Lista de nodos copiados
             copiedNodes = [],
             // Tipo de nodo
             typeNode,
+            // Tipos de ventaneos que permite el sistema
             windowing,
+            // Tipos de espectros que permite el sistema
+            spectrumTypes,
+            // Diferentes unidades en las que es posible representar el eje de abscisas
+            xCoordinateUnits,
+            // Tipos de anotaciones
+            annotationTypes,
+            // Posicion inicial del contorno que representa el cojinete
+            clearanceStartPosition,
             // Estado sin datos
             noDataStatus,
             // Estado máquina apagada
@@ -189,8 +202,10 @@
             _pointByToAssociate,
             // Orientaciones que puede tener un sensor instalado
             _orientation,
-            // Alto y ancho de la ventana de window
-            _heightWindow, _widthWindow, 
+            // Alto de la ventana
+            _heightWindow,
+            // Ancho de la ventana
+            _widthWindow,
             // Tipos de material en una RTD
             _materials,
             // Indica si se debe actualizar el ordenamiento de los puntos de medición
@@ -201,33 +216,61 @@
             _getMdVariableById,
             // Tipo de nodo seleccionado
             _selectedEntityType,
-
-            _loadedListbox,
             // Indica si los campos en la vista resumen de puntos de medición y activos estan validados
-            _validatedFieldsSV;
+            _validatedFieldsSV,
+            // Lista de KPH dentro de una activo principal para gestión en vista resumen ó configuración de evento de velocidad
+            _listKph,
+            // Objeto que guarda en memoria los valores de la escala en Y de un espectro por tipo (velocidad y aceleración)
+            _scaleY;
 
+        arrayObjectStatus = [];
         _pointByToAssociate = null;
         _heightWindow = $(window).height();
         _widthWindow = $(window).width();
         toOrder = false;
         _originalDataPoint = {};
         _selectedEntityType = 0;
-        _loadedListbox = 0;
+        mainCache = {
+            loadedMeasurementPoints: [],
+            loadedAssets: []
+        };
         _validatedFieldsSV = true;
+        _listKph = [{ Name: "Ninguno", Id: "0" }];
 
         windowing = {
             None: { Text: "Ninguno", Value: 0 },
             Hanning: { Text: "Hanning", Value: 1 },
             Hamming: { Text: "Hamming", Value: 2 }
         };
-
+        spectrumTypes = {
+            Displacement: { Text: "", Value: 0 },
+            Velocity: { Text: "Vel", Value: 1 },
+            Acceleration: { Text: "Acel", Value: 2 }
+        };
+        xCoordinateUnits = {
+            Cpm: { Text: "Cpm", Value: 0, Factor: 1 / 60 },
+            Order: { Text: "X", Value: 1, Factor: 1 },
+            Hertz: { Text: "Hz", Value: 2, Factor: 1 }
+        };
+        TagTypes = {
+            None: { Text: "Ninguna", Value: 0 },
+            Velocity: { Text: "RPM", Value: 1 },
+            TimeStamp: { Text: "Tiempo", Value: 2 }
+        };
+        clearanceStartPosition = {
+            Bottom: { Text: "Abajo", Value: 0 },
+            Center: { Text: "Centro", Value: 1 },
+            Top: { Text: "Arriba", Value: 2 },
+            Left: { Text: "Izquiera", Value: 3 },
+            Right: { Text: "Derecha", Value: 4 }
+        };
         chartScaleY = new ChartScaleY();
-
         _materials = new RTDCoefficient().Materials;
-
         _orientation = [
                 { Name: "X", Code: 1 }, { Name: "Y", Code: 2 },
                 { Name: "Axial", Code: 3 }, { Name: "Radial", Code: 4 }, ];
+        _scaleY = [];
+        //{ Velocity: null, Acceleration: null, widgetId: null };
 
         $.ajax({
             url: "/Home/GetSetOfRiskStates",
@@ -257,6 +300,9 @@
             url: "/Home/GetNodes",
             method: "GET",
             success: function (result) {
+                var
+                    assetNodeIdList;
+
                 // Almacenamos la lista completa de nodos concernientes al usuario
                 jsonTree = JSON.parse(JSON.stringify(result));
 
@@ -265,10 +311,16 @@
                     new LocationAdmin().Create({ Id: null });
                 } else {
                     // Consultamos el nodo principal del arbol, caso de tener mas de uno selecciona el primero
-                    //selectedTreeNode = ej.DataManager(jsonTree).executeLocal(ej.Query().where("ParentId", "equal", "", false))[0];
-                    selectedTreeNode = ej.DataManager(jsonTree).executeLocal(ej.Query().where(ej.Predicate("ParentId", "equal", "", true).or("ParentId", "equal", null, true)))[0];
+                    selectedTreeNode = ej.DataManager(jsonTree).executeLocal(ej.Query().where(
+                        ej.Predicate("ParentId", "equal", "", true).or("ParentId", "equal", null, true)))[0];
                     // Inicializamos el control del TreeView con el nodo principal del arbol.
                     treeViewControl = new TreeViewControl(selectedTreeNode.Id);
+                    // Consultamos todos los nodos de tipo activo
+                    assetNodeIdList = ej.DataManager(jsonTree).executeLocal(
+                        new ej.Query().where("EntityType", "equal", 2, false).select("Id"));
+                    aidbManager = new ManagementIndexedDB("@(ViewBag.dbName)", assetNodeIdList, function () {
+                        console.log("IndexedDB: Successfully connected.");
+                    });
                 }
                 // Inicializamos el control del Listbox con el nodo principal del arbol.
                 listboxControl = new ListboxControl(null);

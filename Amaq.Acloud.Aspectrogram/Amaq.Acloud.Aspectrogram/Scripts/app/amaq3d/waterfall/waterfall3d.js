@@ -104,8 +104,6 @@ Waterfall3d = (function () {
         }
 
 
-
-
         this.bufferSpectrum = [];
         this.flagRPM = false;
         this.unitsAmp = "um";
@@ -127,7 +125,6 @@ Waterfall3d = (function () {
         this.flagTime = true;
         this.flagRPM = false;
         this.flagFirstWaterfall = true;
-
         this.flagBilog = watConfig.bilog;
         this.sizeCubeVal = 1;
         this.qtyArm = watConfig.armQty;
@@ -166,7 +163,7 @@ Waterfall3d = (function () {
 
         _calculateMaxFrec = function () {
 
-            if (scope.frecMax == null) {
+            if (scope.frecMax == null || scope.frecMax == 0) {
                 if (scope.armonicValue > 10) {
                     _frecMax = (scope.nomVel / 60) * scope.armonicValue;
                 }
@@ -339,7 +336,7 @@ Waterfall3d = (function () {
 
                 for (var i = 0; i < arraySignal.length; i++) {
                     for (var j = 0; j < _vbles.arrayFilter.length; j++) {
-                        if (arraySignal[i].timeStampUTC == _vbles.arrayFilter[j]) {
+                        if (arraySignal[i].milliseconds == _vbles.arrayFilter[j]) {
                             spectrum = GetHalfSpectrum(arraySignal[i].signal, arraySignal[i].sampleRate, scope.overallMeasureType, windowing.Hanning).mag;
                             if (spectrum.length > _frecMax) {
                                 spectrum.splice(_frecMax - 1, (spectrum.length - _frecMax));
@@ -383,7 +380,7 @@ Waterfall3d = (function () {
             for (var i = 0; i < arraySignal.length; i++) {
                 for (var j = 0; j < _vbles.arrayFilter.length; j++) {
                     
-                    if (arraySignal[i].timeStampUTC == _vbles.arrayFilter[j]) {
+                    if (arraySignal[i].milliseconds == _vbles.arrayFilter[j]) {
                         spectrum = GetHalfSpectrum(arraySignal[i].signal, arraySignal[i].sampleRate, scope.overallMeasureType, windowing.Hanning).mag;
                         if (spectrum.length > _frecMax) {
                             spectrum.splice(_frecMax - 1, (spectrum.length - _frecMax));
@@ -452,7 +449,7 @@ Waterfall3d = (function () {
 
                 for (var i = 0; i < arraySignalX.length; i++) {
                     for (var j = 0; j < _vbles.arrayFilter.length; j++) {
-                        if (arraySignalX[i].timeStampUTC == _vbles.arrayFilter[j]) {
+                        if (arraySignalX[i].milliseconds == _vbles.arrayFilter[j]) {
                             spectrum = GetFullSpectrum(arraySignalX[i].signal, arraySignalY[i].signal, arraySignalX[i].sampleRate, scope.overallMeasureType, windowing.Hanning);
                             if (spectrum.length > _frecMax * 2) {
 
@@ -492,7 +489,7 @@ Waterfall3d = (function () {
 
             for (var i = 0; i < arraySignalX.length - 1; i++) {
                 for (var j = 0; j < _vbles.arrayFilter.length; j++) {
-                    if (arraySignalX[i].timeStampUTC == _vbles.arrayFilter[j]) {
+                    if (arraySignalX[i].milliseconds == _vbles.arrayFilter[j]) {
                         spectrum = GetFullSpectrum(arraySignalX[i].signal, arraySignalY[i].signal, arraySignalY[i].sampleRate, scope.overallMeasureType, windowing.Hanning);
 
                 

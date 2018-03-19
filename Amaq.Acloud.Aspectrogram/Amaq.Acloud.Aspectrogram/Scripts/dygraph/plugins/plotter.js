@@ -6,7 +6,6 @@
 /*global Dygraph:false */
 
 Dygraph.Plugins.Plotter = (function () {
-
     "use strict";
 
     /*
@@ -14,7 +13,8 @@ Dygraph.Plugins.Plotter = (function () {
      */
     var
         plotter,
-        _positionateText;
+        _positionateText,
+        _getControlPoints;
 
     plotter = function () {
         
@@ -31,20 +31,17 @@ Dygraph.Plugins.Plotter = (function () {
         };
     };
 
-    plotter.prototype.drawOrbit = function (e, shaftRotation, laps, fundamentalFreq) {
+    plotter.prototype.drawOrbit = function (e, laps, fundamentalFreq) {
         var
             // Variable que contiene el contexto 2D del canvas
             ctx,
-            orbitRotation,
             cursor,
             i, j;
 
         // Inicializamos las variables
         ctx = e.drawingContext;
         cursor = 0;
-        laps = (laps) ? laps : 2;
         laps = (fundamentalFreq) ? laps : 1;
-
         if (e.points.length === 1) {
             ctx.beginPath();
             ctx.lineWidth = 1;
@@ -53,99 +50,60 @@ Dygraph.Plugins.Plotter = (function () {
             ctx.stroke();
             ctx.closePath();
         } else {
-            for (j = 0; j < laps; j += 1) {
+            for (i = 0; i < laps; i += 1) {
                 // Grafica los puntos de la orbita
                 ctx.beginPath();
                 ctx.lineWidth = 1;
                 ctx.moveTo(e.points[cursor].canvasx, e.points[cursor].canvasy);
-                for (i = (cursor + 1) ; i < e.points.length; i += 1) {
-                    if (isNaN(e.points[i].xval)) {
+                for (j = (cursor + 1) ; j < e.points.length; j += 1) {
+                    if (Number.isNaN(e.points[j].xval)) {
                         break;
                     }
-                    ctx.lineTo(e.points[i].canvasx, e.points[i].canvasy);
+                    ctx.lineTo(e.points[j].canvasx, e.points[j].canvasy);
                 }
                 ctx.strokeStyle = e.color;
                 ctx.stroke();
                 ctx.closePath();
-
                 //Grafica el High Spot de la orbita
                 ctx.beginPath();
                 ctx.fillStyle = e.color;
                 ctx.arc(e.points[cursor].canvasx, e.points[cursor].canvasy, 4, 0, 2 * Math.PI, false);
                 ctx.fill();
                 ctx.closePath();
-                cursor = i + 1;
+                cursor = j + 1;
             }
         }
-
         return e.color;
     };
 
-    plotter.prototype.drawShaftPosition = function (e, annotations, startClearance, clearanceX, clearanceY, rotn) {
+    plotter.prototype.drawClearanceBoundary = function (e, clearanceConfig) {
         var
-            // Variable que contiene el contexto 2D del canvas
-            ctx,
+            startPosition,
+            xClearance,
+            yClearance,
             xVal,
             yVal,
-            cursor,
             i, j;
 
-        // Se inicializan las variables
-        ctx = e.drawingContext;
-
-        // Se grafican los puntos del shaft (Un unico punto para tiempo real)
-        if (e.points.length === 1) {
-            ctx.beginPath();
-            ctx.fillStyle = e.color;
-            ctx.arc(e.points[0].canvasx, e.points[0].canvasy, 2, 0, 2 * Math.PI, false);
-            ctx.fill();
-            ctx.closePath();
-        } else {
-            ctx.beginPath();
-            ctx.lineWidth = 1;
-            ctx.moveTo(e.points[0].canvasx, e.points[0].canvasy);
-            for (i = 1; i < e.points.length; i += 1) {
-                ctx.lineTo(e.points[i].canvasx, e.points[i].canvasy);
-            }
-            ctx.strokeStyle = e.color;
-            ctx.stroke();
-            ctx.closePath();
+        if (!clearanceConfig.enable) {
+            return;
         }
 
-        if (annotations) {
-            // Se grafican los diferentes puntos con etiquetas de cambio de rpm
-            for (i = 0; i < annotations.length; i += 1) {
-                if (annotations[i]) {
-                    ctx.beginPath();
-                    ctx.fillStyle = "#FF0000";
-                    xVal = e.dygraph.toDomXCoord(annotations[i].x);
-                    yVal = e.dygraph.toDomYCoord(annotations[i].y);
-                    ctx.arc(xVal, yVal, 2, 0, 2 * Math.PI, false);
-                    ctx.fill();
-                    ctx.closePath();
-                }
-            }
-
-            // Se grafica el High Spot del Shaft (punto de inicio)
-            ctx.beginPath();
-            ctx.fillStyle = "#000000";
-            ctx.arc(e.points[0].canvasx, e.points[0].canvasy, 2, 0, 2 * Math.PI, false);
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        switch (startClearance) {
-            case 1: // Bottom
+        startPosition = clearanceConfig.start;
+        xClearance = clearanceConfig.x;
+        yClearance = clearanceConfig.y;
+        switch (startPosition.Value) {
+            case clearanceStartPosition.Bottom.Value:
                 ctx.beginPath();
                 ctx.lineWidth = 1;
-                xVal = (clearanceX / 2) * Math.cos(0);
-                yVal = (clearanceY / 2) * (Math.sin(0) + 1);
+                xVal = (xClearance / 2) * Math.cos(0);
+                yVal = (yClearance / 2) * (Math.sin(0) + 1);
                 xVal = e.dygraph.toDomXCoord(xVal);
                 yVal = e.dygraph.toDomYCoord(yVal);
                 ctx.moveTo(xVal, yVal);
                 for (i = Math.PI / 30, j = 1; i <= 2 * Math.PI; i = i + Math.PI / 30) {
-                    xVal = (clearanceX / 2) * Math.cos(i);
-                    yVal = (clearanceY / 2) * (Math.sin(i) + 1);
+                    xVal = (xClearance / 2) * Math.cos(i);
+                    yVal = (yClearance / 2) * (Math.sin(i) + 1);
                     xVal = e.dygraph.toDomXCoord(xVal);
                     yVal = e.dygraph.toDomYCoord(yVal);
                     if (j === 1) {
@@ -163,17 +121,17 @@ Dygraph.Plugins.Plotter = (function () {
                 ctx.stroke();
                 ctx.closePath();
                 break;
-            case 2: // Center
+            case clearanceStartPosition.Center.Value:
                 ctx.beginPath();
                 ctx.lineWidth = 1;
-                xVal = (clearanceX / 2) * Math.cos(0);
-                yVal = (clearanceY / 2) * (Math.sin(0));
+                xVal = (xClearance / 2) * Math.cos(0);
+                yVal = (yClearance / 2) * (Math.sin(0));
                 xVal = e.dygraph.toDomXCoord(xVal);
                 yVal = e.dygraph.toDomYCoord(yVal);
                 ctx.moveTo(xVal, yVal);
                 for (i = Math.PI / 30, j = 1; i <= 2 * Math.PI; i = i + Math.PI / 30) {
-                    xVal = (clearanceX / 2) * Math.cos(i);
-                    yVal = (clearanceY / 2) * (Math.sin(i));
+                    xVal = (xClearance / 2) * Math.cos(i);
+                    yVal = (yClearance / 2) * (Math.sin(i));
                     xVal = e.dygraph.toDomXCoord(xVal);
                     yVal = e.dygraph.toDomYCoord(yVal);
                     if (j === 1) {
@@ -191,17 +149,17 @@ Dygraph.Plugins.Plotter = (function () {
                 ctx.stroke();
                 ctx.closePath();
                 break;
-            case 3: // Top
+            case clearanceStartPosition.Top.Value:
                 ctx.beginPath();
                 ctx.lineWidth = 1;
-                xVal = (clearanceX / 2) * Math.cos(0);
-                yVal = (clearanceY / 2) * (Math.sin(0) - 1);
+                xVal = (xClearance / 2) * Math.cos(0);
+                yVal = (yClearance / 2) * (Math.sin(0) - 1);
                 xVal = e.dygraph.toDomXCoord(xVal);
                 yVal = e.dygraph.toDomYCoord(yVal);
                 ctx.moveTo(xVal, yVal);
                 for (i = Math.PI / 30, j = 1; i <= 2 * Math.PI; i = i + Math.PI / 30) {
-                    xVal = (clearanceX / 2) * Math.cos(i);
-                    yVal = (clearanceY / 2) * (Math.sin(i) - 1);
+                    xVal = (xClearance / 2) * Math.cos(i);
+                    yVal = (yClearance / 2) * (Math.sin(i) - 1);
                     xVal = e.dygraph.toDomXCoord(xVal);
                     yVal = e.dygraph.toDomYCoord(yVal);
                     if (j === 1) {
@@ -219,17 +177,17 @@ Dygraph.Plugins.Plotter = (function () {
                 ctx.stroke();
                 ctx.closePath();
                 break;
-            case 4: // Left
+            case clearanceStartPosition.Left.Value:
                 ctx.beginPath();
                 ctx.lineWidth = 1;
-                xVal = (clearanceX / 2) * (Math.cos(0) - 1);
-                yVal = (clearanceY / 2) * Math.sin(0);
+                xVal = (xClearance / 2) * (Math.cos(0) - 1);
+                yVal = (yClearance / 2) * Math.sin(0);
                 xVal = e.dygraph.toDomXCoord(xVal);
                 yVal = e.dygraph.toDomYCoord(yVal);
                 ctx.moveTo(xVal, yVal);
                 for (i = Math.PI / 30, j = 1; i <= 2 * Math.PI; i = i + Math.PI / 30) {
-                    xVal = (clearanceX / 2) * (Math.cos(i) - 1);
-                    yVal = (clearanceY / 2) * Math.sin(i);
+                    xVal = (xClearance / 2) * (Math.cos(i) - 1);
+                    yVal = (yClearance / 2) * Math.sin(i);
                     xVal = e.dygraph.toDomXCoord(xVal);
                     yVal = e.dygraph.toDomYCoord(yVal);
                     if (j === 1) {
@@ -247,17 +205,17 @@ Dygraph.Plugins.Plotter = (function () {
                 ctx.stroke();
                 ctx.closePath();
                 break;
-            case 5: // Right
+            case clearanceStartPosition.Right.Value:
                 ctx.beginPath();
                 ctx.lineWidth = 1;
-                xVal = (clearanceX / 2) * (Math.cos(0) + 1);
-                yVal = (clearanceY / 2) * Math.sin(0);
+                xVal = (xClearance / 2) * (Math.cos(0) + 1);
+                yVal = (yClearance / 2) * Math.sin(0);
                 xVal = e.dygraph.toDomXCoord(xVal);
                 yVal = e.dygraph.toDomYCoord(yVal);
                 ctx.moveTo(xVal, yVal);
                 for (i = Math.PI / 30, j = 1; i <= 2 * Math.PI; i = i + Math.PI / 30) {
-                    xVal = (clearanceX / 2) * (Math.cos(i) + 1);
-                    yVal = (clearanceY / 2) * Math.sin(i);
+                    xVal = (xClearance / 2) * (Math.cos(i) + 1);
+                    yVal = (yClearance / 2) * Math.sin(i);
                     xVal = e.dygraph.toDomXCoord(xVal);
                     yVal = e.dygraph.toDomYCoord(yVal);
                     if (j === 1) {
@@ -276,11 +234,39 @@ Dygraph.Plugins.Plotter = (function () {
                 ctx.closePath();
                 break;
             default:
-                break;
+                console.log("Posición de inicio para el gráfico desconocida.");
         }
     };
 
-    plotter.prototype.drawPolar = function (e, sensorAngle, rotn, annotations) {
+    plotter.prototype.drawShaftPosition = function (e, smoothing) {
+        var
+            // Variable que contiene el contexto 2D del canvas
+            ctx;
+
+        // Se inicializan las variables
+        ctx = e.drawingContext;
+        // Se grafican los puntos del shaft (Un unico punto para tiempo real)
+        if (e.points.length === 1) {
+            ctx.beginPath();
+            ctx.fillStyle = e.color;
+            ctx.arc(e.points[0].canvasx, e.points[0].canvasy, 2, 0, 2 * Math.PI, false);
+            ctx.fill();
+            ctx.closePath();
+        } else {
+            plotter.prototype.smoothPlotter(e, smoothing);
+            //ctx.beginPath();
+            //ctx.lineWidth = 1;
+            //ctx.moveTo(e.points[0].canvasx, e.points[0].canvasy);
+            //for (i = 1; i < e.points.length; i += 1) {
+            //    ctx.lineTo(e.points[i].canvasx, e.points[i].canvasy);
+            //}
+            //ctx.strokeStyle = e.color;
+            //ctx.stroke();
+            //ctx.closePath();
+        }
+    };
+
+    plotter.prototype.drawPolar = function (e, sensorAngle, rotn, annotations, smoothing) {
         var
             // Variable que contiene el contexto 2D del canvas
             ctx,
@@ -428,15 +414,16 @@ Dygraph.Plugins.Plotter = (function () {
         }
 
         // Graficar los puntos del polar
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.moveTo(e.points[0].canvasx, e.points[0].canvasy);
-        for (i = 1; i < e.points.length; i += 1) {
-            ctx.lineTo(e.points[i].canvasx, e.points[i].canvasy);
-        }
-        ctx.strokeStyle = e.color;
-        ctx.stroke();
-        ctx.closePath();
+        plotter.prototype.smoothPlotter(e, smoothing);
+        //ctx.beginPath();
+        //ctx.lineWidth = 1;
+        //ctx.moveTo(e.points[0].canvasx, e.points[0].canvasy);
+        //for (i = 1; i < e.points.length; i += 1) {
+        //    ctx.lineTo(e.points[i].canvasx, e.points[i].canvasy);
+        //}
+        //ctx.strokeStyle = e.color;
+        //ctx.stroke();
+        //ctx.closePath();
     };
 
     plotter.prototype.drawCompPolar = function (e, annotations, compensed) {
@@ -600,9 +587,9 @@ Dygraph.Plugins.Plotter = (function () {
 
         xIni = e.plotArea.x + e.plotArea.w / 2;
         yIni = e.plotArea.y + e.plotArea.w / 2;
-        thetaA = ((rotn === "CW") ? thetaA + 45 : -thetaA + 45);
+        thetaA = ((rotn === "CW") ? Number(thetaA) + 45 : -Number(thetaA) + 45);
         thetaA *= Math.PI / 180;
-        thetaB = ((rotn === "CW") ? thetaB + 45 : -thetaB + 45);
+        thetaB = ((rotn === "CW") ? Number(thetaB) + 45 : -Number(thetaB) + 45);
         thetaB *= Math.PI / 180;
 
         a = (Math.cos(thetaA) == 0) ? 0 : Number((Math.pow(Math.cos(thetaA), 3) / Math.abs(Math.cos(thetaA))).toFixed(2));
@@ -632,37 +619,49 @@ Dygraph.Plugins.Plotter = (function () {
     };
 
     plotter.prototype.smoothPlotter = function (e, smoothing) {
-        var ctx = e.drawingContext,
-            points = e.points;
+        var
+            ctx,
+            points,
+            lastRightX,
+            lastRightY,
+            isOK,
+            i,
+            p0,
+            p1,
+            p2,
+            controls;
 
+        ctx = e.drawingContext;
+        points = e.points;
         ctx.beginPath();
         ctx.moveTo(points[0].canvasx, points[0].canvasy);
-
-        // right control point for previous point
-        var lastRightX = points[0].canvasx, lastRightY = points[0].canvasy;
-        var isOK = Dygraph.isOK;  // i.e. is none of (null, undefined, NaN)
-
-        for (var i = 1; i < points.length; i++) {
-            var p0 = points[i - 1],
-                p1 = points[i],
-                p2 = points[i + 1];
+        // Punto de control a la derecha para el punto anterior
+        lastRightX = points[0].canvasx;
+        lastRightY = points[0].canvasy;
+        isOK = Dygraph.isOK;  // es decir, no es (null, undefined, NaN)
+        for (i = 1; i < points.length; i += 1) {
+            p0 = points[i - 1];
+            p1 = points[i];
+            p2 = points[i + 1];
             p0 = p0 && isOK(p0.canvasy) ? p0 : null;
             p1 = p1 && isOK(p1.canvasy) ? p1 : null;
             p2 = p2 && isOK(p2.canvasy) ? p2 : null;
             if (p0 && p1) {
-                var controls = getControlPoints({ x: p0.canvasx, y: p0.canvasy },
-                                                { x: p1.canvasx, y: p1.canvasy },
-                                                p2 && { x: p2.canvasx, y: p2.canvasy },
-                                                smoothing);
+                controls = _getControlPoints(
+                    { x: p0.canvasx, y: p0.canvasy },
+                    { x: p1.canvasx, y: p1.canvasy },
+                    p2 && { x: p2.canvasx, y: p2.canvasy },
+                    smoothing);
                 lastRightX = (lastRightX !== null) ? lastRightX : p0.canvasx;
                 lastRightY = (lastRightY !== null) ? lastRightY : p0.canvasy;
-                ctx.bezierCurveTo(lastRightX, lastRightY,
-                                  controls[0], controls[1],
-                                  p1.canvasx, p1.canvasy);
+                ctx.bezierCurveTo(
+                    lastRightX, lastRightY,
+                    controls[0], controls[1],
+                    p1.canvasx, p1.canvasy);
                 lastRightX = controls[2];
                 lastRightY = controls[3];
             } else if (p1) {
-                // We're starting again after a missing point.
+                // Empezando de nuevo despues de un punto faltante
                 ctx.moveTo(p1.canvasx, p1.canvasy);
                 lastRightX = p1.canvasx;
                 lastRightY = p1.canvasy;
@@ -670,12 +669,17 @@ Dygraph.Plugins.Plotter = (function () {
                 lastRightX = lastRightY = null;
             }
         }
-
+        ctx.strokeStyle = e.color;
         ctx.stroke();
     };
 
-    function getControlPoints(p0, p1, p2, opt_alpha, opt_allowFalseExtrema) {
-        var alpha = (opt_alpha !== undefined) ? opt_alpha : 1 / 3;  // 0=no smoothing, 1=crazy smoothing
+    /*
+     * Dado tres puntos secuenciales, p0, p1 y p2, encuentre los puntos de control de izquierda a derecha para p1.
+     * Se espera que los tres puntos tengan propiedades X,Y
+     * Si opt_alpha=0, entonces ambos puntos de control seran los mismos que p1 (es decir, sin suavizado)
+     */
+    _getControlPoints = function (p0, p1, p2, opt_alpha, opt_allowFalseExtrema) {
+        var alpha = (opt_alpha !== undefined) ? opt_alpha : 1 / 3;
         var allowFalseExtrema = opt_allowFalseExtrema || false;
 
         if (!p2) {

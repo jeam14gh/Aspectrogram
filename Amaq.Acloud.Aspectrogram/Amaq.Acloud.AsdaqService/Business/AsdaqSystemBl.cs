@@ -460,9 +460,15 @@
                     {
                         rpa.HistoricalDataUploadLimit =
                             asdaq.RelatedMeasurementPoints.Where(rmp => rmp.PrincipalAssetId == rpa.Id).Count();
-                        var factor = Convert.ToInt32(Math.Round(60 / (double)rpa.HistoricalDataUploadLimit));
+                        var factor = Convert.ToInt32(Math.Round(AsdaqProperties.HistoricalDataUploadLimit / (double)rpa.HistoricalDataUploadLimit));
                         factor = (factor == 0) ? 1 : factor;
                         rpa.HistoricalDataUploadLimit *= factor;
+
+                        rpa.HistoricalDataStreamUploadLimit =
+                            asdaq.RelatedMeasurementPoints.Where(rmp => rmp.PrincipalAssetId == rpa.Id).Count();
+                        var streamFactor = Convert.ToInt32(Math.Round(AsdaqProperties.HistoricalDataStreamUploadLimit / (double)rpa.HistoricalDataStreamUploadLimit));
+                        streamFactor = (streamFactor == 0) ? 1 : streamFactor;
+                        rpa.HistoricalDataStreamUploadLimit *= streamFactor;
                     });
             }
 

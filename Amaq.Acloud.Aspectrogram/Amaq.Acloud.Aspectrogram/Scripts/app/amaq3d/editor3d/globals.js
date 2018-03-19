@@ -266,6 +266,10 @@ var globals3d = {
                 canvas: "canvas-Orb-",
                 chart: "chart-Orb-"
             },
+            orb1X: {
+                canvas: "canvas-Orb1X-",
+                chart: "chart-Orb1X-"
+            },
             sCL: {
                 canvas: "canvas-sCL-",
                 chart: "chart-sCL-"

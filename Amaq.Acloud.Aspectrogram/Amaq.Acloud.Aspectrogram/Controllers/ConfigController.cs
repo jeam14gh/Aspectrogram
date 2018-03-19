@@ -5,6 +5,7 @@
     using Entities;
     using Proxy;
     using Entities.Dtos;
+    using System.Threading.Tasks;
 
     [Authorize]
     public class ConfigController : Controller
@@ -19,9 +20,9 @@
         /// Retorna todos los Atransmitter con el nombre de la MdVariable asociada con un canal.
         /// </summary>
         /// <returns></returns>
-        public ActionResult Atr()
+        public async Task<ActionResult> Atr()
         {
-            return View(new AtrProxy(Properties.AppUserState).GetAllWithMdVariableTag());
+            return View(await Task.FromResult(new AtrProxy(Properties.AppUserState).GetAllWithMdVariableTag()));
         }
 
         /// <summary>
@@ -31,10 +32,10 @@
         /// <param name="modules"></param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult UpdateModule(string atrId, List<AtrModule> modules)
+        public async Task<JsonResult> UpdateModule(string atrId, List<AtrModule> modules)
         {
             new AtrProxy(Properties.AppUserState).UpdateModule(atrId, modules);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -43,9 +44,9 @@
         /// <param name="atrId">Id Atransmitter</param>
         /// <returns></returns>
         [HttpGet]
-        public JsonResult ShouldReconfigure(string atrId)
+        public async Task<JsonResult> ShouldReconfigure(string atrId)
         {
-            return Json(new AtrProxy(Properties.AppUserState).ShouldReconfigure(atrId), JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json(new AtrProxy(Properties.AppUserState).ShouldReconfigure(atrId), JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -53,20 +54,20 @@
         /// </summary>
         /// <param name="atr">Entidad Atr</param>
         [HttpPost]
-        public JsonResult UpdateAtr(Atr atr)
+        public async Task<JsonResult> UpdateAtr(Atr atr)
         {
             //new AtrProxy(Properties.AppUserState).Update(atr);
             new AtrProxy(Properties.AppUserState).UpdateAliasAndDescription(atr);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Retorna todos los Asdaq
         /// </summary>
         /// <returns></returns>
-        public ActionResult Asdaq()
+        public async Task<ActionResult> Asdaq()
         {
-            return View(new AsdaqProxy(Properties.AppUserState).GetAllWithMdVariableTag());
+            return View(await Task.FromResult(new AsdaqProxy(Properties.AppUserState).GetAllWithMdVariableTag()));
         }
 
         /// <summary>
@@ -74,11 +75,11 @@
         /// de cada punto de medición que se le asocie un canal Aconditioner
         /// </summary>        
         [HttpPost]
-        public JsonResult UpdateDevice(string asdaqId, List<NiDeviceDto> devices, List<MdVariableUpdateMBDto> mdVariablesDto)
+        public async Task<JsonResult> UpdateDevice(string asdaqId, List<NiDeviceDto> devices, List<MdVariableUpdateMBDto> mdVariablesDto)
         {
             new MdVariableExtensionProxy(Properties.AppUserState).CalculateMandB(mdVariablesDto);
             new AsdaqProxy(Properties.AppUserState).UpdateDevice(asdaqId, devices);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -87,78 +88,78 @@
         /// <param name="asdaqId">Id Atransmitter</param>
         /// <returns></returns>
         [HttpGet]
-        public JsonResult ShouldReconfigureAsdaq(string asdaqId)
+        public async Task<JsonResult> ShouldReconfigureAsdaq(string asdaqId)
         {
-            return Json(new AsdaqProxy(Properties.AppUserState).ShouldReconfigure(asdaqId), JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json(new AsdaqProxy(Properties.AppUserState).ShouldReconfigure(asdaqId), JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Actualiza el Alias y MailAccountConfiguration de un Asdaq
         /// </summary>
         [HttpPost]
-        public JsonResult UpdateAliasAndMailAccountAsdaq(Asdaq asdaq)
+        public async Task<JsonResult> UpdateAliasAndMailAccountAsdaq(Asdaq asdaq)
         {
             new AsdaqProxy(Properties.AppUserState).UpdateAliasAndMailAccountAsdaq(asdaq);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Reconfigura un Asdaq
         /// </summary>
         [HttpPost]
-        public JsonResult Reconfigure(Asdaq asdaq)
+        public async Task<JsonResult> Reconfigure(Asdaq asdaq)
         {
             new AsdaqProxy(Properties.AppUserState).Reconfigure(asdaq);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Elimina la relación de puntos de medición con su respectivo canal
         /// </summary>
         [HttpPost]
-        public JsonResult DeleteRelationshipMdVariableWithAiChannelsAsdaq(string asdaqId, NiDeviceDto device, List<MdVariableUpdateMBDto> mdVariablesDto)
+        public async Task<JsonResult> DeleteRelationshipMdVariableWithAiChannelsAsdaq(string asdaqId, NiDeviceDto device, List<MdVariableUpdateMBDto> mdVariablesDto)
         {
             new MdVariableExtensionProxy(Properties.AppUserState).CalculateMandB(mdVariablesDto);
             new AsdaqProxy(Properties.AppUserState).DeleteRelationshipMdVariableWithAiChannels(asdaqId, device);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Elimina la relación de puntos de medición con su respectivo canal
         /// </summary>
         [HttpPost]
-        public JsonResult DeleteRelationshipMdVariableWithAiChannelsAtr(string atrId, List<AtrModule> modules)
+        public async Task<JsonResult> DeleteRelationshipMdVariableWithAiChannelsAtr(string atrId, List<AtrModule> modules)
         {
             new AtrProxy(Properties.AppUserState).DeleteRelationshipMdVariableWithAiChannels(atrId, modules);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Obtiene todos los dispositivos A-Conditioner
         /// </summary>
         [HttpGet]
-        public JsonResult GetAllAconditioner()
+        public async Task<JsonResult> GetAllAconditioner()
         {
-            return Json(new AconditionerProxy(Properties.AppUserState).GetAll(), JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json(new AconditionerProxy(Properties.AppUserState).GetAll(), JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Obtiene todos los tipos de dispositivos A-Conditioner
         /// </summary>
         [HttpGet]
-        public JsonResult GetAllAconditionerType()
+        public async Task<JsonResult> GetAllAconditionerType()
         {
-            return Json(new AconditionerTypeProxy(Properties.AppUserState).GetAll(), JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json(new AconditionerTypeProxy(Properties.AppUserState).GetAll(), JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Actualiza la propiedad Reconfigure de un Atr
         /// </summary>
         [HttpPost]
-        public JsonResult ReconfigureAtr(Atr atr)
+        public async Task<JsonResult> ReconfigureAtr(Atr atr)
         {
             new AtrProxy(Properties.AppUserState).UpdateReconfigure(atr);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -166,29 +167,29 @@
         /// M y B de los puntos de medición que influyan en cambios de ganancia o desplazamiento que estén relacionados a canales Asdaq
         /// </summary>
         [HttpPost]
-        public JsonResult UpdateAconditionerByAsdaq(string asdaqId, List<Aconditioner> aconditioners, List<MdVariableUpdateMBDto> mdVariablesToUpdate)
+        public async Task<JsonResult> UpdateAconditionerByAsdaq(string asdaqId, List<Aconditioner> aconditioners, List<MdVariableUpdateMBDto> mdVariablesToUpdate)
         {
             new AsdaqProxy(Properties.AppUserState).UpdateAconditionerByAsdaq(asdaqId, aconditioners, mdVariablesToUpdate);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Elimina un Aconditioner relacionado a un Asdaq por medio del serial y los canales Asdaq que estén relacionados 
         /// </summary>
         [HttpPost]
-        public JsonResult DeleteAconditionerBySerial(string asdaqId, string serial, List<NiDeviceDto> niDevices)
+        public async Task<JsonResult> DeleteAconditionerBySerial(string asdaqId, string serial, List<NiDeviceDto> niDevices)
         {
             new AsdaqProxy(Properties.AppUserState).DeleteAconditionerBySerial(asdaqId, serial, niDevices);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
         /// Retorna una MdVariable por medio de su id
         /// </summary>
         [HttpGet]
-        public JsonResult GetMdVariableById(string id)
+        public async Task<JsonResult> GetMdVariableById(string id)
         {
-            return Json(new MdVariableExtensionProxy(Properties.AppUserState).GetById(id), JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json(new MdVariableExtensionProxy(Properties.AppUserState).GetById(id), JsonRequestBehavior.AllowGet));
         }
     }
 }

@@ -3,6 +3,7 @@
     using Acloud.Entities.Core;
     using Attributes;
     using Models.Business;
+    using System.Threading.Tasks;
     using System.Web.Http;
     using WebSite.Controllers.Api;
 
@@ -14,10 +15,10 @@
     {
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteByNodeId(string nodeId)
+        public async Task<IHttpActionResult> DeleteByNodeId(string nodeId)
         {
             new LocationBl(CoreDbUrl).DeleteByNodeId(nodeId);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
     }
 }

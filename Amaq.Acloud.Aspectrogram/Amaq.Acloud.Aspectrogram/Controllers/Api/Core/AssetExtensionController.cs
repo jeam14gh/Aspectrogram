@@ -6,6 +6,7 @@
     using Aspectrogram.Controllers.Api.Attributes;
     using Entities.Dtos;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Controlador AssetExtension
@@ -19,9 +20,9 @@
         /// <param name="asdaqId">Id de asdaq</param>
         /// <returns>Lista de objetos de tipo AssetExtension</returns>
         [HttpGet]
-        public IHttpActionResult GetByAsdaq(string asdaqId)
+        public async Task<IHttpActionResult> GetByAsdaq(string asdaqId)
         {
-            return Ok(new AssetExtensionBl(CoreDbUrl).GetByAsdaq(asdaqId));
+            return await Task.FromResult(Ok(new AssetExtensionBl(CoreDbUrl).GetByAsdaq(asdaqId)));
         }
 
         /// <summary>
@@ -30,9 +31,9 @@
         /// <param name="nodeId">Id del nodo</param>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetAssetIdByNode(string nodeId)
+        public async Task<IHttpActionResult> GetAssetIdByNode(string nodeId)
         {
-            return Ok(new AssetExtensionBl(CoreDbUrl).GetAssetIdByNode(nodeId));
+            return await Task.FromResult(Ok(new AssetExtensionBl(CoreDbUrl).GetAssetIdByNode(nodeId)));
         }
 
         /// <summary>
@@ -41,9 +42,9 @@
         /// <param name="nodeId">Id de nodo</param>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetIdAndAsdaqIdByNode(string nodeId)
+        public async Task<IHttpActionResult> GetIdAndAsdaqIdByNode(string nodeId)
         {
-            return Ok(new AssetExtensionBl(CoreDbUrl).GetIdAndAsdaqIdByNode(nodeId));
+            return await Task.FromResult(Ok(new AssetExtensionBl(CoreDbUrl).GetIdAndAsdaqIdByNode(nodeId)));
         }
 
         /// <summary>
@@ -51,10 +52,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateNameAndDescription(AssetToUpdateDto asset)
+        public async Task<IHttpActionResult> UpdateNameAndDescription(AssetToUpdateDto asset)
         {
             new AssetExtensionBl(CoreDbUrl).UpdateNameAndDescription(asset);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -62,10 +63,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult Clone(AssetExtension asset)
+        public async Task<IHttpActionResult> Clone(AssetExtension asset)
         {
             new AssetExtensionBl(CoreDbUrl).Clone(asset);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
 
@@ -74,10 +75,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteManyByNodeId (List<string> nodeIdList)
+        public async Task<IHttpActionResult> DeleteManyByNodeId (List<string> nodeIdList)
         {
             new AssetExtensionBl(CoreDbUrl).DeleteManyByNodeId(nodeIdList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -85,10 +86,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult SaveEventVelocity(AssetExtension asset)
+        public async Task<IHttpActionResult> SaveEventVelocity(AssetExtension asset)
         {
             new AssetExtensionBl(CoreDbUrl).SaveEventVelocity(asset);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -96,10 +97,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult SaveConditionStatusEventsConfig(AssetExtension asset)
+        public async Task<IHttpActionResult> SaveConditionStatusEventsConfig(AssetExtension asset)
         {
             new AssetExtensionBl(CoreDbUrl).SaveConditionStatusEventsConfig(asset);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -107,9 +108,9 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult GetByNodeId(List<string> nodeIdList)
+        public async Task<IHttpActionResult> GetByNodeId(List<string> nodeIdList)
         {
-            return Ok(new AssetExtensionBl(CoreDbUrl).GetByNodeId(nodeIdList));
+            return await Task.FromResult(Ok(new AssetExtensionBl(CoreDbUrl).GetByNodeId(nodeIdList)));
         }
 
         /// <summary>
@@ -118,10 +119,10 @@
         /// <param name="lastSavedEventDto">Objeto que especifica el activo, el estado de condición y la estampa de tiempo del último evento generado</param>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateLastSavedEvent(LastSavedEventDto lastSavedEventDto)
+        public async Task<IHttpActionResult> UpdateLastSavedEvent(LastSavedEventDto lastSavedEventDto)
         {
             new AssetExtensionBl(CoreDbUrl).UpdateLastSavedEvent(lastSavedEventDto);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>

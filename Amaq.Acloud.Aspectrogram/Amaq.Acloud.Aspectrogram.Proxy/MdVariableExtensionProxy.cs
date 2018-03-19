@@ -194,5 +194,14 @@
             string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
             HttpPost<string>(path, Url, _userState, content);
         }
+
+        /// <summary>
+        /// Retorna todas las referencias angulares
+        /// </summary>
+        public List<MdVariableExtension> GetAllReferenceAngular()
+        {
+            string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
+            return HttpGet<List<MdVariableExtension>>(path, Url, _userState);
+        }
     }
 }

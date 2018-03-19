@@ -68,7 +68,7 @@ AssetAdmin = (function () {
             // PopUp de vista resumen de puntos de medición y activos
             _createSummariesView,
             // Tipos de material en una RTD
-            _materials,
+            _materials, _coefficient,
             // Indica si se debe actualizar el hasChild de un nodo
             _updateHasChild,
             // Lista de nodeId
@@ -77,6 +77,8 @@ AssetAdmin = (function () {
             _dsTripMultiply,
             // 
             _existingStates;
+
+        //_validatedFieldsSV;
 
 
         _subject = "{EstadoCondicion}, {RutaActivo}.";
@@ -94,19 +96,21 @@ AssetAdmin = (function () {
         _pairYselected = null;
         _pairXYselected = null;
         _materials = new RTDCoefficient().Materials;
+        _coefficient = new RTDCoefficient().Coefficients;
         //_heightWindow = $(window).height();
         //_widthWindow = $(window).width();
         _updateHasChild = false;
         _listNodeId = [];
         _existingStates = [];
         _dsTripMultiply = [{ Name: "Ninguno", Id: 1 }, { Name: "2X", Id: 2 }, { Name: "3X", Id: 3 }];
+        //_validatedFieldsSV = true;
 
         this.Copy = function (asset) {
             copiedNodes = [];
             copiedNodes.push(asset);
             typeNode = 2;
 
-            $("#locationMenu").ejMenu("enableItemByID", "pasteAssetMenuItem"); 
+            $("#locationMenu").ejMenu("enableItemByID", "pasteAssetMenuItem");
             popUp("success", "Activo " + copiedNodes[0].Name + " copiado!");
 
             _pairsXY = [];
@@ -185,7 +189,7 @@ AssetAdmin = (function () {
                         //// Obtenemos el número de puntos de medición hermanos que existen para setear la propiedad OrderPosition 
                         //var data = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("ParentId", "equal", asset.AssetId, false));
                         //var nPosition = data.length == 0 ? 0 : ej.max(data, "OrderPosition").OrderPosition + 1;
-                        nPosition+= 1;
+                        nPosition += 1;
 
                         var _nodeAndMdVariableDto = {
                             NodeDto:
@@ -209,7 +213,7 @@ AssetAdmin = (function () {
                             method: "POST",
                             data: { nodeAndMdVariableDto: _nodeAndMdVariableDto },
                             success: function (response) {
-                                
+
                                 var _node = response.NodeDto;
                                 _node.EntityType = _node.Type;
                                 delete _node.Type;
@@ -289,14 +293,14 @@ AssetAdmin = (function () {
                                             arrayNode[0] = nod.Id; // NodeId
                                             arrayNode[1] = true; // HasChild
                                             ej.DataManager(jsonTree).update("Id", { Id: nod.Id, HasChild: true }, jsonTree);
-                                        }                                        
+                                        }
 
                                         $.ajax({
                                             url: "/Home/PasteNodeAndAsset",
                                             method: "POST",
                                             data: { node: _node, isPrincipal: _isPrincipal, pplAssetId: _pplAssetId, pairsXY: _pairsXY, updateNode: arrayNode },
                                             success: function (result) {
-                                                
+
                                                 var nodes = result.Nodes;
                                                 var assets = result.Assets;
                                                 var mdVariables = result.MdVariables;
@@ -321,7 +325,7 @@ AssetAdmin = (function () {
                                                 }
 
                                                 // Fusionamos los nuevos nodos con el jsonTree
-                                                ej.merge(jsonTree,nodes);
+                                                ej.merge(jsonTree, nodes);
                                                 //var listNodes = { "added": nodes, "deleted": {}, "changed": {} };
                                                 //ej.DataManager(jsonTree).saveChanges(listNodes);
 
@@ -356,7 +360,7 @@ AssetAdmin = (function () {
             }
             else {
                 popUp("error", "No hay elemento(s) copiado(s) para pegar!");
-            }            
+            }
         }
 
         this.ConfigurePairsXY = function (asset) {
@@ -539,7 +543,7 @@ AssetAdmin = (function () {
             });
         };
 
-        this.SummaryViewPoints = function (asset) {
+        this.SummaryViewPoints = function (asset, isAdmin) {
             _asset = asset;
             if (_asset.IsPrincipal) {
                 // Buscamos todos los activos (principal y sus subactivos si existen)
@@ -553,15 +557,15 @@ AssetAdmin = (function () {
                     }
                 }
 
-                _createSummariesView("Vista resumen de activo y puntos de medición", _asset, assets, true, null);
+                _createSummariesView("Vista resumen de activo y puntos de medición", _asset, assets, true, null, isAdmin);
             } else {
                 // Agregamos el elemento "fieldset" con el nombre del activo
                 $("#formSummariesView > .container-fluid > #divPoints").append('<div id="' + _asset.Id + '"><fieldset><legend>' + _asset.Name + '</legend></fieldset></div>');
-                _createSummariesView("Vista resumen de puntos de medición del activo " + _asset.Name, _asset, [], false, null);
+                _createSummariesView("Vista resumen de puntos de medición del activo " + _asset.Name, _asset, [], false, null, isAdmin);
             }
         };
 
-        this.SummaryViewAssets = function (location) {
+        this.SummaryViewAssets = function (location, isAdmin) {
             // Obtenemos todos los nodos hijos de una ubicación
             var nodes = ej.DataManager(jsonTree).executeLocal(ej.Query().where("ParentId", "equal", location.Id, false));
             if (nodes.length > 0) {
@@ -569,7 +573,7 @@ AssetAdmin = (function () {
                 var listAsset = getListAsset(nodeIdListAsset);
 
                 $("#formSummariesView > .container-fluid > #divAssets").append('<div id="grid' + location.Id + '"></div><p></p>');
-                _createSummariesView("Vista resumen activos", null, listAsset, false, location.Id);
+                _createSummariesView("Vista resumen activos", null, listAsset, false, location.Id, isAdmin);
             }
             else
                 popUp("error", "No existen activos en esta ubicación!");
@@ -620,9 +624,13 @@ AssetAdmin = (function () {
                         assets[x].ConditionStatusEventsConfig.push({
                             StatusId: _existingStates[e].Id,
                             Enabled: false,
-                            Interval: "NA",
-                            MinutesBefore: "NA",
-                            MinutesAfter: "NA",
+                            Interval: null,
+                            MinutesBefore: null,
+                            MinutesAfter: null,
+                            //Interval: "NA",
+                            //MinutesBefore: "NA",
+                            //MinutesAfter: "NA",
+                            NotifyList: [],
                         });
                     }
                 }
@@ -634,9 +642,13 @@ AssetAdmin = (function () {
                         assets[x].ConditionStatusEventsConfig.push({
                             StatusId: _existingStates[es].Id,
                             Enabled: false,
-                            Interval: "NA",
-                            MinutesBefore: "NA",
-                            MinutesAfter: "NA",
+                            Interval: null,
+                            MinutesBefore: null,
+                            MinutesAfter: null,
+                            //Interval: "NA",
+                            //MinutesBefore: "NA",
+                            //MinutesAfter: "NA",
+                            NotifyList: [],
                         });
                     }
                 }
@@ -645,16 +657,16 @@ AssetAdmin = (function () {
                 var orderByConditionStatus = ej.DataManager(assets[x].ConditionStatusEventsConfig).executeLocal(ej.Query().sortByDesc("StatusId"));
                 assets[x].ConditionStatusEventsConfig = orderByConditionStatus;
 
-                if (assets[x].RpmEventConfig) {
-                    // Creamos la propiedad "AngularReferenceName" para poder mostrar en la columna "Marca de paso" su nombre
-                    assets[x].RpmEventConfig.AngularReferenceName = "";
-                    if (assets[x].RpmEventConfig.AngularReferenceId != null) {
-                        // Obtenemos desde base de datos la marca de paso y se la asignamos a la propiedad "AngularReferenceName"
-                        var point = getMdVariableById(assets[x].RpmEventConfig.AngularReferenceId);
-                        if (point)
-                            assets[x].RpmEventConfig.AngularReferenceName = point.Name;
-                    }
-                }
+                //if (assets[x].RpmEventConfig) {
+                //    // Creamos la propiedad "AngularReferenceName" para poder mostrar en la columna "Marca de paso" su nombre
+                //    assets[x].RpmEventConfig.AngularReferenceName = "";
+                //    if (assets[x].RpmEventConfig.AngularReferenceId != null) {
+                //        // Obtenemos desde base de datos la marca de paso y se la asignamos a la propiedad "AngularReferenceName"
+                //        var point = getMdVariableById(assets[x].RpmEventConfig.AngularReferenceId);
+                //        if (point)
+                //            assets[x].RpmEventConfig.AngularReferenceName = point.Name;
+                //    }
+                //}
             }
 
             return assets;
@@ -708,7 +720,7 @@ AssetAdmin = (function () {
                 minHeight: 420,
                 maxHeight: _heightWindow,
                 maxWidth: _widthWindow,
-                scrollSettings: { height: 430, width:730 },
+                scrollSettings: { height: 430, width: 730 },
                 allowScrolling: true,
                 allowDraggable: true,
                 enableResize: true,
@@ -1286,7 +1298,7 @@ AssetAdmin = (function () {
             else {
                 validateFieldsEventVelocity({ deltaRpm, lowRpm, upperRpm, minutesBefore, minutesAfter});
                 return null;
-            }
+                }
         }
 
         // Busca todos los KPH desde un activo principal y toda su descendencia si la tiene
@@ -1427,8 +1439,8 @@ AssetAdmin = (function () {
                 isResponsive: true,
                 enableResponsiveRow: true,
                 allowResizing: true,
-                allowTextWrap: true, 
-                textWrapSettings:{ wrapMode: ej.Grid.WrapMode.Header },
+                allowTextWrap: true,
+                textWrapSettings: { wrapMode: ej.Grid.WrapMode.Header },
                 //allowScrolling: true,
                 //scrollSettings: { height: "500px", },
                 gridLines: ej.Grid.GridLines.Both,
@@ -1437,90 +1449,8 @@ AssetAdmin = (function () {
                     showToolbar: true,
                     toolbarItems: ["add", "update", "cancel", "delete"],
                 },
-                rowSelected: function (args) {
-                    _statusId = args.data.StatusId;
-
-                    if (args.data.NotifyList != null) {
-                        var notifyList = args.data.NotifyList;
-                        for (var nl = 0; nl < notifyList.length; nl++) {
-                            var user = ej.DataManager(_usersCompanie).executeLocal(ej.Query().where("Id", "equal", notifyList[nl].UserId, false))[0];
-                            if (user !== undefined) {  // Valida si el Id del usuario existe en BD
-                                // Agregamos el statusId al NotifiyList para poder relacionarlo con el gridNotifyList
-                                notifyList[nl].StatusId = args.data.StatusId;
-                                notifyList[nl].Email = user.Companies[0].Email;
-                                notifyList[nl].Index = _index++;
-                            }
-                        }
-                        createGridNotifyList(notifyList);
-                    }
-                    else
-                        createGridNotifyList([]);
-                },
-                actionComplete: function (args) {
-                    if (args.requestType == "add") {
-                        $("#gridConditionStatusEnabled").prop('checked', true);
-                        for (var cs = 0; cs < args.model.dataSource.length; cs++) {
-                            var items = $('#gridConditionStatusStatusId').ejDropDownList("getListData");
-                            for (var i = 0; i < items.length; i++) {
-                                if (items[i].value == args.model.dataSource[cs].StatusId) {
-                                    $('#gridConditionStatusStatusId').ejDropDownList("disableItemsByIndices", i);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    else if (args.requestType == "beginedit") {
-                        $('#gridConditionStatusInterval').ejNumericTextbox({ minValue: 0 });
-                        $('#gridConditionStatusMinutesBefore').ejNumericTextbox({ minValue: 0 });
-                        $('#gridConditionStatusMinutesAfter').ejNumericTextbox({ minValue: 0 });
-
-                    }
-                    //else if (args.requestType == "save") {
-                    //    if (([args.data.Interval, args.data.MinutesAfter, args.data.MinutesBefore].includes(null)) || (args.data.StatusId =="")) {
-                    //        args.cancel = true;
-                    //        popUp("error", "Todos los campos deben estar llenos!");
-                    //    }
-                    //}
-
-                    // Habilita o no el boton "Guardar" del ejDialog de Configuración eventos por estados de condición
-                    if (["add", "beginedit"].includes(args.requestType)) {
-                        $("#btnSaveECS").attr('disabled', 'disabled');
-                    } else { // "cancel","delete","save"
-                        $("#btnSaveECS").removeAttr('disabled');
-                    }
-                },
-                toolbarClick: function (args) {
-                    if (args.itemName == "Agregar") {
-                        _statusId = null;
-                        if (args.model.dataSource) {
-                            if (args.model.dataSource.length == filteredStatusList.length)
-                                args.cancel = true;
-                        }
-                    }
-                    //else if (args.itemName == "Actualizar") {
-                    //    var interval = $("#gridConditionStatusInterval").ejNumericTextbox("getValue");
-                    //    var minutesAfter = $("#gridConditionStatusMinutesAfter").ejNumericTextbox("getValue");
-                    //    var minutesBefore = $("#gridConditionStatusMinutesBefore").ejNumericTextbox("getValue");
-                    //    var statu = $('#gridConditionStatusStatusId').ejDropDownList("getSelectedValue");
-                    //    if (([interval, minutesAfter, minutesBefore].includes(null)) || (statu == "")) {
-                    //        args.cancel = true;
-                    //        popUp("error", "Todos los campos deben estar llenos!");
-                    //    }
-                    //}
-                },
-                actionBegin: function (args) {
-                    //if (["save","Actualizar"].includes(args.requestType)) {
-                    if (args.requestType == "save") {
-                        if ([args.data.StatusId, args.data.Interval, args.data.MinutesAfter, args.data.MinutesBefore].includes(null)) {
-                            args.cancel = true;
-                            popUp("error", "Todos los campos deben estar llenos!");
-                        }
-                    }
-                },
-                allowKeyboardNavigation: true,
-                pageSettings: { pageSize: 10 },
                 columns: [
-                    { field: "Enabled", headerText: 'Habilitado', width: "5%", textAlign: "center", editType: "booleanedit" },
+                    { field: "Enabled", headerText: 'Habilitado', width: "5%", textAlign: "center", editType: "booleanedit", defaultValue: true },
                     { field: "StatusId", headerText: 'Estado Condición', textAlign: "center", width: "15%", editType: ej.Grid.EditingType.Dropdown, dataSource: filteredStatusList, foreignKeyField: "Id", foreignKeyValue: "Name", isPrimaryKey: true },
                     { field: "Interval", headerText: "Intervalo (min)", width: "15%", textAlign: "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 } },
                     { field: "MinutesBefore", headerText: "Tiempo Antes (min)", width: "25%", textAlign: "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 } },
@@ -1548,25 +1478,83 @@ AssetAdmin = (function () {
                         textAlign: ej.TextAlign.Center
                     },
                 ],
+                rowSelected: function (args) {
+                    _statusId = args.data.StatusId;
+
+                    if (args.data.NotifyList != null) {
+                        var notifyList = args.data.NotifyList;
+                        for (var nl = 0; nl < notifyList.length; nl++) {
+                            var user = ej.DataManager(_usersCompanie).executeLocal(ej.Query().where("Id", "equal", notifyList[nl].UserId, false))[0];
+                            if (user !== undefined) {  // Valida si el Id del usuario existe en BD
+                                // Agregamos el statusId al NotifiyList para poder relacionarlo con el gridNotifyList
+                                notifyList[nl].StatusId = args.data.StatusId;
+                                notifyList[nl].Email = user.Companies[0].Email;
+                                notifyList[nl].Index = _index++;
+                            }
+                        }
+                        createGridNotifyList(notifyList);
+                    }
+                    else
+                        createGridNotifyList([]);
+                },
+                actionComplete: function (args) {
+                    if (args.requestType == "add") {
+                        //$("#gridConditionStatusEnabled").prop('checked', true);
+                        for (var cs = 0; cs < args.model.dataSource.length; cs++) {
+                            var items = $('#gridConditionStatusStatusId').ejDropDownList("getListData");
+                            for (var i = 0; i < items.length; i++) {
+                                if (items[i].value == args.model.dataSource[cs].StatusId) {
+                                    $('#gridConditionStatusStatusId').ejDropDownList("disableItemsByIndices", i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (args.requestType == "beginedit") {
+                        $('#gridConditionStatusInterval').ejNumericTextbox({ minValue: 0 });
+                        $('#gridConditionStatusMinutesBefore').ejNumericTextbox({ minValue: 0 });
+                        $('#gridConditionStatusMinutesAfter').ejNumericTextbox({ minValue: 0 });
+
+                    }
+
+                    // Habilita o no el boton "Guardar" del ejDialog de Configuración eventos por estados de condición
+                    if (["add", "beginedit"].includes(args.requestType)) {
+                        $("#btnSaveECS").attr('disabled', 'disabled');
+                    }
+                    else { // "cancel","delete","save" 
+                        $("#btnSaveECS").removeAttr('disabled');
+                    }
+                },
+                toolbarClick: function (args) {
+                    if (args.itemName == "Agregar") {
+                        _statusId = null;
+                        if (args.model.dataSource) {
+                            if (args.model.dataSource.length == filteredStatusList.length)
+                                args.cancel = true;
+                        }
+                    }
+                },
+                actionBegin: function (args) {
+                    //if (["save","Actualizar"].includes(args.requestType)) {
+                    if (args.requestType == "save") {
+                        if ([args.data.StatusId, args.data.Interval, args.data.MinutesAfter, args.data.MinutesBefore].includes(null)) {
+                            args.cancel = true;
+                            popUp("error", "Todos los campos deben estar llenos!");
+                        } else {
+                            // Se debe setear esta propiedad de esta manera debido a un problema con el value del checkbox donde su valor queda "on"
+                            args.data.Enabled = $("#gridConditionStatusEnabled").is(":checked");
+                        }
+                    }
+                },
+                allowKeyboardNavigation: true,
+                pageSettings: { pageSize: 10 },
                 showStackedHeader: true,
                 //stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Eventos de condición de estados", column: "Enabled,StatusId,Interval,MinutesBefore,MinutesAfter" }] }],
-                queryCellInfo: function (args) {
-                    //var statusId = args.data.StatusId;
-                    //var name = args.foreignKeyData.Name;
-                    //var color = args.foreignKeyData.Color;
-                    //var $element = $(args.cell);
-
-                    ////Le agregamos a la columna estado un icono "circulo" con el color perteneciente al tipo de estado
-                    //if (args.column.headerText == "Estado Condición") {
-                    //    $element.html("<span class='fa fa-circle icon-large' style='background-color: transparent; color:" + color + "; padding: 2px;'></span> " + name);
-                    //}
-                },
                 rowDataBound: function (args) {
                     var statu = ej.DataManager(arrayObjectStatus).executeLocal(ej.Query().where("Id", "equal", args.rowData.StatusId, false))[0];
                     var $element = $(args.row[0].children[1]);
                     //Le agregamos a la columna "Estado Condición" el icono "circulo" con el color perteneciente al tipo de estado                    
                     $element.html("<span class='fa fa-circle icon-large' style='background-color: transparent; color:" + statu.Color + "; padding: 2px;'></span> " + statu.Name);
-
                 }
             });
         }
@@ -1584,7 +1572,7 @@ AssetAdmin = (function () {
                 gridLines: ej.Grid.GridLines.Both,
                 editSettings: { allowAdding: true, rowPosition: "bottom", allowEditing: true, allowEditOnDblClick: true, editMode: "normal", allowDeleting: true, showDeleteConfirmDialog: true, showConfirmDialog: false },
                 toolbarSettings: {
-                    showToolbar: true, toolbarItems: ["add", "update", "cancel", "delete"],
+                    showToolbar: true, toolbarItems: ["add", "edit", "delete", "update", "cancel"]
                 },
                 pageSettings: { pageSize: 10 },
                 columns: [
@@ -1592,16 +1580,18 @@ AssetAdmin = (function () {
                     { field: "UserId", headerText: 'Usuario', textAlign: "center", width: "20%", editType: ej.Grid.EditingType.Dropdown, dataSource: _usersCompanie, foreignKeyField: "Id", foreignKeyValue: "UserName", },
                     { field: "StatusId", headerText: 'StatusId', textAlign: "center", width: "5%", visible: false },
                     { field: "Email", headerText: "Correo", width: "35%", textAlign: "center", allowEditing: false },
-                    { field: "SendMail", headerText: 'Enviar Correo', width: "15%", textAlign: "center", editType: "booleanedit" },
+                    { field: "SendMail", headerText: 'Enviar Correo', width: "15%", textAlign: "center", editType: "booleanedit", defaultValue: true, }// editParams: { checked: true } },
                 ],
                 showStackedHeader: true,
                 stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Notificaciones", column: "Index,UserId,StatusId,Email,SendMail" }] }],
                 actionComplete: function (args) {
                     if (args.requestType == "add") {
                         // Elimina el estilo del checkbox de la columna "Enviar Correo" para que se pueda ver al momento de agregar o editar una notificacion
-                        $("#gridNotifyListSendMail").removeAttr("style");
+                        //$("#gridNotifyListSendMail").removeAttr("style");
                         // Pone por defecto en true el checkbox de la columna "Enviar Correo" al agregar una notificación nueva
-                        $("#gridNotifyListSendMail").prop("checked", true);
+                        // $("#gridNotifyListSendMail").prop("checked", true);
+                        //$("#gridNotifyListSendMail").ejCheckBox({ checked: true }); // sln temporal
+
                         // Desahibilitamos los usuarios (dropdownlist) de la columna "Usuarios" que ya existen.
                         var items = $('#gridNotifyListUserId').ejDropDownList("getListData");
                         for (var u = 0; u < args.model.dataSource.length; u++) {
@@ -1644,7 +1634,6 @@ AssetAdmin = (function () {
                         _selectedNotity = null;
                     }
                     else if (args.requestType == "beginedit") {
-                        $("#gridNotifyListSendMail").removeAttr("style");
                         if (args.model.dataSource.length == _usersCompanie.length)
                             $("#gridNotifyListUserId").ejDropDownList("disable");
                         else {
@@ -1674,6 +1663,22 @@ AssetAdmin = (function () {
                     // Notificación seleccionada
                     _selectedNotity = args.data;
                 },
+                actionBegin: function (args) {
+                    if (args.requestType == "save") {
+                        if (args.data.UserId == null) {
+                            args.cancel = true;
+                            popUp("error", "Seleccione un usuario!");
+                        } else {
+                            // Se debe setear esta propiedad de esta manera debido a un problema con el value del checkbox donde su valor queda "on"
+                            args.data.SendMail = $("#gridNotifyListSendMail").is(":checked");
+                        }
+                    }
+                },
+                //queryCellInfo: function (args) {
+                //    if (args.column.field == "SendMail" && !$(args.cell).find("input").hasClass("e-checkbox")) {
+                //        $(args.cell).find("input").ejCheckBox({ checked: true });//render the ejCheckbox                        
+                //    }
+                //},
             });
             _isCreatedGridNotifyList = true;
         };
@@ -1956,7 +1961,7 @@ AssetAdmin = (function () {
             isPrincipal: Indica si fue seleccionado un activo principal o subActivo
             locationNodeId: Aplica para una ubicación seleccionada en el arbol, si no lo es, su valor es null
         */
-        _createSummariesView = function (title, asset, assets, isPrincipal, locationNodeId) {
+        _createSummariesView = function (title, asset, assets, isPrincipal, locationNodeId, isAdmin) {
             $("#formSummariesView").ejDialog({
                 title: title,
                 showOnInit: false,
@@ -1999,10 +2004,15 @@ AssetAdmin = (function () {
                     });
                 },
                 beforeOpen: function (args) {
+                    if (!isAdmin) {
+                        $("#btnCancelSummaryView").addClass("hidden");
+                        $("#btnSaveSummaryView").addClass("hidden");
+                    }
+
                     if (isPrincipal) {
                         // Si existen varios subActivos, buscamos por cada uno de ellos sus puntos de medición y creamos los grid's por sensorType
                         for (var s = 0; s < assets.length; s++) {
-                            createGridPointsDynamically(assets[s]);
+                            createGridPointsDynamically(assets[s], isAdmin);
                         }
 
                         // Agregamos el nuevo elemento "div" que seria donde se mapearia el grid de activos
@@ -2011,27 +2021,42 @@ AssetAdmin = (function () {
                         // Si este objeto es null, debemos agregarle la propiedad "Enabled" para que el grid de activos pinte de manera correcta el chechbox en su respectiva columna "Habilitado"
                         if (asset.RpmEventConfig == null)
                             asset.RpmEventConfig = { Enabled: false, };
-                        else {
-                            // Creamos la propiedad "AngularReferenceName" para poder mostrar en la columna "Marca de paso" su nombre
-                            asset.RpmEventConfig.AngularReferenceName = "";
-                            if (asset.RpmEventConfig.AngularReferenceId) {
-                                // Buscamos por medio de su Id el nombre de la marca de paso para setearsela a la propiedad "AngularReferenceName"
-                                var point = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("Id", "equal", asset.RpmEventConfig.AngularReferenceId, false));
-                                if (point.length > 0)
-                                    asset.RpmEventConfig.AngularReferenceName = point[0].Name;
-                            }
-                        }
 
                         // Creamos el grid de activos que solo tendra un registro y grid's de puntos de medición asociados al activo
-                        createGridAsset([asset], asset.Id, "AssetId");
-                    } else {
-                        if (locationNodeId != null) // Es una ubicación ya que el parametro "locationNodeId" llega con un valor
-                            createGridAsset(assets, locationNodeId, "Id");
-                        else // Es un subActivo y unicamente creará los grid's de puntos de medición
-                            createGridPointsDynamically(asset);
+                        createGridAsset([asset], asset.Id, "AssetId", isAdmin);
+                    }
+                    else {
+                        if (locationNodeId != null) { // Es una ubicación ya que el parametro "locationNodeId" llega con un valor
+                            // Variable global (_Layout.cshtml)
+
+                            // Recorremos todos los activos que descienden de la ubicación seleccionada para cargar el mainCache.loadedMeasurementPoints, ya que puede que no hayan sido cargados anteriormente.
+                            for (var a = 0; a < assets.length; a++) {
+                                $("#treeView").ejTreeView("selectNode", $("#" + assets[a].NodeId));
+                            }
+                            $("#treeView").ejTreeView("selectNode", $("#" + locationNodeId));
+
+                            var interval = setInterval(function () {
+                                if (_loadedListbox == assets.length) {
+                                    stopInterval(interval);
+                                    _loadedListbox = 0;
+                                    createGridAsset(assets, locationNodeId, "Id", isAdmin);
+
+                                    var _height = $("#divAssets").height() + $("#divPoints").height() + 120;
+                                    if (_height > _heightWindow)
+                                        _height = _heightWindow - 10;
+                                    $('#formSummariesView').data("ejDialog").option({ height: _height + "px" });
+                                }
+                            }, 2000);
+
+                        } else // Es un subActivo y unicamente creará los grid's de puntos de medición
+                            createGridPointsDynamically(asset, isAdmin);
                     }
                 },//Fin beforeOpen
                 close: function (args) {
+                    // Necesario desasociar el evento de los botones Aceptar y Cancelar
+                    $("#btnCancelSummaryView").off("click");
+                    $("#btnSaveSummaryView").off("click");
+                    _loadedListbox = 0;
                     // Destruimos cada uno de los grid's existentes de puntos de medición y su elemento "fieldset" respectivo que lo contiene
                     $("#formSummariesView > .container-fluid > #divPoints").children('div').each(function () {
                         // Recorre cada fieldset para encontrar cada grid y asi destruirlo
@@ -2059,7 +2084,7 @@ AssetAdmin = (function () {
         }
 
         // Crea un grid que lista todos los puntos de medición pertenecientes a un tipo de sensor a partir de un activo seleccionado en el árbol
-        function createGridPointsBySensorType(points, id, sensorCode, sensorName) {
+        function createGridPointsBySensorType(points, id, sensorCode, sensorName, _edit) {
             $("#grid" + id).ejGrid({
                 dataSource: points,
                 locale: "es-ES",
@@ -2069,38 +2094,42 @@ AssetAdmin = (function () {
                 //allowScrolling: true,
                 //scrollSettings: { height: "500px", },
                 gridLines: ej.Grid.GridLines.Both,
-                //editSettings: { allowAdding: true, rowPosition: "bottom", allowEditing: true, allowEditOnDblClick: true, editMode: "normal", allowDeleting: true, showDeleteConfirmDialog: true, showConfirmDialog: false },
+                editSettings: { allowEditing: _edit, allowEditOnDblClick: _edit, editMode: "normal", },
+                //editSettings: { allowEditing: _edit, editMode: "batch", },
                 //toolbarSettings: {
-                //    showToolbar: true, toolbarItems: ["add", "update", "cancel", "delete"],
+                //    showToolbar: true,
+                //    toolbarItems: [ "edit", "update", "cancel" ],
                 //},
                 pageSettings: { pageSize: 10 },
                 columns: [
                     { field: "Id", headerText: 'MdVariableId', textAlign: "center", width: "5%", isPrimaryKey: true, visible: false },
                     { field: "Name", headerText: 'Nombre', textAlign: "center", width: "15%", },
                     { field: "Orientation", headerText: 'Orientación', textAlign: "center", width: "8%", dataSource: _orientation, foreignKeyField: "Code", foreignKeyValue: "Name", },
-                    { field: "SensorAngle", headerText: "Ángulo", width: "5%", textAlign: "center", },
-                    { field: "Units", headerText: 'Unidades', width: "5%", textAlign: "center", },
+                    { field: "SensorAngle", headerText: "Ángulo", width: "5%", textAlign: "center", editType: "numericedit", editParams: { decimalPlaces: 1 } },
+                    { field: "Units", headerText: 'Unidades', width: "5%", textAlign: "center", editType: "dropdownedit", foreignKeyField: "Code", foreignKeyValue: "Name", },
 
-                    { field: "MagneticFlowParams.PolesCount", headerText: '# Polos', textAlign: "center", width: "5%", visible: false },
-                    { field: "MagneticFlowParams.Pole1Angle", headerText: 'Ángulo Polo 1', textAlign: "center", width: "8%", visible: false },
-                    { field: "MagneticFlowParams.PolarGraphRange", headerText: "Rango Gráfica Polar", width: "8%", textAlign: "center", visible: false },
-                    { field: "CurrentParams.Imax", headerText: 'Imax', width: "5%", textAlign: "center", visible: false },
-                    { field: "CurrentParams.Imin", headerText: 'Imin', textAlign: "center", width: "5%", visible: false },
-                    { field: "VoltageParams.Vmax", headerText: 'Vmax', textAlign: "center", width: "5%", visible: false },
-                    { field: "VoltageParams.Vmin", headerText: "Vmin", width: "5%", textAlign: "center", visible: false },
-                    { field: "Xmax", headerText: 'Xmax', width: "5%", textAlign: "center", visible: false },
-                    { field: "Xmin", headerText: 'Xmin', textAlign: "center", width: "5%", visible: false },
+                    { field: "MagneticFlowParams.PolesCount", headerText: '# Polos', textAlign: "center", width: "5%", visible: false, editType: "numericedit" },
+                    { field: "MagneticFlowParams.Pole1Angle", headerText: 'Ángulo Polo 1', textAlign: "center", width: "8%", visible: false, editType: "numericedit", editParams: { decimalPlaces: 1 } },
+                    { field: "MagneticFlowParams.PolarGraphRange", headerText: "Rango Gráfica Polar", width: "8%", textAlign: "center", visible: false, editType: "numericedit", editParams: { decimalPlaces: 1 } },
+                    { field: "CurrentParams.Imax", headerText: 'Imax', width: "5%", textAlign: "center", visible: false, editType: "numericedit", editParams: { decimalPlaces: 2 } },
+                    { field: "CurrentParams.Imin", headerText: 'Imin', textAlign: "center", width: "5%", visible: false, editType: "numericedit", editParams: { decimalPlaces: 2 } },
+                    { field: "VoltageParams.Vmax", headerText: 'Vmax', textAlign: "center", width: "5%", visible: false, editType: "numericedit", editParams: { decimalPlaces: 2 } },
+                    { field: "VoltageParams.Vmin", headerText: "Vmin", width: "5%", textAlign: "center", visible: false, editType: "numericedit", editParams: { decimalPlaces: 2 } },
+                    { field: "Xmax", headerText: 'Xmax', width: "5%", textAlign: "center", visible: false, editType: "numericedit", editParams: { decimalPlaces: 2 } },
+                    { field: "Xmin", headerText: 'Xmin', textAlign: "center", width: "5%", visible: false, editType: "numericedit", editParams: { decimalPlaces: 2 } },
                     { field: "RtdParams.MaterialType", headerText: 'Material', textAlign: "center", width: "8%", visible: false, dataSource: _materials, foreignKeyField: "Code", foreignKeyValue: "Name", },
-                    { field: "RtdParams.Ro", headerText: "Ro", width: "5%", textAlign: "center", visible: false },
-                    { field: "RtdParams.Coefficient", headerText: 'Coeficiente', width: "8%", textAlign: "center", visible: false },
-                    { field: "RtdParams.Iex", headerText: 'Iex', width: "5%", textAlign: "center", visible: false },
-                    { field: "Sensibility", headerText: 'Sensibilidad', width: "8%", textAlign: "center", visible: false },
+                    { field: "RtdParams.Ro", headerText: "Ro", width: "5%", textAlign: "center", visible: false, editType: "numericedit", editParams: { decimalPlaces: 2 } },
+                    { field: "RtdParams.Coefficient", headerText: 'Coeficiente', width: "8%", textAlign: "center", visible: false, dataSource: _coefficient, foreignKeyField: "Value", foreignKeyValue: "Name", },
+                    { field: "RtdParams.Iex", headerText: 'Iex', width: "5%", textAlign: "center", visible: false, editType: "numericedit", editParams: { decimalPlaces: 3 } },
+                    { field: "Sensibility", headerText: 'Sensibilidad', width: "8%", textAlign: "center", visible: false, editType: "numericedit", editParams: { decimalPlaces: 5 } },
+                    { field: "SensorTypeCode", headerText: 'Sensor', width: "1%", textAlign: "center", visible: false, },
+                    { field: "InitialAxialPosition", headerText: 'Posición cero (V)', width: "8%", textAlign: "center", visible: false, editType: "numericedit", editParams: { decimalPlaces: 2 } },
                 ],
                 showStackedHeader: true,
                 //stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: sensorName, column: "Id,Name,Orientation,SensorAngle,Units" }] }],
                 stackedHeaderRows: [{
                     stackedHeaderColumns: [
-                        { headerText: sensorName, column: "Id,Name,Orientation,SensorAngle,Units,Sensibility" },
+                        { headerText: sensorName, column: "Id,Name,Orientation,SensorAngle,Units,Sensibility,SensorTypeCode,InitialAxialPosition" },
                         { headerText: " ", column: "RtdParams.MaterialType,RtdParams.Ro,RtdParams.Coefficient,RtdParams.Iex" },
                         { headerText: " ", column: "MagneticFlowParams.PolesCount,MagneticFlowParams.Pole1Angle,MagneticFlowParams.PolarGraphRange,MagneticFlowParams.Imax,MagneticFlowParams.Imin,MagneticFlowParams.Xmax,MagneticFlowParams.Xmin" },
                         { headerText: " ", column: "CurrentParams.Imax,CurrentParams.Imin,CurrentParams.Xmax,CurrentParams.Xmin" },
@@ -2109,8 +2138,10 @@ AssetAdmin = (function () {
                 }],
                 // Antes de cargar el grid se valida a que sensorType pertencen los puntos para mostrar sus respectivas columnas
                 load: function (args) {
-
-                    if (sensorCode == 5) { // RTD
+                    if (sensorCode == 4) { // KPH ó RA
+                        args.model.columns[4].visible = false; // Unit
+                    }
+                    else if (sensorCode == 5) { // RTD
                         args.model.columns[14].visible = true; //MaterialType
                         args.model.columns[15].visible = true; //Ro
                         args.model.columns[16].visible = true; //Coefficient
@@ -2136,6 +2167,9 @@ AssetAdmin = (function () {
                         args.model.columns[13].field = "CurrentParams.Xmin";
                         args.model.columns[13].visible = true; //Xmin
                     }
+                    else if (sensorCode == 9) { // Desplazamiento axial
+                        args.model.columns[20].visible = true; // InitialAxialPosition
+                    }
                     else if (sensorCode == 10) { // Flujo magnético
                         args.model.columns[5].visible = true; //PolesCount
                         args.model.columns[6].visible = true; //Pole1Angle
@@ -2153,6 +2187,10 @@ AssetAdmin = (function () {
                         args.model.columns[13].field = "MagneticFlowParams.Xmin";
                         args.model.columns[13].visible = true; //Xmin
                     }
+                    else if (sensorCode == 11) { // RDS
+                        args.model.columns[3].visible = false; // SensorAngle
+                        args.model.columns[4].visible = false; // Unit
+                    }
                     else {
                         args.model.columns[18].visible = true; //Sensibility
                     }
@@ -2160,42 +2198,218 @@ AssetAdmin = (function () {
                 dataBound: function (args) {
                     // Recorremos los puntos de medición antes de cargar los grid´s para crear dinámicamente las columnas "max y min" agrupadas por Status
                     var data = args.model.dataSource;
+                    var status = ej.DataManager(arrayObjectStatus).executeLocal(ej.Query().where("Severity", "greaterThan", 2, false));
                     for (var d = 0; d < data.length; d++) {
-                        var bands = data[d].Bands;
-                        for (var b = 0; b < bands.length; b++) {
+                        if (data[d].SensorTypeCode != 4) {
+                            var bands = data[d].Bands;
+                            //if (bands.length == 0) {
+                            //data[d].Bands = [];
+                            for (var s = 0; s < status.length; s++) {
+                                var exist = ej.DataManager(bands).executeLocal(ej.Query().where("StatusId", "equal", status[s].Id, false));
+                                if (exist.length == 0) {
+                                    data[d].Bands.push({
+                                        UpperThreshold: { Value: null },
+                                        LowerThreshold: { Value: null },
+                                        StatusId: status[s].Id,
+                                        Description: status[s].Name
+                                    });
+                                }
+                            }
+                            //}
+                        }
+                        //else {
+                        //    data[d].Bands = [];
+                        //}
+                    }
 
-                            var status = ej.DataManager(arrayObjectStatus).executeLocal(ej.Query().where("Id", "equal", bands[b].StatusId, false))[0];
-                            //var headerText = ej.DataManager(args.model.stackedHeaderRows[0].stackedHeaderColumns).executeLocal(ej.Query().where("headerText", "equal", "Directa " + bands[b].Description, false));
+                    if (!this._id.includes("grid4")) {
+                        for (var b = 0; b < status.length; b++) {
+                            //var headerText = ej.DataManager(args.model.stackedHeaderRows[0].stackedHeaderColumns).executeLocal(ej.Query().where("headerText", "equal", "Directa " + status[b].Name, false));
+                            //if (headerText.length == 0) {
+                            var column1 = { field: "Bands." + b + ".UpperThreshold.Value", headerText: "Max", textAlign: "center", type: "string", visible: true, width: "5%", editType: "numericedit", editParams: { decimalPlaces: 2 }, };
+                            var column2 = { field: "Bands." + b + ".LowerThreshold.Value", headerText: "Min", textAlign: "center", type: "string", visible: true, width: "5%", editType: "numericedit", editParams: { decimalPlaces: 2 }, };
+                            var column3 = { field: "Bands." + b + ".StatusId", headerText: "Estado", textAlign: "center", type: "string", visible: false, width: "5%", defaultValue: status[b].Id };
+                            var column4 = { field: "Bands." + b + ".Description", headerText: "Descripción", textAlign: "center", type: "string", visible: false, width: "5%", defaultValue: status[b].Name };
+                            this.model.stackedHeaderRows[0].stackedHeaderColumns.push({ column: "Bands." + b + ".UpperThreshold.Value, Bands." + b + ".LowerThreshold.Value, Bands." + b + ".StatusId, Bands." + b + ".Description", headerText: "Directa " + status[b].Name });
 
-                            var headerText = ej.DataManager(args.model.stackedHeaderRows[0].stackedHeaderColumns).executeLocal(ej.Query().where("headerText", "equal", "Directa " + status.Name, false));
-                            if (headerText.length == 0) {
-                                var column1 = { field: "Bands." + b + ".UpperThreshold.Value", headerText: "Max", column: "", textAlign: "center", type: "string", visible: true, width: "5%" };
-                                var column2 = { field: "Bands." + b + ".LowerThreshold.Value", headerText: "Min", column: "", textAlign: "center", type: "string", visible: true, width: "5%" };
+                            this.model.columns.push(column1, column2, column3, column4);
+                            this._stackedHeaderRows_stackedHeaderColumns(this.model.stackedHeaderRows[0].stackedHeaderColumns);
+                            this.columns(this.model.columns);
+                            //}
+                        }
+                    }
+                },
+                actionComplete: function (args) {
+                    if (args.requestType == "beginedit") {
+                        // Se debe refrescar el ejDialog de la vista resumen para que el scroll se ajuste y no se pierdan los botones, debido a que la edición en un grid amplia el height de éste.
+                        $("#formSummariesView").ejDialog("refresh");
+                        var id = this._id;
 
-                                //this.model.stackedHeaderRows[0].stackedHeaderColumns.push({ column: "Bands." + b + ".UpperThreshold.Value, Bands." + b + ".LowerThreshold.Value", headerText: "Directa " + bands[b].Description });
-                                this.model.stackedHeaderRows[0].stackedHeaderColumns.push({ column: "Bands." + b + ".UpperThreshold.Value, Bands." + b + ".LowerThreshold.Value", headerText: "Directa " + status.Name });
+                        if (![4, 11].includes(args.rowData.SensorTypeCode)) { // Que el sensor no sea KPH o RDS
+                            var dsUnits = ej.DataManager(sensorTypes).executeLocal(ej.Query().where("Code", "equal", args.rowData.SensorTypeCode, false))[0].Units;
+                            var exist = ej.DataManager(dsUnits).executeLocal(ej.Query().search(args.rowData.Units, "Name")).length;
+                            if (exist == 0) {
+                                dsUnits.push({ Code: args.rowData.Units, Name: args.rowData.Units });
+                            }
 
-                                this.model.columns.push(column1, column2);
-                                this._stackedHeaderRows_stackedHeaderColumns(this.model.stackedHeaderRows[0].stackedHeaderColumns);
-                                this.columns(this.model.columns);
+                            $('#' + id + 'Units').ejDropDownList({
+                                dataSource: dsUnits,
+                                fields: { text: "Name", value: "Code" },
+                                value: args.rowData.Units,
+                                select: function (args) {
+                                    if (args.value == "0") {
+                                        createEjDialogOtherUnit("Unidad", id, args.model.dataSource);
+                                    }
+                                }
+                            });
+                        }
+
+                        if (args.rowData.SensorTypeCode == 5) { // RTD
+
+                            $('#' + id + 'RtdParamsMaterialType').ejDropDownList({
+                                select: function (args) {
+                                    $('#' + id + 'RtdParamsCoefficient').ejDropDownList({
+                                        dataSource: ej.DataManager(_coefficient).executeLocal(ej.Query().where("Code", "equal", args.value, false)),
+                                        fields: { text: "Name", value: "Value" },
+                                        selectedIndex: 0
+                                    });
+                                }
+                            });
+
+                            $('#' + id + 'RtdParamsCoefficient').ejDropDownList({
+                                dataSource: ej.DataManager(_coefficient).executeLocal(ej.Query().where("Code", "equal", args.rowData.RtdParams.MaterialType, false)),
+                                fields: { text: "Name", value: "Value" },
+                                value: args.rowData.RtdParams.Coefficient
+                            });
+                        }
+                    }
+                    else if (args.requestType == "save") {
+                        // Se debe setear en true, ya que antes pasa por el evento actionBegin que impide el guardado de la fila si todo no está validado
+                        _validatedFieldsSV = true;
+                    }
+                },
+                actionBegin: function (args) {
+                    if (args.requestType == "save") {
+                        var d = args.data;
+                        if ([d.Name, d.Orientation, d.SensorAngle].includes(null)) {
+                            _validatedFieldsSV = false;
+                            args.cancel = true;
+                        }
+
+                        if ([1, 2, 3, 8, 9].includes(d.SensorTypeCode)) { // PRX, VEL, ACC, Personalizado ó Desplazamiento axial
+                            if (d.Sensibility == null) {
+                                _validatedFieldsSV = false;
+                                args.cancel = true;
+                            }
+                        }
+
+                        if (d.SensorTypeCode == 5) { // RTD
+                            if ([d.RtdParams.Ro, d.RtdParams.Iex].includes(null) || d.RtdParams.Coefficient == 0) {
+                                _validatedFieldsSV = false;
+                                args.cancel = true;
+                            }
+                        }
+                        else if (d.SensorTypeCode == 6) { // Voltage
+                            if ([d.VoltageParams.Vmax, d.VoltageParams.Vmin, d.VoltageParams.Xmax, d.VoltageParams.Xmin].includes(null)) {
+                                _validatedFieldsSV = false;
+                                args.cancel = true;
+                            }
+                        }
+                        else if (d.SensorTypeCode == 7) { // Corriente
+                            if ([d.CurrentParams.Vmax, d.CurrentParams.Vmin, d.CurrentParams.Xmax, d.CurrentParams.Xmin].includes(null)) {
+                                _validatedFieldsSV = false;
+                                args.cancel = true;
+                            }
+                        }
+                        else if (d.SensorTypeCode == 9) { // Desplazamiento axial
+                            if (d.InitialAxialPosition == null) {
+                                _validatedFieldsSV = false;
+                                args.cancel = true;
+                            }
+                        }
+                        else if (d.SensorTypeCode == 10) { // Flujo Magnéctico
+                            var mf = d.MagneticFlowParams;
+                            if ([mf.Vmax, mf.Vmin, mf.Xmax, mf.Xmin, mf.PolesCount, mf.Pole1Angle, mf.PolarGraphRange].includes(null)) {
+                                _validatedFieldsSV = false;
+                                args.cancel = true;
                             }
                         }
                     }
                 },
+                //cellEdit: function (args) {
+                //    this;
+                //    var id = this._id;
+
+                //    if (![4, 11].includes(args.rowData.SensorTypeCode)) { // Que el sensor no sea KPH o RDS
+                //        var dsUnits = ej.DataManager(sensorTypes).executeLocal(ej.Query().where("Code", "equal", args.rowData.SensorTypeCode, false))[0].Units;
+                //        var exist = ej.DataManager(dsUnits).executeLocal(ej.Query().search(args.rowData.Units, "Name")).length;
+                //        if (exist == 0) {
+                //            dsUnits.push({ Code: args.rowData.Units, Name: args.rowData.Units });
+                //        }
+
+                //        $('#' + id + 'Units').ejDropDownList({
+                //            dataSource: dsUnits,
+                //            fields: { text: "Name", value: "Code" },
+                //            value: args.rowData.Units,
+                //            select: function (args) {
+                //                if (args.value == "0") {
+                //                    createEjDialogOtherUnit("Unidad", id, args.model.dataSource);
+                //                }
+                //            }
+                //        });
+                //    }
+
+                //    if (args.rowData.SensorTypeCode == 5) { // RTD
+
+                //        $('#' + id + 'RtdParamsMaterialType').ejDropDownList({
+                //            select: function (args) {
+                //                $('#' + id + 'RtdParamsCoefficient').ejDropDownList({
+                //                    dataSource: ej.DataManager(_coefficient).executeLocal(ej.Query().where("Code", "equal", args.value, false)),
+                //                    fields: { text: "Name", value: "Value" },
+                //                    selectedIndex: 0
+                //                });
+                //            }
+                //        });
+
+                //        $('#' + id + 'RtdParamsCoefficient').ejDropDownList({
+                //            dataSource: ej.DataManager(_coefficient).executeLocal(ej.Query().where("Code", "equal", args.rowData.RtdParams.MaterialType, false)),
+                //            fields: { text: "Name", value: "Value" },
+                //            value: args.rowData.RtdParams.Coefficient
+                //        });
+                //    }
+                //},
+                //cellSave: function (args) {
+                //    this;
+                //},
+                //recordClick: function (args) {
+                //    this;
+                //}
+                //,
+                //queryCellInfo: function (args) {
+                //    this;
+                //},
+                //mergeCellInfo: function (args) {
+                //    this;
+                //},
             });
         };
 
         /* Crea un grid que lista uno o varios activos principales dependiendo la selección en el árbol (Activo o ubicación).
         Parametro "property" es usado para setear el valor del elemento "field" en la 1er columna, ya que si consultamos los activos desde base de datos a apartir de una ubicación 
         seleccionada su propiedad es "Id" pero si es un activo seleccionado se consulta en el mainCache que seria "AssetId"  */
-        function createGridAsset(assets, id, property) {
+        function createGridAsset(assets, id, property, _edit) {
+            // Creamos una copia de "assets" para no afectar los datos originales
+            var dsAssets = $.extend(true, [], assets);
+
             $("#grid" + id).ejGrid({
-                dataSource: assets,
+                dataSource: dsAssets,
                 locale: "es-ES",
                 isResponsive: true,
                 enableResponsiveRow: true,
                 allowResizing: true,
                 gridLines: ej.Grid.GridLines.Both,
+                editSettings: { allowEditing: _edit, allowEditOnDblClick: _edit, editMode: "normal", },
+                //editSettings: { allowEditing: _edit, editMode: "batch", },
                 //allowScrolling: true,
                 //scrollSettings: { height: "500px", },
                 //editSettings: { allowAdding: true, rowPosition: "bottom", allowEditing: true, allowEditOnDblClick: true, editMode: "normal", allowDeleting: true, showDeleteConfirmDialog: true, showConfirmDialog: false },
@@ -2208,23 +2422,39 @@ AssetAdmin = (function () {
                 columns: [
                     { field: property, headerText: 'Id', textAlign: "center", width: "2%", isPrimaryKey: true, visible: false },
                     { field: "Name", headerText: 'Activo', textAlign: "center", width: "7%", },
-                    { field: "NormalInterval", headerText: 'Periodicidad histórica (min)', textAlign: "center", width: "7%", },
+                    { field: "NormalInterval", headerText: 'Periodicidad histórica (min)', textAlign: "center", width: "7%", editType: "numericedit", editParams: { decimalPlaces: 3 } },
 
-                    { field: "RpmEventConfig.Enabled", headerText: 'Habilitado', type: "boolean", textAlign: "center", width: "5%", visible: true },
-                    { field: "RpmEventConfig.AngularReferenceName", headerText: 'Marca de paso', textAlign: "center", width: "5%", visible: true, },
-                    { field: "RpmEventConfig.DeltaRpm", headerText: "&Delta; RPM", width: "4%", textAlign: "center", visible: true },
-                    { field: "RpmEventConfig.LowRpm", headerText: 'RPM inferior', width: "5%", textAlign: "center", visible: true },
-                    { field: "RpmEventConfig.UpperRpm", headerText: 'RPM superior', textAlign: "center", width: "5%", visible: true },
-                    { field: "RpmEventConfig.MinutesAfter", headerText: 'Tiempo después (min)', textAlign: "center", width: "5%", visible: true },
-                    { field: "RpmEventConfig.MinutesBefore", headerText: "Tiempo antes (min)", width: "5%", textAlign: "center", visible: true },
+                    { field: "RpmEventConfig.Enabled", headerText: 'Habilitado', type: "boolean", textAlign: "center", width: "5%", visible: true, editType: "booleanedit", defaultValue: true, },
+                    //{ field: "RpmEventConfig.AngularReferenceName", headerText: 'Marca de paso', textAlign: "center", width: "5%", visible: true, editType: "dropdownedit", foreignKeyField: "Id", foreignKeyValue: "Name", },
+                    { field: "RpmEventConfig.AngularReferenceId", headerText: 'Marca de paso', textAlign: "center", width: "5%", visible: true, dataSource: _listRefAngular, foreignKeyField: "Id", foreignKeyValue: "Name", },
+                    { field: "RpmEventConfig.DeltaRpm", headerText: "&Delta; RPM", width: "4%", textAlign: "center", visible: true, editType: "numericedit", },
+                    { field: "RpmEventConfig.LowRpm", headerText: 'RPM inferior', width: "5%", textAlign: "center", visible: true, editType: "numericedit", },
+                    { field: "RpmEventConfig.UpperRpm", headerText: 'RPM superior', textAlign: "center", width: "5%", visible: true, editType: "numericedit", },
+                    { field: "RpmEventConfig.MinutesAfter", headerText: 'Tiempo después (min)', textAlign: "center", width: "5%", visible: true, editType: "numericedit", editParams: { decimalPlaces: 2 } },
+                    { field: "RpmEventConfig.MinutesBefore", headerText: "Tiempo antes (min)", width: "5%", textAlign: "center", visible: true, editType: "numericedit", editParams: { decimalPlaces: 2 } },
                 ],
                 showStackedHeader: true,
                 stackedHeaderRows: [{
                     stackedHeaderColumns: [
                         { headerText: "", column: property + ",Name,NormalInterval" },
-                        { headerText: "Evento de velocidad", column: "RpmEventConfig.Enabled, RpmEventConfig.AngularReferenceName, RpmEventConfig.DeltaRpm, RpmEventConfig.LowRpm, RpmEventConfig.UpperRpm, RpmEventConfig.MinutesAfter, RpmEventConfig.MinutesBefore" },
+                        { headerText: "Evento de velocidad", column: "RpmEventConfig.Enabled, RpmEventConfig.AngularReferenceId, RpmEventConfig.DeltaRpm, RpmEventConfig.LowRpm, RpmEventConfig.UpperRpm, RpmEventConfig.MinutesAfter, RpmEventConfig.MinutesBefore" },
                     ]
                 }],
+                load: function (args) {
+                    var ds = args.model.dataSource;
+                    for (var i = 0; i < ds.length; i++) {
+                        //if (!ds[i].hasOwnProperty('AssetId')) {
+                        //    args;
+                        //}
+                        if (ds[i].AssetId === undefined) {
+                            ds[i].AssetId = ds[i].Id;
+                            ds[i].Id = ds[i].NodeId;
+                        }
+
+                        GetListReferenceAngular(ds[i]);
+                    }
+                    args.model.columns[4].dataSource = _listRefAngular;
+                },
                 dataBound: function (args) {
                     // Recorremos los activos antes de cargar el grid para crear dinámicamente las columnas de cada propiedad del objeto "ConditionStatusEventsConfig"
                     var data = args.model.dataSource;
@@ -2240,10 +2470,10 @@ AssetAdmin = (function () {
                                 var headerText = ej.DataManager(args.model.stackedHeaderRows[0].stackedHeaderColumns).executeLocal(ej.Query().where("headerText", "equal", "Evento " + status.Name, false));
 
                                 if (headerText.length == 0) {
-                                    var column1 = { field: "ConditionStatusEventsConfig." + c + ".Enabled", headerText: "Habilitado", column: "", textAlign: "center", type: "boolean", visible: true, width: "5%" };
-                                    var column2 = { field: "ConditionStatusEventsConfig." + c + ".Interval", headerText: "Intervalo (min)", column: "", textAlign: "center", type: "string", visible: true, width: "5%" };
-                                    var column3 = { field: "ConditionStatusEventsConfig." + c + ".MinutesBefore", headerText: "Tiempo antes (min)", column: "", textAlign: "center", type: "string", visible: true, width: "5%" };
-                                    var column4 = { field: "ConditionStatusEventsConfig." + c + ".MinutesAfter", headerText: "Tiempo después (min)", column: "", textAlign: "center", type: "string", visible: true, width: "5%" };
+                                    var column1 = { field: "ConditionStatusEventsConfig." + c + ".Enabled", headerText: "Habilitado", column: "", textAlign: "center", type: "boolean", visible: true, width: "5%", editType: "booleanedit" };
+                                    var column2 = { field: "ConditionStatusEventsConfig." + c + ".Interval", headerText: "Intervalo (min)", column: "", textAlign: "center", type: "string", visible: true, width: "5%", editType: "numericedit", editParams: { decimalPlaces: 2 }, };
+                                    var column3 = { field: "ConditionStatusEventsConfig." + c + ".MinutesBefore", headerText: "Tiempo antes (min)", column: "", textAlign: "center", type: "string", visible: true, width: "5%", editType: "numericedit", editParams: { decimalPlaces: 2 }, };
+                                    var column4 = { field: "ConditionStatusEventsConfig." + c + ".MinutesAfter", headerText: "Tiempo después (min)", column: "", textAlign: "center", type: "string", visible: true, width: "5%", editType: "numericedit", editParams: { decimalPlaces: 2 }, };
 
                                     //args.model.stackedHeaderRows[0].stackedHeaderColumns[2].column += "ConditionStatusEventsConfig." + c + ".Enabled, ConditionStatusEventsConfig." + c + ".Interval, ConditionStatusEventsConfig." + c + ".MinutesBefore, ConditionStatusEventsConfig." + c + ".MinutesAfter,";
 
@@ -2258,15 +2488,67 @@ AssetAdmin = (function () {
                                 }
                             }
                         }
-                        else {
-
-                        }
                     }
                 },
+                actionComplete: function (args) {
+                    if (args.requestType == "beginedit") {
+                        var id = this._id; 
+
+                        //$('#' + id + 'RpmEventConfigAngularReferenceId').ejDropDownList({
+                        //    //dataSource: ej.DataManager(_listRefAngular).executeLocal(ej.Query().search(args.rowData.AssetId, "ParentId")),
+                        //    dataSource: ej.DataManager(_listRefAngular).executeLocal(ej.Query().where("ParentId", "equal", args.rowData.AssetId, false)),
+                        //    fields: { text: "Name", value: "Id" },
+                        //    //value: (args.rowData.RpmEventConfig === undefined) ? null : args.rowData.RpmEventConfig.AngularReferenceId,
+                        //});
+                        var dsKph = $('#' + id + 'RpmEventConfigAngularReferenceId').ejDropDownList("getListData");
+                        for (var i = 0; i < dsKph.length; i++) {
+                            if (dsKph[i].value == "0")
+                                continue;
+
+                            var point = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("Id", "equal", dsKph[i].value, false))[0];
+
+                            if (point.ParentId == args.rowData.AssetId)
+                                $('#' + id + 'RpmEventConfigAngularReferenceId').ejDropDownList("enableItemsByIndices", i);
+                            else
+                                $('#' + id + 'RpmEventConfigAngularReferenceId').ejDropDownList("disableItemsByIndices", i);
+                        }
+                    }
+                    else if (args.requestType == "save") {
+                        // Se debe setear en true, ya que antes pasa por el evento actionBegin que impide el guardado de la fila si todo no está validado
+                        _validatedFieldsSV = true;
+                    }
+                },
+                actionBegin: function (args) {
+                    if (args.requestType == "save") {
+                        var d = args.data;
+                        if ([d.Name, d.NormalInterval].includes(null)) {
+                            _validatedFieldsSV = false;
+                            args.cancel = true;
+                        }
+
+                        var rpm = d.RpmEventConfig;
+                        rpm.AngularReferenceId = (rpm.AngularReferenceId == "0") ? null : rpm.AngularReferenceId;
+
+                        if (rpm.Enabled && [rpm.AngularReferenceId, rpm.DeltaRpm, rpm.LowRpm, rpm.UpperRpm, rpm.MinutesAfter, rpm.MinutesAfter].includes(null)) {
+                            _validatedFieldsSV = false;
+                            args.cancel = true;
+                        }
+
+                        var condStatus = d.ConditionStatusEventsConfig;
+                        for (var c in condStatus) {
+                            if (condStatus.hasOwnProperty(c)) {
+                                if (condStatus[c].Enabled && [condStatus[c].Interval, condStatus[c].MinutesBefore, condStatus[c].MinutesAfter].includes(null)) {
+                                    _validatedFieldsSV = false;
+                                    args.cancel = true;
+                                }
+                            }
+                        }
+                    }
+                }
             });
         };
 
-        function createGridPointsDynamically(asset) {
+        function createGridPointsDynamically(asset, isAdmin) {
             // Puntos de medicion agrupados por su sensorType
             var pointsBySensorType = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("ParentId", "equal", asset.AssetId, false).group("SensorTypeCode"));
             // Id que se le asigna al Grid y que seria la combinación (grid + sensorTypeCode_parentId) para que sea único
@@ -2275,8 +2557,9 @@ AssetAdmin = (function () {
             // Recorre los grupos para crear cada uno de los grid's correspondientes a tipos de sensores
             for (var g = 0; g < pointsBySensorType.length; g++) {
                 var _sensorType = ej.DataManager(sensorTypes).executeLocal(ej.Query().where("Code", "equal", pointsBySensorType[g].key, false))[0];
+                var points = $.extend(true, [], pointsBySensorType[g].items);
+                //var points = pointsBySensorType[g].items;
 
-                var points = pointsBySensorType[g].items;
                 for (var p = 0; p < points.length; p++) {
                     id = _sensorType.Code + '_' + points[p].ParentId;
 
@@ -2285,6 +2568,7 @@ AssetAdmin = (function () {
                     for (var s = 0; s < subVariables.length; s++) {
                         // Buscamos unicamente la subVariable de Directa
                         if ((subVariables[s].IsDefaultValue == true && subVariables[s].FromIntegratedWaveform == false) || (subVariables[s].IsDefaultValue == true && subVariables[s].FromIntegratedWaveform == true)) {
+                            points[p].InitialAxialPosition = subVariables[s].InitialAxialPosition; // Sólo será utilizada para el sensor de Desplazamiento axial
                             var bands = subVariables[s].Bands;
                             if (bands != null) {
                                 for (var b = 0; b < bands.length; b++) {
@@ -2297,13 +2581,11 @@ AssetAdmin = (function () {
 
                 // Agregamos el nuevo elemento "div" que seria el contenedor de los puntos de medición (grid's por sensorType) asociados al activo
                 $('#formSummariesView > .container-fluid > #divPoints > div[id="' + asset.Id + '"] > fieldset').append('<div id="grid' + id + '"></div><p></p>');
-                createGridPointsBySensorType(points, id, _sensorType.Code, _sensorType.Name);
+                createGridPointsBySensorType(points, id, _sensorType.Code, _sensorType.Name, isAdmin);
             }
         }
 
-        /* Busca a partir de un activo si tiene nodos hermanos tipo activo, si éste no los tiene actualiza el HasChild de su padre activo
-
-        */
+        // Busca a partir de un activo si tiene nodos hermanos tipo activo, si éste no los tiene actualiza el HasChild de su padre activo
         function searchAssetHasChildOnTrue(parentId, assets, x) {
             var brothers = ej.DataManager(jsonTree).executeLocal(ej.Query().where(ej.Predicate("ParentId", "equal", parentId, true).and("EntityType", "equal", 2, true)));
 
@@ -2348,6 +2630,360 @@ AssetAdmin = (function () {
                 $("#txtMinutesAfter").parent().parent().addClass("validateField");
             else
                 $("#txtMinutesAfter").parent().parent().removeClass("validateField");
+        }
+
+        // Guarda todos los cambios hechos en la Vista resumen
+        $("#btnSaveSummaryView").click(function () {
+            var dsGrid = [];
+            // Recorremos cada uno de los Grid's para obtener su dataSource
+
+            $("#divPoints fieldset").children("div").each(function () {
+                // Guarda todos los cambios del grid independientemente si aun está en modo edición
+                $("#" + this.id).ejGrid("endEdit");
+                dsGrid.pushArray($("#" + this.id).ejGrid("model.dataSource"));
+            });
+
+            // Guarda todos los cambios del grid independientemente si aun está en modo edición
+            $('#divAssets > div').ejGrid("endEdit");
+
+            // DataSource de activo(s)
+            var dsAssets = $('#divAssets > div').ejGrid("model.dataSource");
+
+            if (dsAssets.length == 0)
+                dsAssets = [];
+
+            if (_validatedFieldsSV) {
+                for (var a = 0; a < dsAssets.length; a++) {
+
+                    var rpm = dsAssets[a].RpmEventConfig;
+                    if (rpm != null) {
+                        if ((rpm.DeltaRpm == null) && (rpm.LowRpm == null) && (rpm.UpperRpm == null) && (rpm.MinutesAfter == null) && (rpm.MinutesAfter == null)) {
+                            dsAssets[a].RpmEventConfig = null;
+                        } else {
+                            dsAssets[a].RpmEventConfig.MinutesAfter = rpm.MinutesAfter.toString().replace('.', ',');
+                            dsAssets[a].RpmEventConfig.MinutesBefore = rpm.MinutesAfter.toString().replace('.', ',');
+                        }
+                    }
+
+                    var condStatus = dsAssets[a].ConditionStatusEventsConfig;
+                    if (condStatus != null) {
+                        for (var c = 0; c < condStatus.length; c++) {
+                            if ((condStatus[c].Interval == null) && (condStatus[c].MinutesBefore == null) && (condStatus[c].MinutesAfter == null)) {
+                                ej.DataManager(condStatus).remove("StatusId", condStatus[c].StatusId);
+                                c--;
+                            } else {
+                                condStatus[c].Interval = condStatus[c].Interval.toString().replace('.', ',');
+                                condStatus[c].MinutesBefore = condStatus[c].MinutesBefore.toString().replace('.', ',');
+                                condStatus[c].MinutesAfter = condStatus[c].MinutesAfter.toString().replace('.', ',');
+                            }
+                        }
+
+                        if (condStatus.length == 0) {
+                            dsAssets[a].ConditionStatusEventsConfig = [];
+                        }
+                    }
+                }
+
+                for (var i = 0; i < dsGrid.length; i++) {
+                    var m, b;
+
+                    var bands = dsGrid[i].Bands;
+                    // Recorrre las bandas de la subVariable de directa para actualizarlas, excepto las que sean de un KPH
+                    if (dsGrid[i].SensorTypeCode != 4) {
+                        if (bands != null) {
+                            if (bands.length == 0)
+                                dsGrid[i].Bands = [];
+                            else {
+                                for (var x = 0; x < bands.length; x++) {
+
+                                    var lower = (bands[x].LowerThreshold == null) ? null : bands[x].LowerThreshold.Value;
+                                    var upper = (bands[x].UpperThreshold == null) ? null : bands[x].UpperThreshold.Value;
+                                    //var lower = bands[x].LowerThreshold.Value;
+
+                                    if ((lower == null) && (upper == null)) {
+                                        dsGrid[i].Bands.splice(x, 1);
+                                        x--;
+                                        continue;
+                                    }
+
+                                    if (lower != null)
+                                        bands[x].LowerThreshold.Value = lower.toString().replace('.', ',');
+
+                                    if (upper != null)
+                                        bands[x].UpperThreshold.Value = upper.toString().replace('.', ',');
+                                }
+
+                                var direct = ej.DataManager(dsGrid[i].SubVariables).executeLocal(ej.Query().where("IsDefaultValue", "equal", true, false));
+                                if (direct.length == 1) {
+                                    direct[0].Bands = dsGrid[i].Bands;
+
+                                    if (dsGrid[i].SensorTypeCode == 9) { // Desplazamiento axial
+                                        direct[0].InitialAxialPosition = dsGrid[i].InitialAxialPosition.toString().replace('.', ',');
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if ([1, 2, 3].includes(dsGrid[i].SensorTypeCode)) {
+                        m = ((1000 / dsGrid[i].Sensibility) * 1).toString().replace('.', ',');
+                        b = 0;
+                    }
+
+                    dsGrid[i].SensorAngle = dsGrid[i].SensorAngle.toString().replace('.', ',');
+                    dsGrid[i].Sensibility = dsGrid[i].Sensibility.toString().replace('.', ',');
+
+                    if (dsGrid[i].SensorTypeCode == 5) { //RTD
+                        var coefficient = dsGrid[i].RtdParams.Coefficient,
+                            ro = dsGrid[i].RtdParams.Ro,
+                            iEx = dsGrid[i].RtdParams.Iex;
+
+                        m = 1000 / (coefficient * ro * iEx);
+                        b = -1 / coefficient;
+
+                        dsGrid[i].RtdParams = {
+                            MaterialType: dsGrid[i].RtdParams.MaterialType,
+                            Coefficient: coefficient.toString().replace('.', ','),
+                            Ro: ro.toString().replace('.', ','),
+                            Iex: iEx.toString().replace('.', ','),
+                        };
+                    } else
+                        dsGrid[i].RtdParams = null;
+
+                    if (dsGrid[i].SensorTypeCode == 6) { //Voltage
+                        var vMax = dsGrid[i].VoltageParams.Vmax,
+                            vMin = dsGrid[i].VoltageParams.Vmin,
+                            xMax = dsGrid[i].VoltageParams.Xmax,
+                            xMin = dsGrid[i].VoltageParams.Xmin;
+
+                        m = (xMax - xMin) / (vMax - vMin);
+                        b = xMax - ((xMax - xMin) / (vMax - vMin) * vMax);
+
+                        dsGrid[i].VoltageParams = {
+                            Vmax: vMax.toString().replace('.', ','),
+                            Vmin: vMin.toString().replace('.', ','),
+                            Xmax: xMax.toString().replace('.', ','),
+                            Xmin: xMin.toString().replace('.', ',')
+                        };
+                    } else
+                        dsGrid[i].VoltageParams = null;
+
+                    if (dsGrid[i].SensorTypeCode == 7) { //Corriente
+                        var iMax = dsGrid[i].CurrentParams.Imax,
+                            iMin = dsGrid[i].CurrentParams.Imin,
+                            xMax = dsGrid[i].CurrentParams.Xmax,
+                            xMin = dsGrid[i].CurrentParams.Xmin;
+
+                        m = (xMax - xMin) / (1 * (iMax - iMin));
+                        b = xMax - ((xMax - xMin) / (iMax - iMin) * iMax);
+
+                        dsGrid[i].CurrentParams = {
+                            Imax: iMax.toString().replace('.', ','),
+                            Imin: iMin.toString().replace('.', ','),
+                            Xmax: xMax.toString().replace('.', ','),
+                            Xmin: xMin.toString().replace('.', ',')
+                        };
+                    } else
+                        dsGrid[i].CurrentParams = null;
+
+                    if (dsGrid[i].SensorTypeCode == 10) { //Flujo magnético
+                        var iMax = dsGrid[i].MagneticFlowParams.Imax,
+                            iMin = dsGrid[i].MagneticFlowParams.Imin,
+                            xMax = dsGrid[i].MagneticFlowParams.Xmax,
+                            xMin = dsGrid[i].MagneticFlowParams.Xmin;
+
+                        m = (xMax - xMin) / (1 * (iMax - iMin));
+                        b = xMax - ((xMax - xMin) / (iMax - iMin) * iMax);
+
+                        dsGrid[i].MagneticFlowParams = {
+                            PolesCount: dsGrid[i].MagneticFlowParams.PolesCount,
+                            Pole1Angle: dsGrid[i].MagneticFlowParams.Pole1Angle.toString().replace('.', ','),
+                            PolarGraphRange: dsGrid[i].MagneticFlowParams.PolarGraphRange.toString().replace('.', ','),
+                            Imax: iMax.toString().replace('.', ','),
+                            Imin: iMin.toString().replace('.', ','),
+                            Xmax: xMax.toString().replace('.', ','),
+                            Xmin: xMin.toString().replace('.', ','),
+                        };
+                    } else
+                        dsGrid[i].MagneticFlowParams = null;
+
+                    if ([1, 2, 3, 5, 6, 7, 10].includes(dsGrid[i].SensorTypeCode)) {
+                        if (dsGrid[i].AiMeasureMethod == null) {
+                            dsGrid[i].AiMeasureMethod = {
+                                ParameterTypes: [],
+                                ParameterValues: [],
+                                M: m.toString().replace('.', ','),
+                                B: b.toString().replace('.', ',')
+                            };
+                        }
+                        else {
+                            dsGrid[i].AiMeasureMethod.M = m.toString().replace('.', ',');
+                            dsGrid[i].AiMeasureMethod.B = b.toString().replace('.', ',');
+                        }
+                    }
+                }
+
+                $.ajax({
+                    url: "/Home/UpdateSummaryView",
+                    //processData: false,
+                    //datatType: 'json',
+                    //data: { assets: dsAssets },
+                    method: "POST",
+                    data: { points: dsGrid, assets: dsAssets },
+                    success: function (result) {
+                        $("#formSummariesView").ejDialog("close");
+
+                        for (var i = 0; i < dsGrid.length; i++) {
+                            // Actualizamos el mainCache de activos con los cambios hechos recientemente
+                            //ej.DataManager(mainCache.loadedMeasurementPoints).update("Id", dsGrid[i], mainCache.loadedMeasurementPoints);
+                            var point = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("Id", "equal", dsGrid[i].Id, false))[0];
+                            point.Name = dsGrid[i].Name;
+                            point.Orientation = dsGrid[i].Orientation;
+                            point.SensorAngle = dsGrid[i].SensorAngle;
+                            point.Units = dsGrid[i].Units;
+                            point.Sensibility = dsGrid[i].Sensibility;
+
+                            if (point.SensorTypeCode == 5)
+                                point.RtdParams = dsGrid[i].RtdParams;
+                            else if (point.SensorTypeCode == 6)
+                                point.VoltageParams = dsGrid[i].VoltageParams;
+                            else if (point.SensorTypeCode == 7)
+                                point.CurrentParams = dsGrid[i].CurrentParams;
+                            else if (point.SensorTypeCode == 10)
+                                point.MagneticFlowParams = dsGrid[i].MagneticFlowParams;
+
+                            var direct = ej.DataManager(point.SubVariables).executeLocal(ej.Query().where("IsDefaultValue", "equal", true, false));
+                            if (direct.length == 1) {
+                                if (point.SensorTypeCode == 9)
+                                    direct[0].InitialAxialPosition = dsGrid[i].InitialAxialPosition;
+                            }
+                        }
+
+                        // Refrescamos el listbox de puntos si la vista resumen está a prtir de un activo de lo contrario se destruye por ser una ubicación
+                        var points = $("#measurementPoints").data("ejListBox");
+
+                        if (points !== undefined) {
+                            if (selectedTreeNode.EntityType == 1)
+                                points.destroy();
+                            else
+                                points.refresh();
+                        }
+
+                        // Recorremos los activos para actualizarlos en el mainCache de activos con los cambios hechos recientemente
+                        for (var a = 0; a < dsAssets.length; a++) {
+                            var asset = ej.DataManager(mainCache.loadedAssets).executeLocal(ej.Query().where("Id", "equal", dsAssets[a].Id, false))[0];
+                            asset.Name = dsAssets[a].Name;
+                            asset.NormalInterval = dsAssets[a].NormalInterval;
+                            asset.ConditionStatusEventsConfig = dsAssets[a].ConditionStatusEventsConfig;
+                            asset.RpmEventConfig = dsAssets[a].RpmEventConfig;
+                            // Seteamos el nombre del activo en el arbol (treeView)
+                            $("#" + dsAssets[a].Id).find('.fa-diamond').parent().html("<span class='fa fa-diamond' icon-large' style='background-color: transparent;color:''; padding: 2px;'></span> " + dsAssets[a].Name);
+                        }
+
+                        popUp("success", "Se actualizó correctamente la vista resumen!");
+                    },
+                    error: function (jqXHR, textStatus) {
+                        popUp("error", "Error al actualizar vista resumen!");
+                    }
+                });
+
+            } else {
+                popUp("error", "Existen campos vacios!");
+            }
+        });
+
+        // Cancela todos los cambios hechos en la Vista resumen
+        $("#btnCancelSummaryView").click(function () {
+            $("#formSummariesView").addClass("hidden");
+            $("#formSummariesView").ejDialog("close");
+            _validatedFieldsSV = true;
+
+            var points = $("#measurementPoints").data("ejListBox");
+
+            if (points !== undefined) {
+                if (selectedTreeNode.EntityType == 1)
+                    points.destroy();
+            }
+        });
+
+        function createEjDialogOtherUnit(title, id, dsUnits) {
+
+            $("#txtOtherUnit").ejMaskEdit({
+                width: "90%",
+                inputMode: ej.InputMode.Text,
+                //value: _asset != null ? _asset.Name : "",
+            });
+
+            $("#ejbAccept").ejButton({
+                size: "small",
+                type: "button",
+                imagePosition: "imageleft",
+                contentType: "textandimage",
+                showRoundedCorner: true,
+                prefixIcon: "e-icon e-checkmark",
+                click: function (args) {
+                    var unit = $("#txtOtherUnit").val().trim();
+                    if (unit !== "") {
+                        var exist = ej.DataManager(dsUnits).executeLocal(ej.Query().where("Name", "equal", unit, false)).length;
+                        if (exist > 0) {
+                            popUp("error", "Tipo de unidad existente!");
+                        }
+                        else {
+                            $('#' + id + 'Units').ejDropDownList("addItem", { text: unit, value: unit });
+                            $('#' + id + 'Units').ejDropDownList("selectItemByValue", unit);
+                            $("#ejdOtherUnit").addClass("hidden");
+                            $("#ejdOtherUnit").ejDialog("close");
+                        }
+                    } else {
+                        popUp("error", "Ingresa un tipo de unidad para el sensor!");
+                    }
+                },
+            });
+
+            $("#ejbCancel").ejButton({
+                size: "small",
+                type: "button",
+                imagePosition: "imageleft",
+                contentType: "textandimage",
+                showRoundedCorner: true,
+                prefixIcon: "e-icon e-cancel",
+                click: function (args) {
+                    $("#ejdOtherUnit").addClass("hidden");
+                    $("#ejdOtherUnit").ejDialog("close");
+                }
+            });
+
+            $("#ejdOtherUnit").ejDialog({
+                showOnInit: false,
+                isResponsive: true,
+                title: title,
+                allowDraggable: true,
+                enableAnimation: true,
+                width: "15%",
+                //maxWidth: "20%",
+                height: "20%",
+                //maxHeight: "25%",
+                enableResize: true,
+                showHeader: true,
+                enableModal: true,
+                showRoundedCorner: true,
+                animation: { show: { effect: "slide", duration: 500 }, hide: { effect: "fade", duration: 500 } },
+                close: function (args) {
+                    //$("#ejbCancel").off("click"); // Necesario desasociar el evento
+                    //$("#ejbAccept").off("click"); // Necesario desasociar el evento
+                    $("#ejdOtherUnit").addClass('hidden');
+                    $("#txtOtherUnit").ejMaskEdit("destroy");
+                    $("#ejbCancel").ejButton("destroy");
+                    $("#ejbAccept").ejButton("destroy");
+                },
+            });
+
+            $("#ejdOtherUnit").removeClass('hidden');
+            $("#ejdOtherUnit").ejDialog("open");
+        }
+
+        function stopInterval(_var) {
+            clearInterval(_var);
         }
     };
 

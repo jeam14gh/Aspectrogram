@@ -238,6 +238,7 @@
             var filter = builder.Eq(n => n.NodeId, asset.Id);
             var update = Builders<AssetExtension>.Update.Set(n => n.Name, asset.Name).
                 Set(n => n.NormalInterval, asset.NormalInterval).
+                Set(n => n.NominalVelocity, asset.NominalVelocity).
                 Set(n => n.RpmEventConfig, asset.RpmEventConfig).
                 Set(n => n.ConditionStatusEventsConfig, asset.ConditionStatusEventsConfig);
             collection.UpdateOne(filter, update);

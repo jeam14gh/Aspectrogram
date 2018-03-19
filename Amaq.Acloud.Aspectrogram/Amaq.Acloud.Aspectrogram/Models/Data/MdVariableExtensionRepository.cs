@@ -28,21 +28,11 @@
         /// <returns>Listado de MdVariableExtension</returns>
         public List<MdVariableExtension> GetByAssetId(string assetId)
         {
-            //var filter = builder.Eq(m => m.ParentId, assetId);
-            //var projection = Builders<MdVariableExtension>.Projection.Exclude(m => m.AiMeasureMethod);
-            //try
-            //{
-            //    return collection.Find(filter).Project<MdVariableExtension>(projection).ToListAsync().Result;
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine(ex.Message);
-            //    return null;
-            //}
             var filter = builder.Eq(m => m.ParentId, assetId);
             //var projection = Builders<MdVariableExtension>.Projection.Exclude(m => m.AiMeasureMethod);
             try
             {
+                //return collection.Find(filter).Project<MdVariableExtension>(projection).ToListAsync().Result;
                 return collection.Find(filter).ToListAsync().Result;
             }
             catch (Exception ex)

@@ -4,7 +4,7 @@
 }
 <div style="overflow-y:scroll;">
     <!--Inicio contenedor del detalle Asdaq-->
-    <div id="aspectrogramMainContent" class="container-fluid fullHeight">
+    <div id="aspectrogramMainContent" class="container-fluid fullHeight cf">
         <div class="row">
             <div id="GridAsdaq"></div>
             <div id="gridAconditioners"></div>
@@ -14,7 +14,7 @@
     <!--Fin del detalle-->
     <!--Dialog para configurar otro valor en Rango de frecuencia ó Número de líneas-->
     <div id="ejdOtherValue" class="hidden">
-        <div class="container-fluid">
+        <div class="container-fluid cf">
             <div class="row">
                 Mín: <label id="lblMin"></label> / Máx: <label id="lblMax"></label>
                 <br />
@@ -22,15 +22,15 @@
             </div>
             <br />
             <div class="row">
-                <button id="ejbAccept"> Aceptar</button>
-                <button id="ejbCancel"> Cancelar</button>
+                <button id="ejbAcceptFR"> Aceptar</button>
+                <button id="ejbCancelFR"> Cancelar</button>
             </div>
         </div>
     </div>
     <!--Fin dialog-->
     <!--Formulario Cuenta de correo-->
     <div class="hidden" id="formMailAccount">
-        <div class="container-fluid">
+        <div class="container-fluid cf">
             <div class="row">
                 <div class="col-lg-6">
                     <div class="form-group col-lg-12">
@@ -72,6 +72,10 @@
     </div>
     <!--Fin formulario Cuenta de correo-->
 </div>
+
+@section scripts {
+    @Scripts.Render("~/Scripts/helpers/managementIndexedDB.js")
+}
 
 @section applicationScripts {
     <script id="Cancelar" type="text/x-jsrender">
@@ -156,7 +160,7 @@
             $(function () {
                 GetAllAconditionerType();
             });
-        });        
+        });
 
         //Crea el grid Asdaq
         function CreateGridAsdaq(dsAsdaq) {
@@ -499,6 +503,14 @@
                                     }
                                 }
                             }
+                            else if (args.requestType == "beginedit") {
+                                var id = this._id;
+
+                                $('#' + id + 'Gain').ejNumericTextbox({
+                                    decimalPlaces: 3,
+                                    value: args.rowData.Gain,
+                                });
+                            }
                         }
                     });
                 },
@@ -531,7 +543,7 @@
                             _dsAconditioners = getAconditionersType(dataAcon);
                             // Actualizamos el dataSource del campo "Canal Aconditioner" del childGrid de canales Asdaq y luego refrescamos el grid de dispositivos de adquisición.
                             var data = $("#detailGridDevice").data("ejGrid");
-                            
+
                             if (data !== undefined) {
                                 var columnAcon = data.model.columns[4];
                                 columnAcon.dataSource = _dsAconditioners;
@@ -568,7 +580,7 @@
 
         function CreateGridNiDevices(niDevices) {
             //Grid NiDevices
-            $("#GridNiDevices").ejGrid({                
+            $("#GridNiDevices").ejGrid({
                 dataSource: niDevices,
                 detailsTemplate: "#cgDevices",
                 locale: "es-ES",
@@ -702,7 +714,7 @@
                     } else if (args.requestType == "save") {
                         var data = args.model.selectedRecords[0];
                         //var pt = data.ProductType.substr(-4);
-                        //var pt = data.ProductType.split(" ")[1]; 
+                        //var pt = data.ProductType.split(" ")[1];
                         var pt = getProductType(data.ProductType);
                         var toSave = true;
 
@@ -829,6 +841,17 @@
                         actionComplete: function (args) {
                             // Agrega o actualiza el "_dto" al arrastrar un punto de medición a un canal Asdaq si existe previamente un canal Aconditioner
                             if (args.requestType == "refresh") {
+                                //if (_pointByToAssociate != null) {
+                                //    var channelAsdaq = args.model.dataSource[_pointByToAssociate.Index];
+                                //    if (channelAsdaq.SerialAcon != null && channelAsdaq.AconChannel != null) {
+                                //        getAcconditioner({ MdVariableId: _pointByToAssociate.MdVarIdNew, AconChannel: channelAsdaq.AconChannel, SerialAcon: channelAsdaq.SerialAcon}, false, _asdaqId);
+                                //    }
+                                //    _pointByToAssociate = null;
+                                //}
+                            }
+                                // Gestiona todos los Canales Asdaq que tengan punto de medición relacionado y que se les asocie o no un canal Aconditioner al momento de editarlo y posterior guardado en memoria
+                            else if (args.requestType == "save") {
+                                // Agrega o actualiza el "_dto" al arrastrar un punto de medición a un canal Asdaq si existe previamente un canal Aconditioner
                                 if (_pointByToAssociate != null) {
                                     var channelAsdaq = args.model.dataSource[_pointByToAssociate.Index];
                                     if (channelAsdaq.SerialAcon != null && channelAsdaq.AconChannel != null) {
@@ -836,9 +859,7 @@
                                     }
                                     _pointByToAssociate = null;
                                 }
-                            }
-                                // Gestiona todos los Canales Asdaq que tengan punto de medición relacionado y que se les asocie o no un canal Aconditioner al momento de editarlo y posterior guardado en memoria
-                            else if (args.requestType == "save") {
+
                                 // Si la columna "Canal Aconditioner" no está seleccionado el item Ninguno actualiza el _dto si ya existe el punto o lo agrega en el
                                 if (args.data.Acon != "0" && args.data.Acon != null) {
                                     var splitAcon= args.data.Acon.split('-');
@@ -874,7 +895,7 @@
                                     }
                                 }
                                 else if ((channelOld.AconChannel == channelEdited.AconChannel) && (channelOld.SerialAcon == channelEdited.SerialAcon)) {
-                                    if (!ej.isNullOrUndefined(channelOld.MdVariableId))   
+                                    if (!ej.isNullOrUndefined(channelOld.MdVariableId))
                                         ej.DataManager(_dto).remove("MdVariableId", channelOld.MdVariableId, _dto);
                                 }
                                 else if ((channelOld.AconChannel != null) && (channelOld.SerialAcon != null)) {
@@ -924,7 +945,7 @@
                         beginEdit: function (args) {
                             // Si no hay punto de medición asociado en el canal no permite la edición de éste
                             if (args.primaryKeyValue[0] == null)
-                                args.cancel= true;                            
+                                args.cancel= true;
                         },
                         recordClick: function (args) {
                             // Estado del checkbox de la 1er o última columna de canales Asdaq
@@ -949,11 +970,10 @@
                                             //        ej.Predicate("MdVariableId", "equal", args.data.MdVariableId, true).and("Recalculate", "equal", true, true)));
 
                                             if (!isChecked) {
-                                                // Buscamos y eliminamos el punto de medición si el checkbox no está chequeado 
+                                                // Buscamos y eliminamos el punto de medición si el checkbox no está chequeado
                                                 ej.DataManager(_pointsToRecalculate).remove("MdVariableId", args.data.MdVariableId, _pointsToRecalculate);
-                                            }else{
-        
-                                            //if (point.length == 0) {    
+                                            } else {
+                                                //if (point.length == 0) {
                                                 _pointsToRecalculate.push({
                                                     AsdaqId: _asdaqId,
                                                     MdVariableId: args.data.MdVariableId,
@@ -961,18 +981,17 @@
                                                     AconChannel: args.data.AconChannel,
                                                     Recalculate: true
                                                 });
-                                            //}
+                                                //}
                                             }
-
                                         }
                                     }
                                 }
                                 else {
                                     // Si no existe punto relacionado no permite chekearlo
-                                    $(args.cell).find(":checkbox").prop('checked', false); 
+                                    $(args.cell).find(":checkbox").prop('checked', false);
                                 }
                             }
-                            // Celda del checkbox para habilitar un canal Asdaq
+                                // Celda del checkbox para habilitar un canal Asdaq
                             else if (args.cellIndex == 6) {
                                 var name= args.data.Name;
                                 // Actualiza la propiedad Enabled dependiendo del estado del checkbox
@@ -983,6 +1002,15 @@
                             // Habilita todos los checkbox de las columnas "Habilitado y des-relacionar puntos de medición" en los canales Asdaq
                             if (args.cell.cellIndex == 0 || args.cell.cellIndex == 6) {
                                 $(args.cell.children[0]).removeAttr('disabled');
+                            }
+
+                            // Agrega el Tooltip en cada una de las celdas de la columna "MdVariableTag" para ver toda su ruta
+                            if (args.column.field == "MdVariableTag") {
+                                $(args.cell).attr({
+                                    "data-toggle": "tooltip",
+                                    "data-container": "body",
+                                    "title": args.data[args.column.field]
+                                });
                             }
 
                             //if (args.cell.cellIndex == 4) {
@@ -1123,6 +1151,10 @@
                             }
                             $("#GridNiDevices").ejGrid("dataSource", dataNiDevice);
                             _pointsToRecalculate = [];
+                            //jeam 16/3/18
+                            _dto = [];
+                            _copyAiChannels = [];
+                            // end jeam
                             popUp("success","Canal(es) desasociado(s) correctamente.");
                         },
                         error: function (jqXHR, textStatus) {
@@ -1458,7 +1490,7 @@
             $("#lblMin").text(Math.round(minV));
             $("#lblMax").text(Math.round(maxV));
 
-            $("#ejbAccept").ejButton({
+            $("#ejbAcceptFR").ejButton({
                 size: "small",
                 type: "button",
                 imagePosition: "imageleft",
@@ -1496,7 +1528,7 @@
                 },
             });
 
-            $("#ejbCancel").ejButton({
+            $("#ejbCancelFR").ejButton({
                 size: "small",
                 type: "button",
                 imagePosition: "imageleft",
@@ -1527,8 +1559,8 @@
                 close: function (args) {
                     $("#ejdOtherValue").addClass('hidden');
                     $("#ejntOtherValue").ejNumericTextbox("destroy");
-                    $("#ejbCancel").ejButton("destroy");
-                    $("#ejbAccept").ejButton("destroy");
+                    $("#ejbCancelFR").ejButton("destroy");
+                    $("#ejbAcceptFR").ejButton("destroy");
                 },
             });
 

@@ -74,6 +74,7 @@ App3d = (function () {
             _canvas,
             _wId,
             _assetId,
+            _nodeId,
             _userInterface,
             _actualStatus = [],
             _valueType1,
@@ -98,6 +99,7 @@ App3d = (function () {
             _timeStart,
             _timeEnd,
             _waterfall,
+            _maxSpecInWaterfall,
             _flagFirstWaterfall = true,
             _specContent,
             _frecContent,
@@ -132,6 +134,7 @@ App3d = (function () {
         _widgetId = Math.floor(Math.random() * 100000);
         _valueType1 = [];
         _valueType3 = [];
+        _maxSpecInWaterfall = 200;
 
         /*
         if (canvasType == "Viewer") {
@@ -213,7 +216,7 @@ App3d = (function () {
                         _userInterface.mainMenu.children[i].objs[j].obj.on("click", function (args) {
                             _userInterface.chooseFunction(args.currentTarget.id);
                             if (timeMode == 0) {
-                                if (flagsPlots.spec || flagsPlots.spec100p || flagsPlots.orb || flagsPlots.ShaftDef) {
+                                if (flagsPlots.spec || flagsPlots.spec100p || flagsPlots.orb || flagsPlots.orb1X || flagsPlots.ShaftDef) {
 
                                     var currentSubVariableIdList = clone(_subVariableIdList);
                                     // Eliminar de la cache las subVariables a consultar en el servidor
@@ -335,12 +338,6 @@ App3d = (function () {
                 waterfall.nomVel = vel;
                 waterfall.flagRPM = false;
                 waterfall.createHistoricWaterfall();
-
-                //for (var i = 0; i < _measurementPoint.SubVariables.length; i++) {
-                //    if(_measurementPoint.SubVariables[i].Name === "Directa"){
-                //        units = _measurementPoint.SubVariables[i].Units;
-                //    }
-                //}
                 
                 arraySignal = [];
                 waterfall.unitsAmp = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, true).select("Units"))[0];
@@ -349,55 +346,21 @@ App3d = (function () {
                 if (overallSubVariable) {
                     waterfall.overallMeasureType = overallSubVariable.MeasureType;
                 }
-                
-                _sampleRate = null;
                 $("#" + _frecContent[1].inputId).val(waterfall.nomVel / 6);
 
-                for (currentTime in data) {
-                    
-                    if (data.hasOwnProperty(currentTime)) {
-                        date = new Date(parseInt(currentTime));
-                        timeStamp = formatDate(date);
-                        timeStamp = timeStamp.split(" ")[1];
-                        if (_velocitySubVariable && subVariableHTList[_velocitySubVariable.Id][currentTime] != undefined) {
-                            vel = subVariableHTList[_velocitySubVariable.Id][currentTime].Value;
-                        } else {
-                            vel = _nominalVelocity;
-                        }
-                        arraySignal.push({
-                            signal: data[currentTime].RawValue,
-                            timeStamp: timeStamp,
-                            timeStampUTC: data[currentTime].TimeStamp.concat("Z"),
-                            vel: vel,
-                            sampleRate: data[currentTime].SampleRate,
-                            sampleTime: (data[currentTime].RawValue.length / data[currentTime].SampleRate)
-                        });
-                    }
-                    if (_sampleRate == null) {
-                        _sampleRate = data[currentTime].SampleRate;
-                    }
-                }
-
-
                 if (watConfig.type == "espectrograma") {
-                    waterfall.fillWaterfallHistCubes(arraySignal);
+                    waterfall.fillWaterfallHistCubes(data);
                 }
                 else if (watConfig.type == "clasica") {
-                    waterfall.fillClassicWaterfallHist(arraySignal);
+                    waterfall.fillClassicWaterfallHist(data);
                 }
                 
             }
             waterfall.chooseFrecuency(100, false);
 
-            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, arraySignal, null, false);
+            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, data, null, false);
             uiWaterfall3d.pointInfo.pointName = nameGrandParentAsset + " "  + parentAsset.Name + " - " + _measurementPoint.Name;
-            //uiWaterfall3d.pointInfo.nominalVel = _subVariableIdList[0].Units;
 
-            //date1 = new Date(data[_subVariableIdList[0]].Historical[0].TimeStamp + "+00:00");
-            //timeStamp1 = formatDate(date1);           
-
-            //date2 = new Date(data[_subVariableIdList[0]].Historical[data[_subVariableIdList[0]].Historical.length - 1].TimeStamp + "+00:00");
-            //timeStamp2 = formatDate(date2);
 
             uiWaterfall3d.pointInfo.timeRange = [formatDate(new Date(_arraySpecFilter[0])), formatDate(new Date(_arraySpecFilter[_arraySpecFilter.length - 1]))];
             uiWaterfall3d.createUI();
@@ -410,8 +373,6 @@ App3d = (function () {
             
             $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": 1 });
             $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": 1 });
-
-        
         };
 
         /*
@@ -445,17 +406,11 @@ App3d = (function () {
             for (i = 0; i < treeObj.model.fields.dataSource.length; i++) {
                 if (treeObj.model.fields.dataSource[i].Id === _measurementPoint.ParentNodeId) {
                     parentAsset = treeObj.model.fields.dataSource[i];
-                    //if (parentAsset.RpmEventConfig) {
-                    //    nomVel = parentAsset.RpmEventConfig.UpperRpm;
-                    //}
                 }
             }
             for (i = 0; i < treeObj.model.fields.dataSource.length; i++) {
                 if (treeObj.model.fields.dataSource[i].Id === parentAsset.ParentId) {
                     nameGrandParentAsset = treeObj.model.fields.dataSource[i].Name + "-";
-                    //if (treeObj.model.fields.dataSource[i].RpmEventConfig) {
-                    //    nomVel = treeObj.model.fields.dataSource[i].RpmEventConfig.UpperRpm;
-                    //}
                 }
             }
 
@@ -476,62 +431,19 @@ App3d = (function () {
 
             waterfall.createHistoricWaterfall();
 
-            //for (var i = 0; i < _measurementPoint.SubVariables.length; i++) {
-            //    if (_measurementPoint.SubVariables[i].Name === "Directa") {
-            //        units = _measurementPoint.SubVariables[i].Units;
-            //    }
-            //}
-
-            //waterfall.unitsAmp = units;
             waterfall.unitsAmp = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, true).select("Units"))[0];
 
-            _sampleRate = null;
             $("#" + _frecContent[1].inputId).val(waterfall.nomVel / 6);
 
-            dataArrayX = data[_subVariablesId.x];
-            dataArrayY = data[_subVariablesId.y];
-            arraySignalX = [];
-            arraySignalY = [];
-            for (currentTime in dataArrayX) {
-                if (dataArrayX.hasOwnProperty(currentTime) && dataArrayY.hasOwnProperty(currentTime)) {
-                    date = new Date(parseInt(currentTime));
-                    timeStamp = formatDate(date);
-                    timeStamp = timeStamp.split(" ")[1];
-                    if (_velocitySubVariable && subVariableHTList[_velocitySubVariable.Id][currentTime] != undefined) {
-                        vel = subVariableHTList[_velocitySubVariable.Id][currentTime].Value;
-                    } else {
-                        vel = _nominalVelocity / 60;
-                    }
-                    arraySignalX.push({
-                        signal: dataArrayX[currentTime].RawValue,
-                        timeStamp: timeStamp,
-                        timeStampUTC: dataArrayX[currentTime].TimeStamp.concat("Z"),
-                        vel: vel,
-                        sampleRate: dataArrayX[currentTime].SampleRate,
-                        sampleTime: (dataArrayX[currentTime].RawValue.length / dataArrayX[currentTime].SampleRate)
-                    });
-                    arraySignalY.push({
-                        signal: dataArrayY[currentTime].RawValue,
-                        timeStamp: timeStamp,
-                        timeStampUTC: dataArrayY[currentTime].TimeStamp.concat("Z"),
-                        vel: vel,
-                        sampleRate: dataArrayY[currentTime].SampleRate,
-                        sampleTime: (dataArrayY[currentTime].RawValue.length / dataArrayY[currentTime].SampleRate)
-                    });
-                }
-                if (_sampleRate == null) {
-                    _sampleRate = dataArrayX[currentTime].SampleRate;
-                }
-            }
 
             if (fSWatConfig.type == "espectrograma") {
-                waterfall.fillWaterfallHistCubesFullSpec(arraySignalX, arraySignalY);
+                waterfall.fillWaterfallHistCubesFullSpec(data[_subVariablesId.x], data[_subVariablesId.y]);
             }
             else if (fSWatConfig.type == "clasica") {
-                waterfall.fillClassicWaterfallHistFullSpec(arraySignalX, arraySignalY);
+                waterfall.fillClassicWaterfallHistFullSpec(data[_subVariablesId.x], data[_subVariablesId.y]);
             }
 
-            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, arraySignalX, arraySignalY, true);
+            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, data[_subVariablesId.x], data[_subVariablesId.y], true);
             uiWaterfall3d.pointInfo.pointName = nameGrandParentAsset + " " + parentAsset.Name + " - " + _measurementPoint.Name;
 
 
@@ -571,20 +483,14 @@ App3d = (function () {
             for (i = 0; i < treeObj.model.fields.dataSource.length; i++) {
                 if (treeObj.model.fields.dataSource[i].Id === _measurementPoint.ParentNodeId) {
                     parentAsset = treeObj.model.fields.dataSource[i];
-                    //if (parentAsset.RpmEventConfig) {
-                    //    nomVel = parentAsset.RpmEventConfig.UpperRpm;
-                    //}
                 }
             }
             for (i = 0; i < treeObj.model.fields.dataSource.length; i++) {
                 if (treeObj.model.fields.dataSource[i].Id === parentAsset.ParentId) {
                     nameGrandParentAsset = treeObj.model.fields.dataSource[i].Name + "-";
-                    //if (treeObj.model.fields.dataSource[i].RpmEventConfig) {
-                    //    nomVel = treeObj.model.fields.dataSource[i].RpmEventConfig.UpperRpm;
-                    //}
                 }
             }
-
+           
             if (_measurementPoint.AngularReferenceId != null) {
                 vel = _velocitySubVariable.Maximum;
                 if (vel <= 60) {
@@ -601,43 +507,17 @@ App3d = (function () {
             waterfall.flagRPM = true;
             waterfall.createHistoricWaterfall();
 
-            _sampleRate = null;
             $("#" + _frecContent[1].inputId).val(waterfall.nomVel / 6);
 
-            arraySignal = [];
-            waterfall.unitsAmp = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, true).select("Units"))[0];
-            for (currentTime in data) {
-                if (data.hasOwnProperty(currentTime)) {
-                    date = new Date(parseInt(currentTime));
-                    timeStamp = formatDate(date);
-                    timeStamp = timeStamp.split(" ")[1];
-                    if (_velocitySubVariable && subVariableHTList[_velocitySubVariable.Id][currentTime] != undefined) {
-                        vel = subVariableHTList[_velocitySubVariable.Id][currentTime].Value;
-                    } else {
-                        vel = _nominalVelocity / 60;
-                    }
-                    arraySignal.push({
-                        signal: data[currentTime].RawValue,
-                        timeStamp: timeStamp,
-                        timeStampUTC: data[currentTime].TimeStamp.concat("Z"),
-                        vel: vel,
-                        sampleRate: data[currentTime].SampleRate,
-                        sampleTime: (data[currentTime].RawValue.length / data[currentTime].SampleRate)
-                    });
-                }
-                if (_sampleRate == null) {
-                    _sampleRate = data[currentTime].SampleRate;
-                }
-            }
 
             if (watConfig.type == "espectrograma") {
-                waterfall.fillWaterfallHistCubes(arraySignal);
+                waterfall.fillWaterfallHistCubes(data);
             }
             else if (watConfig.type == "clasica") {
-                waterfall.fillClassicWaterfallHist(arraySignal);
+                waterfall.fillClassicWaterfallHist(data);
             }
 
-            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, arraySignal, null, false);
+            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, data, null, false);
             uiWaterfall3d.pointInfo.pointName = nameGrandParentAsset + " " + parentAsset.Name + " - " + _measurementPoint.Name;
 
             uiWaterfall3d.pointInfo.timeRange = [formatDate(new Date(_arraySpecFilter[0])), formatDate(new Date(_arraySpecFilter[_arraySpecFilter.length - 1]))];
@@ -677,17 +557,11 @@ App3d = (function () {
             for (i = 0; i < treeObj.model.fields.dataSource.length; i++) {
                 if (treeObj.model.fields.dataSource[i].Id === _measurementPoint.ParentNodeId) {
                     parentAsset = treeObj.model.fields.dataSource[i];
-                    //if (parentAsset.RpmEventConfig) {
-                    //    nomVel = parentAsset.RpmEventConfig.UpperRpm;
-                    //}
                 }
             }
             for (i = 0; i < treeObj.model.fields.dataSource.length; i++) {
                 if (treeObj.model.fields.dataSource[i].Id === parentAsset.ParentId) {
                     nameGrandParentAsset = treeObj.model.fields.dataSource[i].Name + "-";
-                    //if (treeObj.model.fields.dataSource[i].RpmEventConfig) {
-                    //    nomVel = treeObj.model.fields.dataSource[i].RpmEventConfig.UpperRpm;
-                    //}
                 }
             }
 
@@ -707,62 +581,21 @@ App3d = (function () {
             waterfall.flagRPM = true;
             waterfall.createHistoricWaterfall();
 
-            _sampleRate = null;
             $("#" + _frecContent[1].inputId).val(waterfall.nomVel / 6);
 
             waterfall.unitsAmp = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, true).select("Units"))[0];
-            dataArrayX = data[_subVariablesId.x];
-            dataArrayY = data[_subVariablesId.y];
-            arraySignalX = [];
-            arraySignalY = [];
-            for (currentTime in dataArrayX) {
-                if (dataArrayX.hasOwnProperty(currentTime) && dataArrayY.hasOwnProperty(currentTime)) {
-                    date = new Date(parseInt(currentTime));
-                    timeStamp = formatDate(date);
-                    timeStamp = timeStamp.split(" ")[1];
-                    if (_velocitySubVariable && subVariableHTList[_velocitySubVariable.Id][currentTime] != undefined) {
-                        vel = subVariableHTList[_velocitySubVariable.Id][currentTime].Value;
-                    } else {
-                        vel = _nominalVelocity / 60;
-                    }
-                    arraySignalX.push({
-                        signal: dataArrayX[currentTime].RawValue,
-                        timeStamp: timeStamp,
-                        timeStampUTC: dataArrayX[currentTime].TimeStamp.concat("Z"),
-                        vel: vel,
-                        sampleRate: dataArrayX[currentTime].SampleRate,
-                        sampleTime: (dataArrayX[currentTime].RawValue.length / dataArrayX[currentTime].SampleRate)
-                    });
-                    arraySignalY.push({
-                        signal: dataArrayY[currentTime].RawValue,
-                        timeStamp: timeStamp,
-                        timeStampUTC: dataArrayY[currentTime].TimeStamp.concat("Z"),
-                        vel: vel,
-                        sampleRate: dataArrayY[currentTime].SampleRate,
-                        sampleTime: (dataArrayY[currentTime].RawValue.length / dataArrayY[currentTime].SampleRate)
-                    });
-                }
-                if (_sampleRate == null) {
-                    _sampleRate = dataArrayX[currentTime].SampleRate;
-                }
-            }
+            
 
             if (fSWatConfig.type == "espectrograma") {
-                waterfall.fillWaterfallHistCubesFullSpec(arraySignalX, arraySignalY);
+                waterfall.fillWaterfallHistCubesFullSpec(data[_subVariablesId.x], data[_subVariablesId.y]);
             }
             else if (fSWatConfig.type == "clasica") {
-                waterfall.fillClassicWaterfallHistFullSpec(arraySignalX, arraySignalY);
+                waterfall.fillClassicWaterfallHistFullSpec(data[_subVariablesId.x], data[_subVariablesId.y]);
             }
 
-            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, arraySignalX, arraySignalY, true);
+            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, _subVariablesId.x, _subVariablesId.y, true);
             uiWaterfall3d.pointInfo.pointName = nameGrandParentAsset + " " + parentAsset.Name + " - " + _measurementPoint.Name;
-            //uiWaterfall3d.pointInfo.nominalVel = _subVariableIdList[0].Units;
 
-            //date1 = new Date(data[_subVariableIdList[0]].Historical[0].TimeStamp + "+00:00");
-            //timeStamp1 = formatDate(date1);
-
-            //date2 = new Date(data[_subVariableIdList[0]].Historical[data[_subVariableIdList[0]].Historical.length - 1].TimeStamp + "+00:00");
-            //timeStamp2 = formatDate(date2);
 
             uiWaterfall3d.pointInfo.timeRange = [formatDate(new Date(_arraySpecFilter[0])), formatDate(new Date(_arraySpecFilter[_arraySpecFilter.length - 1]))];
             uiWaterfall3d.createUI();
@@ -782,7 +615,14 @@ App3d = (function () {
         _subscribeToRefresh = function (timeStamp, historicalRange, rpmPositions) {
             var
                 startDate,
-                endDate;
+                endDate,
+                subVariableIdList,
+                dataArray,
+                notStored,
+                i, j,
+                idx,
+                group,
+                items;
 
             timeStamp = new Date(timeStamp).getTime().toString();
             if (canvasType === "Viewer") {
@@ -790,226 +630,297 @@ App3d = (function () {
                 switch (_timeMode) {
                     case 0: // Tiempo Real
                         _subscription = PublisherSubscriber.subscribe("/realtime/refresh", _subVariableIdList, function (data) {
-                            _refresh(data, _pause, enableFilter, stopFrecuency);
+                            _refresh(data, _pause, enableFilter, stopFrequency);
                         });
                         break;
                     case 1: // Historico
                         _subscription = PublisherSubscriber.subscribe("/historic/refresh", _valueType3, function (data) {
                             var
-                                dataArray,
-                                i;
+                                i, index,
+                                notStored,
+                                dataArray;
 
+                            if (Object.keys(data).length === 0) {
+                                return;
+                            }
+                            if (data[Object.keys(data)[0]].WidgetId !== _widgetId) {
+                                return;
+                            }
                             dataArray = [];
-                            for (i in data) {
-                                if (data.hasOwnProperty(i)) {
-                                    if (data[i].WidgetId != _widgetId) {
-                                        return;
-                                    }
-
-                                    dataArray[i] = data[i][timeStamp];
+                            for (i = 0; i < Object.keys(data).length; i += 1) {
+                                dataArray[Object.keys(data)[i]] = data[Object.keys(data)[i]][timeStamp];
+                            }
+                            aidbManager.GetNumericBySubVariableIdAndTimeStampList(_valueType1, [parseInt(timeStamp)], _nodeId, function (resp) {
+                                notStored = clone(_valueType1);
+                                for (i = 0; i < resp.length; i += 1) {
+                                    dataArray[resp[i].subVariableId] = {
+                                        StatusId: resp[i].statusId,
+                                        StatusColor: resp[i].statusColor,
+                                        Value: resp[i].value,
+                                        TimeStamp: formatDate(new Date(resp[i].timeStamp))
+                                    };
+                                    index = notStored.indexOf(resp[i].subVariableId);
+                                    notStored.splice(index, 1);
                                 }
-                            }
-                            for (i = 0; i < _valueType1.length; i += 1) {
-                                dataArray[_valueType1[i]] = clone(subVariableHTList[_valueType1[i]][timeStamp]);
-                            }
-                            _refresh(dataArray, _pause, enableFilter, stopFrecuency);
+                                for (i = 0; i < notStored.length; i += 1) {
+                                    dataArray[notStored[i]] = {
+                                        StatusId: null,
+                                        StatusColor: null,
+                                        Value: null
+                                    };
+                                }
+                                _refresh(dataArray, _pause, enableFilter, stopFrequency);
+                            });
                         });
                         var mdVariableIdList = ej.DataManager(_measurementPoints).executeLocal(new ej.Query().where(
                                                 ej.Predicate("SensorTypeCode", "equal", 1, true).or("SensorTypeCode", "equal", 2, true).
                                                                                                  or("SensorTypeCode", "equal", 3, true)).select("Id"));
-                        new HistoricalTimeMode().GetSingleDynamicHistoricalData(mdVariableIdList, _valueType3, timeStamp, _widgetId);
+                        new HistoricalTimeMode().GetSingleDynamicHistoricalData(mdVariableIdList, _nodeId, _valueType3, timeStamp, _widgetId);
                         break;
                 }
             }
             else if (canvasType === "Waterfall") {
-                var
-                    waveformSubVariableIds;
-
-                waveformSubVariableIds = new ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("ValueType", "equal", 3, true).select("Id"));
+                subVariableIdList = new ej.DataManager(_measurementPoint.SubVariables).executeLocal(
+                    new ej.Query().where("ValueType", "equal", 3, true).select("Id"));
+                dataArray = [];
+                notStored = clone(_firstArraySpecFilter);
                 // Subscripcion a evento para refrescar datos de grafica segun _timeMode
                 switch (_timeMode) {
                     case 1: // Historico
                         _subscription = PublisherSubscriber.subscribe("/historicTrend/refresh", [_widgetId], function (data) {
-                            var
-                                index, i,
-                                timeStamp,
-                                timeStampArray,
-                                dataArray;
-
-                            for (index in data) {
-                                if (data.hasOwnProperty(index)) {
-                                    if (index != _widgetId) {
-                                        return;
-                                    }
-                                    timeStampArray = clone(data[index].TimeStampArray);
+                            if (Object.keys(data).length === 0) {
+                                return;
+                            }
+                            if (parseInt(Object.keys(data)[0]) !== _widgetId) {
+                                return;
+                            }
+                            items = ej.DataManager(data[Object.keys(data)[0]].Data).executeLocal(
+                                new ej.Query().sortBy("timeStamp", ej.sortOrder.Ascending, false));
+                            for (i = 0; i < items.length; i += 1) {
+                                idx = _firstArraySpecFilter.indexOf(items[i].timeStamp);
+                                dataArray[idx] = {
+                                    signal: clone(items[i].value),
+                                    timeStamp: formatDate(new Date(items[i].timeStamp)).split(" ")[1],
+                                    milliseconds: items[i].timeStamp,
+                                    sampleTime: items[i].sampleTime,
+                                    sampleRate: items[i].value.length / items[i].sampleTime
+                                };
+                                idx = notStored.indexOf(items[i].timeStamp);
+                                notStored.splice(idx, 1);
+                                if (_sampleRate == null && i== 0) {
+                                    _sampleRate = items[i].value.length / items[i].sampleTime;
                                 }
                             }
-                            dataArray = [];
-                            for (i = 0; i < timeStampArray.length; i += 1) {
-                                timeStamp = new Date(timeStampArray[i]).getTime();
-                                dataArray[timeStamp] = subVariableHTList[waveformSubVariableIds[0]][timeStamp];
+                            if (notStored.length === 0) {
+                                aidbManager.GetNumericBySubVariableIdAndTimeStampList([_velocitySubVariable.Id], _firstArraySpecFilter, _nodeId, function (numeric) {
+                                    for (i = 0; i < numeric.length; i += 1) {
+                                        idx = _firstArraySpecFilter.indexOf(numeric[i].timeStamp);
+                                        if (numeric[i].value !== null && _nominalVelocity !== null) {
+                                            dataArray[idx].vel = clone(numeric[i].value);
+                                        }
+                                        else {
+                                            dataArray[idx].vel = _nominalVelocity;
+                                        }
+                                    }
+                                    
+                                    _refresh(dataArray);
+                                });
                             }
-                            //for (i in data) {
-                            //    if (data.hasOwnProperty(i)) {
-                            //        if (data[i].WidgetId != _widgetId) {
-                            //            return;
-                            //        }
-
-                            //        dataArray = data[i];
-                            //    }
-                            //}
-                            //delete dataArray["WidgetId"];
-                            _refresh(dataArray);
+                           
                         });
-                        new HistoricalTimeMode().GetDynamicHistoricalData([_measurementPoint.Id], _firstArraySpecFilter, _widgetId);
+                        new HistoricalTimeMode().GetDynamicHistoricalData([_measurementPoint.Id], subVariableIdList, _nodeId, _firstArraySpecFilter, _widgetId);
                         break;
                 }
             }
             else if (canvasType === "FullSpecWaterfall") {
+                subVariableIdList = [_subVariablesId.x, _subVariablesId.y];
+                dataArray = [];
+                dataArray[_subVariablesId.x] = [];
+                dataArray[_subVariablesId.y] = [];
+                notStored = clone(_firstArraySpecFilter);
                 // Subscripcion a evento para refrescar datos de grafica segun _timeMode
                 switch (_timeMode) {
                     case 1: // Historico
                         _subscription = PublisherSubscriber.subscribe("/historicTrend/refresh", [_widgetId], function (data) {
-                            var
-                                index, i,
-                                timeStamp,
-                                timeStampArray,
-                                dataArray;
-
-                            for (index in data) {
-                                if (data.hasOwnProperty(index)) {
-                                    if (index != _widgetId) {
-                                        return;
+                            if (Object.keys(data).length === 0) {
+                                return;
+                            }
+                            if (parseInt(Object.keys(data)[0]) !== _widgetId) {
+                                return;
+                            }
+                            group = ej.DataManager(data[Object.keys(data)[0]].Data).executeLocal(
+                                new ej.Query().group("timeStamp"));
+                            for (i = 0; i < group.length; i += 1) {
+                                items = group[i].items;
+                                idx = _firstArraySpecFilter.indexOf(group[i].key);
+                                for (j = 0; j < subVariableIdList.length; j += 1) {
+                                    if (items[j]) {
+                                        dataArray[items[j].subVariableId][idx] = {
+                                            signal: clone(items[j].value),
+                                            timeStamp: formatDate(new Date(items[j].timeStamp)).split(" ")[1],
+                                            milliseconds: items[j].timeStamp,
+                                            sampleTime: items[j].sampleTime,
+                                            sampleRate: items[j].value.length / items[j].sampleTime
+                                        };
+                                        if (_sampleRate == null && i == 0) {
+                                            _sampleRate = items[i].value.length / items[i].sampleTime;
+                                        }
+                                    } else {
+                                        dataArray[subVariableIdList[j]][idx] = {
+                                            signal: null,
+                                            timeStamp: formatDate(new Date(group[i].key)).split(" ")[1],
+                                            milliseconds: group[i].key,
+                                            sampleTime: 0,
+                                            sampleRate: 0
+                                        };
                                     }
-                                    timeStampArray = clone(data[index].TimeStampArray);
                                 }
+                                idx = notStored.indexOf(group[i].key);
+                                notStored.splice(idx, 1);
                             }
-                            dataArray = [];
-                            dataArray[_subVariablesId.x] = [];
-                            dataArray[_subVariablesId.y] = [];
-                            for (i = 0; i < timeStampArray.length; i += 1) {
-                                timeStamp = new Date(timeStampArray[i]).getTime();
-                                dataArray[_subVariablesId.x][timeStamp] = subVariableHTList[_subVariablesId.x][timeStamp];
-                                dataArray[_subVariablesId.y][timeStamp] = subVariableHTList[_subVariablesId.y][timeStamp];
+                            if (notStored.length === 0) {
+                                aidbManager.GetNumericBySubVariableIdAndTimeStampList([_velocitySubVariable.Id], _firstArraySpecFilter, _nodeId, function (numeric) {
+                                    for (i = 0; i < numeric.length; i += 1) {
+                                        idx = _firstArraySpecFilter.indexOf(numeric[i].timeStamp);
+                                        if (numeric[i].value !== null && _nominalVelocity !== null) {
+                                            dataArray[_subVariablesId.x][idx].vel = clone(numeric[i].value);
+                                            dataArray[_subVariablesId.y][idx].vel = clone(numeric[i].value);
+                                        }
+                                        else {
+                                            dataArray[_subVariablesId.x][idx].vel = _nominalVelocity;
+                                            dataArray[_subVariablesId.y][idx].vel = _nominalVelocity;
+                                        }
+                                        idx = notStored.indexOf(numeric[i].timeStamp);
+                                        notStored.splice(idx, 1);
+                                    }
+                                    _refresh(dataArray);
+                                });
                             }
-                            //var
-                            //    i,
-                            //    dataArray;
 
-                            //dataArray = [];
-                            ////_subVariablesId.x
-                            //for (i in data) {
-                            //    if (data.hasOwnProperty(i)) {
-                            //        if (data[i].WidgetId != _widgetId) {
-                            //            return;
-                            //        }
-
-                            //        delete data[i]["WidgetId"];
-                            //        dataArray[i] = data[i];
-                            //    }
-                            //}
-                            _refresh(dataArray);
                         });
-                        new HistoricalTimeMode().GetDynamicHistoricalData(_mdVariableListId, _firstArraySpecFilter, _widgetId);
+                        new HistoricalTimeMode().GetDynamicHistoricalData(_mdVariableListId, subVariableIdList, _nodeId, _firstArraySpecFilter, _widgetId);
                         break;
                 }
             }
             else if (canvasType === "WaterfallRPM") {
-                var
-                    waveformSubVariableIds;
-
-                waveformSubVariableIds = new ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("ValueType", "equal", 3, true).select("Id"));
+                subVariableIdList = new ej.DataManager(_measurementPoint.SubVariables).executeLocal(
+                    new ej.Query().where("ValueType", "equal", 3, true).select("Id"));
+                dataArray = [];
+                notStored = clone(_firstArraySpecFilter);
                 // Subscripcion a evento para refrescar datos de grafica segun _timeMode
                 switch (_timeMode) {
                     case 1: // Historico
                         _subscription = PublisherSubscriber.subscribe("/historicTrend/refresh", [_widgetId], function (data) {
-                            var
-                                index, i,
-                                timeStamp,
-                                timeStampArray,
-                                dataArray;
-
-                            for (index in data) {
-                                if (data.hasOwnProperty(index)) {
-                                    if (index != _widgetId) {
-                                        return;
-                                    }
-                                    timeStampArray = clone(data[index].TimeStampArray);
+                            if (Object.keys(data).length === 0) {
+                                return;
+                            }
+                            if (parseInt(Object.keys(data)[0]) !== _widgetId) {
+                                return;
+                            }
+                            items = ej.DataManager(data[Object.keys(data)[0]].Data).executeLocal(
+                                new ej.Query().sortBy("timeStamp", ej.sortOrder.Ascending, false));
+                            for (i = 0; i < items.length; i += 1) {
+                                idx = _firstArraySpecFilter.indexOf(items[i].timeStamp);
+                                dataArray[idx] = {
+                                    signal: clone(items[i].value),
+                                    timeStamp: formatDate(new Date(items[i].timeStamp)).split(" ")[1],
+                                    milliseconds: items[i].timeStamp,
+                                    sampleTime: items[i].sampleTime,
+                                    sampleRate: items[i].value.length / items[i].sampleTime
+                                };
+                                idx = notStored.indexOf(items[i].timeStamp);
+                                notStored.splice(idx, 1);
+                                if (_sampleRate == null && i == 0) {
+                                    _sampleRate = items[i].value.length / items[i].sampleTime;
                                 }
                             }
-                            dataArray = [];
-                            for (i = 0; i < timeStampArray.length; i += 1) {
-                                timeStamp = new Date(timeStampArray[i]).getTime();
-                                dataArray[timeStamp] = subVariableHTList[waveformSubVariableIds[0]][timeStamp];
+                            if (notStored.length === 0) {
+                                aidbManager.GetNumericBySubVariableIdAndTimeStampList([_velocitySubVariable.Id], _firstArraySpecFilter, _nodeId, function (numeric) {
+                                    for (i = 0; i < numeric.length; i += 1) {
+                                        idx = _firstArraySpecFilter.indexOf(numeric[i].timeStamp);
+                                        if (numeric[i].value !== null && _nominalVelocity !== null) {
+                                            dataArray[idx].vel = clone(numeric[i].value);
+                                        }
+                                        else {
+                                            dataArray[idx].vel = _nominalVelocity;
+                                        }
+                                    }
+                                    _refresh(dataArray);
+                                });
                             }
-                            //var
-                            //    i,
-                            //    dataArray;
-
-                            //for (i in data) {
-                            //    if (data.hasOwnProperty(i)) {
-                            //        if (data[i].WidgetId != _widgetId) {
-                            //            return;
-                            //        }
-
-                            //        dataArray = data[i];
-                            //    }
-                            //}
-                            //delete dataArray["WidgetId"];
-                            _refresh(dataArray);
                         });
-                        new HistoricalTimeMode().GetDynamicHistoricalData([_measurementPoint.Id], _firstArraySpecFilter, _widgetId);
+                        new HistoricalTimeMode().GetDynamicHistoricalData([_measurementPoint.Id], subVariableIdList, _nodeId, _firstArraySpecFilter, _widgetId);
                         break;
                 }
             }
             else if (canvasType === "FullSpecWaterfallRPM") {
+                subVariableIdList = [_subVariablesId.x, _subVariablesId.y];
+                dataArray = [];
+                dataArray[_subVariablesId.x] = [];
+                dataArray[_subVariablesId.y] = [];
+                notStored = clone(_firstArraySpecFilter);
                 // Subscripcion a evento para refrescar datos de grafica segun _timeMode
                 switch (_timeMode) {
                     case 1: // Historico
                         _subscription = PublisherSubscriber.subscribe("/historicTrend/refresh", [_widgetId], function (data) {
-                            var
-                                index, i,
-                                timeStamp,
-                                timeStampArray,
-                                dataArray;
-
-                            for (index in data) {
-                                if (data.hasOwnProperty(index)) {
-                                    if (index != _widgetId) {
-                                        return;
+                            if (Object.keys(data).length === 0) {
+                                return;
+                            }
+                            if (parseInt(Object.keys(data)[0]) !== _widgetId) {
+                                return;
+                            }
+                            group = ej.DataManager(data[Object.keys(data)[0]].Data).executeLocal(
+                                new ej.Query().group("timeStamp"));
+                            for (i = 0; i < group.length; i += 1) {
+                                items = group[i].items;
+                                idx = _firstArraySpecFilter.indexOf(group[i].key);
+                                for (j = 0; j < subVariableIdList.length; j += 1) {
+                                    if (items[j]) {
+                                        dataArray[items[j].subVariableId][idx] = {
+                                            signal: clone(items[j].value),
+                                            timeStamp: formatDate(new Date(items[j].timeStamp)).split(" ")[1],
+                                            milliseconds: items[j].timeStamp,
+                                            sampleTime: items[j].sampleTime,
+                                            sampleRate: items[j].value.length / items[j].sampleTime
+                                        };
+                                        if (_sampleRate == null && i == 0) {
+                                            _sampleRate = items[i].value.length / items[i].sampleTime;
+                                        }
+                                    } else {
+                                        dataArray[subVariableIdList[j]][idx] = {
+                                            signal: null,
+                                            timeStamp: formatDate(new Date(group[i].key)).split(" ")[1],
+                                            milliseconds: group[i].key,
+                                            sampleTime: 0,
+                                            sampleRate: 0
+                                        };
                                     }
-                                    timeStampArray = clone(data[index].TimeStampArray);
                                 }
+                                idx = notStored.indexOf(group[i].key);
+                                notStored.splice(idx, 1);
                             }
-                            dataArray = [];
-                            dataArray[_subVariablesId.x] = [];
-                            dataArray[_subVariablesId.y] = [];
-                            for (i = 0; i < timeStampArray.length; i += 1) {
-                                timeStamp = new Date(timeStampArray[i]).getTime();
-                                dataArray[_subVariablesId.x][timeStamp] = subVariableHTList[_subVariablesId.x][timeStamp];
-                                dataArray[_subVariablesId.y][timeStamp] = subVariableHTList[_subVariablesId.y][timeStamp];
+                            if (notStored.length === 0) {
+                                aidbManager.GetNumericBySubVariableIdAndTimeStampList([_velocitySubVariable.Id], _firstArraySpecFilter, _nodeId, function (numeric) {
+                                    for (i = 0; i < numeric.length; i += 1) {
+                                        idx = _firstArraySpecFilter.indexOf(numeric[i].timeStamp);
+                                        if (numeric[i].value !== null && _nominalVelocity !== null) {
+                                            dataArray[_subVariablesId.x][idx].vel = clone(numeric[i].value);
+                                            dataArray[_subVariablesId.y][idx].vel = clone(numeric[i].value);
+                                        }
+                                        else {
+                                            dataArray[_subVariablesId.x][idx].vel = _nominalVelocity;
+                                            dataArray[_subVariablesId.y][idx].vel = _nominalVelocity;
+                                        }
+                                    }
+                                    _refresh(dataArray);
+                                });
                             }
-                            //var
-                            //    i,
-                            //    dataArray;
-
-                            //dataArray = [];
-                            //for (i in data) {
-                            //    if (data.hasOwnProperty(i)) {
-                            //        if (data[i].WidgetId != _widgetId) {
-                            //            return;
-                            //        }
-                            //        delete data[i]["WidgetId"];
-                            //        dataArray[i] = data[i];
-                            //    }
-                            //}
-                            _refresh(dataArray);
                         });
-                        //new HistoricalTimeMode().GetDynamicHistoricalData(_mdVariableListId, [_subVariablesId.x, _subVariablesId.y], _arraySpecFilter, _widgetId);
-                        new HistoricalTimeMode().GetDynamicHistoricalData(_mdVariableListId, _firstArraySpecFilter, _widgetId);
+                        new HistoricalTimeMode().GetDynamicHistoricalData(_mdVariableListId, subVariableIdList, _nodeId, _firstArraySpecFilter, _widgetId);
                         break;
                 }
             }
+            
         };
 
 
@@ -1251,9 +1162,11 @@ App3d = (function () {
          * Actualiza el chart por accion de poll al cual fue suscrito el chart
          * @param {String} data Informacion obtenida del poll
          */
-        _refresh = function (data, _pause, enableFilter, stopFrecuency) {
+        _refresh = function (data, _pause, enableFilter, stopFrequency) {
 
-            var xVal, yVal, sampleRate, xId, yId, flagSpec = false, indexSpec = 0, flagDefShaft = false, indexDefShaft = 0, timeStampHist, currentDefaultValueSubVar, statusId;
+            var xVal, yVal, sampleRate, xId, yId, flagSpec = false, indexSpec = 0, flagDefShaft = false, indexDefShaft = 0, timeStampHist, currentDefaultValueSubVar, statusId, nominalVelocity;
+
+            
 
             if (!_pause && canvasType === "Viewer") {
                 _uiVbles.subVblesViewer3d = [];
@@ -1368,6 +1281,11 @@ App3d = (function () {
                                         }
 
                                         if (_timeMode !== 0) {
+                                            if (!data[vbles[_measurementPoints[i].Id].VelocityId].Value) {
+                                                nominalVelocity = _nominalVelocity;
+                                            } else {
+                                                nominalVelocity = data[vbles[_measurementPoints[i].Id].VelocityId].Value / 60;
+                                            }
                                             _loadData.dataPairs.push({
                                                 idPoint: _measurementPoints[i].Id,
                                                 data: {
@@ -1377,18 +1295,28 @@ App3d = (function () {
                                                     kphY: data[vbles[_measurementPoints[i].AssociatedMeasurementPointId].SubVariables.WaveForm.Id].KeyphasorPositions,
                                                     xAngle: vbles[_measurementPoints[i].Id].Angle,
                                                     yAngle: vbles[_measurementPoints[i].AssociatedMeasurementPointId].Angle,
+                                                    xAmp1X: data[vbles[_measurementPoints[i].Id].XAmp1XId].Value,
+                                                    yAmp1X: data[vbles[_measurementPoints[i].Id].YAmp1XId].Value,
+                                                    xPha1X: data[vbles[_measurementPoints[i].Id].XPha1XId].Value,
+                                                    yPha1X: data[vbles[_measurementPoints[i].Id].YPha1XId].Value,
                                                     isFiltered: enableFilter,
-                                                    fc: stopFrecuency,
+                                                    measureType: vbles[_measurementPoints[i].Id].measureType,
+                                                    fc: stopFrequency,
                                                     sampleRate: data[vbles[_measurementPoints[i].Id].SubVariables.WaveForm.Id].SampleRate,
                                                     tS: _measurementPoints[i].RotationDirection,
-                                                    flagDefShaft: true
+                                                    flagDefShaft: true,
+                                                    vel: nominalVelocity,
+                                                    //xAmp1XId: data[vbles[_measurementPoints[i].Id].XAmp1X]
                                                 }
                                             });
 
                                         }
-                                        else if (_timeMode === 0 && (globals3d.flags[id3d + _wId].plots.orb || globals3d.flags[id3d + _wId].plots.ShaftDef ||
-                                        (globals3d.flags[id3d + _wId].plots.sCL))) {
-
+                                        else if (_timeMode === 0 && (globals3d.flags[id3d + _wId].plots.orb || globals3d.flags[id3d + _wId].plots.orb1X || globals3d.flags[id3d + _wId].plots.ShaftDef ||(globals3d.flags[id3d + _wId].plots.sCL))) {
+                                            if (!data[vbles[_measurementPoints[i].Id].VelocityId].Value) {
+                                                nominalVelocity = _nominalVelocity;
+                                            } else {
+                                                nominalVelocity = data[vbles[_measurementPoints[i].Id].VelocityId].Value / 60;
+                                            }
                                             _loadData.dataPairs.push({
                                                 idPoint: _measurementPoints[i].Id,
                                                 data: {
@@ -1398,11 +1326,18 @@ App3d = (function () {
                                                     kphY: data[vbles[_measurementPoints[i].AssociatedMeasurementPointId].SubVariables.WaveForm.Id].KeyphasorPositions,
                                                     xAngle: vbles[_measurementPoints[i].Id].Angle,
                                                     yAngle: vbles[_measurementPoints[i].AssociatedMeasurementPointId].Angle,
+                                                    xAmp1X: data[vbles[_measurementPoints[i].Id].XAmp1XId].Value,
+                                                    yAmp1X: data[vbles[_measurementPoints[i].Id].YAmp1XId].Value,
+                                                    xPha1X: data[vbles[_measurementPoints[i].Id].XPha1XId].Value,
+                                                    yPha1X: data[vbles[_measurementPoints[i].Id].YPha1XId].Value,
                                                     isFiltered: enableFilter,
-                                                    fc: stopFrecuency,
+                                                    measureType: vbles[_measurementPoints[i].Id].measureType,
+                                                    isFiltered: enableFilter,
+                                                    fc: stopFrequency,
                                                     sampleRate: data[vbles[_measurementPoints[i].Id].SubVariables.WaveForm.Id].SampleRate,
                                                     tS: _measurementPoints[i].RotationDirection,
-                                                    flagDefShaft: flagDefShaft
+                                                    flagDefShaft: true,
+                                                    vel: nominalVelocity
                                                 }
                                             });
                                         }
@@ -1426,7 +1361,7 @@ App3d = (function () {
                                                 signal: data[vbles[_measurementPoints[i].Id].SubVariables.WaveForm.Id].RawValue,
                                                 sampleRate: data[vbles[_measurementPoints[i].Id].SubVariables.WaveForm.Id].SampleRate,
                                                 isFiltered: enableFilter,
-                                                fc: stopFrecuency,
+                                                fc: stopFrequency,
                                                 flag: flagSpec
                                             }
 
@@ -1443,7 +1378,7 @@ App3d = (function () {
                                             signal: data[vbles[_measurementPoints[i].Id].SubVariables.WaveForm.Id].RawValue,
                                             sampleRate: data[vbles[_measurementPoints[i].Id].SubVariables.WaveForm.Id].SampleRate,
                                             isFiltered: enableFilter,
-                                            fc: stopFrecuency,
+                                            fc: stopFrequency,
                                             flag: flagSpec
                                         }
                                     });
@@ -1463,7 +1398,7 @@ App3d = (function () {
                     _loadData.dataPairs = [];
                     _loadData.dataTextAndSensors = [];
                     _userInterface.dataIndicators = [];
-                    _loadData.dataPairs = [];
+                    //_loadData.dataPairs = [];
                     if (!globals3d.flags[id3d + _wId].plots.spec) {
                         _loadData.drawChartsWaveform();
                         _loadData.dataWaveform = [];
@@ -1500,17 +1435,13 @@ App3d = (function () {
             }
             if (_timeMode === 1 && canvasType !== "Waterfall" && canvasType !== "FullSpecWaterfall" && canvasType !== "WaterfallRPM" && canvasType !== "FullSpecWaterfallRPM") {
                 
-            //setTimeout(function () {
+            setTimeout(function () {
                 _loadData.loadDataTextAndSensors();
-            //}, 5000);
+            }, 5000);
                 //_loadData.loadDataTextAndSensors();
                 _userInterface.loadValuesCategoryVble(_timeMode, timeStampHist, _pathSubActive);
             }
             
-        };
-
-        _showEditor = function () {
-
         };
 
         _showViewer3d = function (measurementPoints, selectedNode, timeStamp, historicalRange, rpmPositions) {
@@ -1563,26 +1494,79 @@ App3d = (function () {
                                     infoPoint.idPoint = idPoint;
                                     infoPoint.info.relatedIdPoint = measurementPoint.AssociatedMeasurementPointId;
 
-                                    vbles[idPoint] = {};
-                                    vbles[idPoint].Id = idPoint;
-                                    vbles[idPoint].Name = measurementPoint.Name;
-                                    vbles[idPoint].Orientation = measurementPoint.Orientation;
-                                    vbles[idPoint].Angle = measurementPoint.SensorAngle;
-                                    vbles[idPoint].SubVariables = {};
-                                    vbles[idPoint].Axis = infoPoint.axis;
-                                    vbles[idPoint].AssociatedMeasurementPointId = measurementPoint.AssociatedMeasurementPointId;
+                                    
+                                        vbles[idPoint] = {};
+                                        vbles[idPoint].Id = idPoint;
+                                        vbles[idPoint].Name = measurementPoint.Name;
+                                        vbles[idPoint].Orientation = measurementPoint.Orientation;
+                                        vbles[idPoint].Angle = measurementPoint.SensorAngle;
+                                        vbles[idPoint].SubVariables = {};
+                                        vbles[idPoint].Axis = infoPoint.axis;
+                                        vbles[idPoint].AssociatedMeasurementPointId = measurementPoint.AssociatedMeasurementPointId;
+                                        
 
-                                    nodes[id3d + _wId].Properties3d.points.children.push(infoPoint);
+                                        nodes[id3d + _wId].Properties3d.points.children.push(infoPoint);
 
-                                    for (var k = 0; k < measurementPoint.SubVariables.length; k++) {
-                                        if (measurementPoint.SubVariables[k].IsDefaultValue) {
-                                            vbles[idPoint].SubVariables.DefaultValue = new Object(measurementPoint.SubVariables[k]);
+                                        for (var k = 0; k < measurementPoint.SubVariables.length; k++) {
+                                            if (measurementPoint.SubVariables[k].IsDefaultValue) {
+                                                vbles[idPoint].SubVariables.DefaultValue = new Object(measurementPoint.SubVariables[k]);
+                                            }
+                                            else if (measurementPoint.SubVariables[k].ValueType === 3) {
+                                                vbles[idPoint].SubVariables.WaveForm = new Object(measurementPoint.SubVariables[k]);
+                                            }
                                         }
-                                        else if (measurementPoint.SubVariables[k].ValueType === 3) {
-                                            vbles[idPoint].SubVariables.WaveForm = new Object(measurementPoint.SubVariables[k]);
-                                        }
-                                    }
-
+                                    
+                                        for (var j = 0; j < _measurementPoints.length; j++) {
+                                            if (_measurementPoints[j].Id == measurementPoint.AngularReferenceId) {
+                                                for (var k = 0; k < _measurementPoints[j].SubVariables.length; k++) {
+                                                    if (_measurementPoints[j].SubVariables[k].MeasureType == 9) {
+                                                        vbles[idPoint].VelocityId = _measurementPoints[j].SubVariables[k].Id;            
+                                                    }
+                                                }
+                                            }
+                                            if (_measurementPoints[j].AssociatedMeasurementPointId != null) {
+                                                if (_measurementPoints[j].Id == measurementPoint.Id) {
+                                                    for (var k = 0; k < _measurementPoints[j].SubVariables.length; k++) {
+                                                        
+                                                        if (_measurementPoints[j].SubVariables[k].MeasureType == 4) {
+                                                            if (_measurementPoints[j].Orientation == 1) {
+                                                                vbles[idPoint].XAmp1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                            } else if (_measurementPoints[j].Orientation == 2) {
+                                                                vbles[idPoint].YAmp1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                            }
+                                                        }
+                                                        else if (_measurementPoints[j].SubVariables[k].MeasureType == 6) {
+                                                            if (_measurementPoints[j].Orientation == 1) {
+                                                                vbles[idPoint].XPha1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                            } else if (_measurementPoints[j].Orientation == 2) {
+                                                                vbles[idPoint].YPha1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                            }
+                                                        }
+                                                        else if (_measurementPoints[j].SubVariables[k].IsDefaultValue) {
+                                                            vbles[idPoint].measureType = _measurementPoints[j].SubVariables[k].MeasureType;
+                                                        }
+                                                    }
+                                                }
+                                                else if (_measurementPoints[j].Id == measurementPoint.AssociatedMeasurementPointId) {
+                                                    for (var k = 0; k < _measurementPoints[j].SubVariables.length; k++) {
+                                                        if (_measurementPoints[j].SubVariables[k].MeasureType == 4) {
+                                                            if (_measurementPoints[j].Orientation == 1) {
+                                                                vbles[idPoint].XAmp1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                            } else if (_measurementPoints[j].Orientation == 2) {
+                                                                vbles[idPoint].YAmp1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                            }
+                                                        }
+                                                        else if (_measurementPoints[j].SubVariables[k].MeasureType == 6) {
+                                                            if (_measurementPoints[j].Orientation == 1) {
+                                                                vbles[idPoint].XPha1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                            } else if (_measurementPoints[j].Orientation == 2) {
+                                                                vbles[idPoint].YPha1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                            }
+                                                        }
+                                                        }
+                                                    }
+                                                }
+                                            }
                                 }
                                 if (measurementPoint.SensorTypeCode !== 4) {
                                     var waveform = ej.DataManager(measurementPoint.SubVariables).executeLocal(new ej.Query().where("ValueType", "equal", 3, false))[0];
@@ -1601,9 +1585,6 @@ App3d = (function () {
                                         _subVariableList[l].SensorType = sensorType;
                                     }
                                 }
-
-
-
                             }
                         }
                         if (timeMode == 0) {
@@ -2152,7 +2133,7 @@ App3d = (function () {
 
         };
 
-                _createFilterAreaDialogApp3d = function () {
+        _createFilterAreaDialogApp3d = function () {
 
             var parentPPal, parentAreaDialog, parentContAreaDialog, title, width, height, posY;
 
@@ -2218,7 +2199,6 @@ App3d = (function () {
                                '</div>');
 
         };
-
 
         _createAreaDialogApp3d = function () {
 
@@ -2402,10 +2382,7 @@ App3d = (function () {
                             $("#" + children[i].id + _wId).on("change", function (args) {
                                 _userInterface.valueColor = args.target.value;
                                 _userInterface.chooseFunction(args.currentTarget.id);
-                                //_uiWaterfall3d.modalPersonalize.children[i].value = args.target.value;
-
                             });
-                            //"InColor-Waterfall"
                         }
                         if (children[i].type == "Title") {
                             _userInterface.configColorsModalCont.obj.append('<br><div style="display: inline-block; position: relative; padding: 15px 15px 5px 15px;">' + children[i].txt + '</div><br>');
@@ -2442,7 +2419,6 @@ App3d = (function () {
 
         };
 
-
         _createWaterfallAreaDialog = function (historicalRange, rpmPositions) {
 
             var parentPPal,
@@ -2457,6 +2433,10 @@ App3d = (function () {
                 title,
                 width,
                 height;
+
+            if (historicCount > _maxSpecInWaterfall) {
+                historicCount = _maxSpecInWaterfall;
+            }
 
 
             _specContent = [
@@ -2621,13 +2601,13 @@ App3d = (function () {
                 if (!_flagFirstWaterfall) {
                     if ($("#" + _frecContent[1].inputId).val() > parseInt($("#" + _frecContent[1].inputId).attr("max"))) {
                         $("#" + _frecContent[1].inputId).val($("#" + _frecContent[1].inputId).attr("max"));
-                        _waterfall.frecMax = $("#" + _frecContent[1].inputId).attr("max");
+                        _waterfall.frecMax = parseInt($("#" + _frecContent[1].inputId).attr("max"));
                     } else {
-                        _waterfall.frecMax = $("#" + _frecContent[1].inputId).val();
+                        _waterfall.frecMax = parseInt($("#" + _frecContent[1].inputId).val());
                     }
                     if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) {
                         $("#" + _frecContent[0].inputId).val($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
-                        _waterfall.armonicValue = $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel;
+                        _waterfall.armonicValue = parseInt($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
                     }
                 }
 
@@ -2730,7 +2710,6 @@ App3d = (function () {
                        _waterfall.armonicValue = $("#" + _frecContent[0].inputId).val();
                    }
                    _uiWaterfall3d.actualizeGralInfo(false);
-                   
                });
 
                $("#" + _frecContent[1].inputId).change(function () {
@@ -2739,9 +2718,9 @@ App3d = (function () {
                    if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) {
                        $("#" + _frecContent[0].inputId).val(Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel));
                        _waterfall.armonicValue = Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
-                       _waterfall.frecMax = $("#" + _frecContent[1].inputId).val();
+                       _waterfall.frecMax = parseInt($("#" + _frecContent[1].inputId).val());
                    } else {
-                       _waterfall.frecMax = $("#" + _frecContent[1].inputId).val();
+                       _waterfall.frecMax = parseInt($("#" + _frecContent[1].inputId).val());
                    }
 
                    $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": _waterfall.frecMax});
@@ -2896,6 +2875,7 @@ App3d = (function () {
 
             globalsReport.elem3D.push({ 'id': id3d + _wId, 'src': null, type: canvasType });
             _assetId = asset.AssetId;
+            _nodeId = asset.Id;
             //_createAreaDialogApp3d();
         };
 
@@ -2935,8 +2915,7 @@ App3d = (function () {
                     return false;
                 }
             });
-            //amaq3dV.engine.stopRenderLoop();
-            //$("#viewer3dMenu").show();
+
             _pause = true;
         };
 

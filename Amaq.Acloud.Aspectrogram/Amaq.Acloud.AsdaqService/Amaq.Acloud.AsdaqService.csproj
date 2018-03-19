@@ -70,7 +70,7 @@
     <ManifestKeyFile>Amaq.Acloud.AsdaqService_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Amaq.Acloud.CrossCutting, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -84,12 +84,12 @@
     <Reference Include="Amaq.Acloud.Proxy">
       <HintPath>..\References\Amaq.Acloud.Proxy.dll</HintPath>
     </Reference>
-    <Reference Include="Amaq.Libraries.FIRFilter, Version=1.2.1.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Amaq.Libraries.FIRFilter">
       <HintPath>..\References\Amaq.Libraries.FIRFilter.dll</HintPath>
     </Reference>
-    <Reference Include="Amaq.Libraries.LicenseManager">
-      <HintPath>..\References\Amaq.Libraries.LicenseManager.dll</HintPath>
+    <Reference Include="Amaq.Libraries.LicenseManager, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\Amaq.Libraries.LicenseManager\Amaq.Libraries.LicenseManager.dll</HintPath>
     </Reference>
     <Reference Include="Amaq.Libraries.Mail, Version=1.2.1.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -98,8 +98,9 @@
     <Reference Include="Amaq.Libraries.MongoRepository">
       <HintPath>..\References\Amaq.Libraries.MongoRepository.dll</HintPath>
     </Reference>
-    <Reference Include="BouncyCastle.Crypto">
-      <HintPath>..\References\BouncyCastle.Crypto.dll</HintPath>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\References\Amaq.Libraries.LicenseManager\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>

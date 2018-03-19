@@ -234,49 +234,6 @@
         }
     };
 
-    /*
-     * Gestiona cambios en la cache de subVariable HT (Historico)
-     * @param {Array} subVariables Array de objetos de tipo subVariable que se van a manejar en cache HT
-     * @param {String} graphType Tipo de grafico Aspectrogram("signal", "orbit", "bar", etc...)
-     */
-    var _updateCacheHT = function (subVariableIdList, graphType, action) {
-        var
-            // Bandera
-            exist,
-            // Contadores
-            i, j, k;
-
-        exist = false;
-        for (i = 0; i < subVariableIdList.length; i += 1) {
-            for (j = 0; j < subVariableHTList.length; j += 1) {
-                if (subVariableHTList[j].id == subVariableIdList[i]) {
-                    if (action == "update") {
-                        subVariableHTList[j].linkedGraphs.push(graphType);
-                        exist = true;
-                    }
-                    else {
-                        for (k = 0; k < subVariableHTList[j].linkedGraphs.length; k += 1) {
-                            if (subVariableHTList[j].linkedGraphs[k] == graphType) {
-                                subVariableHTList[j].linkedGraphs.splice(k, 1);
-                                break;
-                            }
-                        }
-
-                        if (subVariableHTList[j].linkedGraphs.length == 0) {
-                            subVariableHTList.splice(j, 1);
-                        }
-                    }
-                    break;
-                }
-            }
-
-            if (!exist && action == "update") {
-                subVariableHTList.push({ id: subVariableIdList[i], linkedGraphs: [graphType] });
-            }
-            exist = false;
-        }
-    };
-
    /*
     * Gestiona los objetos en caché necesarios para el Aspectrogram graph que se va a crear
     */
@@ -285,11 +242,6 @@
             case 0: // Tiempo Real
                 _updateCacheRT(subVariableIdList, graphType, action, asdaqId, atrId);
                 break;
-            case 1: // Historico
-                //_updateCacheHT(subVariableIdList, graphType, action);
-                break;
-            default:
-                console.log("No se ha especificado un timeMode para el aspectrogramWidget");
         }
     };
 

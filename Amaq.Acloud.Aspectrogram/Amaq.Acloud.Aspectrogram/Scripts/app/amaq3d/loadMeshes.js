@@ -92,6 +92,7 @@ LoadMeshes = (function () {
             _flags.plots.spec = false;
             _flags.plots.spec100p = false;
             _flags.plots.orb = false;
+            _flags.plots.orb1X = false;
             _flags.plots.ShaftDef = false;
             _flags.plots.sCL = false;
             _flags.plots.waterfall = false;
@@ -138,12 +139,12 @@ LoadMeshes = (function () {
 
             _createParentAxis(idNode);
 
-            isPrincipal = ej.DataManager(mainCache.loadedAssets).executeLocal(new ej.Query().where("Id", "equal", idNode, false))[0].IsPrincipal;
+            _isPrincipal = ej.DataManager(mainCache.loadedAssets).executeLocal(new ej.Query().where("Id", "equal", idNode, false))[0].IsPrincipal;
 
             if (nodes[idNode + wId].Properties3d.gralInfo.idCloned != "") {
                 idNodeSTL = nodes[idNode + wId].Properties3d.gralInfo.idCloned;
             } else {
-                if (isPrincipal) {
+                if (_isPrincipal) {
                     idNodeSTL = idNode;
                 } else {
                     idNodeSTL = viewer3d.parentId[idNode + wId];
@@ -185,10 +186,10 @@ LoadMeshes = (function () {
                         indexPiece = nodes[idNode + wId].Properties3d.points.children[i].indexPiece.level23d;
                     }
                 }
-                
+
                 else if (!nodes[idNode + wId].Properties3d.points.children[i].indexPiece.hasOwnProperty("level13d") && !nodes[idNode + wId].Properties3d.points.children[i].indexPiece.hasOwnProperty(idNode)) {
                     propertyNames = Object.getOwnPropertyNames(nodes[idNode + wId].Properties3d.points.children[i].indexPiece);
-                    
+
                     if (_isPrincipal) {
                         //indexPiece = nodes[idNode + wId].Properties3d.points.children[i].indexPiece[propertyNames[propertyNames.length - 1]];
                         for (var j = 0; j < treeObj.model.fields.dataSource.length; j += 1) {
@@ -199,7 +200,7 @@ LoadMeshes = (function () {
                                     indexPiece = nodes[idNode + wId].Properties3d.points.children[i].indexPiece[idIndexPrincipal];
                                     break;
                                 }
-                            }                           
+                            }
                         }
                     } else {
                         for (var j = 0; j < propertyNames.length; j++) {
@@ -442,7 +443,7 @@ LoadMeshes = (function () {
                     plotsVi[type].push(plot);
                 }
             }
-            if (type === 'orb' || type === 'sCL' || type === 'ShaftDef') {
+            if (type === 'orb' || type === 'sCL' || type === 'ShaftDef' || type === 'orb1X') {
                 for (i = 0; i < nodes[idNode + wId].Properties3d.points.children.length; i++) {
                     if (!nodes[idNode + wId].Properties3d.points.children[i].info.axial) {
                         
@@ -504,7 +505,7 @@ LoadMeshes = (function () {
         this.disposePlots = function (idNode) {
 
             var namePlot, idPoint;
-            var plotTypes = ['trend', 'spec', 'spec100p', 'orb', 'sCL', 'waterfall', 'ShaftDef'];
+            var plotTypes = ['trend', 'spec', 'spec100p', 'orb', 'sCL', 'waterfall', 'ShaftDef', 'orb1X'];
 
             
             for (var i = 0; i < nodes[idNode + wId].Properties3d.points.children.length; i++) {
@@ -522,6 +523,9 @@ LoadMeshes = (function () {
                     }
                     if (_scene.getMeshByName("point-" + globals3d.names.plots["orb"].canvas + idPoint + wId) !== null) {
                         _scene.getMeshByName("point-" + globals3d.names.plots["orb"].canvas + idPoint + wId).dispose();
+                    }
+                    if (_scene.getMeshByName("point-" + globals3d.names.plots["orb1X"].canvas + idPoint + wId) !== null) {
+                        _scene.getMeshByName("point-" + globals3d.names.plots["orb1X"].canvas + idPoint + wId).dispose();
                     }
                     if (_scene.getMeshByName("point-" + globals3d.names.plots["ShaftDef"].canvas + idPoint + wId) !== null) {
                         _scene.getMeshByName("point-" + globals3d.names.plots["ShaftDef"].canvas + idPoint + wId).dispose();
@@ -1143,7 +1147,7 @@ LoadMeshes = (function () {
             globals3d.colors[idEntity + wId].sCL.lc = colors_Prop3d.sCL.lc;
 
             globals3d.colors[idEntity + wId].ShaftDef = new Object(globals3d.colors[idEntity + wId].orb);
-
+            globals3d.colors[idEntity + wId].orb1X = new Object(globals3d.colors[idEntity + wId].orb);
         };
 
         this.locateCamera = function () {

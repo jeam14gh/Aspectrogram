@@ -244,5 +244,29 @@
         /// Cuando se tengan diferentes modulos con diferente configuracion se debe cambiar esta propiedad
         /// </summary>
         public static int SamplesToRead { get; set; }
+
+        /// <summary>
+        /// Cantidad limite de registros de datos históricos que se suben al servidor principal por cada transacción. Por defecto 3000
+        /// </summary>
+        public static int HistoricalDataUploadLimit
+        {
+            get
+            {
+                var appSetting = ConfigurationManager.AppSettings["HistoricalDataUploadLimit"];
+                return (!string.IsNullOrWhiteSpace(appSetting)) ? System.Convert.ToInt32(appSetting) : 3000;
+            }
+        }
+
+        /// <summary>
+        /// Cantidad limite de registros de datos dinámicos históricos que se suben al servidor principal por cada transacción. Por defecto 80
+        /// </summary>
+        public static int HistoricalDataStreamUploadLimit
+        {
+            get
+            {
+                var appSetting = ConfigurationManager.AppSettings["HistoricalDataStreamUploadLimit"];
+                return (!string.IsNullOrWhiteSpace(appSetting)) ? System.Convert.ToInt32(appSetting) : 80;
+            }
+        }
     }
 }

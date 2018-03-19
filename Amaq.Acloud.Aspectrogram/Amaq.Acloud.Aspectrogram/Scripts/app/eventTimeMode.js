@@ -6,199 +6,307 @@
 
 var EventTimeMode = {};
 
-EventTimeMode = function () {
+EventTimeMode = (function () {
     "use strict";
 
-    var
-        _this,
-        _streamParser,
-        _xhrArray,
-        _historicalCount,
-        _initializeHistoricalData,
-        _getStreamHistoricalData,
-        _saveStreamLocal,
-        _getTimeStampToRequest,
-        _currentHistoricalLength;
-
-    _streamParser = new StreamParser();
-    _this = this;
-    _xhrArray = [];
-
     /*
-     * Inicializa la variable HistoricalData con la lista de subvariables segun el tipo de valor y
-     * para la lista de puntos de medicion solicitado
+     * Constructor.
      */
-    _initializeHistoricalData = function (mdVariableIdList, widgetId, valueType) {
+    EventTimeMode = function () {
+        // Propiedades privadas
         var
-            i, j,
-            allSubVariables,
-            typedSubVariables,
-            historicalData;
+            // Auto-referencia de la clase EventTimeMode
+            _this,
+            _streamParser,
+            _historicalCount,
+            _initializeHistoricalData,
+            _getStreamInterval,
+            _getStreamHistoricalData,
+            _saveStreamLocal,
+            _currentHistoricalLength;
 
-        historicalData = [];
-        allSubVariables = [];
-        typedSubVariables = [];
-        for (i = 0; i < mdVariableIdList.length; i += 1) {
-            allSubVariables.pushArray(new ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(
-                new ej.Query().where("Id", "equal", mdVariableIdList[i], false).select("SubVariables"))[0]);
-        }
-        typedSubVariables.pushArray(new ej.DataManager(allSubVariables).executeLocal(new ej.Query().where("ValueType", "equal", valueType, false).select("Id")));
-        for (i = 0; i < typedSubVariables.length; i += 1) {
-            if (!subVariableHTList[typedSubVariables[i]]) {
-                subVariableHTList[typedSubVariables[i]] = [];
+        _streamParser = new StreamParser();
+        _this = this;
+
+        /*
+         * Inicializa la variable HistoricalData con la lista de subvariables segun el tipo de valor y
+         * para la lista de puntos de medicion solicitado
+         */
+        _initializeHistoricalData = function (mdVariableIdList, playerId, valueType) {
+            var
+                i,
+                allSubVariables,
+                typedSubVariables,
+                historicalData;
+
+            historicalData = [];
+            allSubVariables = [];
+            typedSubVariables = [];
+            for (i = 0; i < mdVariableIdList.length; i += 1) {
+                allSubVariables.pushArray(new ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(
+                    new ej.Query().where("Id", "equal", mdVariableIdList[i], false).select("SubVariables"))[0]);
             }
-        }
-        historicalData[widgetId] = {
-            SubVariableIdList: typedSubVariables,
-            TimeStampArray: []
+            typedSubVariables.pushArray(new ej.DataManager(allSubVariables).executeLocal(
+                new ej.Query().where("ValueType", "equal", valueType, false).select("Id")));
+            historicalData[playerId] = {
+                SubVariableIdList: typedSubVariables,
+                TimeStampArray: []
+            };
+            return historicalData;
         };
-        return historicalData;
-    };
 
-    /*
-     * Determina si las estampas de tiempo a buscar ya se encuentran de forma local
-     * Si la estampa no existe localmente se agrega a un array de estampas a consultar
-     */
-    _getTimeStampToRequest = function (timeStampList, historicalData, widgetId) {
-        var
-            i, j,
-            timeStamp,
-            subVariables,
-            tmpTimeStampList;
+        //this.GetAllValues = function (mdVariableIdList, assetId, timeStampList, playerId) {
+        //    var
+        //        historicalData,
+        //        factor,
+        //        iterations,
+        //        interval, i,
+        //        subVariables,
+        //        index,
+        //        timeStampRange;
 
-        tmpTimeStampList = [];
-        subVariables = historicalData[widgetId].SubVariableIdList;
-        for (i = 0; i < timeStampList.length; i += 1) {
-            timeStamp = new Date(timeStampList[i]).getTime();
-            for (j = 0; j < subVariables.length; j += 1) {
-                if (!subVariableHTList[subVariables[j]].hasOwnProperty(timeStamp)) {
-                    tmpTimeStampList.push(timeStampList[i]);
-                    break;
-                }
-            }
-        }
-        return tmpTimeStampList;
-    };
+        //    historicalData = _initializeHistoricalData(mdVariableIdList, playerId, 3);
+        //    for (i = 0; i < timeStampList.length; i += 1) {
+        //        historicalData[playerId].TimeStampArray[i] = new Date(timeStampList[i]).toISOString();
+        //    }
+        //    subVariables = historicalData[playerId].SubVariableIdList;
+        //    aidbManager.GetStreamsNotStored(subVariables, historicalData[playerId].TimeStampArray, assetId, function (timeStampArray) {
+        //        _historicalCount = timeStampArray.length;
+        //        if (_historicalCount === 0) {
+        //            PublisherSubscriber.publish("/historicValues/refresh", historicalData);
+        //            return;
+        //        } else {
+        //            for (i = 0; i < _historicalCount; i += 1) {
+        //                index = historicalData[playerId].TimeStampArray.indexOf(timeStampArray[i]);
+        //                if (index > -1) {
+        //                    historicalData[playerId].TimeStampArray.splice(index, 1);
+        //                }
+        //            }
+        //            PublisherSubscriber.publish("/historicValues/refresh", historicalData);
+        //        }
 
-    this.GetAllValues = function (mdVariableIdList, timeStampList, playerId) {
-        var
-            historicalData,
-            factor,
-            iterations,
-            interval, i,
-            timeStampRange;
+        //        _currentHistoricalLength = 0;
+        //        factor = Math.floor(100 / mdVariableIdList.length);
+        //        factor = (100 % mdVariableIdList.length === 0) ? factor : factor + 1;
+        //        iterations = Math.floor(timeStampArray.length / factor) + 1;
+        //        i = 0;
+        //        interval = setInterval(function () {
+        //            if (i >= iterations) {
+        //                return clearInterval(interval);
+        //            }
+        //            if (i + 1 === iterations) {
+        //                if (timeStampArray.length - i * factor <= 0) {
+        //                    return clearInterval(interval);
+        //                }
+        //                timeStampRange = timeStampArray.slice(i * factor, timeStampArray.length);
+        //            } else {
+        //                timeStampRange = timeStampArray.slice(i * factor, (i + 1) * factor);
+        //            }
+        //            _getStreamHistoricalData(mdVariableIdList, timeStampRange, playerId, historicalData, i, assetId);
+        //            i += 1;
+        //        }, 2000);
+        //    });
+        //};
 
-        historicalData = _initializeHistoricalData(mdVariableIdList, playerId, 3);
-        historicalData[playerId].TimeStampArray = timeStampList;
-        timeStampList = _getTimeStampToRequest(timeStampList, historicalData, playerId);
-        _historicalCount = timeStampList.length;
-        if (_historicalCount === 0) {
-            PublisherSubscriber.publish("/historicValues/refresh", historicalData);
-            return;
-        }
+        //_getStreamHistoricalData = function (mdVariableIdList, timeStampRange, widgetId, historicalData, t, assetId) {
+        //    var
+        //        response;
 
-        _currentHistoricalLength = 0;
-        factor = Math.floor(100 / mdVariableIdList.length);
-        factor = (100 % mdVariableIdList.length === 0) ? factor : factor + 1;
-        iterations = Math.floor(timeStampList.length / factor) + 1;
-        i = 0;
-        interval = setInterval(function () {
-            if (i >= iterations) {
-                return clearInterval(interval);
-            }
-            if (i + 1 === iterations) {
-                if (timeStampList.length - i * factor <= 0) {
-                    return clearInterval(interval);
-                }
-                timeStampRange = timeStampList.slice(i * factor, timeStampList.length);
+        //    $.ajax({
+        //        url: "/Home/GetDynamicHistoricalData",
+        //        method: "POST",
+        //        data: {
+        //            mdVariableIdList: mdVariableIdList,
+        //            timeStampArray: timeStampRange
+        //        },
+        //        success: function (resp) {
+        //            response = JSON.parse(resp);
+        //            _currentHistoricalLength += timeStampRange.length;
+        //            Concurrent.Thread.create(_saveStreamLocal, response, historicalData, timeStampRange, widgetId, assetId, _streamParser);
+        //        },
+        //        error: function (jqXHR, textStatus) {
+        //            console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
+        //        }
+        //    });
+        //};
+
+        //_saveStreamLocal = function (response, historicalData, timeStampArray, widgetId, assetId, streamParser) {
+        //    var
+        //        currentSubVariable,
+        //        dataByTimeStamp,
+        //        timeStamp,
+        //        statusColor,
+        //        stream,
+        //        i, j, k;
+
+        //    for (i = 0; i < response.length; i += 1) {
+        //        currentSubVariable = response[i].HistoricalBySubVariable;
+        //        for (j = 0; j < currentSubVariable.length; j += 1) {
+        //            dataByTimeStamp = currentSubVariable[j].SubVariableDataList;
+        //            for (k = 0; k < dataByTimeStamp.length; k += 1) {
+        //                if (currentSubVariable[j].SubVariableDataList[0].StatusId != "") {
+        //                    statusColor = ej.DataManager(arrayObjectStatus).executeLocal(
+        //                        new ej.Query().where("Id", "equal", currentSubVariable[j].SubVariableDataList[0].StatusId))[0].Color;
+        //                } else {
+        //                    statusColor = "#999999";
+        //                }
+        //                stream = streamParser.GetWaveForm(dataByTimeStamp[k].Value);
+        //                aidbManager.AddStreamItem({
+        //                    subVariableId: currentSubVariable[j].SubVariableId,
+        //                    timeStamp: new Date(dataByTimeStamp[k].TimeStamp + "+00:00").getTime(),
+        //                    value: stream.waveform,
+        //                    sampleTime: stream.sampleTime,
+        //                    referencePositions: stream.keyphasor,
+        //                    statusColor: statusColor,
+        //                    isChangeOfRpm: dataByTimeStamp[k].IsChangeOfRpm,
+        //                    isEvent: dataByTimeStamp[k].IsEvent,
+        //                    isNormal: dataByTimeStamp[k].IsNormal
+        //                }, assetId);
+        //            }
+        //        }
+        //    }
+        //    historicalData[widgetId].TimeStampArray = timeStampArray;
+        //    // Si ya fueron cargados todos los datos notificarlo
+        //    PublisherSubscriber.publish("/historicValues/refresh", historicalData);
+        //};
+
+        this.GetDynamicHistoricalData = function (mdVarIdList, assetNodeId, timeStampList, playerId) {
+            var
+                historicalData,
+                subVarIdList,
+                factor,
+                iterations,
+                index;
+
+            historicalData = _initializeHistoricalData(mdVarIdList, playerId, 3);
+            historicalData[playerId].TimeStampArray = timeStampList;
+            subVarIdList = historicalData[playerId].SubVariableIdList;
+            // Dividir la busqueda de informacion si el rango es demasiado grande
+            factor = Math.floor(5000 / mdVarIdList.length);
+            factor = (5000 % mdVarIdList.length === 0) ? factor : factor + 1;
+            iterations = Math.floor(timeStampList.length / factor) + 1;
+            index = 0;
+            _getStreamInterval(index, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
+        };
+
+        _getStreamInterval = function (position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId) {
+            var
+                timeStampRange,
+                group,
+                notStored,
+                i, j;
+
+            if (position + 1 > iterations) {
+                // Significa que se cumplieron todas las iteraciones
+                return;
+            } else if (position + 1 === iterations) {
+                timeStampRange = timeStampList.slice(position * factor, timeStampList.length);
             } else {
-                timeStampRange = timeStampList.slice(i * factor, (i + 1) * factor);
+                timeStampRange = timeStampList.slice(position * factor, (position + 1) * factor);
             }
-            _xhrArray[i] = _getStreamHistoricalData(mdVariableIdList, timeStampRange, playerId, historicalData, i);
-            i += 1;
-        }, 2000);
-    };
-
-    _getStreamHistoricalData = function (mdVariableIdList, timeStampRange, widgetId, historicalData, t) {
-        var
-            xhr,
-            response;
-
-        xhr = $.ajax({
-            url: "/Home/GetDynamicHistoricalData",
-            method: "POST",
-            data: {
-                mdVariableIdList: mdVariableIdList,
-                timeStampArray: timeStampRange
-            },
-            success: function (resp) {
-                response = JSON.parse(resp);
-                delete _xhrArray[t];
-                _currentHistoricalLength += timeStampRange.length;
-                //_saveStreamLocal(response, historicalData, timeStampRange, widgetId, _xhrArray, _streamParser);
-                Concurrent.Thread.create(_saveStreamLocal, response, historicalData, timeStampRange, widgetId, _xhrArray, _streamParser);
-            },
-            error: function (jqXHR, textStatus) {
-                console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
-            }
-        });
-    };
-
-    _saveStreamLocal = function (response, historicalData, timeStampArray, widgetId, xhrArray, streamParser) {
-        var
-            currentSubVariable,
-            dataByTimeStamp,
-            timeStamp,
-            stream,
-            i, j, k;
-
-        for (i = 0; i < response.length; i += 1) {
-            currentSubVariable = response[i].HistoricalBySubVariable;
-            for (j = 0; j < currentSubVariable.length; j += 1) {
-                dataByTimeStamp = currentSubVariable[j].SubVariableDataList;
-                for (k = 0; k < dataByTimeStamp.length; k++) {
-                    dataByTimeStamp[k].RawTimeStamp = new Date(dataByTimeStamp[k].TimeStamp + "+00:00");
-                    timeStamp = dataByTimeStamp[k].RawTimeStamp.getTime();
-                    dataByTimeStamp[k].TimeStamp = formatDate(dataByTimeStamp[k].RawTimeStamp);
-                    if (!subVariableHTList[currentSubVariable[j].SubVariableId]) {
-                        subVariableHTList[currentSubVariable[j].SubVariableId] = [];
+            notStored = clone(timeStampRange);
+            aidbManager.GetStoredStreams(subVarIdList, timeStampRange, assetNodeId, function (resp) {
+                // Si se encuentra la informacion almacenda, se publica que esas estampas existen
+                for (i = 0; i < resp.length; i += 1) {
+                    j = notStored.indexOf(resp[i]);
+                    if (j > -1) {
+                        notStored.splice(j, 1);
                     }
-                    if (dataByTimeStamp[k].StatusId != "") {
-                        dataByTimeStamp[k].StatusColor = ej.DataManager(arrayObjectStatus).executeLocal(
-                            new ej.Query().where("Id", "equal", dataByTimeStamp[k].StatusId))[0].Color;
-                    } else {
-                        dataByTimeStamp[k].StatusColor = "#999999";
+                }
+                // Publicar datos existentes
+                if (resp.length > 0) {
+                    historicalData[playerId].TimeStampArray = resp;
+                    PublisherSubscriber.publish("/historicValues/refresh", historicalData);
+                }
+                // Consultar datos faltantes
+                if (notStored.length > 0) {
+                    historicalData[playerId].TimeStampArray = notStored;
+                    timeStampRange = [];
+                    for (i = 0; i < notStored.length; i += 1) {
+                        timeStampRange[i] = new Date(notStored[i]).toISOString();
                     }
+                    _getStreamHistoricalData(mdVarIdList, timeStampRange, assetNodeId, historicalData, playerId, subVarIdList);
+                    sleep(500).then(function () {
+                        position += 1;
+                        _getStreamInterval(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
+                    });
+                } else {
+                    position += 1;
+                    _getStreamInterval(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
+                }
+            });
+        };
 
-                    stream = streamParser.GetWaveForm(dataByTimeStamp[k].Value);
-                    if (stream.keyphasor.length > 0) {
-                        dataByTimeStamp[k].KeyphasorPositionsOnTime = GetKeyphasorOnTime(stream.keyphasor, stream.sampleTime, stream.signalLength);
-                        dataByTimeStamp[k].KeyphasorPositions = stream.keyphasor;
+        _getStreamHistoricalData = function (mdVarIdList, timeStampRange, assetNodeId, historicalData, playerId, subVarIdList) {
+            var
+                response;
+
+            $.ajax({
+                url: "/Home/GetDynamicHistoricalData",
+                method: "POST",
+                data: {
+                    mdVariableIdList: mdVarIdList,
+                    timeStampArray: timeStampRange
+                },
+                success: function (resp) {
+                    response = JSON.parse(resp);
+                    //_saveStreamLocal(response, historicalData, playerId, subVarIdList, assetNodeId, _streamParser);
+                    Concurrent.Thread.create(_saveStreamLocal, response, historicalData, playerId, subVarIdList, assetNodeId, _streamParser);
+                },
+                error: function (jqXHR, textStatus) {
+                    console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
+                }
+            });
+        };
+
+        _saveStreamLocal = function (response, historicalData, playerId, subVarIdList, assetNodeId, streamParser) {
+            var
+                dataArray,
+                i, j, k,
+                currentSubVariable,
+                dataByTimeStamp,
+                statusColor,
+                stream;
+
+            dataArray = [];
+            for (i = 0; i < response.length; i += 1) {
+                currentSubVariable = response[i].HistoricalBySubVariable;
+                for (j = 0; j < currentSubVariable.length; j += 1) {
+                    dataByTimeStamp = currentSubVariable[j].SubVariableDataList;
+                    for (k = 0; k < dataByTimeStamp.length; k += 1) {
+                        if (currentSubVariable[j].SubVariableDataList[0].StatusId !== "") {
+                            statusColor = ej.DataManager(arrayObjectStatus).executeLocal(
+                                new ej.Query().where("Id", "equal", currentSubVariable[j].SubVariableDataList[0].StatusId))[0].Color;
+                        } else {
+                            statusColor = "#999999";
+                        }
+                        // En caso de que la informacion no se encuentre correctamente almacenada
+                        if (dataByTimeStamp[k].Value === null) {
+                            continue;
+                        }
+                        stream = streamParser.GetWaveForm(dataByTimeStamp[k].Value);
+                        dataArray.push({
+                            subVariableId: currentSubVariable[j].SubVariableId,
+                            timeStamp: new Date(dataByTimeStamp[k].TimeStamp + "+00:00").getTime(),
+                            value: stream.waveform,
+                            sampleTime: stream.sampleTime,
+                            referencePositions: stream.keyphasor,
+                            statusColor: statusColor,
+                            isChangeOfRpm: dataByTimeStamp[k].IsChangeOfRpm,
+                            isEvent: dataByTimeStamp[k].IsEvent,
+                            isNormal: dataByTimeStamp[k].IsNormal
+                        });
                     }
-
-                    dataByTimeStamp[k].Value = GetXYDataOnTime(stream.waveform, stream.sampleTime);
-                    dataByTimeStamp[k].RawValue = stream.waveform;
-                    dataByTimeStamp[k].SampleRate = stream.signalLength / stream.sampleTime;
-
-                    subVariableHTList[currentSubVariable[j].SubVariableId][timeStamp] = dataByTimeStamp[k];
                 }
             }
-        }
+            aidbManager.AddStreamItemList(dataArray, assetNodeId);
+            PublisherSubscriber.publish("/historicValues/refresh", historicalData);
+        };
 
-        historicalData[widgetId].TimeStampArray = timeStampArray;
-        // Si ya fueron cargados todos los datos notificarlo
-        PublisherSubscriber.publish("/historicValues/refresh", historicalData);
-    };
+        this.Stop = function () {
+            // REVISAR QUE OPCIONES SE COLOCAN AQUI
+        };
+    }
 
-    this.Stop = function () {
-        var
-            i;
-
-        for (i = 1; i < _xhrArray.length; i += 1) {
-            if (_xhrArray[i]) {
-                _xhrArray[i].abort();
-            }
-        }
-        _xhrArray = [];
-    };
-};
+    return EventTimeMode;
+})();

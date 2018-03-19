@@ -134,6 +134,10 @@ var globals3d = {
                 canvas: "canvas-Orb-",
                 chart: "chart-Orb-"
             },
+            orb1X: {
+                canvas: "canvas-Orb1X-",
+                chart: "chart-Orb1X-"
+            },
             sCL:{
                 canvas: "canvas-sCL-",
                 chart: "chart-sCL-"
@@ -313,6 +317,26 @@ var eliminateDuplicatesArray = function (arr) {
     return out;
 };
 
+function checkDuplicateInObject(propertyName, inputArray) {
+    var seenDuplicate = false,
+        testObject = {};
+
+    inputArray.map(function (item) {
+        var itemPropertyName = item[propertyName];
+        if (itemPropertyName in testObject) {
+            testObject[itemPropertyName].duplicate = true;
+            item.duplicate = true;
+            seenDuplicate = true;
+        }
+        else {
+            testObject[itemPropertyName] = item;
+            delete item.duplicate;
+        }
+    });
+
+    return seenDuplicate;
+}
+
 function removeDuplicates(originalArray, prop) {
     var newArray = [];
     var lookupObject = {};
@@ -326,6 +350,17 @@ function removeDuplicates(originalArray, prop) {
     }
     return newArray;
 };
+
+function removeDuplicates2(arr, prop) {
+    var obj = {};
+    for (var i = 0, len = arr.length; i < len; i++) {
+        arr[i][prop] = parseFloat(arr[i][prop].toFixed(3));
+        if (!obj[arr[i][prop]]) obj[arr[i][prop]] = arr[i];
+    }
+    var newArr = [];
+    for (var key in obj) newArr.push(obj[key]);
+    return newArr;
+}
 
 $.fn.textWidth = function (text, font) {
     if (!$.fn.textWidth.fakeEl) $.fn.textWidth.fakeEl = $('<span>').hide().appendTo(document.body);
@@ -410,6 +445,8 @@ function plotsSpec() {
     smallerText();
     positionText();
 };
+
+var chartProv;
 
 
 var epmPlanta = {

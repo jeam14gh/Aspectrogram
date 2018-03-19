@@ -260,18 +260,24 @@ TreeViewControl = (function () {
                         //        new MeasurementPointAdmin().Copy(selectedMeasurementPoint);
                         //}
                     },
-                    paste: function () {
-                        if (selectedTreeNode.EntityType == 1)
-                            new AssetAdmin().Paste(selectedTreeNode);
-                        else if (selectedTreeNode.EntityType == 2)
-                            new AssetAdmin().Paste(selectedTreeNode);
-                    },
+                    //paste: function () {
+                    //    if (selectedTreeNode.EntityType == 1)
+                    //        new AssetAdmin().Paste(selectedTreeNode);
+                    //    else if (selectedTreeNode.EntityType == 2)
+                    //        new AssetAdmin().Paste(selectedTreeNode);
+                    //},
                     keydown: function (e) {
                         if (e.which == 113) { //F2
                             _editTreeNode();
                         }
                         else if (e.which == 27) { // ESC 
                             _cancelEditTreeNode();
+                        }
+                        else if ((e.keyCode == 86) && (e.ctrlKey)) { // Pegar
+                            if (selectedTreeNode.EntityType == 1)
+                                new AssetAdmin().Paste(selectedTreeNode);
+                            else if (selectedTreeNode.EntityType == 2)
+                                new AssetAdmin().Paste(selectedTreeNode);
                         }
                     }
                 });
@@ -302,7 +308,7 @@ TreeViewControl = (function () {
                         $("li#editMeasurementPointMenuItem").removeClass("disabled");
                         //this.enableItemByID("deleteMeasurementPointMenuItem");
                     }
-                },
+                }
             });
 
             //principalParent = dataManager.executeLocal(new ej.Query().where("ParentId", "equal", "", false));
@@ -580,8 +586,6 @@ TreeViewControl = (function () {
                     }
 
                     listboxControl.CreateListbox(selectedTreeNode, measurementPointsWithStatus);
-                    // Contador que ayuda a cargar la vista resumen de activos a partir de una ubicación
-                    _loadedListbox += 1;
                 } else {
                     selectedAsset = null;
                     selectedMdVariable = null;
@@ -824,10 +828,10 @@ TreeViewControl = (function () {
             if (selectedMdVariable != null) {
                 switch (menuItem) {
                     case "waveformMenuItem":
-                        new WaveformGraph(0, 6, 4, true).Show();
+                        new WaveformGraph(0, 12, 4, true).Show();
                         break;
                     case "spectrumMenuItem":
-                        new SpectrumGraph(0, 6, 4, true).Show();
+                        new SpectrumGraph(0, 12, 4, true).Show();
                         break;
                     case "orbitSpectrumMenuItem":
                         new FullSpectrumGraph(0, 12, 5, true).Show();

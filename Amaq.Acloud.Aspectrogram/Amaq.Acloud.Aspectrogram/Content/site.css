@@ -4,6 +4,13 @@
 
 .container-fluid, .container {
     height: 100% !important;
+    padding-right: 0px;
+    padding-left: 0px;
+}
+
+.container-fluid>.navbar-collapse, .container-fluid>.navbar-header, .container>.navbar-collapse, .container>.navbar-header {
+    margin-right: 20px;
+    margin-left: 30px;
 }
 
 .container {
@@ -259,10 +266,10 @@ h4 {
     margin-top: 10px !important;
 }
 
-    .vertical-x-labels > div > div .dygraph-axis-label-x {
-        -webkit-transform: rotate(-90deg);
-        -moz-transform: rotate(-90deg);
-    }
+.vertical-x-labels > div > div .dygraph-axis-label-x {
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+}
 
 .lineBreaking {
     white-space: nowrap;
@@ -270,22 +277,26 @@ h4 {
 }
 
 
-/* JHC: Aqui defino para todo el sitio el tamaño de letra a 10px ==> Si todo va bien usar este o personalizar para cada uno segun se vea mejor */
+/* JHC: Aqui defino para todo el sitio el tamaño de letra a 12px ==> Si todo va bien usar este o personalizar para cada uno segun se vea mejor */
 
 body {
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .e-treeview .e-text {
-    font-size: 10px !important;
+    font-size: 12px !important;
 }
 
 .e-ddl .e-input, .e-ddl-popup, .e-ddl .e-options {
-    font-size: 10px !important;
+    font-size: 12px !important;
 }
 
 .dropdown-menu {
-    font-size: 10px !important;
+    font-size: 12px !important;
+}
+
+.aw-menu {
+    font-size: 14px !important;
 }
 
 .e-dialog .e-header, .e-dialog .e-widget-content, .e-dialog .e-input, .e-grid {
@@ -369,12 +380,26 @@ fieldset > legend {
 }
 
 .validateField{
-    border-color: red;
-    border-width: 2px;
-    border-style: solid;
+    border-color: red !important;
+    border-width: 2px !important;
+    border-style: solid !important;
 }
 
 /*Alto del header de columnas del grid de NiDevices*/
 #GridNiDevices table thead>tr:nth-child(2){
     height: 35px;
+}
+
+.dropdown-menu {
+    z-index: 10000 !important;
+}
+
+/* Container-fluid */
+.cf {
+    padding-right: 15px !important;
+    padding-left: 15px !important;
+}
+
+.grid-stack>.grid-stack-item>.grid-stack-item-content {
+    z-index: auto !important;
 }

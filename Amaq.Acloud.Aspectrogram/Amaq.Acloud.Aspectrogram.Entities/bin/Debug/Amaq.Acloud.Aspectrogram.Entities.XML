@@ -460,6 +460,11 @@
             Cantidad limite de registros de datos históricos que se suben al servidor principal por cada transacción
             </summary>
         </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.HistoricalDataStreamUploadLimit">
+            <summary>
+            Cantidad limite de registros de datos dinámicos históricos que se suben al servidor principal por cada transacción
+            </summary>
+        </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Entities.AtrAiChannel">
             <summary>
             Representa un canal análogo de entrada de un dispositivo Atransmiter

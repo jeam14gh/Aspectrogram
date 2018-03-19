@@ -942,6 +942,7 @@ UiWaterfall3d = (function () {
          */
         _launchFullScreen = function () {
 
+
             _fullScreen = true;
 
             var element = document.getElementById(_containerId);
@@ -953,6 +954,8 @@ UiWaterfall3d = (function () {
             } else if (element.webkitRequestFullScreen) {
                 element.webkitRequestFullScreen();
             }
+            _fullScreen = false;
+
         };
 
         /*

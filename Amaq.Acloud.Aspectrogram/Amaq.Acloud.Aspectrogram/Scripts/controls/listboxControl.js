@@ -238,7 +238,7 @@ ListboxControl = (function () {
                     }
                 },
                 create: function (args) {
-                    ListboxControl.ManageAssetMenu();
+                    ListboxControl.ManageAssetMenu();                    
                 },
                 itemDragStop: function (args) {
                     // Cancela el Drag si no es relación punto - canal Asdaq
@@ -301,7 +301,7 @@ ListboxControl = (function () {
                                 tmpAsset.ConditionStatusEventsConfig = [];
                                 tmpAsset.NormalInterval = result[i].NormalInterval;
                                 tmpAsset.AtrId = result[i].AtrId;
-
+                                tmpAsset.NodeId = result[i].NodeId;
                                 tmpAsset.Description = result[i].Description;
                                 tmpAsset.TripMultiply = result[i].TripMultiply;
                                 tmpAsset.TransientStatusTimeout = result[i].TransientStatusTimeout;
@@ -318,7 +318,7 @@ ListboxControl = (function () {
                                 assetNode.ConditionStatusEventsConfig = result[i].ConditionStatusEventsConfig;
                                 assetNode.NormalInterval = result[i].NormalInterval;
                                 assetNode.AtrId = result[i].AtrId;
-
+                                assetNode.NodeId = result[i].NodeId;
                                 assetNode.Description = result[i].Description;
                                 assetNode.TripMultiply = result[i].TripMultiply;
                                 assetNode.TransientStatusTimeout = result[i].TransientStatusTimeout;

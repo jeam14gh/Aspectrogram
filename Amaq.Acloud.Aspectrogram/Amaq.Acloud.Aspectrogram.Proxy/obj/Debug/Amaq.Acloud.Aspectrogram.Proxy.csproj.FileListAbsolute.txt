@@ -50,3 +50,4 @@ E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogra
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\obj\Debug\Amaq.Acloud.Aspectrogram.Proxy.csprojResolveAssemblyReference.cache
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\obj\Debug\Amaq.Acloud.Aspectrogram.Proxy.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\obj\Debug\Amaq.Acloud.Aspectrogram.Proxy.pdb
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Acloud.CrossCutting.pdb

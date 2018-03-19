@@ -228,7 +228,7 @@
                                                 {
                                                     log.Error("Ha ocurrido un error en UpdateRealTime para HMI", ex);
                                                 }
-                                            });
+                                            }, TaskCreationOptions.LongRunning);
                                         }
                                     }
 
@@ -243,11 +243,20 @@
                                                 measurementPointBl.UpdateRealTime(measurementPoints, _currentStatusByAsset, assets);
                                                 log.Debug("4. ACTUALIZACION DE DATOS TIEMPO REAL EN SERVIDOR COMPLETADO");
                                             }
+                                            //catch (TaskCanceledException ex)
+                                            //{
+                                            //    // Check ex.CancellationToken.IsCancellationRequested here.
+                                            //    // If false, it's pretty safe to assume it was a timeout.
+                                            //    if (!ex.CancellationToken.IsCancellationRequested)
+                                            //    {
+
+                                            //    }
+                                            //}
                                             catch (Exception ex)
                                             {
                                                 log.Error("Ha ocurrido un error en UpdateRealTime", ex);
                                             }
-                                        });
+                                        }, TaskCreationOptions.LongRunning);
                                     }
 
                                     //// Se pasa _aquisitionBuffer como parámetro xq en pruebas de concepto se comprobó que así es la única manera
@@ -356,7 +365,6 @@
                                                 //eventsInProcess.IsChangeOfRpm = false;
                                                 //eventsInProcess.IsChangeOfConditionStatus = false;
                                             });
-
 
                                         if (_acquisitionBuffer[measurementPoints[0].PrincipalAssetId][measurementPoints[0].Id].Count >= 2)
                                         {
@@ -495,8 +503,6 @@
             // para ser registrados en HistoricalData
             new TaskFactory().StartNew(() =>
             {
-                var hasStreams = true;
-
                 while (true)
                 {
                     try
@@ -519,8 +525,10 @@
                         }
 
                         var localHistoricalDataList = new List<HistoricalData>();
-                        var bufferToStore = new List<BufferDataItem>();
+                        var localHistoricalDataStreamList = new List<HistoricalDataStream>();
                         var acquisitionBuffer = _acquisitionBuffer;
+                        Task addManyHistoricalDataTask = null;
+                        Task addManyHistoricalDataStream = null;
 
                         acquisitionBuffer
                             .ToList()
@@ -538,8 +546,6 @@
 
                                         if ((data != null) && (data.Count > 0))
                                         {
-                                            bufferToStore.AddRange(data);
-
                                             var measurementPoint =
                                                 _asdaqConfiguration.RelatedMeasurementPoints
                                                     .Where(rm => rm.Id == measurementPointB.Key).FirstOrDefault();
@@ -554,6 +560,8 @@
                                                     .Where(s => s.ValueType == Entities.Enums.ValueType.Waveform)?
                                                     .Select(s => s.Id).ToList();
 
+                                            var hasStreams = (streamSubVariableIdList != null);
+
                                             localHistoricalDataList.AddRange(
                                             data
                                                 .Select(dataItem =>
@@ -563,47 +571,128 @@
                                                         (numericSubVariableIdList != null) ? dataItem.Values
                                                             .Where(v => numericSubVariableIdList.Contains(v.Id))?
                                                             .Select(v => new NumericDataItem(v.Id, v.StatusId, (double)v.Value)).ToList() : null,
-                                                        (streamSubVariableIdList != null) ? dataItem.Values
-                                                            .Where(v => streamSubVariableIdList.Contains(v.Id))?
-                                                            .Select(v => new StreamDataItem(v.Id, v.StatusId, (byte[])v.Value)).ToList() : null,
+                                                        null,
                                                         dataItem.IsChangeOfConditionStatus,
                                                         dataItem.IsNormal,
                                                         dataItem.IsChangeOfRpm,
                                                         hasStreams,
                                                         assetB.Key)));
+
+                                            if (hasStreams)
+                                            {
+                                                localHistoricalDataStreamList.AddRange(
+                                                    data.Select(dataItem =>
+                                                        new HistoricalDataStream(
+                                                            measurementPointB.Key,
+                                                            dataItem.TimeStamp,
+                                                            (streamSubVariableIdList != null) ? dataItem.Values
+                                                            .Where(v => streamSubVariableIdList.Contains(v.Id))?
+                                                            .Select(v => new StreamDataItem(v.Id, v.StatusId, (byte[])v.Value)).ToList() : null,
+                                                            assetB.Key)));
+                                            }
+
+                                            // control para evitar error 404 not found debido a tamaño excesivo de solicitud http
+                                            if (localHistoricalDataList.Count >= 50)
+                                            {
+                                                return;  // salir del ForEach
+                                            }
                                         }
                                     });
+
+                                    // control para evitar error 404 not found debido a tamaño excesivo de solicitud http
+                                    if (localHistoricalDataList.Count >= 50)
+                                    {
+                                        return; // salir del ForEach
+                                }
                             });
 
                         if (localHistoricalDataList.Count > 0)
                         {
-                            var localHistoricalDataAsc = localHistoricalDataList.OrderBy(h => h.TimeStamp).ToList();
-
-                            try
+                            addManyHistoricalDataTask = new TaskFactory().StartNew(() =>
                             {
-                                new HistoricalDataProxy(
-                                    (AsdaqProperties.UseRedundantAcloudForHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState,
-                                    AsdaqProperties.UseRedundantAcloudForHMI)
-                                        .AddMany(localHistoricalDataAsc/*.Map().ToList()*/);
-                            }
-                            catch (SecurityException ex)
+                                var localHistoricalDataAsc = localHistoricalDataList.OrderBy(h => h.TimeStamp).ToList();
+
+                                try
+                                {
+                                    try
+                                    {
+                                        new HistoricalDataProxy(
+                                            (AsdaqProperties.UseRedundantAcloudForHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState,
+                                            AsdaqProperties.UseRedundantAcloudForHMI)
+                                                .AddMany(localHistoricalDataAsc/*.Map().ToList()*/);
+                                    }
+                                    catch (SecurityException ex)
+                                    {
+                                        log.Debug(ex.Message);
+
+                                        if (AsdaqProperties.UseRedundantAcloudForHMI)
+                                        {
+                                            SecurityBl.LoginForHMI();
+                                        }
+                                        else
+                                        {
+                                            SecurityBl.Login();
+                                        }
+
+                                        new HistoricalDataProxy(
+                                            (AsdaqProperties.UseRedundantAcloudForHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState,
+                                            AsdaqProperties.UseRedundantAcloudForHMI)
+                                                .AddMany(localHistoricalDataAsc/*.Map().ToList()*/);
+                                    }
+                                }
+                                catch(Exception ex)
+                                {
+                                    throw ex;
+                                }
+                            });
+
+                            if(localHistoricalDataStreamList.Count > 0)
                             {
-                                log.Debug(ex.Message);
-
-                                if (AsdaqProperties.UseRedundantAcloudForHMI)
+                                addManyHistoricalDataStream = new TaskFactory().StartNew(() =>
                                 {
-                                    SecurityBl.LoginForHMI();
-                                }
-                                else
-                                {
-                                    SecurityBl.Login();
-                                }
+                                    var localHistoricalDataStreamAsc = localHistoricalDataStreamList.OrderBy(h => h.TimeStamp).ToList();
 
-                                new HistoricalDataProxy(
-                                    (AsdaqProperties.UseRedundantAcloudForHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState,
-                                    AsdaqProperties.UseRedundantAcloudForHMI)
-                                        .AddMany(localHistoricalDataAsc/*.Map().ToList()*/);
+                                    try
+                                    {
+                                        try
+                                        {
+                                            new HistoricalDataStreamProxy(
+                                                (AsdaqProperties.UseRedundantAcloudForHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState,
+                                                AsdaqProperties.UseRedundantAcloudForHMI)
+                                                    .AddMany(localHistoricalDataStreamAsc);
+                                        }
+                                        catch (SecurityException ex)
+                                        {
+                                            log.Debug(ex.Message);
+
+                                            if (AsdaqProperties.UseRedundantAcloudForHMI)
+                                            {
+                                                SecurityBl.LoginForHMI();
+                                            }
+                                            else
+                                            {
+                                                SecurityBl.Login();
+                                            }
+
+                                            // Si la cantidad de registros a insertar supera el la longitud máxima de la solicitud http entonces la API retorna 404(Not found)
+                                            new HistoricalDataStreamProxy(
+                                                (AsdaqProperties.UseRedundantAcloudForHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState,
+                                                AsdaqProperties.UseRedundantAcloudForHMI)
+                                                    .AddMany(localHistoricalDataStreamAsc);
+                                        }
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        throw ex;
+                                    }
+                                });
                             }
+
+                            // Esperar a que terminen las inserciones en HistoricalData e HistoricalDataStream
+                            addManyHistoricalDataTask?.GetAwaiter().GetResult();
+                            addManyHistoricalDataStream?.GetAwaiter().GetResult();
+
+                            //log.Info(localHistoricalDataList.Count + " documentos registrados correctamente!!!");
 
                             // Marcar en el búfer de adquisición los datos que fueron almacenados en la base de datos
                             localHistoricalDataList.ForEach(lh =>
@@ -615,8 +704,12 @@
                                     current.StoredInBD = true;
                                 }
                             });
-                            //bufferToStore.ForEach(dataItem => { dataItem.StoredInBD = true; });
 
+                            if (localHistoricalDataList.Count > 0)
+                            {
+                                var asStoredInBuffer = _acquisitionBuffer.ToList().SelectMany(_ => _.Value.ToList()).SelectMany(_ => _.Value.ToList()).Where(_ => _.IsNormal && !_.StoredInBD).Count();
+                                //log.Info(localHistoricalDataList.Count + " documentos registrados correctamente - Marcados como no StoredInBD: " + asStoredInBuffer);
+                            }
 
                             log.Debug("Datos registrados correctamente en HistoricalData desde el bufer de adquisicion");
                         }
@@ -625,8 +718,6 @@
                     {
                         log.Error("Ha ocurrido un error registrando en HistoricalData desde el bufer de adquisicion", ex);
                     }
-
-                    System.Threading.Thread.Sleep(3000); // Descanso de 3 segundos para el procesador
                 }
             }, TaskCreationOptions.LongRunning);
         }

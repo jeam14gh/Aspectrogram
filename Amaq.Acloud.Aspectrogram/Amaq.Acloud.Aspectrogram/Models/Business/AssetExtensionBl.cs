@@ -227,10 +227,24 @@
             {
                 foreach (var a in assets)
                 {
-                    if (a.ConditionStatusEventsConfig[0] == null)
-                        a.ConditionStatusEventsConfig = null;
+                    if (a.ConditionStatusEventsConfig != null)
+                    {
+                        foreach (var c in a.ConditionStatusEventsConfig)
+                        {
+                            if (c.NotifyList != null)
+                            {
+                                c.NotifyList = c.NotifyList.Where(x => x != null).ToList();
+                                c.NotifyList = (c.NotifyList.Count == 0) ? null : c.NotifyList;
+                            }
+                        }
+                    }
+
+                    if (a.RpmEventConfig != null)
+                        a.RpmEventConfig.NotifyList = null;
 
                     _assetExtensionRepository.UpdateProperties(a);
+                    var node = new NodeToUpdateDto { Id = a.NodeId, Name = a.Name, Description= a.Description };
+                    new NodeBl(CoreDbUrl).UpdateNameAndDescription(node);
                 }
             }
         }

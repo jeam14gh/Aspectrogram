@@ -13,8 +13,8 @@ ChartScaleY = (function () {
         var
             // Auto-referencia a la clase ChartScaleY
             _this,
-            // Array de objetos que contienen los diferentes valores que corresponden al
-            // maximo valor en Y para cada uno de los graficos
+            // Array de objetos que contienen los diferentes valores que corresponden a los
+            // valores minimos y maximos en Y para cada uno de los graficos
             _maximumYValues;
 
         _this = this;
@@ -25,34 +25,37 @@ ChartScaleY = (function () {
          * @param {String} graphType Cadena de texto que identifica el tipo de grafica que se desea agregar
          * @param {Integer} widgetId Identificacion del Widget que 
          * @param {Integer} sensorCode Tipo de sensor ligado a la grafica
-         * @param {Double} largestY Valor maximo en Y del grafico que se desea agregar
+         * @param {Double} minY Valor minimo en Y del grafico que se desea agregar
+         * @param {Double} maxY Valor maximo en Y del grafico que se desea agregar
          */
-        this.AttachGraph = function (graphType, widgetId, sensorCode, largestY) {
-            Concurrent.Thread.create(function (graphType, widgetId, sensorCode, largestY, maximumYValues) {
+        this.AttachGraph = function (graphType, widgetId, sensorCode, minY, maxY) {
+            Concurrent.Thread.create(function (graphType, widgetId, sensorCode, minY, maxY, maximumYValues) {
                 var
-                    dataToPublish,
-                    currentWidget,
-                    largest;
+                    // Listado de objetos widgets de cada una de las graficas abiertas del mismo tipo de sensor
+                    widgetObjList,
+                    // Array de valores maximos y minimos de todas las graficas del mismo tipo de sensor
+                    minMaxArray,
+                    // Contador
+                    i,
+                    // Informacion de valores maximos y minimos de las graficas abiertas del mismo tipo de sensor
+                    dataToPublish;
 
                 if (!maximumYValues[graphType]) {
                     maximumYValues[graphType] = [];
                 }
-
                 if (!maximumYValues[graphType][sensorCode]) {
                     maximumYValues[graphType][sensorCode] = [];
                 }
-
-                maximumYValues[graphType][sensorCode][widgetId] = largestY;
-                dataToPublish = [];
-                largest = 0;
-                for (currentWidget in maximumYValues[graphType][sensorCode]) {
-                    if (maximumYValues[graphType][sensorCode][currentWidget] > largest) {
-                        largest = maximumYValues[graphType][sensorCode][currentWidget];
-                    }
+                maximumYValues[graphType][sensorCode][widgetId] = [minY, maxY];
+                widgetObjList = maximumYValues[graphType][sensorCode];
+                minMaxArray = [];
+                for (i = 0; i < Object.keys(widgetObjList).length; i += 1) {
+                    minMaxArray.push(widgetObjList[Object.keys(widgetObjList)[i]]);
                 }
-                dataToPublish[sensorCode] = largest;
+                dataToPublish = [];
+                dataToPublish[sensorCode] = [arrayColumn(minMaxArray, 0).min(), arrayColumn(minMaxArray, 1).max()];
                 PublisherSubscriber.publish("/scale/" + graphType, dataToPublish);
-            }, graphType, widgetId, sensorCode, largestY, _maximumYValues);
+            }, graphType, widgetId, sensorCode, minY, maxY, _maximumYValues);
         };
 
         /*
@@ -64,20 +67,33 @@ ChartScaleY = (function () {
         this.DetachGraph = function (graphType, widgetId, sensorCode) {
             Concurrent.Thread.create(function (graphType, widgetId, sensorCode, maximumYValues) {
                 var
-                    dataToPublish,
-                    currentWidget,
-                    largest;
+                    // Listado de objetos widgets de cada una de las graficas abiertas del mismo tipo de sensor
+                    widgetObjList,
+                    // Array de valores maximos y minimos de todas las graficas del mismo tipo de sensor
+                    minMaxArray,
+                    // Contador
+                    i,
+                    // Informacion de valores maximos y minimos de las graficas abiertas del mismo tipo de sensor
+                    dataToPublish;
 
-                delete maximumYValues[graphType][sensorCode][widgetId];
-                dataToPublish = [];
-                largest = 0;
-                for (currentWidget in maximumYValues[graphType][sensorCode]) {
-                    if (maximumYValues[graphType][sensorCode][currentWidget] > largest) {
-                        largest = maximumYValues[graphType][sensorCode][currentWidget];
+                if (maximumYValues[graphType]) {
+                    widgetObjList = maximumYValues[graphType][sensorCode];
+                    // Borramos el objeto widget de la lista de objetos
+                    delete widgetObjList[widgetId];
+                    minMaxArray = [];
+                    for (i = 0; i < Object.keys(widgetObjList).length; i += 1) {
+                        minMaxArray.push(widgetObjList[Object.keys(widgetObjList)[i]]);
                     }
+                    largest = 0;
+                    for (currentWidget in maximumYValues[graphType][sensorCode]) {
+                        if (maximumYValues[graphType][sensorCode][currentWidget] > largest) {
+                            largest = maximumYValues[graphType][sensorCode][currentWidget];
+                        }
+                    }
+                    dataToPublish = [];
+                    dataToPublish[sensorCode] = [arrayColumn(minMaxArray, 0).min(), arrayColumn(minMaxArray, 1).max()];
+                    PublisherSubscriber.publish("/scale/" + graphType, dataToPublish);
                 }
-                dataToPublish[sensorCode] = largest;
-                PublisherSubscriber.publish("/scale/" + graphType, dataToPublish);
             }, graphType, widgetId, sensorCode, _maximumYValues);
         };
     };

@@ -55,11 +55,11 @@
             /* Scripts */
 
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-{version}.js",
+                        "~/Scripts/jquery-3.1.1.min.js",
                         "~/Scripts/helpers/ajaxErrorHandling.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
-                        "~/Scripts/jquery-ui-{version}.js",
+                        "~/Scripts/jquery-ui-1.12.1.min.js",
                         "~/Scripts/jquery-dataTable.min.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(

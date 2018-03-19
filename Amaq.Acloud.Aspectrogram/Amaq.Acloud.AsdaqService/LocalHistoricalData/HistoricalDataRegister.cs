@@ -26,6 +26,11 @@
         private volatile List<AssetExtension> _principalAssets = null;
         private object _principalAssetsLock = new object();
 
+        private Task _registerOverallsTask = null; // Subproceso para registro en la colección HistoricalData
+        private Task _registerStreamsTask = null; // Subproceso para registro en la colección HistoricalDataStream
+        private Task _cleanOverallsTask = null; // Subproceso para eliminar registros en la colección HistoricalData
+        private Task _cleanStreamsTask = null; // Subproceso para eliminar registros en la colección HistoricalDataStream
+
         public List<AssetExtension> PrincipalAssets
         {
             get
@@ -48,7 +53,7 @@
         public void Start()
         {
             _stop = false;
-            _registerTask = new Task(DoRegister);
+            _registerTask = new Task(DoRegister, TaskCreationOptions.LongRunning);
             _registerTask.Start();
             _cleanerTask = new Task(Clean, TaskCreationOptions.LongRunning);
             _cleanerTask.Start();
@@ -63,6 +68,8 @@
 
             if (_registerTask != null)
             {
+                // Importante esperar a que termine el subproceso ya que se puede repetir la inserción de un mismo documento en el servidor debido a que el subproceso se interrumpió antes de marcar el
+                // documento como StoredInMainServer
                 _registerTask.GetAwaiter().GetResult();
             }
 
@@ -84,8 +91,8 @@
                 {              
                     DateTime? lastTimeStamp;
 
-                    lock (_principalAssetsLock)
-                    {
+                    //lock (_principalAssetsLock)
+                    //{
                         _principalAssets?.ForEach(principalAsset =>
                         {
                             if (SecurityBl.AppUserStateForHMI == null)
@@ -109,26 +116,65 @@
                             {
                                 var timeStampBase = lastTimeStamp.Value.AddDays(-AsdaqProperties.HistoricalDataCollectionSizeInDays);
 
-                                try
+                                if ((_cleanOverallsTask == null) || (_cleanOverallsTask.IsCompleted))
                                 {
-                                    new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).DeleteStoredInMainServerByTimeStampLt(principalAsset.Id, timeStampBase);
+                                    _cleanOverallsTask = new TaskFactory().StartNew(() =>
+                                    {
+                                        try
+                                        {
+                                            try
+                                            {
+                                                new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).DeleteStoredInMainServerByTimeStampLt(principalAsset.Id, timeStampBase);
+                                            }
+                                            catch (SecurityException)
+                                            {
+                                                SecurityBl.LoginForHMI();
+                                                new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).DeleteStoredInMainServerByTimeStampLt(principalAsset.Id, timeStampBase);
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            log.Error("Ha ocurrido un error eliminando registros en HistoricalData", ex);
+                                        }
+                                    }, TaskCreationOptions.LongRunning);
                                 }
-                                catch (SecurityException)
+
+                                if ((_cleanStreamsTask == null) || (_cleanStreamsTask.IsCompleted))
                                 {
-                                    SecurityBl.LoginForHMI();
-                                    new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).DeleteStoredInMainServerByTimeStampLt(principalAsset.Id, timeStampBase);
+                                    _cleanStreamsTask = new TaskFactory().StartNew(() =>
+                                    {
+                                        try
+                                        {
+                                            try
+                                            {
+                                                new HistoricalDataStreamProxy(SecurityBl.AppUserStateForHMI, true).DeleteStoredInMainServerByTimeStampLt(principalAsset.Id, timeStampBase);
+                                            }
+                                            catch (SecurityException)
+                                            {
+                                                SecurityBl.LoginForHMI();
+                                                new HistoricalDataStreamProxy(SecurityBl.AppUserStateForHMI, true).DeleteStoredInMainServerByTimeStampLt(principalAsset.Id, timeStampBase);
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            log.Error("Ha ocurrido un error eliminando registros en HistoricalDataStream", ex);
+                                        }
+                                    }, TaskCreationOptions.LongRunning);
                                 }
                             }
                         });
-                    }
+                    //}
                 }
                 catch(Exception ex)
                 {
                     log.Debug("Ha ocurrido un error en HistoricalDataRegister.Clean", ex);
                 }
 
-                System.Threading.Thread.Sleep(120000); // Descanso de 60 segundos para el procesador
+                System.Threading.Thread.Sleep(60000); // Descanso de 60 segundos para el procesador
             }
+
+            // No es necesario esperar a que termine la ejecución de los subprocesos _cleanOverallsTask y _cleanStreamsTask, ya que solo hacen la operación delete
+            // y dicha operación se seguirá ejecutando en Mongo aunque los suprocesos terminen su ejecución
         }
 
         /// <summary>
@@ -138,74 +184,199 @@
         {
             while (!_stop)
             {
-                var historicalDataDtoList = new List<HistoricalDataDto>();
                 try
                 {
                     if (_principalAssets != null)
-                    {                                                       
-                        var now = DateTime.Now;
-
-                        lock (_principalAssetsLock)
+                    {                       
+                        if (SecurityBl.AppUserStateForHMI == null)
                         {
-                            if (SecurityBl.AppUserStateForHMI == null)
-                            {
-                                SecurityBl.LoginForHMI();
-                            }
+                            SecurityBl.LoginForHMI();
+                        }
 
-                            // Gestionar histórico para la HMI
-                            _principalAssets.ForEach(principalAsset =>
-                            {                                                                  
-                                var timeStampBase = now.AddSeconds(-(principalAsset.BufferCapacity * principalAsset.SecondsBetweenAcquisitions)).ToUniversalTime();
-                                var localHistoricalDataBatch = new List<HistoricalData>();
+                        if ((_registerOverallsTask == null) || (_registerOverallsTask.IsCompleted))
+                        {
+                            _registerOverallsTask = new TaskFactory().StartNew(() =>
+                            {
+                                //var counter = 0;
 
                                 try
                                 {
-                                    // Buscar solo los registros que no han sido almacenados en el servidor principal
-                                    localHistoricalDataBatch =
-                                        new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).FindByTimeStampLessThan(principalAsset.Id, timeStampBase, principalAsset.HistoricalDataUploadLimit, true);
+                                    //var watch = System.Diagnostics.Stopwatch.StartNew(); // Inicio benchmark
+                                    var tasks = new List<Task>();
+
+                                    // Gestionar histórico para la HMI
+                                    _principalAssets.ForEach(principalAsset =>
+                                    //Parallel.ForEach(_principalAssets, (principalAsset) =>
+                                    {
+                                        tasks.Add(new TaskFactory().StartNew(() =>
+                                        {
+                                            var now = DateTime.Now;
+                                            var timeStampBase = now.AddSeconds(-(principalAsset.BufferCapacity * principalAsset.SecondsBetweenAcquisitions)).ToUniversalTime();
+                                            var localHistoricalDataBatch = new List<HistoricalData>();
+
+                                            try
+                                            {
+                                                //var watch = System.Diagnostics.Stopwatch.StartNew(); // Inicio benchmark
+
+                                                // Buscar solo los registros que no han sido almacenados en el servidor principal
+                                                localHistoricalDataBatch =
+                                                        new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).FindByTimeStampLessThan(principalAsset.Id, timeStampBase, principalAsset.HistoricalDataUploadLimit, true);
+
+                                                //watch.Stop(); // Fin benchmark
+                                                //var elapsedMs = watch.ElapsedMilliseconds;
+                                                //log.Info("FindByTimeStampLessThan. Tiempo transcurrido: " + elapsedMs + "ms");
+                                            }
+                                            catch (SecurityException ex)
+                                            {
+                                                log.Debug(ex.Message);
+                                                SecurityBl.LoginForHMI();
+                                                // Buscar solo los registros que no han sido almacenados en el servidor principal
+                                                localHistoricalDataBatch =
+                                                        new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).FindByTimeStampLessThan(principalAsset.Id, timeStampBase, principalAsset.HistoricalDataUploadLimit, true);
+                                            }
+
+                                            // Mongo devuelve las estampas de tiempo como UniversalTime, hay que convertirlas a LocalTime.
+                                            localHistoricalDataBatch.ForEach(h => { h.TimeStamp = h.TimeStamp.ToLocalTime(); });
+
+                                            // Intento de guardado del lote de datos históricos en el servidor
+                                            if (localHistoricalDataBatch.Count > 0)
+                                            {
+                                                //counter += localHistoricalDataBatch.Count;
+
+                                                try
+                                                {
+                                                    //var watch = System.Diagnostics.Stopwatch.StartNew(); // Inicio benchmark
+
+                                                    new HistoricalDataProxy(SecurityBl.AppUserState).AddMany(localHistoricalDataBatch);
+
+                                                    //watch.Stop(); // Fin benchmark
+                                                    //var elapsedMs = watch.ElapsedMilliseconds;
+                                                    //log.Info("AddMany. Tiempo transcurrido: " + elapsedMs + "ms");
+                                                }
+                                                catch (SecurityException ex)
+                                                {
+                                                    log.Debug(ex.Message);
+                                                    SecurityBl.Login();
+                                                    new HistoricalDataProxy(SecurityBl.AppUserState).AddMany(localHistoricalDataBatch);
+                                                }
+
+                                                try
+                                                {
+                                                    //var watch = System.Diagnostics.Stopwatch.StartNew(); // Inicio benchmark
+
+                                                    // Marcar en la bd HMI los registros que fueron almacenados en el servidor principal
+                                                    new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).SetAsStoredInMainServer(localHistoricalDataBatch.Select(h => h.Id).ToList());
+
+                                                    //watch.Stop(); // Fin benchmark
+                                                    //var elapsedMs = watch.ElapsedMilliseconds;
+                                                    //log.Info("SetAsStoredInMainServer. Tiempo transcurrido: " + elapsedMs + "ms");
+                                                }
+                                                catch (SecurityException ex)
+                                                {
+                                                    log.Debug(ex.Message);
+                                                    SecurityBl.LoginForHMI();
+                                                    // Marcar en la bd HMI los registros que fueron almacenados en el servidor principal
+                                                    new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).SetAsStoredInMainServer(localHistoricalDataBatch.Select(h => h.Id).ToList());
+                                                }
+                                            }
+                                        }, TaskCreationOptions.LongRunning));
+                                    });
+
+                                    Task.WhenAll(tasks).GetAwaiter().GetResult();
+
+                                    //watch.Stop(); // Fin benchmark
+                                    //var elapsedMs = watch.ElapsedMilliseconds;
+                                    //log.Info(counter + " documentos registrados en HistoricalData. Tiempo transcurrido: " + elapsedMs + "ms");
                                 }
-                                catch (SecurityException ex)
+                                catch (Exception ex)
                                 {
-                                    log.Debug(ex.Message);
-                                    SecurityBl.LoginForHMI();
-                                    // Buscar solo los registros que no han sido almacenados en el servidor principal
-                                    localHistoricalDataBatch =
-                                        new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).FindByTimeStampLessThan(principalAsset.Id, timeStampBase, principalAsset.HistoricalDataUploadLimit, true);
+                                    log.Error("Ha ocurrido un error registrando en HistoricalData", ex);
                                 }
+                            }, TaskCreationOptions.LongRunning);
+                        }
 
-                                // Mongo devuelve las estampas de tiempo como UniversalTime, hay que convertirlas a LocalTime.
-                                localHistoricalDataBatch.ForEach(h => { h.TimeStamp = h.TimeStamp.ToLocalTime(); });
+                        if ((_registerStreamsTask == null) || (_registerStreamsTask.IsCompleted))
+                        {
+                            _registerStreamsTask = new TaskFactory().StartNew(() =>
+                            {
+                                //var counter = 0;
 
-                                //historicalDataDtoList = localHistoricalDataBatch.Map().ToList();
-
-                                // Intento de guardado del lote de datos históricos en el servidor
-                                if (/*historicalDataDtoList*/localHistoricalDataBatch.Count > 0)
+                                try
                                 {
-                                    try
-                                    {
-                                        new HistoricalDataProxy(SecurityBl.AppUserState).AddMany(/*historicalDataDtoList*/localHistoricalDataBatch);
-                                    }
-                                    catch (SecurityException ex)
-                                    {
-                                        log.Debug(ex.Message);
-                                        SecurityBl.Login();
-                                        new HistoricalDataProxy(SecurityBl.AppUserState).AddMany(/*historicalDataDtoList*/localHistoricalDataBatch);
-                                    }
+                                    //var watch = System.Diagnostics.Stopwatch.StartNew(); // Inicio benchmark
+                                    var tasks = new List<Task>();
 
-                                    try
+                                    // Gestionar histórico para la HMI
+                                    _principalAssets.ForEach(principalAsset =>
+                                    //Parallel.ForEach(_principalAssets, (principalAsset) =>
                                     {
-                                        // Marcar en la bd HMI los registros que fueron almacenados en el servidor principal
-                                        new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).SetAsStoredInMainServer(localHistoricalDataBatch.Select(h => h.Id).ToList());
-                                    }
-                                    catch (SecurityException ex)
-                                    {
-                                        log.Debug(ex.Message);
-                                        SecurityBl.LoginForHMI();
-                                        // Marcar en la bd HMI los registros que fueron almacenados en el servidor principal
-                                        new HistoricalDataProxy(SecurityBl.AppUserStateForHMI, true).SetAsStoredInMainServer(localHistoricalDataBatch.Select(h => h.Id).ToList());
-                                    }
+                                        tasks.Add(new TaskFactory().StartNew(() =>
+                                        {
+                                            var now = DateTime.Now;
+                                            var timeStampBase = now.AddSeconds(-(principalAsset.BufferCapacity * principalAsset.SecondsBetweenAcquisitions)).ToUniversalTime();
+                                            var localHistoricalDataBatch = new List<HistoricalDataStream>();
+
+                                            try
+                                            {
+                                                // Buscar solo los registros que no han sido almacenados en el servidor principal
+                                                localHistoricalDataBatch =
+                                                        new HistoricalDataStreamProxy(SecurityBl.AppUserStateForHMI, true).FindByTimeStampLessThan(principalAsset.Id, timeStampBase, principalAsset.HistoricalDataStreamUploadLimit, true);
+                                            }
+                                            catch (SecurityException ex)
+                                            {
+                                                log.Debug(ex.Message);
+                                                SecurityBl.LoginForHMI();
+                                                // Buscar solo los registros que no han sido almacenados en el servidor principal
+                                                localHistoricalDataBatch =
+                                                        new HistoricalDataStreamProxy(SecurityBl.AppUserStateForHMI, true).FindByTimeStampLessThan(principalAsset.Id, timeStampBase, principalAsset.HistoricalDataStreamUploadLimit, true);
+                                            }
+
+                                            // Mongo devuelve las estampas de tiempo como UniversalTime, hay que convertirlas a LocalTime.
+                                            localHistoricalDataBatch.ForEach(h => { h.TimeStamp = h.TimeStamp.ToLocalTime(); });
+
+                                            // Intento de guardado del lote de datos históricos en el servidor
+                                            if (localHistoricalDataBatch.Count > 0)
+                                            {
+                                                //counter += localHistoricalDataBatch.Count;
+
+                                                try
+                                                {
+                                                    new HistoricalDataStreamProxy(SecurityBl.AppUserState).AddMany(localHistoricalDataBatch);
+                                                }
+                                                catch (SecurityException ex)
+                                                {
+                                                    log.Debug(ex.Message);
+                                                    SecurityBl.Login();
+                                                    new HistoricalDataStreamProxy(SecurityBl.AppUserState).AddMany(localHistoricalDataBatch);
+                                                }
+
+                                                try
+                                                {
+                                                    // Marcar en la bd HMI los registros que fueron almacenados en el servidor principal
+                                                    new HistoricalDataStreamProxy(SecurityBl.AppUserStateForHMI, true).SetAsStoredInMainServer(localHistoricalDataBatch.Select(h => h.Id).ToList());
+                                                }
+                                                catch (SecurityException ex)
+                                                {
+                                                    log.Debug(ex.Message);
+                                                    SecurityBl.LoginForHMI();
+                                                    // Marcar en la bd HMI los registros que fueron almacenados en el servidor principal
+                                                    new HistoricalDataStreamProxy(SecurityBl.AppUserStateForHMI, true).SetAsStoredInMainServer(localHistoricalDataBatch.Select(h => h.Id).ToList());
+                                                }
+                                            }
+                                        }, TaskCreationOptions.LongRunning));
+                                    });
+
+                                    Task.WhenAll(tasks).GetAwaiter().GetResult();
+
+                                    //watch.Stop(); // Fin benchmark
+                                    //var elapsedMs = watch.ElapsedMilliseconds;
+                                    //log.Info(counter + " documentos registrados en HistoricalDataStream. Tiempo transcurrido: " + elapsedMs + "ms");
                                 }
-                            });               
+                                catch (Exception ex)
+                                {
+                                    log.Error("Ha ocurrido un error registrando en HistoricalDataStream", ex);
+                                }
+                            }, TaskCreationOptions.LongRunning);
                         }
                     }
                 }
@@ -214,9 +385,13 @@
                     log.Error("Ha ocurrido un error en HistoricalDataRegister.DoRegister", ex);
                 }
 
-                System.Threading.Thread.Sleep(3000); // Descanso de 3 segundos para el procesador
+                //System.Threading.Thread.Sleep(100); // Descanso para el procesador
             }
+
+            _registerOverallsTask?.GetAwaiter().GetResult(); // Esperar a que termine el subproceso
+            _registerStreamsTask?.GetAwaiter().GetResult(); // Esperar a que termine el subproceso
         }
+
         //private void DoWork()
         //{
         //    while (!_stop)
@@ -237,7 +412,7 @@
         //                        {
         //                            SecurityBl.LoginForHMI();
         //                        }
-                                
+
         //                        // Gestionar histórico para la HMI
         //                        _principalAssets.ForEach(principalAsset =>
         //                        {

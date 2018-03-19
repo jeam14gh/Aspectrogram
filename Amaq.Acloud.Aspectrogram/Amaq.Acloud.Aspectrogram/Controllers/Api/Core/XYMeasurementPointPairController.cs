@@ -7,6 +7,7 @@
     using Attributes;
     using Entities.ValueObjects;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Controlador Api XYMeasurementPointPair
@@ -19,9 +20,9 @@
         /// </summary>
         /// <returns>Lista de objetos de tipo XYMeasurementPointPair</returns>
         [HttpGet]
-        public IHttpActionResult GetXYPair(string mdVariableId)
+        public async Task<IHttpActionResult> GetXYPair(string mdVariableId)
         {
-            return Ok(new XYMeasurementPointPairBl(CoreDbUrl).GetXYPair(mdVariableId));
+            return await Task.FromResult(Ok(new XYMeasurementPointPairBl(CoreDbUrl).GetXYPair(mdVariableId)));
         }
 
         /// <summary>
@@ -30,9 +31,9 @@
         /// <param name="assetId">Id del Asset</param>
         /// <returns>Lista de objetos de tipo XYMeasurementPointPair</returns>
         [HttpGet]
-        public IHttpActionResult GetXYPairByAssetId(string assetId)
+        public async Task<IHttpActionResult> GetXYPairByAssetId(string assetId)
         {
-            return Ok(new XYMeasurementPointPairBl(CoreDbUrl).GetXYPairByAssetId(assetId));
+            return await Task.FromResult(Ok(new XYMeasurementPointPairBl(CoreDbUrl).GetXYPairByAssetId(assetId)));
         }
 
         /// <summary>
@@ -41,9 +42,9 @@
         /// <param name="assetIdList">Lista de id de asset</param>
         /// <returns></returns>
         [HttpPost]
-        public IHttpActionResult GetXYPairByAssetId(List<string> assetIdList)
+        public async Task<IHttpActionResult> GetXYPairByAssetId(List<string> assetIdList)
         {
-            return Ok(new XYMeasurementPointPairBl(CoreDbUrl).GetXYPairByAssetId(assetIdList));
+            return await Task.FromResult(Ok(new XYMeasurementPointPairBl(CoreDbUrl).GetXYPairByAssetId(assetIdList)));
         }
 
         /// <summary>
@@ -53,22 +54,22 @@
         /// <param name="model">Opciones del Shaft Centerline</param>
         /// <returns></returns>
         [HttpPost]
-        public IHttpActionResult SetSclOptions([FromBody]dynamic model)
+        public async Task<IHttpActionResult> SetSclOptions([FromBody]dynamic model)
         {
             SclOptions sclOpts = model.sclOpts.ToObject<SclOptions>();
             string xMdVariableId = model.xMdVariableId.ToObject<string>();
             string yMdVariableId = model.yMdVariableId.ToObject<string>();
-            return Ok(new XYMeasurementPointPairBl(CoreDbUrl).SetSclOptions(sclOpts, xMdVariableId, yMdVariableId));
+            return await Task.FromResult(Ok(new XYMeasurementPointPairBl(CoreDbUrl).SetSclOptions(sclOpts, xMdVariableId, yMdVariableId)));
         }
 
         /// <summary>
         /// Elimina todos los pares XY relacionados con un AssetId y guarda una lista de pares XY
         /// </summary>
         [HttpPost]
-        public IHttpActionResult DeleteAndSaveXYMeasurementPointPair(string assetId, List<XYMeasurementPointPair> pairsXY)
+        public async Task<IHttpActionResult> DeleteAndSaveXYMeasurementPointPair(string assetId, List<XYMeasurementPointPair> pairsXY)
         {
             new XYMeasurementPointPairBl(CoreDbUrl).DeleteAndSaveXYMeasurementPointPair(assetId, pairsXY);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
     }
 }

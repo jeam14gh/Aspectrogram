@@ -15,6 +15,7 @@ ShaftDeflection = function () {
 
         var _scene,
             _points,
+            _equals = false,
             _arrayAxis = [],
             _orderPointsY,
             _orderPointsZ,
@@ -23,6 +24,8 @@ ShaftDeflection = function () {
             _findXYMatrix,
             _findYMatrix,
             _findXZMatrix,
+            _findArrayEqualsY,
+            _findArrayEqualsZ,
             _solvePolyH,
             _solvePolyV,
             _createVectorsH,
@@ -85,7 +88,7 @@ ShaftDeflection = function () {
             matrixX = _findXYMatrix().matrixX;
             matrixY = _findXYMatrix().matrixY;
             matrixZ = _findZMatrix();
-            if (_points.length == matrixZ.length) {
+            if (_pointsNew.length == matrixZ.length) {
                 matrixZinv = math.inv(matrixZ);
             }
 
@@ -103,7 +106,11 @@ ShaftDeflection = function () {
             matrixX = _findXZMatrix().matrixX;
             matrixZ = _findXZMatrix().matrixZ;
             matrixY = _findYMatrix();
-            matrixYinv = math.inv(matrixY);
+
+            if (_pointsNew.length == matrixY.length) {
+                matrixYinv = math.inv(matrixY);
+            }
+            
 
             factsX = math.multiply(matrixYinv, matrixX);
             factsZ = math.multiply(matrixYinv, matrixZ);
@@ -153,11 +160,11 @@ ShaftDeflection = function () {
         _orderPointsZ = function () {
 
             var arrayZPoints = [], newPoints = [];
-
+            /*
             for (var i = 0; i < _points.length; i++) {
                 arrayZPoints.push(_points[i].z);
             }
-
+            
             arrayZPoints.sort(function (a, b) { return a - b });
 
             for (var j = 0; j < arrayZPoints.length; j++) {
@@ -166,8 +173,19 @@ ShaftDeflection = function () {
                         newPoints.push(_points[k]);
                     }
                 }
+            }*/
+
+            newPoints = _points;
+
+            if (newPoints.length >= 1) {
+                newPoints.sort(function (a, b) {
+                    return a.z - b.z;
+                });
             }
 
+            _findArrayEqualsZ(newPoints);
+
+            
             return newPoints;
         };
 
@@ -213,8 +231,8 @@ ShaftDeflection = function () {
         //Organización de puntos
         _orderPointsY = function () {
 
-            var arrayYPoints = [], newPoints = [];
-
+            var newPoints = [];
+            /*
             for (var i = 0; i < _points.length; i++) {
                 arrayYPoints.push(_points[i].y);
             }
@@ -227,7 +245,17 @@ ShaftDeflection = function () {
                         newPoints.push(_points[k]);
                     }
                 }
+            }*/
+
+            newPoints = _points;
+
+            if (newPoints.length >= 1) {
+                newPoints.sort(function (a, b) {
+                    return a.y - b.y;
+                });
             }
+
+            _findArrayEqualsY(newPoints);
 
             return newPoints;
         };
@@ -248,16 +276,44 @@ ShaftDeflection = function () {
             return { x: x, y: y, z: z };
         };
 
+        _findArrayEqualsY = function (array) {
 
+            var i, j;
+
+            for (i = 0; i < array.length - 1; i++){
+                for (j = i + 1; j < array.length ; j++) {
+                    if (array[i].y == array[j].y)
+                    {
+                        _equals = true;
+                    }
+                }                 
+            }
+           
+        };
+
+        _findArrayEqualsZ = function (array) {
+
+            var i, j;
+
+            for (i = 0; i < array.length - 1; i++) {
+                for (j = i + 1; j < array.length ; j++) {
+                    if (array[i].z == array[j].z) {
+                        _equals = true;
+                    }
+                }
+            }
+
+        };
 
         _getPoints = function () {
 
-            var point, position, idPoint, array = [], pointParent, axisNum, indexPiece;
+            var point, position, idPoint, array = [], pointParent, axisNum, indexPiece, provArray;
 
             _arrayAxis = [];
+            provArray = [];
 
             for (var i = 0; i < nodes[idEntity + wId].Properties3d.asset.axis.length; i++) {
-                _arrayAxis.push({ idPoints: [], pointArray: [] });
+                provArray.push({ idPoints: [], pointArray: [] });
             }
 
             for (var i = 0; i < nodes[idEntity + wId].Properties3d.points.children.length; i++) {
@@ -273,15 +329,14 @@ ShaftDeflection = function () {
                             } else {
                                 axisNum = nodes[idEntity + wId].Properties3d.asset.children[j].axisNum;
                             }
-                            
-                            _arrayAxis[axisNum].idPoints.push(idPoint);
+                            provArray[axisNum].idPoints.push(idPoint);
                             break;
                         }
                     }
                     point = _scene.getMeshByName("point-" + globals3d.names.plots["ShaftDef"].canvas + idPoint + wId);
                     position = point.position;
                     if (position.x !== undefined && position.y !== undefined && position.z !== undefined) {
-                        _arrayAxis[axisNum].pointArray.push(position);
+                        provArray[axisNum].pointArray.push(position);
                     }
                 }
             }
@@ -304,6 +359,16 @@ ShaftDeflection = function () {
                 }
             }
             _points = array;*/
+
+            _arrayAxis = provArray;
+            /*
+            for (var i = 0; i < provArray.length; i++) {
+                if (provArray[i].idPoints.length < 2) {
+                    _arrayAxis.splice(i, 1);
+                    i--;
+                }
+                //_arrayAxis.splice(i, 1);
+            }*/
         };
 
 
@@ -316,29 +381,38 @@ ShaftDeflection = function () {
             for (var h = 0; h < nodes[idEntity + wId].Properties3d.asset.axis.length; h++) {
                 _lengthArrayPoints = 0;
                 for (var i = 0; i < _arrayAxis.length ; i++) {
-                    _points = _arrayAxis[i].pointArray;
+                    if (_arrayAxis[i].idPoints != []) {
 
-                    if (_points.length > 1) {
-                        _pointsNew = _orderPointsZ();
-                        arrayZ = _sliceArrayxyz().z;
-                        if (arrayZ) {
-                            facts = _solvePolyH();
-                            arrayVects = _createVectorsH(facts, arrayZ);
+                        _points = _arrayAxis[i].pointArray;
 
-                            path3d = new BABYLON.Path3D(arrayVects);
-                            curve = path3d.getCurve();
+                        if (_points.length > 1) {
+                            _pointsNew = _orderPointsZ();
+                            if (!_equals) {
+                                arrayZ = _sliceArrayxyz().z;
+                                if (arrayZ) {
+                                    facts = _solvePolyH();
+                                    arrayVects = _createVectorsH(facts, arrayZ);
 
-                            if (_pointsNew.length !== _lengthArrayPoints && _scene.getMeshByName(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId) == null) {
-                                line = BABYLON.Mesh.CreateLines(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId, curve, _scene, true);
-                                _lengthArrayPoints = i;
-                                line.color = BABYLON.Color3.FromHexString(globals3d.colors[idEntity + wId].ShaftDef.lc);
+                                    path3d = new BABYLON.Path3D(arrayVects);
+                                    curve = path3d.getCurve();
+
+                                    if (_pointsNew.length !== _lengthArrayPoints && _scene.getMeshByName(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId) == null) {
+                                        line = BABYLON.Mesh.CreateLines(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId, curve, _scene, true);
+                                        _lengthArrayPoints = i;
+                                        line.color = BABYLON.Color3.FromHexString(globals3d.colors[idEntity + wId].ShaftDef.lc);
+                                    }
+                                    else {
+                                        newLine = _scene.getMeshByName(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId);
+                                        newLine = BABYLON.Mesh.CreateLines(null, curve, null, null, newLine);
+                                    }
+                                }
                             }
                             else {
-                                newLine = _scene.getMeshByName(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId);
-                                newLine = BABYLON.Mesh.CreateLines(null, curve, null, null, newLine);
+                                popUp("warning", "No se puede calcular la deflexión de eje");
                             }
                         }
                     }
+                    
                 }
             }
 
@@ -354,23 +428,28 @@ ShaftDeflection = function () {
                     _points = _arrayAxis[i].pointArray;
                     if (_points.length > 1) {
                         _pointsNew = _orderPointsY();
-                        arrayY = _sliceArrayxyz().y;
-                        if (arrayY) {
-                            facts = _solvePolyV();
-                            arrayVects = _createVectorsV(facts, arrayY);
+                        if (!_equals) {
+                            arrayY = _sliceArrayxyz().y;
+                            if (arrayY) {
+                                facts = _solvePolyV();
+                                arrayVects = _createVectorsV(facts, arrayY);
 
-                            path3d = new BABYLON.Path3D(arrayVects);
-                            curve = path3d.getCurve();
+                                path3d = new BABYLON.Path3D(arrayVects);
+                                curve = path3d.getCurve();
 
-                            if (_pointsNew.length !== _lengthArrayPoints && _scene.getMeshByName(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId) == null) {
-                                line = BABYLON.Mesh.CreateLines(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId, curve, _scene, true);
-                                _lengthArrayPoints = _pointsNew.length;
-                                line.color = BABYLON.Color3.FromHexString(globals3d.colors[idEntity + wId].ShaftDef.lc);
+                                if (_pointsNew.length !== _lengthArrayPoints && _scene.getMeshByName(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId) == null) {
+                                    line = BABYLON.Mesh.CreateLines(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId, curve, _scene, true);
+                                    _lengthArrayPoints = _pointsNew.length;
+                                    line.color = BABYLON.Color3.FromHexString(globals3d.colors[idEntity + wId].ShaftDef.lc);
+                                }
+                                else {
+                                    newLine = _scene.getMeshByName(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId);
+                                    newLine = BABYLON.Mesh.CreateLines(null, curve, null, null, newLine);
+                                }
                             }
-                            else {
-                                newLine = _scene.getMeshByName(globals3d.names.plots.ShaftDef.line + "-" + i + idEntity + wId);
-                                newLine = BABYLON.Mesh.CreateLines(null, curve, null, null, newLine);
-                            }
+                        }
+                        else {
+                            popUp("warning", "No se puede calcular la deflexión de eje");
                         }
                     }
                 }

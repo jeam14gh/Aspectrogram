@@ -206,10 +206,12 @@
         /// <summary>
         /// Actualiza la subvariable de Directa 
         /// </summary>
-        public void UpdateDirect(string subVariableId, List<Band> bands)
+        public void UpdateDirect(SubVariableExtension subVariable, List<Band> bands)
         {
-            var filter = builder.Eq(s=>s.Id, subVariableId);
-            var update = Builders<SubVariableExtension>.Update.Set(sb => sb.Bands, bands);
+            var filter = builder.Eq(s=>s.Id, subVariable.Id);
+            var update = Builders<SubVariableExtension>.Update.
+                    Set(sb => sb.Bands, bands).
+                    Set(sb => sb.InitialAxialPosition, subVariable.InitialAxialPosition); 
             collection.UpdateOne(filter, update);
         }
     }

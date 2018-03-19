@@ -7,6 +7,7 @@
     using Acloud.Entities.Core;
     using Aspectrogram.Controllers.Api.Attributes;
     using Entities;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Controlador Api Node
@@ -21,10 +22,10 @@
         /// <returns></returns>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult DeleteById(string id)
+        public async Task<IHttpActionResult> DeleteById(string id)
         {
             new NodeBl(CoreDbUrl).DeleteById(id);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -32,10 +33,10 @@
         /// </summary>
         [Roles("Admin")]
         [HttpPost]
-        public IHttpActionResult DeleteMany([FromBody] List<NodeToDeleteDto> nodes)
+        public async Task<IHttpActionResult> DeleteMany([FromBody] List<NodeToDeleteDto> nodes)
         {
             new NodeBl(CoreDbUrl).DeleteMany(nodes);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -43,10 +44,10 @@
         /// </summary>
         /// <param name="mdVariableNodeStatusDtoList">Lista de nodos tipo MdVariable con el nuevo estado</param>
         [HttpPost]
-        public IHttpActionResult UpdateManyMdVariableStatus(List<MdVariableNodeStatusDto> mdVariableNodeStatusDtoList)
+        public async Task<IHttpActionResult> UpdateManyMdVariableStatus(List<MdVariableNodeStatusDto> mdVariableNodeStatusDtoList)
         {
             new NodeBl(CoreDbUrl).UpdateManyMdVariableStatus(mdVariableNodeStatusDtoList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -54,9 +55,9 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult ToCopyNode(Node node)
+        public async Task<IHttpActionResult> ToCopyNode(Node node)
         {
-            return Ok(new NodeBl(CoreDbUrl).AddSingle(node));
+            return await Task.FromResult(Ok(new NodeBl(CoreDbUrl).AddSingle(node)));
         }
 
         /// <summary>
@@ -64,10 +65,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateNameAndDescription(NodeToUpdateDto nodeDto)
+        public async Task<IHttpActionResult> UpdateNameAndDescription(NodeToUpdateDto nodeDto)
         {
             new NodeBl(CoreDbUrl).UpdateNameAndDescription(nodeDto);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -75,9 +76,9 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult Create(Node node)
+        public async Task<IHttpActionResult> Create(Node node)
         {
-            return Ok(new NodeBl(CoreDbUrl).Add(node));
+            return await Task.FromResult(Ok(new NodeBl(CoreDbUrl).Add(node)));
         }
 
         /// <summary>
@@ -86,13 +87,13 @@
         /// <returns>Un listado de nodos, activos, puntos de medicion y subvariables</returns>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult Paste(dynamic model)
+        public async Task<IHttpActionResult> Paste(dynamic model)
         {
             var node = model.node.ToObject<Node>();
             var isPrincipal = (bool)model.isPrincipal;
             var pplAssetId = (string)model.pplAssetId;
             var pairsXY = model.pairsXY.ToObject<List<XYMeasurementPointPair>>();
-            return Ok(new NodeBl(CoreDbUrl).Paste(node, isPrincipal, pplAssetId, pairsXY));
+            return await Task.FromResult(Ok(new NodeBl(CoreDbUrl).Paste(node, isPrincipal, pplAssetId, pairsXY)));
         }
 
         /// <summary>
@@ -100,10 +101,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult Delete_Many([FromBody] List<string> nodeIdList)
+        public async Task<IHttpActionResult> Delete_Many([FromBody] List<string> nodeIdList)
         {
             new NodeBl(CoreDbUrl).Delete_Many(nodeIdList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary> 
@@ -112,9 +113,9 @@
         /// <returns>Nodo, punto de medición y subVariables</returns>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult CopyNode(NodeAndMdVariableDto nodeAndMdVariableDto)
+        public async Task<IHttpActionResult> CopyNode(NodeAndMdVariableDto nodeAndMdVariableDto)
         {
-            return Ok(new NodeBl(CoreDbUrl).CopyNode(nodeAndMdVariableDto));
+            return await Task.FromResult(Ok(new NodeBl(CoreDbUrl).CopyNode(nodeAndMdVariableDto)));
         }
 
         /// <summary>
@@ -122,12 +123,12 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateHasChild(dynamic model)
+        public async Task<IHttpActionResult> UpdateHasChild(dynamic model)
         {
             var id= (string)model.id;
             var hasChild = (bool)model.hasChild;
             new NodeBl(CoreDbUrl).UpdateHasChild(id, hasChild);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -135,10 +136,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public IHttpActionResult UpdateName(NodeToUpdateDto node)
+        public async Task<IHttpActionResult> UpdateName(NodeToUpdateDto node)
         {
             new NodeBl(CoreDbUrl).UpdateName(node);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
     }
 }

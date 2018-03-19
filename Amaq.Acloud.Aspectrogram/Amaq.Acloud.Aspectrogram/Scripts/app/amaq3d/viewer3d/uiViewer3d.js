@@ -37,6 +37,7 @@ UiViewer3d = (function ()
             _showSpectrum,
             _showSpectrum100p,
             _showOrbital,
+            _showOrbital1X,
             _showOrbitalShaftDef,
             _showSCL,
             _showWaterfall,
@@ -153,6 +154,17 @@ UiViewer3d = (function ()
                 _utilities.convertAssetInWireframe(!_flags.machineView.wireframe);
                 loadedCanvas.disposePlots(idEntity);
                 loadedCanvas.loadPlots('orb', idEntity);
+                loadedCanvas.changePositionText(idEntity, "probe");
+                loadedCanvas.opacityProbes(idEntity, 0.4);
+            }
+            loadedData.drawChartsPairs();
+        };
+        _showOrbital1X = function () {
+            if (!_flags.plots['orb1X']) {
+                _flags.machineView.wireframe = false;
+                _utilities.convertAssetInWireframe(!_flags.machineView.wireframe);
+                loadedCanvas.disposePlots(idEntity);
+                loadedCanvas.loadPlots('orb1X', idEntity);
                 loadedCanvas.changePositionText(idEntity, "probe");
                 loadedCanvas.opacityProbes(idEntity, 0.4);
             }
@@ -304,6 +316,13 @@ UiViewer3d = (function ()
                                 img: "Orbital3d.png",
                                 txt: "Orbital",
                                 fcn: _showOrbital
+                            },
+                            {
+                                id: "btnOrbital1X3d",
+                                obj: null,
+                                img: "Orbital1X3d.png",
+                                txt: "Orbital 1X",
+                                fcn: _showOrbital1X
                             },/*
                             {
                                 id: "btnSCL3d",
@@ -1099,8 +1118,13 @@ UiViewer3d = (function ()
                     break;
             }
             for (var i = 0; i < _scene.meshes.length; i++) {
+                console.log(_scene.meshes[i].name.split("-")[0]);
                 if (_scene.meshes[i].name.split("-")[1] === "Chart" && _scene.meshes[i].name.split("-")[2] === "canvas" && (_scene.meshes[i].name.split("-")[3] === name1 || _scene.meshes[i].name.split("-")[3] === name2) || _scene.meshes[i].name.split("-")[0] === "point") {
 
+                    tempMesh = new Object(_scene.getMeshByName(_scene.meshes[i].name));
+                    globals3d.colors[idEntity + wId][_typeChartColor].lc = scope.valueColor;
+                    tempMesh.color = BABYLON.Color3.FromHexString(scope.valueColor); //Reemplazar por el color del pick
+                } else if (_scene.meshes[i].name.split("-")[0] === "line" && _scene.meshes[i].name.split("-")[1] === name2 && _typeChartColor == "orb") {
                     tempMesh = new Object(_scene.getMeshByName(_scene.meshes[i].name));
                     globals3d.colors[idEntity + wId][_typeChartColor].lc = scope.valueColor;
                     tempMesh.color = BABYLON.Color3.FromHexString(scope.valueColor); //Reemplazar por el color del pick

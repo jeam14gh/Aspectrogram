@@ -9,6 +9,7 @@
     using System.Linq;
     using log4net;
     using System;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Representa un controlador generico para las operaciones comunes sobre el tipo especificado
@@ -41,12 +42,12 @@
         /// <param name="entityId">Id del documento en la base datos</param>
         /// <returns>El documento requerido</returns>
         [HttpGet]
-        public virtual IHttpActionResult GetById(string entityId)
+        public virtual async Task<IHttpActionResult> GetById(string entityId)
         {
             try
             {
                 var type = typeof(T);
-                return Ok(new CoreBl<T>(CoreDbUrl).GetById(entityId));
+                return await Task.FromResult(Ok(new CoreBl<T>(CoreDbUrl).GetById(entityId)));
             }
             catch(Exception ex)
             {
@@ -61,9 +62,9 @@
         /// <param name="listEntityId">Listado de Ids de los diferentes documentos en la base datos</param>
         /// <returns>Listado de documentos requeridos</returns>
         [HttpPost]
-        public virtual IHttpActionResult GetById(List<string> listEntityId)
+        public virtual async Task<IHttpActionResult> GetById(List<string> listEntityId)
         {
-            return Ok(new CoreBl<T>(CoreDbUrl).GetById(listEntityId));
+            return await Task.FromResult(Ok(new CoreBl<T>(CoreDbUrl).GetById(listEntityId)));
         }
 
         /// <summary>
@@ -72,9 +73,9 @@
         /// <param name="entity">Entidad con los valores conocidos con los que se realizara la busqueda</param>
         /// <returns>El primer documento que coincida con los valores conocidos de la entidad</returns>
         [HttpPost]
-        public virtual IHttpActionResult Find(T entity)
+        public virtual async Task<IHttpActionResult> Find(T entity)
         {
-            return Ok(new CoreBl<T>(CoreDbUrl).Find(entity));
+            return await Task.FromResult(Ok(new CoreBl<T>(CoreDbUrl).Find(entity)));
         }
 
         /// <summary>
@@ -83,9 +84,9 @@
         /// <param name="entity">Documento a insertar</param>
         /// <returns>El Id generado para el documento insertado</returns>
         [HttpPost]
-        public virtual IHttpActionResult AddSingle([FromBody]T entity)
+        public virtual async Task<IHttpActionResult> AddSingle([FromBody]T entity)
         {
-            return Ok(new CoreBl<T>(CoreDbUrl).AddSingle(entity));
+            return await Task.FromResult(Ok(new CoreBl<T>(CoreDbUrl).AddSingle(entity)));
         }
 
         /// <summary>
@@ -94,10 +95,10 @@
         /// <param name="entityList">Lista de entidades</param>
         /// <returns></returns>
         [HttpPost]
-        public virtual IHttpActionResult AddMany(List<T> entityList)
+        public virtual async Task<IHttpActionResult> AddMany(List<T> entityList)
         {
             new CoreBl<T>(CoreDbUrl).AddMany(entityList);
-            return Ok();
+            return await Task.FromResult(Ok());
         }
 
         /// <summary>
@@ -105,9 +106,9 @@
         /// </summary>
         /// <returns>Listado de documentos</returns>
         [HttpGet]
-        public virtual IHttpActionResult GetAll()
+        public virtual async Task<IHttpActionResult> GetAll()
         {
-            return Ok(new CoreBl<T>(CoreDbUrl).GetAll());
+            return await Task.FromResult(Ok(new CoreBl<T>(CoreDbUrl).GetAll()));
         }
 
         /// <summary>
@@ -116,9 +117,9 @@
         /// <param name="entity">Entidad a actualizar</param>
         /// <returns></returns>
         [HttpPost]
-        public IHttpActionResult Update([FromBody] T entity)
+        public async Task<IHttpActionResult> Update([FromBody] T entity)
         {
-            return Ok(new CoreBl<T>(CoreDbUrl).Update(entity));
+            return await Task.FromResult(Ok(new CoreBl<T>(CoreDbUrl).Update(entity)));
         }
     }
 }

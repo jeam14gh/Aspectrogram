@@ -11,12 +11,16 @@
     using System;
     using Entities.Enums;
     using Entities.ValueObjects;
+    using System.IO;
+    using log4net;
+    using System.Reflection;
 
     /// <summary>
     /// Lógica de negocio MdVariableExtension
     /// </summary>
     public class MdVariableExtensionBl : CoreBl<MdVariableExtension>
     {
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private MdVariableExtensionRepository _mdVariableExtensionRepository = null;
         private string CoreDbUrl;
 
@@ -186,8 +190,9 @@
                     mdVariable.AiMeasureMethod.ParameterValues = null;
                 }
             }
-            //_mdVariableExtensionRepository.Update(mdVariable);
+
             _mdVariableExtensionRepository.UpdateIncludingParameterValues(mdVariable);
+            CalculateAgainMandB(mdVariable);
         }
 
         /// <summary>
@@ -321,7 +326,7 @@
         /// <summary>
         /// Calcula los parametros M y B de cada punto de medición a partir de una lista obtenida en la configuración de canales de un Asdaq
         /// </summary>
-        public void CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto)
+        public void CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto, string processType)
         {
             if (mdVariablesDto != null)
             {
@@ -340,6 +345,10 @@
                             mdVariable.AiMeasureMethod.B = mdVariable.AiMeasureMethod.B + (mdVarsDto[m].Displacement / mdVarsDto[m].Gain) * mdVariable.AiMeasureMethod.M; // B= B' + ( O / G ) * M
                             mdVariable.AiMeasureMethod.M = mdVariable.AiMeasureMethod.M * mdVarsDto[m].Gain; // M= M * G
                             _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVariable);
+
+                            if ((mdVariable.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVariable.AiMeasureMethod.M)) || (Double.IsNaN(mdVariable.AiMeasureMethod.B)))
+                                RegisterInLog(mdVariable, true, processType, "CalculateMandB");
+
                             continue;
                         }
                         else
@@ -350,6 +359,10 @@
                             mdVariable.AiMeasureMethod.B = B - (mdVarsDto[m].Displacement / mdVarsDto[m].Gain) * M; // B'= B - ( O / G ) * M
                             mdVariable.AiMeasureMethod.M = M / mdVarsDto[m].Gain; // M'= M / G
                             _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVariable);
+
+                            if ((mdVariable.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVariable.AiMeasureMethod.M)) || (Double.IsNaN(mdVariable.AiMeasureMethod.B)))
+                                RegisterInLog(mdVariable, false, processType, "CalculateMandB");
+
                             continue;
                         }
                     }
@@ -419,13 +432,115 @@
             {
                 foreach (var p in points)
                 {
+                    if (p.AiMeasureMethod != null)
+                    {
+                        if (p.AiMeasureMethod.ParameterTypes != null)
+                        {
+                            if (p.AiMeasureMethod.ParameterTypes.Count == 1)
+                                p.AiMeasureMethod.ParameterTypes = null;
+                        }
+
+                        if (p.AiMeasureMethod.ParameterValues != null)
+                        {
+                            if (p.AiMeasureMethod.ParameterValues.Count == 1)
+                                p.AiMeasureMethod.ParameterValues = null;
+                        }
+
+                        if ((p.AiMeasureMethod.M == 0) || (Double.IsNaN(p.AiMeasureMethod.M)) || (Double.IsNaN(p.AiMeasureMethod.B)))
+                            RegisterInLog(p, false, "Edición de punto de medición", "UpdatePoints");
+                    }
+
                     _mdVariableExtensionRepository.UpdateProperties(p);
+                    // Buscamos si el punto de medición está asociado a un canal Asdaq para recalcular de nuevo su M y B
+                    CalculateAgainMandB(p);
 
                     var direct = p.SubVariables.Where(w => w.IsDefaultValue).FirstOrDefault();
 
                     if (direct != null)
                         new SubVariableExtensionBl(CoreDbUrl).UpdateDirect(direct);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Retorna todas las referencias angulares
+        /// </summary>
+        public List<MdVariableExtension> GetAllReferenceAngular()
+        {
+            return _mdVariableExtensionRepository.Where(x => x.SensorTypeCode == 4).ToList();
+        }
+
+        /// <summary>
+        /// Cálcula de nuevo la M y B de un punto de medición anteriormente editado, si éste está relacionado con un canal Asdaq.
+        /// </summary>
+        public void CalculateAgainMandB(MdVariableExtension mdVar)
+        {
+            var exist = false;
+            var dto = new List<MdVariableUpdateMBDto>();
+            var asdaq = new AsdaqBl(CoreDbUrl).GetAll();
+
+            foreach (var a in asdaq)
+            {
+                if (exist)
+                    break;
+
+                foreach (var c in a.NiCompactDaqs.SelectMany(s => s.CSeriesModules).ToList())
+                {
+                    var channel = c.AiChannels.Where(w => w.MdVariableId == mdVar.Id).FirstOrDefault();
+                    if (channel != null)
+                    {
+                        var aconditioner = a.Aconditioners.Where(ac => ac.Serial == channel.SerialAcon).FirstOrDefault();
+
+                        if (aconditioner != null)
+                        {
+                            if ((aconditioner.AconChannels.Count > 0) && (aconditioner.AconChannels != null))
+                            {
+                                var acon = aconditioner.AconChannels.Where(w => w.Number == channel.AconChannel).FirstOrDefault();
+
+                                if ((mdVar.AiMeasureMethod != null) && (acon != null))
+                                {
+                                    var B = mdVar.AiMeasureMethod.B;
+                                    var M = mdVar.AiMeasureMethod.M;
+
+                                    mdVar.AiMeasureMethod.B = B - (acon.Displacement / acon.Gain) * M; // B'= B - ( O / G ) * M
+                                    mdVar.AiMeasureMethod.M = M / acon.Gain; // M'= M / G
+                                    _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVar);
+                                    exist = true;
+
+                                    if ((mdVar.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVar.AiMeasureMethod.M)) || (Double.IsNaN(mdVar.AiMeasureMethod.B)))
+                                        RegisterInLog(mdVar, false, "Edición de punto de medición", "CalculateAgainMandB");
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Registra todos lo errores de cálculos respecto a la M y B de un punto de medición en un archivo de texto plano.
+        /// </summary>
+        public void RegisterInLog(MdVariableExtension mdVar, bool recalculate, string processType, string metod)
+        {
+            try
+            {
+                var _text = "NAME: " + mdVar.Name +
+                    ", ID: " + mdVar.Id +
+                    ", PARENTID: " + mdVar.ParentId +
+                    ", RECÁLCULADO: " + recalculate +
+                    ", PROCESO: " + processType +
+                    ", M: " + mdVar.AiMeasureMethod.M +
+                    ", B: " + mdVar.AiMeasureMethod.B +
+                    ", SENSIBILITY: " + mdVar.Sensibility +
+                    ", MÉTODO: " + metod;
+
+                log.Info(_text);
+            }
+            catch (Exception e)
+            {
+                log.Info(e.Message + " ::: EXCEPCIÓN AL REGISTRAR UN ERROR DE CÁLCULO DE UN PUNTO DE MEDICIÓN.");
             }
         }
     }

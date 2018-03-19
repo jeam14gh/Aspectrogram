@@ -14,7 +14,7 @@ Cursors = (function () {
      * Constructor
      * @param {Object} dygraph Referencia al chart
      */
-    Cursors = function (dygraph) {
+    Cursors = function (dygraph, xCoordinateUnit, yUnitValue, velocityValue) {
         var
             _canvas,
             _this,
@@ -29,10 +29,14 @@ Cursors = (function () {
             _dragPointer,
             _handleHarmonic,
             _drawHarmonicMarker,
+            _getRowForX,
             _handleSideband,
             _drawSidebandWidth,
             _drawSidebandMarker,
             _attachPointersToChart,
+            _xCoordinateUnit,
+            _lastCursorSidebandSelected,
+            _lastCursorPosition,
             _isDragging;
 
         _this = this;
@@ -45,6 +49,8 @@ Cursors = (function () {
         if (dygraph !== null) {
             dygraph.graphDiv.appendChild(_canvas);
         }
+        _xCoordinateUnit = xCoordinateUnit;
+        _lastCursorSidebandSelected = 0;
 
         /*
          * Agregar diferentes canvas para un grafico con mas de un chart
@@ -65,9 +71,10 @@ Cursors = (function () {
                 containerDiv,
                 lineDiv,
                 infoDiv,
-                minX,
-                maxX,
-                yValArr;
+                minRow,
+                maxRow,
+                yValArr,
+                row;
 
             _this.detachLabels();
             _this.clearCursor();
@@ -86,98 +93,96 @@ Cursors = (function () {
                 "height": "100%"
             });
             lineDiv.appendTo(containerDiv);
-
             infoDiv = $("<div/>").css({
                 "position": "absolute",
                 "display": "block"
             }).addClass("dygraph-cursor-info");
-
             $([infoDiv.get(0), containerDiv.get(0)]).draggable({
                 axis: "x",
                 drag: function (event, ui) {
-                    _normalCursor.xval = _dygraph.findClosestRow(ui.position.left);
-                    _normalCursor.domX = _dygraph.toDomXCoord(_normalCursor.xval);
+                    _normalCursor.domX = ui.position.left;
+                    _normalCursor.row = _dygraph.findClosestRow(ui.position.left);
+                    minRow = _dygraph.boundaryIds_[0][0] + 1;
+                    maxRow = _dygraph.boundaryIds_[0][1] - 1;
+                    if (_normalCursor.row <= minRow || _normalCursor.row >= maxRow) {
+                        return false;
+                    }
+                    _normalCursor.xval = _dygraph.file_[_normalCursor.row][0];
                     _this.updateNormalCursor();
                 }
             });
-
-            xIni = Math.floor(xIni);
-            minX = _dygraph.boundaryIds_[0][0] + 1;
-            maxX = _dygraph.boundaryIds_[0][1] - 1;
+            minRow = _dygraph.boundaryIds_[0][0] + 1;
+            maxRow = _dygraph.boundaryIds_[0][1] - 1;
+            row = _dygraph.findClosestRow(_dygraph.toDomXCoord(xIni), 0);
             // Verificar que el valor inicial este dentro de los limites de la grafica
-            if (xIni > minX && xIni < maxX) {
-                if (_dygraph.file_[xIni - 1][1] > _dygraph.file_[xIni][1]) {
-                    xIni -= 1;
-                } else if (_dygraph.file_[xIni + 1][1] > _dygraph.file_[xIni][1]) {
-                    xIni += 1;
+            if (row > minRow && row < maxRow) {
+                if (_dygraph.file_[row - 1][1] > _dygraph.file_[row][1]) {
+                    row -= 1;
+                } else if (_dygraph.file_[row + 1][1] > _dygraph.file_[row][1]) {
+                    row += 1;
                 }
+                xIni = _dygraph.file_[row][0];
             } else {
                 // Buscamos el valor maximo dentro del rango
-                yValArr = _dygraph.file_.slice(minX, maxX + 1).map(x => x[1]);
-                xIni = _dygraph.file_.slice(minX, maxX + 1)[yValArr.indexOf(Math.max.apply(null, yValArr))][0];
+                yValArr = _dygraph.file_.slice(minRow, maxRow + 1).map(x => x[1]);
+                xIni = _dygraph.file_.slice(minRow, maxRow + 1)[yValArr.indexOf(Math.max.apply(null, yValArr))][0];
             }
             _normalCursor = {
                 lineDiv: containerDiv.get(0),
                 infoDiv: infoDiv.get(0),
                 xval: xIni,
-                domX: _dygraph.toDomXCoord(xIni)
+                domX: _dygraph.toDomXCoord(xIni),
+                row: row
             };
-
             _this.updateNormalCursor();
             $([_normalCursor.lineDiv, _normalCursor.infoDiv]).appendTo(_dygraph.graphDiv);
         };
 
         /*
          * Cursor de armonicos
-         * @param {Double} firstOrderFreq Posicion inicial
+         * @param {Double} xIni Posicion inicial
          * @param {Integer} count Cantidad de armonicos inicial
          */
-        this.harmonicCursor = function (firstOrderFreq, count) {
+        this.harmonicCursor = function (xIni, count) {
             var
-                width,
-                height,
-                ctx,
-                xIni,
-                minX, maxX,
-                canvasx,
-                canvasy,
-                cursorPointerDiv,
-                high, current,
+                minRow,
+                maxRow,
+                row,
                 yValArr,
+                nextRow,
+                high,
+                cursorPointerDiv,
+                current,
                 i;
 
-            width = _dygraph.plotter_.area.w;
-            height = _dygraph.plotter_.area.h;
-            _canvas.width = width;
-            _canvas.height = height;
+            _canvas.width = _dygraph.plotter_.area.w;
+            _canvas.height = _dygraph.plotter_.area.h;
             _canvas.style.position = "absolute";
             _canvas.style.left = _dygraph.plotter_.area.x + "px";
-
             _this.detachLabels();
-            minX = _dygraph.boundaryIds_[0][0] + 1;
-            maxX = _dygraph.boundaryIds_[0][1] - 1;
-            firstOrderFreq = Math.floor(firstOrderFreq);
-            xIni = clone(firstOrderFreq);
-
+            minRow = _dygraph.boundaryIds_[0][0] + 1;
+            maxRow = _dygraph.boundaryIds_[0][1] - 1;
+            row = _dygraph.findClosestRow(_dygraph.toDomXCoord(xIni), 0);
             // Verificar que el valor inicial este dentro de los limites de la grafica
-            if (xIni > minX && xIni < maxX) {
-                if (_dygraph.file_[xIni - 1][1] > _dygraph.file_[xIni][1]) {
-                    xIni -= 1;
-                } else if (_dygraph.file_[xIni + 1][1] > _dygraph.file_[xIni][1]) {
-                    xIni += 1;
+            if (row > minRow && row < maxRow) {
+                if (_dygraph.file_[row - 1][1] > _dygraph.file_[row][1]) {
+                    row -= 1;
+                } else if (_dygraph.file_[row + 1][1] > _dygraph.file_[row][1]) {
+                    row += 1;
                 }
+                xIni = _dygraph.file_[row][0];
             } else {
                 // Buscamos el valor maximo dentro del rango
-                yValArr = _dygraph.file_.slice(minX, maxX + 1).map(x => x[1]);
-                xIni = _dygraph.file_.slice(minX, maxX + 1)[yValArr.indexOf(Math.max.apply(null, yValArr))][0];
+                yValArr = _dygraph.file_.slice(minRow, maxRow + 1).map(x => x[1]);
+                xIni = _dygraph.file_.slice(minRow, maxRow + 1)[yValArr.indexOf(Math.max.apply(null, yValArr))][0];
             }
-
-            high = (firstOrderFreq < 10) ? Math.floor(firstOrderFreq / 2) + 1 : 5;
+            nextRow = _dygraph.findClosestRow(_dygraph.toDomXCoord(xIni * 2), 0);
+            high = (nextRow - row < 10) ? Math.floor((nextRow - row) / 2) + 1 : 5;
             cursorPointerDiv = $("<div/>").css({
                 "width": "6px",
                 "height": "2px",
                 "position": "absolute",
-                "z-index": "10",
+                "z-index": "1050",
                 "top": "-5px"
             }).addClass("dygraph-cursor-move");
             $("<i class=\"fa fa-caret-down\" aria-hidden=\"true\" style=\"font-size:medium;color:red;\"></i>").appendTo(cursorPointerDiv);
@@ -185,14 +190,14 @@ Cursors = (function () {
                 lineDiv: cursorPointerDiv.get(0),
                 xval: xIni,
                 domX: _dygraph.toDomXCoord(xIni),
-                high: high
+                high: high,
+                row: row
             };
-
-            if (current.xval < minX || current.xval > maxX) {
-                current.xval = minX;
+            if (current.row < minRow || current.row > maxRow) {
+                current.row = minRow;
+                current.xval = _dygraph.file_[minRow][0];
                 current.domX = _dygraph.toDomXCoord(current.xval);
             }
-
             $([cursorPointerDiv.get(0)]).draggable({
                 axis: "x",
                 drag: function (event, ui) {
@@ -207,14 +212,13 @@ Cursors = (function () {
                 }
             });
             _pointerArray.push(current);
-            _harmonicCount = count;
-
+            _harmonicCount = count - 1;
             $(current.lineDiv).css({
                 "left": (current.domX - 4) + "px",
                 "height": "2px"
             });
             _attachPointersToChart();
-            _drawHarmonicMarker(current.xval);
+            _drawHarmonicMarker(current.row);
         };
 
         /*
@@ -225,69 +229,62 @@ Cursors = (function () {
         this.sidebandCursor = function (xIni, count) {
             var
                 i,
-                minX,
-                maxX,
-                diff,
+                minRow,
+                maxRow,
+                row,
                 step,
-                width,
-                height,
                 color,
                 current,
                 yValArr,
                 cursorPointerDiv;
 
-            width = _dygraph.plotter_.area.w;
-            height = _dygraph.plotter_.area.h;
-            _canvas.width = width;
-            _canvas.height = height;
+            _canvas.width = _dygraph.plotter_.area.w;
+            _canvas.height = _dygraph.plotter_.area.h;
             _canvas.style.position = "absolute";
             _canvas.style.left = _dygraph.plotter_.area.x + "px";
-
             _this.detachLabels();
-            minX = _dygraph.boundaryIds_[0][0] + 1;
-            maxX = _dygraph.boundaryIds_[0][1] - 1;
-            xIni = Math.floor(xIni);
-
+            minRow = _dygraph.boundaryIds_[0][0] + 1;
+            maxRow = _dygraph.boundaryIds_[0][1] - 1;
+            row = _dygraph.findClosestRow(_dygraph.toDomXCoord(xIni), 0);
             // Verificar que el valor inicial este dentro de los limites de la grafica
-            if (xIni > minX && xIni < maxX) {
-                if (_dygraph.file_[xIni - 1][1] > _dygraph.file_[xIni][1]) {
-                    xIni -= 1;
-                } else if (_dygraph.file_[xIni + 1][1] > _dygraph.file_[xIni][1]) {
-                    xIni += 1;
+            if (row > minRow && row < maxRow) {
+                if (_dygraph.file_[row - 1][1] > _dygraph.file_[row][1]) {
+                    row -= 1;
+                } else if (_dygraph.file_[row + 1][1] > _dygraph.file_[row][1]) {
+                    row += 1;
                 }
+                xIni = _dygraph.file_[row][0];
             } else {
                 // Buscamos el valor maximo dentro del rango
-                yValArr = _dygraph.file_.slice(minX, maxX + 1).map(x => x[1]);
-                xIni = _dygraph.file_.slice(minX, maxX + 1)[yValArr.indexOf(Math.max.apply(null, yValArr))][0];
+                yValArr = _dygraph.file_.slice(minRow, maxRow + 1).map(x => x[1]);
+                xIni = _dygraph.file_.slice(minRow, maxRow + 1)[yValArr.indexOf(Math.max.apply(null, yValArr))][0];
             }
-
-            step = Math.floor((maxX - xIni) / count);
-
+            step = Math.floor((maxRow - row) / count);
             for (i = 0; i < 2; i += 1) {
                 cursorPointerDiv = $("<div/>").css({
                     "width": "6px",
                     "height": "2px",
                     "position": "absolute",
-                    "z-index": "10",
+                    "z-index": "1050",
                     "top": "-5px"
                 }).addClass("dygraph-cursor-move");
                 cursorPointerDiv[0].setAttribute("pointerPosition", i);
                 color = (i === 0) ? "red" : "black";
-                $("<i class=\"fa fa-caret-down\" aria-hidden=\"true\" style=\"font-size:medium;color:" + color + ";\"></i>").appendTo(cursorPointerDiv);
-
+                $("<i class=\"fa fa-caret-down\" aria-hidden=\"true\" style=\"font-size:medium;color:" + color +
+                    ";\"></i>").appendTo(cursorPointerDiv);
                 current = {
                     count: count,
                     step: step,
                     lineDiv: cursorPointerDiv.get(0),
-                    xval: xIni + step * i,
-                    domX: _dygraph.toDomXCoord(xIni + step * i)
+                    row: row + step * i,
+                    xval: _dygraph.file_[row + step * i][0],
+                    domX: _dygraph.toDomXCoord(_dygraph.file_[row + step * i][0])
                 };
-
-                if (current.xval < minX || current.xval > maxX) {
-                    current.xval = (i === 0) ? minX : maxX;
+                if (current.row < minRow || current.row > maxRow) {
+                    current.row = (i === 0) ? minRow : maxRow;
+                    current.xval = _dygraph.file_[current.row][0];
                     current.domX = _dygraph.toDomXCoord(current.xval);
                 }
-
                 $([cursorPointerDiv.get(0)]).draggable({
                     axis: "x",
                     drag: function (event, ui) {
@@ -298,7 +295,7 @@ Cursors = (function () {
                     },
                     stop: function (e, ui) {
                         _isDragging = false;
-                        _this.updateSidebandPositions();
+                        _this.updateSidebandPositions(_xCoordinateUnit, ui);
                     }
                 });
                 $([cursorPointerDiv.get(0)]).find("span").hide();
@@ -308,10 +305,9 @@ Cursors = (function () {
                     "height": "2px"
                 });
             }
-
             _sideBandCount = count;
             _drawSidebandWidth();
-            _drawSidebandMarker(xIni);
+            _drawSidebandMarker(row, 0);
             _attachPointersToChart();
         };
 
@@ -387,7 +383,7 @@ Cursors = (function () {
             }
         };
 
-        this.updateNormalCursor = function () {
+        this.updateNormalCursor = function (xCoordinateUnit, yUnit, velocity) {
             var
                 layout,
                 html, i,
@@ -398,7 +394,10 @@ Cursors = (function () {
             layout = _dygraph.getArea();
             chartLeft = layout.x;
             chartRight = layout.x + layout.w;
-
+            _xCoordinateUnit = xCoordinateUnit || _xCoordinateUnit;
+            yUnitValue = yUnit || yUnitValue;
+            velocityValue = velocity || velocityValue;
+            _normalCursor.xval = _dygraph.file_[_normalCursor.row][0];
             _normalCursor.domX = _dygraph.toDomXCoord(_normalCursor.xval);
             $(_normalCursor.lineDiv).css({
                 "left": _normalCursor.domX + "px",
@@ -409,10 +408,18 @@ Cursors = (function () {
                 "left": _normalCursor.domX + "px",
                 "top": layout.y + "px",
             });
-            html = _normalCursor.xval.toFixed(2) + ": ";
+            if (_xCoordinateUnit.Value === xCoordinateUnits.Order.Value) {
+                html = (velocityValue === 0) ? "--" : (_normalCursor.xval / velocityValue).toFixed(2);
+            } else {
+                html = _normalCursor.xval.toFixed(2);
+            }
+            html += " " + _xCoordinateUnit.Text + ": ";
             labels = _dygraph.getLabels();
             for (i = 1; i < labels.length; i += 1) {
-                html += "<span style=\"color:" + _dygraph.plotter_.colors[labels[i]] + ";\">" + _dygraph.file_[_normalCursor.xval][1].toFixed(2) + "</span>, ";
+                if (_dygraph.file_[_normalCursor.row][i] !== null) {
+                    html += "<span style=\"color:" + _dygraph.plotter_.colors[labels[i]] + ";\">";
+                    html += _dygraph.file_[_normalCursor.row][i].toFixed(2) + " " + yUnitValue + "</span>, ";
+                }
             }
             html = html.replace(/,\s*$/, "");
             $(_normalCursor.infoDiv).html(html);
@@ -424,17 +431,17 @@ Cursors = (function () {
             }
         };
 
-        this.updateHarmonicPositions = function () {
+        this.updateHarmonicPositions = function (xCoordinateUnit) {
             var
-                minX,
-                maxX,
-                step;
+                minRow,
+                maxRow;
 
-            minX = _dygraph.boundaryIds_[0][0] + 1;
-            maxX = _dygraph.boundaryIds_[0][1] - 1;
-
+            _xCoordinateUnit = xCoordinateUnit || _xCoordinateUnit;
+            minRow = _dygraph.boundaryIds_[0][0] + 1;
+            maxRow = _dygraph.boundaryIds_[0][1] - 1;
+            _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
             // Verificar que el valor este dentro de los limites de la grafica
-            if (!(_pointerArray[0].xval > minX && _pointerArray[0].xval < maxX)) {
+            if (!(_pointerArray[0].row > minRow && _pointerArray[0].row < maxRow)) {
                 $([_pointerArray[0].lineDiv]).hide();
                 //_pointerArray[0].xval = minX;
             } else {
@@ -450,72 +457,95 @@ Cursors = (function () {
                 "left": (_pointerArray[0].domX - 4) + "px",
                 "height": "2px"
             });
-            _drawHarmonicMarker(_pointerArray[0].xval);
+            _drawHarmonicMarker(_pointerArray[0].row);
         };
 
-        this.updateSidebandPositions = function () {
+        this.updateSidebandPositions = function (xCoordinateUnit, ui) {
             var
-                minX,
-                maxX;
+                left,
+                right,
+                current;
 
-            minX = _dygraph.boundaryIds_[0][0] + 1;
-            maxX = _dygraph.boundaryIds_[0][1] - 1;
-
-            // Verificar que el valor inicial este dentro de los limites de la grafica
-            if (!(_pointerArray[0].xval > minX && _pointerArray[0].xval < maxX) && (_pointerArray[0].xval !== 1 && _pointerArray[0].xval !== _dygraph.file_.length - 2)) {
-                //_pointerArray[0].xval = minX;
+            _xCoordinateUnit = xCoordinateUnit || _xCoordinateUnit;
+            // Valores y posicion en el DOM del cursor principal
+            _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
+            _pointerArray[0].domX = _dygraph.toDomXCoord(_pointerArray[0].xval);
+            // Limites de la grafica (izquierda y derecha)
+            left = _dygraph.plotter_.area.x - 4;
+            right = _dygraph.plotter_.area.x + _dygraph.plotter_.area.w + 4;
+            // Verificar que el cursor principal este dentro de los limites de la grafica
+            if (_pointerArray[0].domX < left && _pointerArray[0].domX > right) {
+                // Ocultar cursor principal
                 $([_pointerArray[0].lineDiv]).hide();
             } else {
+                // Mostrar cursor principal
                 $([_pointerArray[0].lineDiv]).show();
-                _pointerArray[0].domX = _dygraph.toDomXCoord(_pointerArray[0].xval);
+                // Posicion del cursor principal
                 $(_pointerArray[0].lineDiv).css({
                     "left": (_pointerArray[0].domX - 4) + "px",
                     "height": "2px"
                 });
             }
-
-            if (!(_pointerArray[1].xval > minX && _pointerArray[1].xval < maxX) && (_pointerArray[1].xval !== 1 && _pointerArray[1].xval !== _dygraph.file_.length - 2)) {
-                //_pointerArray[1].xval = maxX;
+            // Valores y posicion en el DOM del cursor secundario
+            _pointerArray[1].xval = _dygraph.file_[_pointerArray[1].row][0];
+            _pointerArray[1].domX = _dygraph.toDomXCoord(_pointerArray[1].xval);
+            // Verificar que el cursor secundario este dentro de los limites de la grafica
+            if (_pointerArray[1].domX < left && _pointerArray[1].domX > right) {
+                // Ocultar cursor secundario
                 $([_pointerArray[1].lineDiv]).hide();
             } else {
+                // Mostrar cursor secundario
                 $([_pointerArray[1].lineDiv]).show();
-                _pointerArray[1].xval = (_pointerArray[0].xval > _pointerArray[1].xval) ? -_pointerArray[0].step : _pointerArray[0].step;
-                _pointerArray[1].xval += _pointerArray[0].xval;
-                _pointerArray[1].domX = _dygraph.toDomXCoord(_pointerArray[1].xval);
+                // Posicion del cursor secundario
                 $(_pointerArray[1].lineDiv).css({
                     "left": (_pointerArray[1].domX - 4) + "px",
                     "height": "2px"
                 });
             }
-
+            current = 0;
+            if (ui) {
+                current = parseInt($(ui.helper)[0].getAttribute("pointerPosition"));
+            }
             _drawSidebandWidth();
-            _drawSidebandMarker(_pointerArray[0].xval);
+            _drawSidebandMarker(_pointerArray[0].row, current);
         };
 
         this.setHarmonicConfig = function (count, initial) {
-            _harmonicCount = count;
-            _pointerArray[0].xval = Math.floor(initial);
+            var
+                row;
+
+            _harmonicCount = count - 1;
+            row = _dygraph.findClosestRow(_dygraph.toDomXCoord(initial), 0);
+            _pointerArray[0].row = row;
+            _pointerArray[0].xval = _dygraph.file_[row][0];
         };
 
         this.getHarmonicConfig = function () {
             return {
-                count: _harmonicCount,
-                initial: _pointerArray[0].xval
+                count: _harmonicCount + 1,
+                initial: _pointerArray[0].xval,
+                row: _pointerArray[0].row
             };
         };
 
         this.setSidebandConfig = function (count, initial, width) {
-            _sideBandCount = count;
-            _pointerArray[0].xval = Math.floor(initial);
-            _pointerArray[0].step = Math.floor(width);
-            _pointerArray[1].step = Math.floor(width);
+            var
+                row;
+
+            _sideBandCount = count - 1;
+            row = _dygraph.findClosestRow(_dygraph.toDomXCoord(initial), 0);
+            _pointerArray[0].row = row;
+            _pointerArray[0].xval = _dygraph.file_[row][0];
+            _pointerArray[0].step = Number(width);
+            _pointerArray[1].step = Number(width);
         };
 
         this.getSidebandConfig = function () {
             return {
                 count: _sideBandCount,
                 initial: _pointerArray[0].xval,
-                width: _pointerArray[0].step
+                width: _pointerArray[0].step,
+                row: _pointerArray[0].row
             };
         };
 
@@ -560,28 +590,83 @@ Cursors = (function () {
             _canvas.style.left = _dygraph.plotter_.area.x + "px";
         };
 
+        this.applyKeyEvent = function (cursorType, key, e) {
+
+            var minRow,
+                maxRow;
+
+            switch (cursorType) {
+                case 1:
+                    if (key == 1) {
+                        _normalCursor.row -= 1;
+                    } else if (key == 2) {
+                        _normalCursor.row += 1;
+                    }
+                    
+                    _normalCursor.row = _normalCursor.row;
+                    minRow = _dygraph.boundaryIds_[0][0] + 1;
+                    maxRow = _dygraph.boundaryIds_[0][1] - 1;
+                    if (_normalCursor.row <= minRow || _normalCursor.row >= maxRow) {
+                        return false;
+                    }
+                    _normalCursor.xval = _dygraph.file_[_normalCursor.row][0];
+                    _this.updateNormalCursor();
+                    break;
+                case 2:
+                    _isDragging = true;
+                    _handleHarmonic(e, null, key);
+                    _isDragging = false;
+                    break;
+                case 3:
+                    _isDragging = true;
+                    _handleSideband(e, null, key);
+                    _isDragging = false;
+                    break;
+            }
+        };
+
         _getHarmonics = function (low, high) {
             var
-                low,
-                tmp,
-                i, j,
-                harmonicArray;
+                positions,
+                i, j, k,
+                xIni,
+                nextRow,
+                tmp;
 
-            harmonicArray = [];
-            for (i = -2; i < high - 2; i += 1) {
-                for (j = 1; j <= _harmonicCount; j += 1) {
-                    if (_dygraph.file_[low * (j + 1) + i]) {
-                        tmp = parseFloat(_dygraph.file_[low * (j + 1) + i][1].toFixed(2));
-                        if (!harmonicArray[j] || tmp > harmonicArray[j][1]) {
-                            harmonicArray[j] = [Math.floor(low * (j + 1) + i), tmp];
-                            //harmonicArray[j] = Math.floor(low * (j + 1) + i);
+            positions = [];
+            xIni = _dygraph.file_[low][0];
+            for (i = 1; i <= _harmonicCount; i += 1) {
+                nextRow = _dygraph.findClosestRow(_dygraph.toDomXCoord(xIni * (i + 1)), 0);
+                if (_dygraph.file_[nextRow]) {
+                    for (j = 0; j < _dygraph.layout_.points.length; j += 1) {
+                        tmp = _dygraph.file_[nextRow][j + 1];
+                        if (tmp !== null) {
+                            positions[i] = [nextRow, tmp];
+                        }
+                    }
+                    for (j = -2; j < high - 2; j += 1) {
+                        if (j === 0) {
+                            continue;
+                        }
+                        for (k = 0; k < _dygraph.layout_.points.length; k += 1) {
+                            tmp = _dygraph.file_[nextRow + j];
+                            if (tmp && tmp[k + 1] !== null) {
+                                if (tmp[k + 1] > positions[i][1]) {
+                                    positions[i] = [nextRow + j, tmp[k + 1]];
+                                }
+                            }
                         }
                     }
                 }
             }
-            harmonicArray[0] = [low, _dygraph.file_[low][1]];
-            //harmonicArray[0] = low;
-            return harmonicArray;
+            for (i = 0; i < _dygraph.layout_.points.length; i += 1) {
+                tmp = _dygraph.file_[low][i];
+                if (tmp !== null) {
+                    positions[0] = [low, tmp];
+                    break;
+                }
+            }
+            return positions;
         };
 
         _dragPointer = function (e, ui, isHarmonic) {
@@ -592,37 +677,51 @@ Cursors = (function () {
             }
         };
 
-        _handleHarmonic = function (e, ui) {
+        _handleHarmonic = function (e, ui, key) {
             var
                 left,
                 right;
 
             _this.clearCursor();
-            _pointerArray[0].xval = _dygraph.findClosestRow(ui.position.left);
-            if (_dygraph.file_[_pointerArray[0].xval - 1] && (_dygraph.file_[_pointerArray[0].xval - 1][1] > _dygraph.file_[_pointerArray[0].xval][1])) {
-                _pointerArray[0].xval -= 1;
-            } else if (_dygraph.file_[_pointerArray[0].xval + 1] && (_dygraph.file_[_pointerArray[0].xval + 1][1] > _dygraph.file_[_pointerArray[0].xval][1])) {
-                _pointerArray[0].xval += 1;
+            if (ui) {
+                _pointerArray[0].row = _dygraph.findClosestRow(ui.position.left);
+            } else {
+                if (key == 1) {
+                    _pointerArray[0].row -= 1;
+                } else if (key == 2) {
+                    _pointerArray[0].row += 1;
+                }                
             }
+
+            /*
+            if (_dygraph.file_[_pointerArray[0].row - 1] && (_dygraph.file_[_pointerArray[0].row - 1][1] > _dygraph.file_[_pointerArray[0].row][1])) {
+                _pointerArray[0].row += 1;
+            } else if (_dygraph.file_[_pointerArray[0].row + 1] && (_dygraph.file_[_pointerArray[0].row + 1][1] > _dygraph.file_[_pointerArray[0].row][1])) {
+                _pointerArray[0].row -= 1;
+            }*/
+            _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
             _pointerArray[0].domX = _dygraph.toDomXCoord(_pointerArray[0].xval);
             left = _dygraph.boundaryIds_[0][0] + 1;
             right = _dygraph.boundaryIds_[0][1] - 1;
-            if (_pointerArray[0].xval < left) {
-                _pointerArray[0].xval = left;
+            if (_pointerArray[0].row < left) {
+                _pointerArray[0].row = left;
+                _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
                 $(_pointerArray[0].lineDiv).css({
-                    "left": _dygraph.toDomXCoord(left) + "px",
+                    "left": _dygraph.toDomXCoord(_pointerArray[0].xval) + "px",
                     "height": "2px"
                 });
                 e.preventDefault();
                 return false;
             }
 
-            if (_pointerArray[0].xval > right) {
-                _pointerArray[0].xval = right;
+            if (_pointerArray[0].row > right) {
+                _pointerArray[0].row = right;
+                _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
                 $(_pointerArray[0].lineDiv).css({
-                    "left": _dygraph.toDomXCoord(right) + "px",
+                    "left": _dygraph.toDomXCoord(_pointerArray[0].xval) + "px",
                     "height": "2px"
                 });
+
                 e.preventDefault();
                 return false;
             }
@@ -631,23 +730,31 @@ Cursors = (function () {
                 "left": (_pointerArray[0].domX - 4) + "px",
                 "height": "2px"
             });
-            ui.position.left = _pointerArray[0].domX - 4;
-            _drawHarmonicMarker(_pointerArray[0].xval);
+            if (ui) {
+                ui.position.left = _pointerArray[0].domX - 4;
+            }
+            _drawHarmonicMarker(_pointerArray[0].row);
         };
 
-        _drawHarmonicMarker = function (xIni) {
+        _drawHarmonicMarker = function (row) {
             var
                 ctx,
+                positions,
                 i, j,
+                idx,
                 leftPt,
-                centerPt,
-                harmonicPositions;
+                centerPt;
 
             _this.clearCursor();
             ctx = _canvas.getContext("2d");
-            j = _dygraph.layout_.points[0][0].idx;
-            harmonicPositions = _getHarmonics(xIni, _pointerArray[0].high);
-            centerPt = _dygraph.layout_.points[0][xIni - j];
+            positions = _getHarmonics(row, _pointerArray[0].high);
+            for (i = 0; i < _dygraph.layout_.points.length; i += 1) {
+                if (_dygraph.file_[row][i + 1] !== null) {
+                    j = _dygraph.layout_.points[i][0].idx;
+                    break;
+                }
+            }
+            centerPt = _dygraph.layout_.points[i][row - j];
             if (typeof centerPt !== "undefined") {
                 ctx.beginPath();
                 ctx.fillStyle = "#FF0000";
@@ -664,8 +771,8 @@ Cursors = (function () {
                     ctx.closePath();
                 }
             }
-            for (i = 1; i < harmonicPositions.length; i += 1) {
-                leftPt = _dygraph.layout_.points[0][harmonicPositions[i][0] - j];
+            for (idx = 1; idx < positions.length; idx += 1) {
+                leftPt = _dygraph.layout_.points[i][positions[idx][0] - j];
                 if (typeof leftPt !== "undefined") {
                     ctx.beginPath();
                     ctx.fillStyle = "#000000";
@@ -674,33 +781,51 @@ Cursors = (function () {
                     ctx.closePath();
                     ctx.beginPath();
                     ctx.font = "12px FontAwesome";
-                    ctx.fillText((i + 1) + "x", leftPt.canvasx - _dygraph.plotter_.area.x - 6, leftPt.canvasy - _dygraph.plotter_.area.y - 5);
+                    ctx.fillText((idx + 1) + "x", leftPt.canvasx - _dygraph.plotter_.area.x - 6, leftPt.canvasy - _dygraph.plotter_.area.y - 5);
                     ctx.closePath();
                 }
             }
         };
 
-        _handleSideband = function (e, ui) {
+        _handleSideband = function (e, ui, key) {
             var
                 i,
                 step,
-                oldXVal,
                 left,
                 right;
 
-            i = parseInt($(ui.helper)[0].getAttribute("pointerPosition"));
-            oldXVal = clone(_pointerArray[i].xval);
-            _pointerArray[i].xval = _dygraph.findClosestRow(ui.position.left);
-            if (ui.position.left < _dygraph.plotter_.area.x) {
-                _pointerArray[i].xval = _dygraph.findClosestRow(ui.position.left + 4);
+            if (ui) {
+                i = parseInt($(ui.helper)[0].getAttribute("pointerPosition"));
+                _pointerArray[i].row = _dygraph.findClosestRow(ui.position.left);
+                if (ui.position.left < _dygraph.plotter_.area.x) {
+                    _pointerArray[i].row = _dygraph.findClosestRow(ui.position.left + 4);
+                }
+                _lastCursorSidebandSelected = i;
+                _lastCursorPosition = ui.position.left;
+            } else {
+                i = _lastCursorSidebandSelected;
+                if (key == 1) {
+                    _pointerArray[i].row -= 1;
+                } else if (key == 2) {
+                    _pointerArray[i].row += 1;
+                }
             }
-            _pointerArray[i].domX = _dygraph.toDomXCoord(_pointerArray[i].xval);
 
+            _pointerArray[i].xval = _dygraph.file_[_pointerArray[i].row][0];
+            _pointerArray[i].domX = _dygraph.toDomXCoord(_pointerArray[i].xval);
             if (i === 0) {
                 // Puntero principal
-                step = _pointerArray[1].xval - _pointerArray[0].xval;
+                step = _pointerArray[1].row - _pointerArray[0].row;
                 step = (step < 0) ? -_pointerArray[i].step : _pointerArray[i].step;
-                _pointerArray[1].xval = _dygraph.findClosestRow(_dygraph.toDomXCoord(_pointerArray[i].xval + step));
+                _pointerArray[1].row = _pointerArray[i].row + step;
+                // Proteger el desbordamiento de la grafica
+                if (_pointerArray[1].row < 0) {
+                    _pointerArray[1].row = 0;
+                } else if (_pointerArray[1].row >= _dygraph.file_.length) {
+                    _pointerArray[1].row = _dygraph.file_.length - 1;
+                }
+                _pointerArray[1].row = (_pointerArray[1].row < 0) ? 0 : _pointerArray[1].row;
+                _pointerArray[1].xval = _dygraph.file_[_pointerArray[1].row][0];
                 _pointerArray[1].domX = _dygraph.toDomXCoord(_pointerArray[1].xval);
                 $(_pointerArray[1].lineDiv).css({
                     "left": _pointerArray[1].domX + "px",
@@ -708,77 +833,75 @@ Cursors = (function () {
                 });
             } else {
                 // Puntero secundario
-                if (_dygraph.file_[_pointerArray[i].xval - 1] && (_dygraph.file_[_pointerArray[i].xval - 1][1] > _dygraph.file_[_pointerArray[i].xval][1])) {
-                    _pointerArray[i].xval -= 1;
-                } else if (_dygraph.file_[_pointerArray[i].xval + 1] && (_dygraph.file_[_pointerArray[i].xval + 1][1] > _dygraph.file_[_pointerArray[i].xval][1])) {
-                    _pointerArray[i].xval += 1;
+                if (_dygraph.file_[_pointerArray[i].row - 1] &&
+                    (_dygraph.file_[_pointerArray[i].row - 1][1] > _dygraph.file_[_pointerArray[i].row][1])) {
+                    _pointerArray[i].row -= 1;
+                } else if (_dygraph.file_[_pointerArray[i].xval + 1] &&
+                    (_dygraph.file_[_pointerArray[i].xval + 1][1] > _dygraph.file_[_pointerArray[i].xval][1])) {
+                    _pointerArray[i].row += 1;
                 }
+                _pointerArray[i].xval = _dygraph.file_[_pointerArray[i].row][0];
                 _pointerArray[i].domX = _dygraph.toDomXCoord(_pointerArray[i].xval);
                 $(_pointerArray[1].lineDiv).css({
                     "left": _pointerArray[i].domX + "px",
                     "height": "2px"
                 });
-                step = _pointerArray[i].xval - _pointerArray[0].xval;
+                step = _pointerArray[i].row - _pointerArray[0].row;
                 if (step < 0) {
-                    step = _pointerArray[0].xval - _pointerArray[i].xval;
+                    step = _pointerArray[0].row - _pointerArray[i].row;
                 }
                 _pointerArray[0].step = step;
                 _pointerArray[1].step = step;
             }
-
-            left = _dygraph.boundaryIds_[0][0] + 1;
-            right = _dygraph.boundaryIds_[0][1] - 1;
-            if (_pointerArray[0].xval >= left && _pointerArray[0].xval <= right) {
-                $([_pointerArray[0].lineDiv]).show();
-            } else if (_pointerArray[0].xval < left) {
-                _pointerArray[0].xval = left;
-                $(_pointerArray[0].lineDiv).css({
-                    "left": _dygraph.toDomXCoord(left) + "px",
-                    "height": "2px"
-                });
-                e.preventDefault();
-                return false;
-            } else if (_pointerArray[0].xval > right) {
-                _pointerArray[0].xval = right;
-                $(_pointerArray[0].lineDiv).css({
-                    "left": _dygraph.toDomXCoord(right) + "px",
-                    "height": "2px"
-                });
-                e.preventDefault();
-                return false;
+            left = _dygraph.plotter_.area.x - 4;
+            right = _dygraph.plotter_.area.x + _dygraph.plotter_.area.w + 4;
+            // A diferencia del cursor que genera el evento, el otro cursor puede encontrarse por fuera de la grafica durante el evento
+            if (_pointerArray[(i + 1) % 2].domX < left || _pointerArray[(i + 1) % 2].domX > right) {
+                $([_pointerArray[(i + 1) % 2].lineDiv]).hide();
+            } else {
+                $([_pointerArray[(i + 1) % 2].lineDiv]).show();
             }
-
-            if (_pointerArray[1].xval <= right && _pointerArray[1].xval >= left) {
-                $([_pointerArray[1].lineDiv]).show();
-            } else if (_pointerArray[1].xval > right) {
-                _pointerArray[1].xval = right;
-                $(_pointerArray[1].lineDiv).css({
-                    "left": _dygraph.toDomXCoord(right) + "px",
+            // Si el cursor que genera el evento Drag, se encuentra por fuera de los limites de la grafica
+            // Es necesario prevenir la propagacion del evento ubicandolo sobre el limite inferior o superior segun el caso
+            if (_pointerArray[i % 2].domX < left) {
+                _pointerArray[i % 2].row = _dygraph.boundaryIds_[0][0] + 1;
+                _pointerArray[i % 2].xval = _dygraph.file_[_pointerArray[i % 2].row][0];
+                _pointerArray[i % 2].domX = _dygraph.toDomXCoord(_pointerArray[i % 2].xval);
+                $(_pointerArray[i % 2].lineDiv).css({
+                    "left": _pointerArray[i % 2].domX + "px",
                     "height": "2px"
                 });
                 e.preventDefault();
                 return false;
-            } else if (_pointerArray[1].xval < left) {
-                _pointerArray[1].xval = left;
-                $(_pointerArray[1].lineDiv).css({
-                    "left": _dygraph.toDomXCoord(left) + "px",
+            } else if (_pointerArray[i % 2].domX > right) {
+                _pointerArray[i % 2].row = _dygraph.boundaryIds_[0][1] - 1;
+                _pointerArray[i % 2].xval = _dygraph.file_[_pointerArray[i % 2].row][0];
+                _pointerArray[i % 2].domX = _dygraph.toDomXCoord(_pointerArray[i % 2].xval);
+                $(_pointerArray[i % 2].lineDiv).css({
+                    "left": _pointerArray[i % 2].domX + "px",
                     "height": "2px"
                 });
                 e.preventDefault();
                 return false;
+            } else {
+                $([_pointerArray[i % 2].lineDiv]).show();
             }
-
+            // Centrar el puntero principal
             $(_pointerArray[0].lineDiv).css({
                 "left": (_pointerArray[0].domX - 4) + "px",
                 "height": "2px"
             });
+            // Centrar el puntero secundario
             $(_pointerArray[1].lineDiv).css({
                 "left": (_pointerArray[1].domX - 4) + "px",
                 "height": "2px"
             });
-            ui.position.left = _pointerArray[i].domX - 4;
+            if (ui) {
+                // Necesario para que la linea que se dibuja sobre el marcador actual, coincida con el centro del puntero
+                ui.position.left = _pointerArray[i].domX - 4;
+            }
             _drawSidebandWidth();
-            _drawSidebandMarker(_pointerArray[0].xval, i);
+            _drawSidebandMarker(_pointerArray[i].row, i);
         };
 
         _drawSidebandWidth = function () {
@@ -787,54 +910,60 @@ Cursors = (function () {
                 ctx;
 
             _this.clearCursor();
+
+            /*
+             * RECORDATORIO: EL TEXTO QUE MUESTRA EL ANCHO DE LA BANDA, ES NECESARIO DARLE UN TRATAMIENTO
+             * ADICIONAL, ESTO ES, CUANDO EL ANCHO DEL TEXTO ES GRANDE EN COMPARACION CON EL ANCHO DE LA BANDA (PIXELES)
+             * ES NECESARIO UBICARLA A UNO DE LOS LADOS, TAMBIEN ES NECESARIO DETERMINAR QUE LADO TIENE EL MAYOR ESPACIO
+             */
+
             diff = _pointerArray[1].xval - _pointerArray[0].xval;
-            diff = (diff < 0) ? (-diff).toFixed(0) : (diff).toFixed(0);
-            //$([_pointerArray[0].lineDiv]).find("span").html(_pointerArray[0].xval + " Hz");
-            //$([_pointerArray[1].lineDiv]).find("span").html(_pointerArray[1].xval + " Hz");
+            diff = (diff < 0) ? -diff.toFixed(2) : diff.toFixed(2);
             ctx = _canvas.getContext("2d");
             ctx.beginPath();
             ctx.font = "10px Georgia";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(diff + " Hz", (_pointerArray[1].domX + _pointerArray[0].domX) / 2 - _dygraph.plotter_.area.x, 12);
             ctx.fillStyle = "#000000";
+            ctx.fillText(diff + " " + _xCoordinateUnit.Text,
+                (_pointerArray[1].domX + _pointerArray[0].domX) / 2 - _dygraph.plotter_.area.x, 12);
             ctx.strokeStyle = "#000000";
             ctx.stroke();
             ctx.closePath();
         };
 
-        _drawSidebandMarker = function (xIni, current) {
+        _drawSidebandMarker = function (row, current) {
             var
                 ctx,
                 i, j,
-                leftPt,
                 centerPt,
-                rightPt,
-                secondPt,
-                step;
+                step,
+                idx,
+                leftPt,
+                rightPt;
 
             ctx = _canvas.getContext("2d");
-            j = _dygraph.layout_.points[0][0].idx;
-            centerPt = _dygraph.layout_.points[0][xIni - j];
+            for (i = 0; i < _dygraph.layout_.points.length; i += 1) {
+                if (_dygraph.file_[row][i + 1] !== null) {
+                    idx = _dygraph.layout_.points[i][0].idx;
+                    break;
+                }
+            }
+            // Determinamos la informacion del cursor principal (caso sea visible)
+            centerPt = _dygraph.layout_.points[i][_pointerArray[0].row - idx];
             step = _pointerArray[0].step;
-            if (typeof centerPt !== "undefined") {
+            if (centerPt !== undefined) {
                 ctx.beginPath();
                 ctx.fillStyle = "#FF0000";
                 ctx.arc(centerPt.canvasx - _dygraph.plotter_.area.x, centerPt.canvasy - _dygraph.plotter_.area.y, 3, 0, 2 * Math.PI, true);
                 ctx.fill();
                 ctx.closePath();
-                if (_isDragging && current === 0) {
+                if (_isDragging) {
+                    // Determinar el punto de central del cursor que se esta moviendo
+                    centerPt = _dygraph.layout_.points[i][_pointerArray[current].row - idx];
+                    // Dibujar la linea punteada que sirve de guia para encontrar una banda especifica
                     ctx.beginPath();
-                    ctx.strokeStyle = "#FF0000";
-                    ctx.setLineDash([8, 10]);
-                    ctx.moveTo(centerPt.canvasx - _dygraph.plotter_.area.x, _dygraph.plotter_.area.y);
-                    ctx.lineTo(centerPt.canvasx - _dygraph.plotter_.area.x, centerPt.canvasy - _dygraph.plotter_.area.y);
-                    ctx.stroke();
-                    ctx.closePath();
-                } else if (_isDragging && current === 1) {
-                    centerPt = _dygraph.layout_.points[0][_pointerArray[1].xval - j];
-                    ctx.beginPath();
-                    ctx.strokeStyle = "#000000";
+                    ctx.strokeStyle = (current === 0) ? "#FF0000" : "#000000";
                     ctx.setLineDash([8, 10]);
                     ctx.moveTo(centerPt.canvasx - _dygraph.plotter_.area.x, _dygraph.plotter_.area.y);
                     ctx.lineTo(centerPt.canvasx - _dygraph.plotter_.area.x, centerPt.canvasy - _dygraph.plotter_.area.y);
@@ -842,22 +971,26 @@ Cursors = (function () {
                     ctx.closePath();
                 }
             }
+            row = _pointerArray[0].row;
             for (i = 1; i <= _sideBandCount; i += 1) {
-                leftPt = _dygraph.layout_.points[0][xIni + step * i - j];
-                rightPt = _dygraph.layout_.points[0][xIni - step * i - j];
-                if (typeof leftPt !== "undefined") {
-                    ctx.beginPath();
-                    ctx.fillStyle = "#000000";
-                    ctx.arc(leftPt.canvasx - _dygraph.plotter_.area.x, leftPt.canvasy - _dygraph.plotter_.area.y, 2, 0, 2 * Math.PI, true);
-                    ctx.fill();
-                    ctx.closePath();
-                }
-                if (typeof rightPt !== "undefined") {
-                    ctx.beginPath();
-                    ctx.fillStyle = "#000000";
-                    ctx.arc(rightPt.canvasx - _dygraph.plotter_.area.x, rightPt.canvasy - _dygraph.plotter_.area.y, 2, 0, 2 * Math.PI, true);
-                    ctx.fill();
-                    ctx.closePath();
+                for (j = 0; j < _dygraph.layout_.points.length; j += 1) {
+                    idx = _dygraph.layout_.points[j][0].idx;
+                    leftPt = _dygraph.layout_.points[j][row + step * i - idx];
+                    rightPt = _dygraph.layout_.points[j][row - step * i - idx];
+                    if (leftPt !== undefined) {
+                        ctx.beginPath();
+                        ctx.fillStyle = "#000000";
+                        ctx.arc(leftPt.canvasx - _dygraph.plotter_.area.x, leftPt.canvasy - _dygraph.plotter_.area.y, 2, 0, 2 * Math.PI, true);
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    if (rightPt !== undefined) {
+                        ctx.beginPath();
+                        ctx.fillStyle = "#000000";
+                        ctx.arc(rightPt.canvasx - _dygraph.plotter_.area.x, rightPt.canvasy - _dygraph.plotter_.area.y, 2, 0, 2 * Math.PI, true);
+                        ctx.fill();
+                        ctx.closePath();
+                    }
                 }
             }
         };
@@ -870,295 +1003,27 @@ Cursors = (function () {
                 $(_pointerArray[i].lineDiv).appendTo(_dygraph.graphDiv);
             }
         };
+
+        _getRowForX = function (xVal) {
+            var low = 0,
+                high = _dygraph.numRows() - 1;
+
+            while (low <= high) {
+                var idx = (high + low) >> 1;
+                var x = _dygraph.getValue(idx, 0);
+                if (x < xVal) {
+                    low = idx + 1;
+                } else if (x > xVal) {
+                    high = idx - 1;
+                } else if (low != idx) {
+                    high = idx;
+                } else {
+                    return idx;
+                }
+            }
+            return null;
+        };
     };
 
     return Cursors;
 })();
-
-
-//_findPosX = function (obj) {
-//    var curleft = 0;
-//    if (obj.offsetParent)
-//        while (1) {
-//            curleft += obj.offsetLeft;
-//            if (!obj.offsetParent)
-//                break;
-//            obj = obj.offsetParent;
-//        }
-//    else if (obj.x)
-//        curleft += obj.x;
-//    return curleft;
-//};
-
-//_findPosY = function (obj) {
-//    var curtop = 0;
-//    if (obj.offsetParent)
-//        while (1) {
-//            curtop += obj.offsetTop;
-//            if (!obj.offsetParent)
-//                break;
-//            obj = obj.offsetParent;
-//        }
-//    else if (obj.y)
-//        curtop += obj.y;
-//    return curtop;
-//};
-
-//_hairlineWasDragged = function (h, event, ui) {
-//    var
-//        area,
-//        oldXVal;
-
-//    area = _dygraph.getArea();
-//    oldXVal = h.xval;
-//    h.xval = _dygraph.toDataXCoord(ui.position.left);
-//    //this.moveHairlineToTop(h);
-//    _this.updateHairlineDivPositions();
-//    _this.updateHairlineInfo();
-//    //this.updateHairlineStyles();
-//    //$(this).triggerHandler("hairlineMoved", {
-//    //    oldXVal: oldXVal,
-//    //    newXVal: h.xval
-//    //});
-//    //$(this).triggerHandler("hairlinesChanged", {});
-//};
-
-//_principalHairlineWasDragged = function (h, e, ui) {
-//    var
-//        area, i, j,
-//        $lineContainerDiv,
-//        $lineDiv,
-//        chartLeft, chartRight,
-//        secondaryCursors,
-//        sidebandNumber,
-//        highXVal,
-//        step,
-//        oldXVal;
-
-//    area = _dygraph.getArea();
-//    j = parseInt($(ui.helper)[0].getAttribute("hairlinePosition"));
-//    oldXVal = clone(_hairlines[j].xval);
-//    _hairlines[j].xval = _dygraph.toDataXCoord(ui.position.left);
-//    _hairlines[j].domX = _dygraph.toDomXCoord(_hairlines[j].xval);
-//    secondaryCursors = _hairlines.length - 1;
-//    highXVal = Math.round(_dygraph.toDataXCoord(area.w + area.x - 1));
-//    sidebandNumber = 0;
-
-//    if (secondaryCursors > 0) {
-//        step = _hairlines[1].xval - oldXVal;
-//        sidebandNumber = Math.floor((highXVal - _hairlines[j].xval) / step);
-//    } else if (secondaryCursors === 0) {
-//        step = _hairlines[0].step;
-//        sidebandNumber = Math.floor((highXVal - _hairlines[j].xval) / step);
-//        _hairlines[0].domX = clone(_hairlines[j].domX);
-//    }
-
-//    sidebandNumber = (sidebandNumber <= 0) ? 1 : sidebandNumber;
-
-//    // Eliminar o agregar segun el caso cursores de bandeamiento
-//    if (sidebandNumber > secondaryCursors) {
-//        // agregar
-//        for (i = secondaryCursors; i < sidebandNumber; i += 1) {
-//            $lineContainerDiv = $("<div/>").css({
-//                "width": "6px",
-//                "margin-left": "-3px",
-//                "position": "absolute",
-//                "z-index": "-1"
-//            });
-//            $lineContainerDiv[0].setAttribute("hairlinePosition", i + 1);
-
-//            $lineDiv = $("<div/>").css({
-//                "width": "1px",
-//                "position": "relative",
-//                "left": "3px",
-//                "background": "black",
-//                "height": "100%"
-//            });
-//            $lineDiv.appendTo($lineContainerDiv);
-
-//            j = $.extend({
-//                selected: false,
-//                lineDiv: $lineContainerDiv.get(0)
-//            }, {
-//                xval: _hairlines[0].xval + (step * (i + 1))
-//            });
-//            j.domX = _dygraph.toDomXCoord(j.xval);
-//            _hairlines.push(j);
-//            $([j.lineDiv]).appendTo(_dygraph.graphDiv);
-//        }
-//    } else if (sidebandNumber < secondaryCursors) {
-//        // eliminar
-//        for (i = sidebandNumber + 1; i < _hairlines.length; i += 1) {
-//            $(_hairlines[i].lineDiv).remove();
-//        }
-//        _hairlines = _hairlines.slice(0, sidebandNumber + 1);
-//    }
-
-//    // posicionar bandas
-//    if (_hairlines.length > 1) {
-//        step = _hairlines[1].xval - oldXVal;
-//        _hairlines[0].step = step;
-//        for (i = 1; i < _hairlines.length; i += 1) {
-//            _hairlines[i].xval = _hairlines[0].xval + (step * i);
-//            _hairlines[i].domX = _dygraph.toDomXCoord(_hairlines[i].xval);
-//            $(_hairlines[i].lineDiv).css({
-//                "left": _hairlines[i].domX + "px",
-//                //"top": area.y + "px",
-//                "height": area.h + "px"
-//            });
-//        }
-//    }
-
-//    chartLeft = area.x;
-//    chartRight = area.x + area.w;
-//    if (_hairlines[0].domX >= chartLeft) {
-//        $([_hairlines[0].lineDiv]).show();
-//    } else if (_hairlines[0].domX < chartLeft) {
-//        $(_hairlines[0].lineDiv).css({
-//            "left": chartLeft + "px",
-//            //"top": area.y + "px",
-//            "height": area.h + "px"
-//        });
-//        e.preventDefault();
-//        return false;
-//    }
-
-//    if (_hairlines[1].domX <= chartRight) {
-//        $([_hairlines[1].lineDiv]).show();
-//    } else if (_hairlines[1].domX > chartRight) {
-//        $(_hairlines[1].lineDiv).css({
-//            "left": chartRight + "px",
-//            //"top": area.y + "px",
-//            "height": area.h + "px"
-//        });
-//        e.preventDefault();
-//        return false;
-//    }
-//};
-
-//_secondaryHairlineWasDragged = function (h, e, ui) {
-//    var
-//        area, i, j,
-//        $lineContainerDiv,
-//        $lineDiv, sidebandNumber,
-//        chartLeft, chartRight,
-//        secondaryCursors,
-//        highXVal, oldXVal,
-//        step;
-
-//    area = _dygraph.getArea();
-//    j = parseInt($(ui.helper)[0].getAttribute("hairlinePosition"));
-
-//    if (j > _hairlines.length - 1) return;
-
-//    oldXVal = clone(_hairlines[j].xval);
-//    _hairlines[j].xval = _dygraph.toDataXCoord(ui.position.left);
-//    _hairlines[j].domX = _dygraph.toDomXCoord(h.xval);
-//    secondaryCursors = _hairlines.length - 1;
-//    highXVal = Math.round(_dygraph.toDataXCoord(area.w + area.x - 1));
-//    step = _hairlines[j].xval - _hairlines[j - 1].xval;
-
-//    if (step <= 10) {
-//        e.preventDefault();
-//        return;
-//    }
-
-//    sidebandNumber = Math.floor((highXVal - _hairlines[0].xval) / step);
-//    sidebandNumber = (sidebandNumber <= 0) ? 1 : sidebandNumber;
-
-//    if (sidebandNumber > secondaryCursors) {
-//        // agregar
-//        for (i = secondaryCursors; i < sidebandNumber; i += 1) {
-//            $lineContainerDiv = $("<div/>").css({
-//                "width": "6px",
-//                "margin-left": "-3px",
-//                "position": "absolute",
-//                "z-index": "-1"
-//            });
-//            $lineContainerDiv[0].setAttribute("hairlinePosition", i + 1);
-
-//            $lineDiv = $("<div/>").css({
-//                "width": "1px",
-//                "position": "relative",
-//                "left": "3px",
-//                "background": "black",
-//                "height": "100%"
-//            });
-//            $lineDiv.appendTo($lineContainerDiv);
-
-//            h = $.extend({
-//                selected: false,
-//                lineDiv: $lineContainerDiv.get(0)
-//            }, {
-//                xval: _hairlines[0].xval + (step * (i + 1))
-//            });
-//            h.domX = _dygraph.toDomXCoord(h.xval);
-//            _hairlines.push(h);
-//            $([h.lineDiv]).appendTo(_dygraph.graphDiv);
-//        }
-//    } else if (sidebandNumber < secondaryCursors) {
-//        // eliminar
-//        for (i = sidebandNumber + 1; i < _hairlines.length; i += 1) {
-//            $(_hairlines[i].lineDiv).remove();
-//        }
-//        _hairlines = _hairlines.slice(0, sidebandNumber + 1);
-//    }
-
-//    for (i = 1; i < _hairlines.length; i += 1) {
-//        _hairlines[i].xval = _hairlines[0].xval + (step * i);
-//        _hairlines[i].domX = _dygraph.toDomXCoord(_hairlines[i].xval);
-//        $(_hairlines[i].lineDiv).css({
-//            "left": _hairlines[i].domX + "px",
-//            "top": area.y + "px",
-//            "height": area.h + "px"
-//        });
-//    }
-
-//    chartLeft = area.x;
-//    chartRight = area.x + area.w;
-//    if (_hairlines[1].domX >= chartLeft && _hairlines[1].domX <= chartRight) {
-//        $([_hairlines[1].lineDiv]).show();
-//    } else if (_hairlines[1].domX < chartLeft) {
-//        $(_hairlines[1].lineDiv).css({
-//            "left": chartLeft + "px",
-//            "top": area.y + "px",
-//            "height": area.h + "px"
-//        });
-//        e.preventDefault();
-//        return false;
-//    } else if (_hairlines[1].domX > chartRight) {
-//        $(_hairlines[1].lineDiv).css({
-//            "left": chartRight + "px",
-//            "top": area.y + "px",
-//            "height": area.h + "px"
-//        });
-//        e.preventDefault();
-//        return false;
-//    }
-//};
-
-//_findPrevNextRows = function (g, xval, col) {
-//    var
-//        prevRow,
-//        nextRow,
-//        numRows,
-//        row,
-//        yval,
-//        rowXval;
-
-//    numRows = g.numRows();
-//    for (row = 0; row < numRows; row += 1) {
-//        yval = g.getValue(row, col);
-//        if (yval === null || yval === undefined || isNaN(yval)) continue;
-
-//        rowXval = g.getValue(row, 0);
-//        if (rowXval <= xval) prevRow = row;
-
-//        if (rowXval >= xval) {
-//            nextRow = row;
-//            break;
-//        }
-//    }
-
-//    return [prevRow, nextRow];
-//};

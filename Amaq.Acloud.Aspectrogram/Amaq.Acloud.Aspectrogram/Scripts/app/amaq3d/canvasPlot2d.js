@@ -144,6 +144,7 @@ CanvasPlot2d = (function () {
             var colors = globals3d.colors[idEntity + wId];
 
             var mesh, bgColor, blColor;
+
             bgColor = BABYLON.Color3.FromHexString(colors[type].bg);
             blColor = BABYLON.Color3.FromHexString(colors[type].bl);
            

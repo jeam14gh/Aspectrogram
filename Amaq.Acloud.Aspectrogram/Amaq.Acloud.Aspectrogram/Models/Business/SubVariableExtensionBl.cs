@@ -288,15 +288,15 @@
                                 bands[s].UpperThreshold = null;
                         }
                     }
-                    //else
-                    //{
-                    //    bands = null;
-                    //    break;
-                    //}
+                    else
+                    {
+                        bands = null;
+                        break;
+                    }
                 }
             }
 
-            _subVariableExtensionRepository.UpdateDirect(subVariable.Id, bands);
+            _subVariableExtensionRepository.UpdateDirect(subVariable, bands);
         }
     }
 }
