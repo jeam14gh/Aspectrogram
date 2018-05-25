@@ -19,6 +19,7 @@ Events3d = (function () {
             _canvas,
             _contCanvas,
             _camera,
+            _numSpec,
             _longpress = false,
             _presstimer = null,
             _longtarget = null,
@@ -27,10 +28,13 @@ Events3d = (function () {
             _indexListBox,
             _id3dW = id3d + wId,
             _selectMeshOutline,
+            _selectCursor,
             _renderOutlineMeshesOut,
             _selectCanvas;
 
         var scope = this;
+
+        this.waterfall = null;
 
         //this.meshNameSelected = "";
 
@@ -69,18 +73,6 @@ Events3d = (function () {
             }
         }();
 
-        /*
-        this.onDblClick = function (e) {
-            e.preventDefault();
-
-            var pickInfo = _scene.pick(_scene.pointerX, _scene.pointerY, null, null, null);
-            if (pickInfo.hit) {
-
-                _selectedMeshId = pickInfo.pickedMesh.name;
-                vblesEventsEd.click.current.meshName = _selectedMeshId;
-            }
-        };*/
-
         _evaluateIdPoint = function (selectedMesh, e) {
 
             var posLeft, posTop, posMouseLeft, posMouseTop;
@@ -114,6 +106,157 @@ Events3d = (function () {
             }
         };
 
+        this.onKeyDown = function (e) {
+            //_selectCursor(e);
+            var frequencyParts = ["cBFreq-", "iTFreq-", "slFreq-"];
+            var watType, checked = false;
+
+            console.log(scope.waterfall.freqChoosed);
+            if (e.keyCode == 65) { //izquierda
+                if (canvasType === "Waterfall" || canvasType === "WaterfallRPM") {
+                    if (scope.waterfall.xCoordinateUnit.Text == "Cpm") {
+                        if (scope.waterfall.freqChoosed  > parseInt($("#" + frequencyParts[1] + _id3dW).attr("min"))) {
+                            scope.waterfall.freqChoosed -= 60;
+                        } else {
+                            scope.waterfall.freqChoosed = 60;
+                        }
+                    } else {
+                        if (scope.waterfall.freqChoosed > 1) {
+                            scope.waterfall.freqChoosed--;
+                        } else {
+                            scope.waterfall.freqChoosed = 1;
+                        }
+                    }
+                } else if (canvasType === "FullSpecWaterfall" || canvasType === "FullSpecWaterfallRPM") {
+                    
+
+                    if (scope.waterfall.xCoordinateUnit.Text == "Cpm") {
+                        if (scope.waterfall.freqChoosed  > parseInt($("#" + frequencyParts[1] + _id3dW).attr("min"))) {
+                            scope.waterfall.freqChoosed -= 60;
+                        } else {
+                            scope.waterfall.freqChoosed = parseInt(($("#" + frequencyParts[1] + _id3dW).attr("min")));
+                        }
+                    } else {
+                        if (scope.waterfall.freqChoosed > parseInt($("#" + frequencyParts[1] + _id3dW).attr("min"))) {
+                            scope.waterfall.freqChoosed--;
+                        } else {
+                            scope.waterfall.freqChoosed = 1;
+                        }
+                    }
+                }
+                
+                
+            } else if (e.keyCode == 68) {//derecha
+                if (scope.waterfall.xCoordinateUnit.Text == "Cpm") {
+                    if (scope.waterfall.freqChoosed  < parseInt($("#" + frequencyParts[1] + _id3dW).attr("max"))) {
+                        scope.waterfall.freqChoosed += 60;
+                    } else {
+                        scope.waterfall.freqChoosed = parseInt(($("#" + frequencyParts[1] + _id3dW).attr("max") - 60));
+                    }
+                } else {
+                    if (scope.waterfall.freqChoosed < parseInt($("#" + frequencyParts[1] + _id3dW).attr("max"))) {
+                        scope.waterfall.freqChoosed++;
+                    } else {
+                        scope.waterfall.freqChoosed = parseInt($("#" + frequencyParts[1] + _id3dW).attr("max")) - 1;
+                    }
+                }
+                    
+                
+            } else if (e.keyCode == 87) {//arriba
+                if (canvasType === "Waterfall" || canvasType === "WaterfallRPM") {
+                    if (cascade3d.vbles[_id3dW].numSpec < scope.waterfall.bufferSpectrum.length - 1) {
+                        cascade3d.vbles[_id3dW].numSpec++;
+                    } else {
+                        cascade3d.vbles[_id3dW].numSpec = scope.waterfall.bufferSpectrum.length - 2;
+                    }
+                    cascade3d.vbles[_id3dW].loadGralInfo();
+
+                    if (watConfig.type == "espectrograma") {
+                        cascade3d.vbles[_id3dW].locateCursor();
+                    } else {
+                        for (var i = 0; i < cascade3d.vbles[_id3dW].armonicsInfo.length; i++) {
+                            _scene.getMeshByName("line-" + i).color = new BABYLON.Color3(0, 0.2, 1);
+                        }
+                        _scene.getMeshByName("line-" + cascade3d.vbles[_id3dW].numSpec).color = new BABYLON.Color3(1, 0.2, 0.2);
+                    }
+
+                } else if (canvasType === "FullSpecWaterfall" || canvasType === "FullSpecWaterfallRPM") {
+                    if (fullSpecCascade3d.vbles[_id3dW].numSpec < scope.waterfall.bufferSpectrum.length - 1) {
+                        fullSpecCascade3d.vbles[_id3dW].numSpec++;
+                    } else {
+                        fullSpecCascade3d.vbles[_id3dW].numSpec = scope.waterfall.bufferSpectrum.length - 2;
+                    }
+                    fullSpecCascade3d.vbles[_id3dW].loadGralInfo();
+                    
+                    if (watConfig.type == "espectrograma") {
+                        fullSpecCascade3d.vbles[_id3dW].locateCursor();
+                    } else {
+                        for (var i = 0; i < fullSpecCascade3d.vbles[_id3dW].armonicsInfo.length; i++) {
+                            _scene.getMeshByName("line-" + i).color = new BABYLON.Color3(0, 0.2, 1);
+                        }
+                        _scene.getMeshByName("line-" + fullSpecCascade3d.vbles[_id3dW].numSpec).color = new BABYLON.Color3(1, 0.2, 0.2);
+                    }
+                }
+            } else if (e.keyCode == 83) {//abajo
+                if (canvasType === "Waterfall" || canvasType === "WaterfallRPM") {
+                    if (cascade3d.vbles[_id3dW].numSpec > 0) {
+                        cascade3d.vbles[_id3dW].numSpec--;
+                    } else {
+                        cascade3d.vbles[_id3dW].numSpec = 1;
+                    }
+                    cascade3d.vbles[_id3dW].loadGralInfo();
+
+                    if (watConfig.type == "espectrograma") {
+                        cascade3d.vbles[_id3dW].locateCursor();
+                    } else {
+                        for (var i = 0; i < cascade3d.vbles[_id3dW].armonicsInfo.length; i++) {
+                            _scene.getMeshByName("line-" + i).color = new BABYLON.Color3(0, 0.2, 1);
+                        }
+                        _scene.getMeshByName("line-" + cascade3d.vbles[_id3dW].numSpec).color = new BABYLON.Color3(1, 0.2, 0.2);
+                    }
+
+                    
+                } else if (canvasType === "FullSpecWaterfall" || canvasType === "FullSpecWaterfallRPM") {
+                    if (fullSpecCascade3d.vbles[_id3dW].numSpec > 0) {
+                        fullSpecCascade3d.vbles[_id3dW].numSpec--;
+                    } else {
+                        fullSpecCascade3d.vbles[_id3dW].numSpec = 1;
+                    }
+                    fullSpecCascade3d.vbles[_id3dW].loadGralInfo();
+
+                    if (watConfig.type == "espectrograma") {
+                        fullSpecCascade3d.vbles[_id3dW].locateCursor();
+                    } else {
+                        for (var i = 0; i < fullSpecCascade3d.vbles[_id3dW].armonicsInfo.length; i++) {
+                            _scene.getMeshByName("line-" + i).color = new BABYLON.Color3(0, 0.2, 1);
+                        }
+                        _scene.getMeshByName("line-" + fullSpecCascade3d.vbles[_id3dW].numSpec).color = new BABYLON.Color3(1, 0.2, 0.2);
+                    }
+
+                    
+                }
+
+            }
+            if (e.keyCode == 65 || e.keyCode == 68) { //izquierda
+                if ($("#" + frequencyParts[0] + _id3dW).val() == "on") {
+                    checked = true;
+                } else {
+                    checked = false;
+                }
+                console.log(scope.waterfall.freqChoosed);
+                $("#" + frequencyParts[1] + _id3dW).val(scope.waterfall.freqChoosed);
+                $("#" + frequencyParts[2] + _id3dW).val(scope.waterfall.freqChoosed);
+                scope.waterfall.chooseFrecuency(checked);
+            } 
+
+
+            /*
+            cascade3d.vbles[_id3dW].numSpec = _numSpec;
+            cascade3d.vbles[_id3dW].loadGralInfo();
+            cascade3d.vbles[_id3dW].locateCursor();*/
+            //cascade3d.vbles[_id3dW].loadGralInfo();
+        };
+
         this.onMouseMove = function (e) {
             e.preventDefault();
 
@@ -121,6 +264,7 @@ Events3d = (function () {
             var lastMeshSelected;
 
             var pickInfo = _scene.pick(_scene.pointerX, _scene.pointerY, null, null, null);
+
             if (pickInfo.hit) {
 
                 _selectedMeshName = pickInfo.pickedMesh.name;
@@ -128,57 +272,51 @@ Events3d = (function () {
                 scope.meshNameSelected = _selectedMeshName;
 
                 var numSpect;
-               // console.log(scope.meshNameSelected);
 
                 if (canvasType === "Waterfall" || canvasType === "WaterfallRPM") {
 
                     if (_selectedMeshName.split("-")[0] === "SPS" || _selectedMeshName.split("-")[0] === "cubeBase" || _selectedMeshName === "ribbonSpec") {
                         if (_selectedMeshName.split("-")[0] === "SPS") {
-                            numSpec = _selectedMeshName.split("-")[2];
+                            _numSpec = _selectedMeshName.split("-")[2];
                         }
                         else if (_selectedMeshName.split("-")[0] === "cubeBase") {
-                            numSpec = _selectedMeshName.split("-")[1];
+                            _numSpec = _selectedMeshName.split("-")[1];
                         }
 
-                        cascade3d.vbles[_id3dW].numSpec = numSpec;
+                        cascade3d.vbles[_id3dW].numSpec = _numSpec;
                         cascade3d.vbles[_id3dW].loadGralInfo();
-
                         cascade3d.vbles[_id3dW].locateCursor();
-
                         lastMeshSelected = pickInfo.pickedMesh;
                     }
                     else if (_selectedMeshName.split("-")[0] === "line") {
-                        numSpec = _selectedMeshName.split("-")[1];
-                        cascade3d.vbles[_id3dW].numSpec = numSpec;
+                        _numSpec = _selectedMeshName.split("-")[1];
+                        cascade3d.vbles[_id3dW].numSpec = _numSpec;
                         cascade3d.vbles[_id3dW].loadGralInfo();
                     }
                     else if (_selectedMeshName.split("-")[0] === "spec") {
-                        numSpec = _selectedMeshName.split("-")[2];
-                        cascade3d.vbles[_id3dW].numSpec = numSpec;
+                        _numSpec = _selectedMeshName.split("-")[2];
+                        cascade3d.vbles[_id3dW].numSpec = _numSpec;
                         cascade3d.vbles[_id3dW].loadGralInfo();
                     }
 
-
                     if (_selectedMeshName.split("-")[0] === "spec" || _selectedMeshName.split("-")[0] === "line") {
                         //cascade3d.vbles[id3d].armonicsInfo.length
-                        for (var i = 0; i < cascade3d.vbles[_id3dW].armonicsInfo.length; i ++) {
+                        for (var i = 0; i < cascade3d.vbles[_id3dW].armonicsInfo.length; i++) {
                             _scene.getMeshByName("line-" + i).color = new BABYLON.Color3(0, 0.2, 1);
                         }
-                        _scene.getMeshByName("line-" + numSpec).color = new BABYLON.Color3(1, 0.2, 0.2);
+                        _scene.getMeshByName("line-" + _numSpec).color = new BABYLON.Color3(1, 0.2, 0.2);
                     }
-
-
                 }
                 else if (canvasType === "FullSpecWaterfall" || canvasType === "FullSpecWaterfallRPM") {
                     if (_selectedMeshName.split("-")[0] === "SPS" || _selectedMeshName.split("-")[0] === "cubeBase" || _selectedMeshName === "ribbonSpec") {
                         if (_selectedMeshName.split("-")[0] === "SPS") {
-                            numSpec = _selectedMeshName.split("-")[2];
+                            _numSpec = _selectedMeshName.split("-")[2];
                         }
                         else if (_selectedMeshName.split("-")[0] === "cubeBase") {
-                            numSpec = _selectedMeshName.split("-")[1];
+                            _numSpec = _selectedMeshName.split("-")[1];
                         }
 
-                        fullSpecCascade3d.vbles[_id3dW].numSpec = numSpec;
+                        fullSpecCascade3d.vbles[_id3dW].numSpec = _numSpec;
                         fullSpecCascade3d.vbles[_id3dW].loadGralInfo();
 
                         fullSpecCascade3d.vbles[_id3dW].locateCursor();
@@ -186,32 +324,26 @@ Events3d = (function () {
                         lastMeshSelected = pickInfo.pickedMesh;
                     }
                     else if (_selectedMeshName.split("-")[0] === "line") {
-                        numSpec = _selectedMeshName.split("-")[1];
-                        fullSpecCascade3d.vbles[_id3dW].numSpec = numSpec;
+                        _numSpec = _selectedMeshName.split("-")[1];
+                        fullSpecCascade3d.vbles[_id3dW].numSpec = _numSpec;
                         fullSpecCascade3d.vbles[_id3dW].loadGralInfo();
                     }
                     else if (_selectedMeshName.split("-")[0] === "spec") {
-                        numSpec = _selectedMeshName.split("-")[2];
-                        fullSpecCascade3d.vbles[_id3dW].numSpec = numSpec;
+                        _numSpec = _selectedMeshName.split("-")[2];
+                        fullSpecCascade3d.vbles[_id3dW].numSpec = _numSpec;
                         fullSpecCascade3d.vbles[_id3dW].loadGralInfo();
                     }
-                    
 
                     if (_selectedMeshName.split("-")[0] === "spec" || _selectedMeshName.split("-")[0] === "line") {
                         //cascade3d.vbles[id3d].armonicsInfo.length
-                        for (var i = 0; i < fullSpecCascade3d.vbles[_id3dW].armonicsInfo.length; i ++) {
+                        for (var i = 0; i < fullSpecCascade3d.vbles[_id3dW].armonicsInfo.length; i++) {
                             _scene.getMeshByName("line-" + i).color = new BABYLON.Color3(0, 0.2, 1);
                         }
-                        _scene.getMeshByName("line-" + numSpec).color = new BABYLON.Color3(1, 0.2, 0.2);
+                        _scene.getMeshByName("line-" + _numSpec).color = new BABYLON.Color3(1, 0.2, 0.2);
                     }
-
-
                 }
             }
-
         };
-
-        
 
         this.onMouseDown = function (e) {
             e.preventDefault();
@@ -250,7 +382,6 @@ Events3d = (function () {
             $("#ctxtMenu-Viewer3d-" + _id3dW).hide();
 
         };
-
 
         this.cancel = function (e) {
             e.preventDefault();
@@ -350,7 +481,49 @@ Events3d = (function () {
 
         var _flag = 0;
 
-        this.zoomOrtographic = function (args) {
+        this.zoomOrtographicViewer = function (args) {
+            args.preventDefault();
+            var ar = args.wheelDeltaY / 120;
+            var vel = 0.2;
+
+            if (_flag === 0) {
+
+                ar = args.deltaY * _scene.activeCamera.radius / 120;
+                /*
+                _scene.activeCamera.orthoBottom = -350;
+                _scene.activeCamera.orthoLeft = -350 * _engine.getAspectRatio(_scene.activeCamera);
+                _scene.activeCamera.orthoTop = 350;
+                _scene.activeCamera.orthoRight = 350 * _engine.getAspectRatio(_scene.activeCamera);*/
+
+                _scene.activeCamera.orthoBottom = -_scene.activeCamera.radius / 4;
+                _scene.activeCamera.orthoLeft = -_scene.activeCamera.radius / 4 * _engine.getAspectRatio(_scene.activeCamera);
+                _scene.activeCamera.orthoTop = _scene.activeCamera.radius / 4;
+                _scene.activeCamera.orthoRight = _scene.activeCamera.radius / 4 * _engine.getAspectRatio(_scene.activeCamera);
+
+                _flag = 1;
+            }
+            else {
+
+                ar = (args.wheelDeltaY / 120) * _scene.activeCamera.radius * vel;
+            }
+
+
+            if (_scene.activeCamera.orthoBottom <= -460.8) {
+                _scene.activeCamera.orthoBottom -= ar * vel;
+                _scene.activeCamera.orthoLeft -= ar * _engine.getAspectRatio(_scene.activeCamera) * vel;
+                _scene.activeCamera.orthoTop += ar * vel;
+                _scene.activeCamera.orthoRight += ar * _engine.getAspectRatio(_scene.activeCamera) * vel;
+            }
+            else {
+                _scene.activeCamera.orthoBottom = -460.8;
+                _scene.activeCamera.orthoLeft = -460.8 * _engine.getAspectRatio(_scene.activeCamera);
+                _scene.activeCamera.orthoTop = 460.8;
+                _scene.activeCamera.orthoRight = 460.8 * _engine.getAspectRatio(_scene.activeCamera);
+            }
+
+        };
+
+        this.zoomOrtographicCascade = function (args) {
             args.preventDefault();
             var ar = args.wheelDeltaY / 120;
             var vel = 0.02;
@@ -376,7 +549,7 @@ Events3d = (function () {
                 ar = (args.wheelDeltaY / 120) * _scene.activeCamera.radius * vel;
             }
 
-            
+
             if (_scene.activeCamera.orthoBottom <= -46.8) {
                 _scene.activeCamera.orthoBottom -= ar * vel;
                 _scene.activeCamera.orthoLeft -= ar * _engine.getAspectRatio(_scene.activeCamera) * vel;
@@ -392,6 +565,10 @@ Events3d = (function () {
 
 
         };
+
+        _selectCursor = function (e) {
+
+        };        
 
         _selectMeshOutline = function (flag) {
 

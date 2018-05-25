@@ -1,0 +1,55 @@
+583455f85ca9da6b0ca01dac
+5834562f5ca9da6b0ca01dae
+583456555ca9da6b0ca01db0
+583456685ca9da6b0ca01db2
+583456785ca9da6b0ca01db4
+583457605ca9da6b0ca01db6
+583457715ca9da6b0ca01db8
+583457845ca9da6b0ca01dba
+583457905ca9da6b0ca01dbc
+
+583457e85ca9da6b0ca01dbe
+583457f55ca9da6b0ca01dc0
+583458025ca9da6b0ca01dc2
+
+583458325ca9da6b0ca01dc4
+5834583f5ca9da6b0ca01dc6
+------------------------
+Gerona: 
+Grupo1: 596e7cf5ade4872d80a9ed50
+Grupo2: 596e7d14ade4872d80a9ed7c
+Grupo3: 596e7d81ade4872d80a9eda8
+
+Porvenir:
+Grupo1: 596e7dc0ade4872d80a9edd4
+Grupo2: 596e7dd0ade4872d80a9ee00
+Grupo3: 596e7de3ade4872d80a9ee26
+
+Limoncitos Los Mangos
+Grupo1: 59b6a6473898db4c84afb260
+Grupo2: 59b6a9883898db4c84afb28b
+Grupo3: 59b6a9ac3898db4c84afb2b6
+
+Limoncitos Santa Elena
+Grupo1: 59b6aa243898db4c84afb2e2
+Grupo2: 59b6abc53898db4c84afb307
+Grupo3: 59b6abdb3898db4c84afb32c
+
+Los Parras
+Grupo1: 59c955943898db34e0047a66
+Grupo2: 59c958e23898db34e0047a97
+Grupo3: 59c9594e3898db34e0047ac8
+
+Moscú
+Grupo2: 59c959f83898db34e0047b2b
+Grupo3: 59c95b9d3898db34e0047b5c
+
+Picacho:
+Grupo1: 59f34d903898db347cb35cc6
+Grupo2: 59f34e423898db347cb35cf7
+Grupo3: 59f34e503898db347cb35d28
+
+Palenque:
+Grupo1: 59f347253898db347cb35bd0
+Grupo2: 59f34d3f3898db347cb35c63
+Grupo3: 59f34d4c3898db347cb35c94

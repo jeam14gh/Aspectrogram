@@ -33,11 +33,16 @@ RealTimeMode = function () {
                     realTimeRequestsByAsdaqList: realTimeRequestsByAsdaqList, realTimeRequestsByAtrList: realTimeRequestsByAtrList
                 },
                 success: function (response) {
+                    var
+                        resp,
+                        _realTimeData,
+                        realTimeDataItem;
+
                     response = JSON.parse(response);
-                    var _realTimeData = [];
+                    _realTimeData = [];
 
                     for (i = 0; i < response.length; i += 1) {
-                        var realTimeDataItem = response[i];
+                        realTimeDataItem = response[i];
                         realTimeDataItem.RawTimeStamp = new Date(realTimeDataItem.TimeStamp + "+00:00");
                         realTimeDataItem.TimeStamp = formatDate(realTimeDataItem.RawTimeStamp); // Formato de estampa de tiempo
 
@@ -49,19 +54,29 @@ RealTimeMode = function () {
                         }
 
                         if (realTimeDataItem.ValueType == 3 && realTimeDataItem.Value) {
-                            var resp = _streamParser.GetWaveForm(realTimeDataItem.Value);
+                            _streamParser.GetWaveForm(realTimeDataItem.Value, function (decompressedArray) {
+                                resp = _streamParser.ParseWaveForm(decompressedArray);
+                                if (resp.keyphasor.length > 0) {
+                                    realTimeDataItem.KeyphasorPositionsOnTime = GetKeyphasorOnTime(resp.keyphasor, resp.sampleTime, resp.signalLength);
+                                    realTimeDataItem.KeyphasorPositions = resp.keyphasor;
+                                }
 
-                            if (resp.keyphasor.length > 0) {
-                                realTimeDataItem.KeyphasorPositionsOnTime = GetKeyphasorOnTime(resp.keyphasor, resp.sampleTime, resp.signalLength);
-                                realTimeDataItem.KeyphasorPositions = resp.keyphasor;
-                            }
+                                realTimeDataItem.Value = GetXYDataOnTime(resp.waveform, resp.sampleTime);
+                                realTimeDataItem.RawValue = resp.waveform;
+                                realTimeDataItem.SampleRate = resp.signalLength / resp.sampleTime; // Necesario para hallar el bin del espectro
+                                if (resp.keyphasor.length > 0) {
+                                    realTimeDataItem.KeyphasorPositionsOnTime = GetKeyphasorOnTime(resp.keyphasor, resp.sampleTime, resp.signalLength);
+                                    realTimeDataItem.KeyphasorPositions = resp.keyphasor;
+                                }
 
-                            realTimeDataItem.Value = GetXYDataOnTime(resp.waveform, resp.sampleTime);
-                            realTimeDataItem.RawValue = resp.waveform;
-                            realTimeDataItem.SampleRate = resp.signalLength / resp.sampleTime; // Necesario para hallar el bin del espectro
+                                realTimeDataItem.Value = GetXYDataOnTime(resp.waveform, resp.sampleTime);
+                                realTimeDataItem.RawValue = resp.waveform;
+                                realTimeDataItem.SampleRate = resp.signalLength / resp.sampleTime; // Necesario para hallar el bin del espectro
+                                _realTimeData[realTimeDataItem.SubVariableId] = realTimeDataItem;
+                            });
+                        } else {
+                            _realTimeData[realTimeDataItem.SubVariableId] = realTimeDataItem;
                         }
-
-                        _realTimeData[realTimeDataItem.SubVariableId] = realTimeDataItem;
                     }
                     // Se notifica la llegada de nuevos datos tiempo real
                     PublisherSubscriber.publish("/realtime/refresh", _realTimeData);

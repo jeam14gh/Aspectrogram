@@ -53,10 +53,12 @@
         /// Actualiza todos los dispositivos de adquisición (NiDevices y NiCompactDaqs) asociados a un AsdaqId
         /// </summary>
         [HttpPost]
-        public async Task<IHttpActionResult> UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
+        //public async Task<IHttpActionResult> UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
+        public async Task<List<MdVariableExtension>> UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
         {
-            new AsdaqBl(CoreDbUrl).UpdateDevice(asdaqId, devices);
-            return await Task.FromResult(Ok());
+            //new AsdaqBl(CoreDbUrl).UpdateDevice(asdaqId, devices);
+            //return await Task.FromResult(Ok());
+            return await Task.FromResult<List<MdVariableExtension>>(new AsdaqBl(CoreDbUrl).UpdateDevice(asdaqId, devices));
         }
 
         /// <summary>
@@ -182,13 +184,13 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public async Task<IHttpActionResult> UpdateAconditionerByAsdaq([FromBody]dynamic model)
+        public async Task<List<MdVariableExtension>> UpdateAconditionerByAsdaq([FromBody]dynamic model)
         {
             var asdaqId = model.asdaqId.ToObject<string>();
             var aconditioners = model.aconditioners.ToObject<List<Aconditioner>>();
             var mdVariablesToUpdate = model.mdVariablesToUpdate.ToObject<List<MdVariableUpdateMBDto>>();
-            new AsdaqBl(CoreDbUrl).UpdateAconditionerByAsdaq(asdaqId,aconditioners,mdVariablesToUpdate);
-            return await Task.FromResult(Ok());
+            var points = new AsdaqBl(CoreDbUrl).UpdateAconditionerByAsdaq(asdaqId,aconditioners,mdVariablesToUpdate);
+            return await Task.FromResult(points);
         }
 
         /// <summary>
@@ -196,13 +198,13 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public async Task<IHttpActionResult> DeleteAconditionerBySerial([FromBody]dynamic model)
+        public async Task<List<MdVariableExtension>> DeleteAconditionerBySerial([FromBody]dynamic model)
         {
             string asdaqId = model.asdaqId.ToObject<string>();
             string serial = model.serial.ToObject<string>();
             var niDevices = model.niDevices.ToObject<List<NiDeviceDto>>();
-            new AsdaqBl(CoreDbUrl).DeleteAconditionerBySerial(asdaqId, serial, niDevices);
-            return await Task.FromResult(Ok());
+            var points = new AsdaqBl(CoreDbUrl).DeleteAconditionerBySerial(asdaqId, serial, niDevices);
+            return await Task.FromResult(points);
         }
     }
 }

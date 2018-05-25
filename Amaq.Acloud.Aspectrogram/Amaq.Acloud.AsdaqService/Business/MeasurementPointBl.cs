@@ -103,7 +103,7 @@
                     mdVariablesUsedByDevs =
                     new MdVariableExtensionProxy(SecurityBl.AppUserState).GetById(asdaq.NiDevices.SelectMany(d => d.AiChannels).Select(ch => ch.MdVariableId).Where(id => !string.IsNullOrEmpty(id)).ToList());
                 }
-                
+
                 for (int d = 0; d < currentAsdaq.NiDevices.Count; d++)
                     for (int ch = 0; ch < currentAsdaq.NiDevices[d].AiChannels.Count; ch++)
                     {
@@ -233,7 +233,7 @@
             if (acquisitionBuffer[measurementPoints[0].PrincipalAssetId].Values.ElementAt(0).Count > 0)
             {
                 // Listamos todas las variables de tipo acelerometro y marcado para integrar
-                var integratedAccelerometers = measurementPoints.Where(p => p.SensorTypeCode == 2 && p.Integrate).ToList();                
+                var integratedAccelerometers = measurementPoints.Where(p => p.SensorTypeCode == 2 && p.Integrate).ToList();
                 if (integratedAccelerometers != null)
                 {
                     // Procesamiento en paralelo para agilizar la integracion
@@ -243,7 +243,9 @@
                         sensorType = integratedAccelerometer.SensorTypeCode;
                         id = integratedAccelerometer.Id;
 
-                        var waveform = highPass.Filter(numCoeff, omegaC, WindowType.KAISER, 3.2, integratedAccelerometer.SamplesAcquired, id, false);
+                        var waveform =  Libraries.DSPFourier.Filter.HighPass(integratedAccelerometer.SamplesAcquired, 10);
+
+                        //var waveform = highPass.Filter(numCoeff, omegaC, WindowType.KAISER, 3.2, integratedAccelerometer.SamplesAcquired, id, false);
                         // Integrar y setear forma de onda integrada
                         integratedAccelerometer.IntegratedWaveform = IntegrateHelper.Trapezoidal(waveform, sampleRate, sensorType);
                     });
@@ -336,7 +338,7 @@
                                         minimumValue,
                                         pkpk,
                                         sampleRate,
-                                        OverallMeasureHelper.CalculateAverage(angularReference.SamplesAcquired),
+                                        average,
                                         timeStamp,
                                         StreamType.Signal
                                     );
@@ -354,103 +356,93 @@
 
                             if ((angularReferencePositionsSubVariable != null))
                             {
-                                angularReference.NumberOfFlanks = 0; // Inicializar
+                                // Inicializar
+                                angularReference.Step = 0;
+                                angularReference.AngularPositions = new List<uint>().ToArray();
                                 angularReferencePositionsSubVariable.TimeStamp = timeStamp;
                                 angularReferencePositionsSubVariable.AngularReferencePositions = null;
                                 angularReferencePositionsSubVariable.Value = null;
 
                                 var samplesToRead = angularReference.SamplesAcquired.Length;
 
-                                // Hallar flancos de marca de paso
+                                // Hallar flancos de marca de paso de los valores adquiridos actuales
                                 var angularReferencePositions = AngularReferenceHelper.GetAngularReferencePositions(
                                             angularReference.SamplesAcquired,
                                             angularReference.AngularReferenceConfig.MinimumNoiseInVolts,
                                             angularReference.AngularReferenceConfig.TresholdPercentage,
                                             angularReference.AngularReferenceConfig.HysteresisTresholdPercentage);
 
-                                if (angularReferencePositions.Length > 0)
+                                angularReferencePositionsSubVariable.AngularReferencePositions = angularReferencePositions;
+                                angularReferencePositionsSubVariable.Value = angularReferencePositions.AsQueryable().SelectMany(p => System.BitConverter.GetBytes(p)).ToArray();
+
+                                if (angularReferencePositions.Length >= 2)
                                 {
-                                    angularReferencePositionsSubVariable.AngularReferencePositions = angularReferencePositions;
-                                    angularReferencePositionsSubVariable.Value = angularReferencePositions.AsQueryable().SelectMany(p => System.BitConverter.GetBytes(p)).ToArray();
-
-                                    if (angularReferencePositions.Length >= 2)
-                                    {
-                                        angularReference.Step = 0;
-                                        angularReference.FirstFlank = (int)angularReferencePositions.First();
-                                        angularReference.LastFlank = (int)angularReferencePositions.Last();
-                                        angularReference.NumberOfFlanks = angularReferencePositions.Length;
-                                    }
-                                    else if (angularReferencePositions.Length == 1)
-                                    {
-                                        var lastFlank = (int)angularReferencePositions.Last();
-
-                                        if (angularReference.LastFlank > -1)
-                                        {
-                                            angularReference.Step++;
-                                            angularReference.FirstFlank = angularReference.LastFlank;
-                                            angularReference.LastFlank = lastFlank;
-                                            angularReference.NumberOfFlanks = 1 + angularReferencePositions.Length;
-
-                                            var lastF = (int)(angularReference.LastFlank + (AsdaqProperties.WINDOW_IN_SECONDS - 1) * samplesToRead);
-                                            var firstF = (int)(angularReference.FirstFlank + (AsdaqProperties.WINDOW_IN_SECONDS - 1 - angularReference.Step) * samplesToRead);
-
-                                            var T = (lastF - firstF) / sampleRate;
-
-                                            // Si la diferencia entre flancos es mayor a 6 segundos
-                                            if (T > AsdaqProperties.WINDOW_IN_SECONDS)
-                                            {
-                                                angularReference.Step = 0;
-                                                angularReference.FirstFlank = -1;
-                                                angularReference.LastFlank = -1;
-                                                angularReference.NumberOfFlanks = 0;
-                                                angularReference.Counter = 0;
-                                                return;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            angularReference.Step = 0;
-                                            angularReference.LastFlank = lastFlank;
-                                            angularReference.NumberOfFlanks = 0;
-                                            angularReference.Counter = 0;
-                                        }
-                                    }
-
-                                    // Cálculo de velocidad en Rpm
-                                    rpmSubVariable.Value =
-                                            AngularReferenceHelper.CalculateRpm(
-                                                angularReference.NumberOfFlanks,
-                                                angularReference.FirstFlank,
-                                                angularReference.LastFlank,
-                                                sampleRate,
-                                                samplesToRead,
-                                                angularReference.Step);
-
                                     angularReference.Step = 0;
+                                    angularReference.AngularPositions = angularReferencePositions;
                                 }
                                 else
                                 {
-                                    if (angularReference.LastFlank > -1)
+                                    var aReferenceAcquisitionBuffer = acquisitionBuffer[angularReference.PrincipalAssetId][angularReference.Id];
+                                    var baseIndex = aReferenceAcquisitionBuffer.Head;
+                                    int index = baseIndex % aReferenceAcquisitionBuffer.Capacity;
+                                    var limit = AsdaqProperties.WINDOW_IN_SECONDS > aReferenceAcquisitionBuffer.Count ?
+                                                aReferenceAcquisitionBuffer.Count : (int)AsdaqProperties.WINDOW_IN_SECONDS;
+                                    index -= limit - 1;
+                                    // Control de indices negativos
+                                    if (index < 0)
                                     {
-                                        if ((angularReference.Counter + 1) <= AsdaqProperties.WINDOW_IN_SECONDS)
+                                        index += aReferenceAcquisitionBuffer.Capacity;
+                                    }
+                                    double[] joinedWaveform = null;
+                                    for (int i = 0; i < limit; i++)
+                                    {
+                                        if (joinedWaveform == null)
                                         {
-                                            // Conservar la velocidad calculada en la adquisición anterior
-                                            var index = acquisitionBuffer[angularReference.PrincipalAssetId][angularReference.Id].Head;
-                                            rpmSubVariable.Value =
-                                                acquisitionBuffer[angularReference.PrincipalAssetId][angularReference.Id].getAtPosition(index).Rpm;
-
-                                            angularReference.Step++;
-                                            angularReference.Counter++;
+                                            joinedWaveform = aReferenceAcquisitionBuffer.getAtPosition(index).Waveform;
                                         }
                                         else
                                         {
-                                            angularReference.Step = 0;
-                                            angularReference.FirstFlank = -1;
-                                            angularReference.LastFlank = -1;
-                                            angularReference.Counter = 0;
+                                            joinedWaveform = joinedWaveform.Concat(aReferenceAcquisitionBuffer.getAtPosition(index).Waveform).ToArray();
+                                        }
+                                        index = (index + 1) % aReferenceAcquisitionBuffer.Capacity; // Incremento del indice
+                                        // Control de indices negativos
+                                        if (index < 0)
+                                        {
+                                            index += aReferenceAcquisitionBuffer.Capacity;
                                         }
                                     }
+                                    if (joinedWaveform == null)
+                                    {
+                                        joinedWaveform = angularReference.SamplesAcquired;
+                                    }
+                                    else
+                                    {
+                                        joinedWaveform = joinedWaveform.Concat(angularReference.SamplesAcquired).ToArray();
+                                    }
+                                    // Hallar flancos de marca de paso de los valores adquiridos en una ventana de 6seg
+                                    var allPositions = AngularReferenceHelper.GetAngularReferencePositions(
+                                        joinedWaveform,
+                                        angularReference.AngularReferenceConfig.MinimumNoiseInVolts,
+                                        angularReference.AngularReferenceConfig.TresholdPercentage,
+                                        angularReference.AngularReferenceConfig.HysteresisTresholdPercentage);
+                                    if (allPositions.Length >= 2)
+                                    {
+                                        angularReference.Step = limit;
+                                        angularReference.AngularPositions = allPositions;
+                                    }
+                                    else
+                                    {
+                                        angularReference.Step = 0;
+                                        angularReference.AngularPositions = new List<uint>().ToArray();
+                                    }
                                 }
+
+                                // Cálculo de velocidad en Rpm
+                                rpmSubVariable.Value =
+                                            AngularReferenceHelper.CalculateRpm(
+                                                angularReference.AngularPositions,
+                                                sampleRate,
+                                                samplesToRead);
                             }
                         }
 
@@ -543,12 +535,10 @@
                                         {
                                             var refPosA = relatedAngularReference;
                                             subVariableValue =
-                                                (refPosA.NumberOfFlanks > 0) ?
+                                                (refPosA.AngularPositions.Length > 0) ?
                                                     OverallMeasureHelper.CalculateAmplitude1x(
                                                         waveform,
-                                                        refPosA.FirstFlank,
-                                                        refPosA.LastFlank,
-                                                        refPosA.NumberOfFlanks,
+                                                        refPosA.AngularPositions,
                                                         acquisitionBuffer[measurementPoint.PrincipalAssetId][measurementPoint.Id],
                                                         refPosA.Step) : 0;
 
@@ -585,12 +575,10 @@
                                         {
                                             var refPosB = relatedAngularReference;
                                             subVariableValue =
-                                                (refPosB.NumberOfFlanks > 0) ?
+                                                (refPosB.AngularPositions.Length > 0) ?
                                                     OverallMeasureHelper.CalculatePhase1x(
                                                         waveform,
-                                                        refPosB.FirstFlank,
-                                                        refPosB.LastFlank,
-                                                        refPosB.NumberOfFlanks,
+                                                        refPosB.AngularPositions,
                                                         acquisitionBuffer[measurementPoint.PrincipalAssetId][measurementPoint.Id],
                                                         refPosB.Step) : 0;
 
@@ -737,10 +725,10 @@
                 var asset = assets.Where(a => a.Id == measurementPoint.PrincipalAssetId).FirstOrDefault();
 
                 // Si es un sensor de vibración(Proximidad, Acelerómetro ó Velocímetro)
-                if(measurementPoint.SensorTypeCode <= 3)
+                if (measurementPoint.SensorTypeCode <= 3)
                 {
                     // Si está activado el trip multiply y la máquina está en estado transitorio(Arranque o Parada)
-                    if((asset.TripMultiply != TripMultiply.None) && ((now - asset.LastChangeOfRpm).TotalSeconds < asset.TransientStatusTimeout))
+                    if ((asset.TripMultiply != TripMultiply.None) && ((now - asset.LastChangeOfRpm).TotalSeconds < asset.TransientStatusTimeout))
                     {
                         tripMultiplyFactor = (int)asset.TripMultiply; // Trip Multiplier
                     }
@@ -810,7 +798,7 @@
         /// <param name="currentStatusByAsset">Lista de estados de activos y puntos de medición</param>
         /// <param name="principalAssests">Lista de activos principales</param>
         /// <param name="isToHMI">Valor lógico que indica si la actualización de tiempo real es o no es para la instancia HMI</param>
-        public void UpdateRealTime(List<MdVariableExtension> measurementPoints, Dictionary<string, CurrentStatusByAsset> currentStatusByAsset, 
+        public void UpdateRealTime(List<MdVariableExtension> measurementPoints, Dictionary<string, CurrentStatusByAsset> currentStatusByAsset,
             List<AssetExtension> principalAssests, bool isToHMI = false)
         {
             if (isToHMI)
@@ -847,12 +835,12 @@
                 {
                     SecurityBl.Login();
                 }
-                               
+
                 realTimeRequests = new AsdaqProxy((isToHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState, isToHMI).GetRealTimeRequests(AsdaqProperties.AsdaqId);
             }
 
             if ((realTimeRequests != null) && (realTimeRequests.Count > 0))
-            {              
+            {
                 // Procesamiento en segundo plano
                 //new TaskFactory().StartNew(() =>
                 //{
@@ -881,8 +869,8 @@
                     {
                         var hasRealTimeRequest = realTimeRequests.Any(realTimeRequest => realTimeRequest.SubVariableId == s.Id);
 
-                    // Almacena los datos tiempo real para la subVariable solo si está siendo solicitada por algún cliente (Estrategia OnDemand)
-                    if (hasRealTimeRequest)
+                        // Almacena los datos tiempo real para la subVariable solo si está siendo solicitada por algún cliente (Estrategia OnDemand)
+                        if (hasRealTimeRequest)
                         {
                             realTimeDataList.Add(
                                 new RealTimeDataItemDto(
@@ -893,7 +881,7 @@
                                     s.ValueType));
                         }
                     });
-                    
+
                     try
                     {
                         new SubVariableExtensionProxy((isToHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState, isToHMI).UpdateManyRealTimeData(realTimeDataList);
@@ -962,9 +950,9 @@
 
                 new NodeExtensionProxy((isToHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState, isToHMI).UpdateManyMdVariableStatus(mdVariableNodeStatusList);
             }
-            var principalAssetNodes = 
+            var principalAssetNodes =
                 principalAssests?.Select(pa => new Node() { Id = pa.NodeId, IsRotating = pa.IsRotating, LastRealTimeModify = now }).ToList();
-            
+
             new NodeProxy((isToHMI) ? SecurityBl.AppUserStateForHMI : SecurityBl.AppUserState, isToHMI).UpdateRTPropertiesByPrincipalAssetNode(principalAssetNodes);
         }
 

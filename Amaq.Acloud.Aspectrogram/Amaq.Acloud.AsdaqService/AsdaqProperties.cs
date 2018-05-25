@@ -268,5 +268,17 @@
                 return (!string.IsNullOrWhiteSpace(appSetting)) ? System.Convert.ToInt32(appSetting) : 80;
             }
         }
+
+        /// <summary>
+        /// Valor en milisegundos que indica cada cuanto tiempo se suben datos históricos al servidor
+        /// </summary>
+        public static int HistoricalDataUploadInterval
+        {
+            get
+            {
+                var appSetting = ConfigurationManager.AppSettings["HistoricalDataUploadInterval"];
+                return (!string.IsNullOrWhiteSpace(appSetting)) ? System.Convert.ToInt32(appSetting) : 0;
+            }
+        }
     }
 }

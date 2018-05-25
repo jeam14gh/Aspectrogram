@@ -230,6 +230,10 @@
                                                 }
                                             }, TaskCreationOptions.LongRunning);
                                         }
+                                        else
+                                        {
+                                            log.Debug("Subproceso UpdateRealtimeProcessorForHMI ocupado :(");
+                                        }
                                     }
 
                                     // Solo se usa un subproceso de actualización de datos en tiempo real en el servidor por cada
@@ -257,6 +261,10 @@
                                                 log.Error("Ha ocurrido un error en UpdateRealTime", ex);
                                             }
                                         }, TaskCreationOptions.LongRunning);
+                                    }
+                                    else
+                                    {
+                                        log.Debug("Subproceso UpdateRealtimeProcessor ocupado :(");
                                     }
 
                                     //// Se pasa _aquisitionBuffer como parámetro xq en pruebas de concepto se comprobó que así es la única manera
@@ -425,8 +433,7 @@
                 if (relatedMeasurementPoint.IsAngularReference)
                 {
                     relatedMeasurementPoint.Step = 0;
-                    relatedMeasurementPoint.FirstFlank = -1; // Inicializar en -1 para validación en algoritmo de cálculo de velocidad
-                    relatedMeasurementPoint.LastFlank = -1; // Inicializar en -1 para validación en algoritmo de cálculo de velocidad
+                    relatedMeasurementPoint.AngularPositions = new List<uint>().ToArray();
                 }
             }
 
@@ -599,10 +606,10 @@
                                         }
                                     });
 
-                                    // control para evitar error 404 not found debido a tamaño excesivo de solicitud http
-                                    if (localHistoricalDataList.Count >= 50)
-                                    {
-                                        return; // salir del ForEach
+                                // control para evitar error 404 not found debido a tamaño excesivo de solicitud http
+                                if (localHistoricalDataList.Count >= 50)
+                                {
+                                    return; // salir del ForEach
                                 }
                             });
 
@@ -640,13 +647,13 @@
                                                 .AddMany(localHistoricalDataAsc/*.Map().ToList()*/);
                                     }
                                 }
-                                catch(Exception ex)
+                                catch (Exception ex)
                                 {
                                     throw ex;
                                 }
                             });
 
-                            if(localHistoricalDataStreamList.Count > 0)
+                            if (localHistoricalDataStreamList.Count > 0)
                             {
                                 addManyHistoricalDataStream = new TaskFactory().StartNew(() =>
                                 {
@@ -681,7 +688,7 @@
                                                     .AddMany(localHistoricalDataStreamAsc);
                                         }
                                     }
-                                    catch(Exception ex)
+                                    catch (Exception ex)
                                     {
                                         throw ex;
                                     }

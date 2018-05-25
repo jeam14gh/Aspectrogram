@@ -461,6 +461,29 @@ ManagementIndexedDB = (function () {
         this.GetStoredStreams = function (subVariableIdList, timeStampList, assetNodeId, fnSuccess) {
             _getStored(assetNodeId + "stream", subVariableIdList, timeStampList, fnSuccess);
         };
+
+        this.DropDatabase = function () {
+            var
+                DBDeleteRequest;
+
+            if (_dbConnection !== undefined && _dbConnection !== null) {
+                // Cerramos la conexion
+                _dbConnection.close();
+                // Solicitamos eliminar la base de datos
+                // (indexedDB es un objeto de IDBFactory, por lo cual, se creara en caso de no existir)
+                DBDeleteRequest = window.indexedDB.deleteDatabase(dbName);
+                DBDeleteRequest.onerror = function (evt) {
+                    _onError(evt.target.error);
+                };
+                DBDeleteRequest.onblocked = function () {
+                    _onError({ name: "Blocked DB", message: "Couldn't delete database due to the operation being blocked" });
+                };
+                // Si se activa el evento onupgradeneeded, esta funcion se llama una vez que se complete dicho evento
+                DBDeleteRequest.onsuccess = function (evt) {
+                    fnSuccess();
+                };
+            }
+        };
     };
 
     return ManagementIndexedDB;

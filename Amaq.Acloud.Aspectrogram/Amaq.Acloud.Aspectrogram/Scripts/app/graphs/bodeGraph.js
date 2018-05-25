@@ -20,6 +20,8 @@ BodeGraph = (function () {
         var
             // Contenedor HTML principal de las graficas
             _container,
+            // Contenedor HTML para el menu contextual
+            _contextMenuContainer,
             // Contenedor HTML especifico de los chart a graficar
             _contentBody,
             // Contenedor HTML de las medidas a mostrar en la parte superior de las graficas
@@ -40,37 +42,9 @@ BodeGraph = (function () {
             _chartPhase,
             // Referencia al Id del widget
             _widgetId,
-            // Informacion del activo al que estan relacionados los puntos de medicion
-            _assetData,
-            // Array de los diferentes valores de amplitud, fase, velocidad y valor global en la grafica
-            _bodeData,
-            //Arrays con las velocidades ordenadas
-            _arraysBodeData,
-            // Color del punto de medicion
-            _msColor,
-            //arrays Con datos de estado transitorio y velocida nominal de la máquina
-            _arraysVelocityState,
-            // Mantiene en memoria el numero que determina cada cuantos datos se muestran las etiquetas
-            _tagVariation,
-            // Informacion de las anotaciones
-            _annotations,
-            // Tipo de anotacion a mostrar (0 = Ninguna, 1 = Rpm, 2 = Tiempo)
-            _annotationType,
-            // Punto de medicion de la grafica
-            _measurementPoint,
-            // Referencia a las subvariables del punto de medicion (directa, amplitud 1x, fase 1x)
-            _subvariables,
-            // Referencia a la subvariable de velocidad (caso exista)
-            _angularSubvariable,
-            // Bandera que identifica si el grafico cuenta con compensacion o no
-            _compensated,
-            // Bandera que identifica si el grafico cuenta con compensacion o no
-            _viewCompensated,
-            // Amplitud de referencia para el bode
-            _ampReference,
-            // Fase de referencia para el bode
-            _phaReference,
-            // Rango maximo y minimo del grafico, tanto en el eje X como en el eje Y
+            // Tipo de grafico Aspectrogram, necesario en AspectrogramWidget para gestionar la cache de elementos abiertos
+            _graphType,
+            // Rangos maximos y minimos del grafico, tanto en el eje X como en el eje Y
             _graphRange,
             // Referencia al cursor
             _cursor,
@@ -82,64 +56,95 @@ BodeGraph = (function () {
             _mouseover,
             // Listado de nombres de las series en la grafica
             _seriesName,
-            // Tipo de grafico Aspectrogram, necesario en AspectrogramWidget para gestionar la cache de elementos abiertos
-            _graphType,
+            // Informacion del activo al que estan relacionados los puntos de medicion
+            _assetData,
+            // Objeto cuyas propiedades corresponden a informacion relacionada al puntos de medicion
+            _measurementPoint,
+            // Referencia a las subvariables del punto de medicion (directa, fase 1x, amplitud 1x)
+            _subvariables,
+            // Referencia a la subvariable de velocidad (caso exista)
+            _angularSubvariable,
+            // Valor de referencia de la posicion en amplitud
+            _ampReference,
+            // Valor de referencia de la posicion en fase
+            _phaReference,
+            // Sentido de giro (Nomenclatura usada en libros y documentos, abreviacion de RotationDirection)
+            _rotn,
+            // Array de los diferentes valores de amplitud, fase, velocidad y valor global en la grafica
+            _bodeData,
+            // Array que permite gestionar la visualizacion de las diferentes series en la grafica
+            _seriesVisibility,
             // Variable que define en que numero de caja se encuentra la fase
             _boxPhaseChart,
+            // Tipo de anotacion/label seleccionada para mostrar (Ninguna, Velocidad, Tiempo)
+            _selectedTag,
+            // Almacena la referencia de la subscripcion de nuevos datos
+            _newDataSubscription,
             // Referencia a la suscripcion del reproductor de tendencia
             _playerSubscription,
-            // Metodo privado que realiza el control de los modelos de interaccion de eventos sobre la grafica
-            _customInteractionModel,
-            // Metodo privado que muestra las diferentes anotaciones configuradas
-            _createAnnotations,
-            // Metodo privado que muestra el menu que permite definir que etiquetas mostrar en el grafico
-            _showTags,
-            //banderas para control de visualizacion de series
-            _flagsSeries,
-            // Variable que define en que numero de caja se encuentra la fase
-            _boxPhaseChart,
+            // Referencia a la suscripcion para aplicar resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
+            _resizeChartSubscription,
             // Metodo privado que construye el chart caso no exista
             _buildGraph,
+            // Metodo privado que gestiona la creacion del menu contextual usado para definir la referencia de la grafica
+            _createContextMenu,
+            // Metodo privado que gestiona la creacion del menu que permite intercambiar los tags a graficar
+            _createTagMenu,
+            // Metodo privado que gestiona la creacion de etiquetas en el grafico
+            _createTags,
+            // Metodo privado que realiza el control de los modelos de interaccion de eventos sobre la grafica
+            _customInteractionModel,
+            // Metodo complementario a los modelos de interaccion para encontrar el punto sobre la grafica mas proximo
+            _findClosestPoint,
+            // Obtiene la informacion a graficar en el grafico de amplitud
+            _getAmplitudeData,
             // Metodo privado que realiza la gestion de los datos
             _getHistoricalData,
-            // Metodo para el calculo de la fase a graficar
-            _getDataForPhaseChart,
+            // Obtiene la informacion a graficar en el grafico de fase
+            _getPhaseData,
+            // Metodo privado que obtiene la informacion de los puntos seleccionados en el conjunto de graficas
+            _getSelectedPoints,
+            // Obtiene los valores maximos y minimos para cada grafico
+            _getValueRanges,
+            // Agrupa segun los diferentes estados de la maquina (arranque, parada, estable)
+            _groupVelocityStates,
+            // Metodo privado como manejador de eventos de KeyDown
+            _keyDownEventHandler,
+            // Metodo privado que determina si el clic realizo, esta siendo usado para zoom o solo corresponde a la operacion de clic
+            _maybeTreatMouseOpAsClick,
+            // Metodo privado que gestiona el evento click sobre los items del menu de opciones
+            _onSettingsMenuItemClick,
+            // Metodo privado que obtiene las coordenadas en X del evento
+            _pageX,
+            // Metodo privado que obtiene las coordenadas en Y del evento
+            _pageY,
             // Metodo privado que se ejecuta por accion del poll al cual fue suscrito el chart
             _refresh,
             // Metodo privado que gestiona la creacion de un nuevo punto de referencia en el grafico
             _setReferencePoint,
-            //Método para seleccionar/deseleccioanr las series que se quieran ver en el Bode
+            // Metodo para seleccionar/deseleccioanr las series que se quieran ver en el Bode
             _showHideSeries,
-            //Ordenar y filtrar array BodeData, dependiendo de los estados de velocidad de la máquina
-            _orderBodeArray,
-            //identifica si la máquina está en estado trnsitorio, o en la veloidad nominal
-            _resolveVelocityStates,
-            // Callback de evento click sobre algun item del menu de opciones
-            _onSettingsMenuItemClick;
+            // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
+            _subscribeToResizeChart,
+            // Metodo privado que administra los tags o etiquetas de la grafica
+            _tagsManagement,
+            // Metodo complementario a los modelos de interaccion para seleccionar el punto mas proximo sobre la grafica
+            _updateSelection;
 
         /*
          * Definimos el modo, la auto-referencia y demas valores por defecto.
          */
-        _this = this;
         _movableGrid = false;
-        _compensated = false;
-        _viewCompensated = false;
+        _this = this;
         _graphType = "bode";
         _widgetId = Math.floor(Math.random() * 100000);
-        _subvariables = {};
         _graphRange = {};
-        _msColor = "#000000";
-        _tagVariation = 1;
-        _annotationType = 0;
+        _subvariables = {};
+        _selectedTag = clone(TagTypes.None);
+        _ampReference = 0;
+        _phaReference = 0;
         _cursorLock = false;
-        _cursor = new Cursors(null);
-        _boxPhaseChart = 0;
-        _flagsSeries = {
-            S1X: {visible: true, index: 0},
-            S1XComp: { visible: false, index: 1},
-            Direct: {visible: true, index: 2}
-        };
-        _arraysVelocityState = [];
+
         /*
          * Creamos el contenedor HTML de la grafica
          */
@@ -148,13 +153,13 @@ BodeGraph = (function () {
         _container.style.width = "100%";
         _container.style.height = "100%";
         _contentHeader = document.createElement("div");
-        _contentHeader.id = "waveformHeader" + _widgetId;
+        _contentHeader.id = "bodeHeader" + _widgetId;
         _contentHeader.style.width = "100%";
         _contentHeader.style.paddingLeft = "15px";
         _contentHeader.style.paddingTop = "5px";
         $(_container).append(_contentHeader);
         _contentBody = document.createElement("div");
-        _contentBody.id = "waveformBody" + _widgetId;
+        _contentBody.id = "bodeBody" + _widgetId;
         _contentBody.style.width = "100%";
         _contentBody.style.height = "85%";
         $(_container).append(_contentBody);
@@ -168,12 +173,38 @@ BodeGraph = (function () {
         _ampContainer.style.height = "50%";
         $(_contentBody).append(_ampContainer);
 
+        _createContextMenu = function () {
+            var
+                ulEl;
+
+            _contextMenuContainer = document.createElement("div");
+            _contextMenuContainer.id = "shaftCtxMenu" + _widgetId;
+            _contextMenuContainer.className = "customContextMenu";
+            ulEl = document.createElement("ul");
+            $(ulEl).append("<li id=\"menuReferencePoint" + _widgetId + "\" class=\"menuReferencePoint\">Definir como referencia</li>");
+            $(_contextMenuContainer).append(ulEl);
+            // Agregamos el contenedor del menu contextual al DOM
+            $(_container).append(_contextMenuContainer);
+            $(_contextMenuContainer).click(function (e) {
+                // Si la opcion esta desactivada, no hacer nada
+                if (e.target.className === "disabled") {
+                    return false;
+                }
+                // Gestionamos la accion especifica
+                switch (e.target.id) {
+                    case "menuReferencePoint" + _widgetId:
+                        _setReferencePoint();
+                        break;
+                }
+                // Cerramos el menu contextual
+                $(_contextMenuContainer).css("display", "none");
+            });
+        };
         /*
          * Callback de evento click sobre algun item del menu de opciones
          *@param {Object} evt Argumentos del evento
          */
         _onSettingsMenuItemClick = function (evt) {
-            evt.preventDefault();
             var
                 target,
                 menuItem,
@@ -181,235 +212,250 @@ BodeGraph = (function () {
                 contId,
                 name,
                 labels,
-                i, j,
+                i,
                 data;
 
+            evt.preventDefault();
             target = $(evt.currentTarget);
             menuItem = target.attr("data-value");
             switch (menuItem) {
-                case "showSeries":
+                case "showSeries" + _widgetId:
                     _showHideSeries();
                     break;
-                case "showTagsBode":
-                    _showTags();
+                case TagTypes.None.Text + _widgetId:
+                case TagTypes.Velocity.Text + _widgetId:
+                case TagTypes.TimeStamp.Text + _widgetId:
+                    _tagsManagement(target, menuItem);
                     break;
-                case "saveImageBode" + _widgetId:
+                case "saveImage" + _widgetId:
                     imgExport = new ImageExport(_chartAmplitude, _graphType);
                     imgExport.asPNG();
                     break;
-                case "exportToExcel" + _widgetId:
+                case "exportToExcel" +_widgetId:
+                    var serieVisible = _seriesVisibility;
+                    labels = _chartAmplitude.getLabels(); // Obtenemos los labes del char de amplitud
+                    var labelsPhase = _chartPhase.getLabels(); // Obtenemos los lables del char de fase
+                    data = JSON.parse(JSON.stringify(_chartAmplitude.file_));
+                    var dataPhase = JSON.parse(JSON.stringify(_chartPhase.file_));
+
+                    // Si la Directa está desmarcada se elimina ese elemento del labels
+                    if (!serieVisible[2].Visible) {
+                        labels.pop();
+                    }
+
+                    // Si la 1XComp está marcada se elimina la 1X y se agrega FaseCompensada, sino hace lo contrario
+                    if (serieVisible[1].Visible) {
+                        labels.removeAt(1);
+                        labels.push(labelsPhase[2]);
+                    } else {
+                        labels.removeAt(2);
+                        labels.push(labelsPhase[1]);
+                    }
+
+                    // Recorremos el "data" para organizarlo dependiendo de la configuración Series del gráfico.
+                    for (var a = 0; a < data.length; a++) {
+                        if (!serieVisible[2].Visible) { // Directa está desmarcada
+                            data[a].removeAt(3); // Elimina directa
+                        }
+
+                        if (serieVisible[1].Visible) { // 1XComp está marcada
+                            data[a].removeAt(1); // Elimina 1X
+                            data[a].push(dataPhase[a][2]); // Agrega FaseCompensada                            
+                        } else {
+                            data[a].removeAt(2); // Elimina 1XComp
+                            data[a].push(dataPhase[a][1]); // Agrega fase                         
+                        }
+                    }
+
                     name = "Histórico, Bode : " + _assetData.Name;
-                    contId = "tableToExcelWaveformGraph" + _widgetId;
-                    labels = ["RPM", "1X", "Directa", "1XComp", "RPM", "Fase 1X", "Fase 1X Comp"];
-                    data = [];
-                    for (i = 0; i < _chartAmplitude.file_.length; i += 1) {
-                        for (j = 0; j < _chartAmplitude.file_[0].length; j += 1) {
-                            data[i].push(_chartAmplitude.file_[i][j]);
-                        }
-                    }
-                    for (i = 0; i < _chartPhase.file_.length; i += 1) {
-                        for (j = _chartAmplitude.file_[0].length; j < _chartPhase.file_[0].length + _chartAmplitude.file_[0].length - 1; j += 1) {
-                            data[i].push(_chartPhase.file_[i][j - _chartAmplitude.file_[0].length]);
-                        }
-                    }
+                    contId = "tableToExcelBodeGraph" + _widgetId;
                     createTableToExcel(_container, contId, name, labels, data, true);
-                    tableToExcel("tableToExcelWaveformGraph" + _widgetId, name);
+                    tableToExcel("tableToExcelBodeGraph" + _widgetId, name);
                     break;
                 default:
                     console.log("Opción de menú no implementada.");
             }
         };
 
-        _showTags = function () {
+        _tagsManagement = function (target, menuItem) {
             var
-                i,
-                widgetWidth,
-                widgetPosition,
-                dialogSize,
-                dialogPosition,
-                configContainer,
-                currentRpm;
+                children,
+                i;
 
-            widgetWidth = $("#" + _container.id).width();
-            widgetPosition = $("#" + _container.id).parents(".grid-stack-item").first().position();
-            dialogSize = { width: 350, height: 180 };
-            dialogPosition = { top: widgetPosition.top + 10, left: (widgetPosition.left + (widgetWidth / 2) - (dialogSize.width / 2)) };
-            configContainer = $("#graphConfigAreaDialog").clone();
-            configContainer.css("display", "block");
-            configContainer[0].id = _widgetId + "bode";
-            $("#awContainer").append(configContainer);
-            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
-            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-5\"><label for=\"tagType\" " +
-              "style=\"font-size:12px;\">Tipo de etiqueta</label></div>");
-            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-7\"><select id=\"tagType\"></select></div>");
-            $("#tagType").append("<option value=\"0\">Ninguno</option>");
-            $("#tagType").append("<option value=\"1\">Rpm</option>");
-            $("#tagType").append("<option value=\"2\">Tiempo</option>");
-            $("#tagType").ejDropDownList({
-                watermarkText: "Seleccione",
-                selectedIndex: _annotationType,
-                width: "100%"
+            children = target.parent().parent().children();
+            for (i = 0; i < children.length; i += 1) {
+                children.eq(i).children().children().eq(0).addClass("fa-square-o").removeClass("fa-check-square");
+            }
+            target.children().eq(0).addClass("fa-check-square").removeClass("fa-square-o");
+            switch (menuItem) {
+                case TagTypes.None.Text + _widgetId:
+                    _selectedTag = clone(TagTypes.None);
+                    break;
+                case TagTypes.Velocity.Text + _widgetId:
+                    _selectedTag = clone(TagTypes.Velocity);
+                    break;
+                case TagTypes.TimeStamp.Text + _widgetId:
+                    _selectedTag = clone(TagTypes.TimeStamp);
+                    break;
+            }
+            _chartAmplitude.updateOptions({
+                "valueRange": _chartAmplitude.axes_[0].valueRange,
+                "dateWindow": _chartAmplitude.dateWindow_
             });
-            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
-            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div").append("<div class=\"col-md-5\">" +
-              "<label for=\"tagVariation\" style=\"font-size:12px;\">Cada n datos</label></div>");
-            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(2) > div").append("<div class=\"col-md-7\">" +
-              "<input type=\"number\" id=\"tagVariation\" name=\"tagVariation\" value=\"" + _tagVariation + "\" style=\"width:100%;\"></div>");
-            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group zeroMarginBottom\"><div class=\"row\"></div></div>");
-            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(3) > div").append("<div style=\"text-align: center;\"></div>");
-            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(3) > div > div:nth-child(1)").append("\n<a id=\"btnSaveTag" +
-              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
-            $("#btnSaveTag" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
-            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form > div:nth-child(3) > div > div:nth-child(1)").append("\n<a id=\"btnCancelTag" +
-              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
-            $("#btnCancelTag" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
-            $("#" + configContainer[0].id + " > div.graphConfigArea").attr("title", "Configurar Etiquetas");
-            $("#" + configContainer[0].id + " > div.graphConfigArea").ejDialog({
-                enableResize: false,
-                title: "Configurar Etiquetas",
-                width: dialogSize.width,
-                height: dialogSize.height,
-                zIndex: 2000,
-                close: function () {
-                    $("#btnCancelTag" + _widgetId).off("click");
-                    $("#btnSaveTag" + _widgetId).off("click");
-                    $("#tagType").ejDropDownList("destroy");
-                    $("#" + configContainer[0].id).remove();
-                },
-                content: "#" + configContainer[0].id,
-                tooltip: {
-                    close: "Cerrar"
-                },
-                actionButtons: ["close"],
-                position: {
-                    X: dialogPosition.left,
-                    Y: dialogPosition.top
-                }
-            });
-            // Abrir el dialogo
-            $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("open");
-            // Boton cancelar
-            $("#btnCancelTag" + _widgetId).click(function (e) {
-                e.preventDefault();
-                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
-            });
-            // Boton aceptar
-            $("#btnSaveTag" + _widgetId).click(function (e) {
-                e.preventDefault();
-                _annotationType = $("#tagType")[0].selectedIndex;
-                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
-                if (_annotationType > 0 && parseFloat($("#tagVariation").val()) > 0) {
-                    _tagVariation = parseFloat($("#tagVariation").val());
-                    _annotations = [];
-                    switch (_annotationType) {
-                        case 1:
-                            for (i = 0; i < _bodeData.length; i += _tagVariation) {
-                                _annotations[i] = {
-                                    rpm: _bodeData[i].velocity,
-                                    time: _bodeData[i].timeStamp
-                                };
-                            }
-                            break;
-                        case 2:
-                            currentRpm = 0;
-                            for (i = 0; i < _bodeData.length; i += 1) {
-                                if (Math.abs(_bodeData[i].velocity.toFixed(0) - currentRpm) > _tagVariation) {
-                                    currentRpm = _bodeData[i].velocity;
-                                    _annotations.push({
-                                        rpm: currentRpm,
-                                        time: _bodeData[i].timeStamp
-                                    });
-                                }
-                            }
-                            break;
-                        default:
-                            console.log("Tipo de anotación no soportada.");
-                    }
-                } else {
-                    _annotations = [];
-                }
-                _createAnnotations();
+            _chartPhase.updateOptions({
+                "valueRange": _chartPhase.axes_[0].valueRange,
+                "dateWindow": _chartPhase.dateWindow_
             });
         };
 
         /*
          * Construye la grafica, caso no exista.
          */
-        _buildGraph = function (labelAmp, labelPha, timeStampArray, rpmPositions) {
+        _buildGraph = function (labelsAmp, labelsPha, timeStampArray, rpmPositions) {
             var
+                // Contador
+                i,
                 // Texto a mostrar de forma dinamica
                 txt,
-                // DIV asociado al menu contextual
-                ctxMenuDiv,
-                // Elementos del menu
-                ulEl,
                 // Valor de la altura del rotulo de la grafica
-                headerHeigth;
+                headerHeigth,
+                // Valor de la amplitud de compensacion
+                amplitudeReference,
+                // Valor de la fase de compensacion
+                phaseReference,
+                // Valor de la fase aplicada la compensacion
+                phaseCompensated;
 
-            ctxMenuDiv = document.createElement("div");
-            ctxMenuDiv.id = "bodeCtxMenu" + _widgetId;
-            ctxMenuDiv.className = "customContextMenu";
-            ulEl = document.createElement("ul");
-            $(ulEl).append("<li id=\"menuReferencePoint" + _widgetId + "\" class=\"menuReferencePoint\">Compensar</li>");
-            $(ctxMenuDiv).append(ulEl);
-            // Agregamos el contenedor del menu contextual al DOM
-            $(_container).append(ctxMenuDiv);
-            $(ctxMenuDiv).click(function (e) {
-                // Si la opcion esta desactivada, no hacer nada
-                if (e.target.className == "disabled") {
-                    return false;
-                }
-                switch (e.target.id) {
-                    case "menuReferencePoint" + _widgetId:
-                        _setReferencePoint();
-                        break;
-                }
-            });
-            _customInteractionModel.contextmenu = function (e, g, ctx) {
-                e.preventDefault();
-                if (g.maindiv_.id === _ampContainer.id) {
-                    _chartAmplitude.selectedRow_ = _chartAmplitude.lastRow_;
-                    $(ctxMenuDiv).css("top", (e.offsetY + _ampContainer.offsetTop));
-                    $(ctxMenuDiv).css("left", (e.offsetX + _contentBody.offsetLeft));
-                    $(ctxMenuDiv).css("display", "block");
-                } else {
-                    $(ctxMenuDiv).css("display", "none");
-                }
-                return false;
-            };
-            _customInteractionModel.click = function (e, g, ctx) {
-                $(ctxMenuDiv).css("display", "none");
-                _cursorLock = !_cursorLock;
-            };
-            _customInteractionModel.dblclick = function (event, g, context) {
-                if (context.cancelNextDblclick) {
-                    context.cancelNextDblclick = false;
-                    return;
-                }
-                if (event.altKey || event.shiftKey || event.ctrlKey) {
-                    return;
-                }
-                g.updateOptions({
-                    "dateWindow": _graphRange.amplitude.X
-                });
-                _cursorLock = false;
-            };
             headerHeigth = (_contentHeader.clientHeight + 4) * 100 / _container.clientHeight;
             _contentBody.style.height = (100 - headerHeigth) + "%";
+            _cursor = new Cursors(null);
+            _createContextMenu();
+            _seriesName.push("1XComp");
+            _seriesVisibility = [];
+            for (i = 0; i < _seriesName.length; i += 1) {
+                switch (_seriesName[i]) {
+                    case "1X":
+                        _seriesVisibility[0] = {
+                            Id: 0,
+                            Name: _seriesName[i],
+                            Visible: true
+                        };
+                        break;
+                    case "1XComp":
+                        _seriesVisibility[1] = {
+                            Id: 1,
+                            Name: _seriesName[i],
+                            Visible: false
+                        };
+                        break;
+                    case _subvariables.overall.Name:
+                        _seriesVisibility[2] = {
+                            Id: 2,
+                            Name: _seriesName[i],
+                            Visible: true
+                        };
+                        break;
+                    default:
+                        console.log("Serie desconocida.");
+                }
+            }
             _chartPhase = new Dygraph(
                 _phaseContainer,
                 [[0, 0, 0]],
                 {
-                    colors: ["#006ACB", "#FF0000"],
+                    colors: ["#006ACB", "#002547"],
                     digitsAfterDecimal: 4,
                     legend: "never",
+                    avoidMinZero: true,
+                    xRangePad: 1,
                     ylabel: "Fase [" + _subvariables.phase.Units + "]",
-                    labels: labelPha,
+                    labels: labelsPha,
                     labelsDivWidth: 0,
                     axisLabelFontSize: 10,
                     hideOverlayOnMouseOut: false,
-                    includeZero: true,
-                    yRangePad: 3,
+                    highlightCallback: function (e, x, pts, row, customFlag) {
+                        var
+                            needRestoreLock;
+
+                        needRestoreLock = false;
+                        // Permitir mover el cursor usando el teclado, mientras se encuentre bloqueado para el hover del mouse
+                        if (customFlag !== undefined && _cursorLock) {
+                            _cursorLock = !_cursorLock;
+                            needRestoreLock = true;
+                        }
+                        if (_cursorLock || pts.length === 0) {
+                            _mouseover = true;
+                            return;
+                        }
+                        _cursor.followCursor(pts);
+                        for (i = 0; i < pts.length; i += 1) {
+                            if (!_bodeData || !_bodeData[pts[i].idx]) {
+                                return;
+                            }
+                            if (!Number.isNaN(pts[i].yval) && (pts[i].name === labelsPha[1] || pts[i].name === labelsPha[2])) {
+                                phaseReference = (_phaReference < 0) ? _phaReference + 360 : _phaReference;
+                                if (_seriesVisibility[0].Visible) {
+                                    txt = "<span style=\"color:#006ACB;font-weight:bold;\">" + _seriesVisibility[0].Name + "</span>: ";
+                                    txt += _bodeData[pts[i].idx].amplitude.toFixed(2) + " " + _subvariables.overall.Units;
+                                    txt += " &ang;" + _bodeData[pts[i].idx].phase.toFixed(2) + "&deg;";
+                                } else {
+                                    txt = "<span style=\"color:#002547;font-weight:bold;\">" + _seriesVisibility[1].Name + "</span>: ";
+                                    txt += (_bodeData[pts[i].idx].amplitude - _ampReference).toFixed(2);
+                                    phaseCompensated = _bodeData[pts[i].idx].phase - phaseReference;
+                                    phaseCompensated = (phaseCompensated < 0) ? phaseCompensated + 360 : phaseCompensated;
+                                    txt += " " + _subvariables.overall.Units + " &ang;" + phaseCompensated.toFixed(2) + "&deg;";
+                                    txt += "&nbsp;(<span style=\"font-weight:bold;\">" + _ampReference.toFixed(2);
+                                    txt += " &ang;" + phaseReference.toFixed(2) + "&deg;</span>)";
+                                }
+                                txt += ",&nbsp;" + _bodeData[pts[i].idx].velocity.toFixed(0) + " RPM, " + _bodeData[pts[i].idx].timeStamp;
+                                $("#" + _seriesName[0] + _widgetId + " > span").html(txt);
+                            }
+                        }
+                        // Restaurar el bloqueo para el hover del mouse
+                        if (needRestoreLock) {
+                            _cursorLock = !_cursorLock;
+                        }
+                        _lastMousemoveEvt = e;
+                        _mouseover = true;
+                    },
+                    unhighlightCallback: function (e) {
+                        _mouseover = false;
+                    },
+                    drawCallback: function (g, is_initial) {
+                        var
+                            // DIVs contenedores de los labels en los ejes X e Y de la grafica
+                            axisLabelDivs;
+
+                        if (is_initial) {
+                            _cursor.attachCanvas(g);
+                            g.canvas_.style.zIndex = 1000;
+                        }
+                        // xlabel + ylabel
+                        $("#" + _phaseContainer.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1025);
+                        $("#" + _phaseContainer.id + " .dygraph-ylabel").eq(0).parent().css("z-index", 1025);
+                        // Recorrer todos los axis-labels
+                        axisLabelDivs = $("#" + _phaseContainer.id + " .dygraph-axis-label");
+                        for (i = 0; i < axisLabelDivs.length; i += 1) {
+                            axisLabelDivs.eq(i).parent().css("z-index", 1025);
+                        }
+                        if (_chartAmplitude !== undefined && _chartPhase !== undefined) {
+                            _getSelectedPoints(clone(_chartAmplitude.selectedRow_), [_chartAmplitude, _chartPhase]);
+                            _cursor.followCursor(_chartAmplitude.selPoints_);
+                            _cursor.followCursor(_chartPhase.selPoints_);
+                        }
+                    },
+                    drawHighlightPointCallback: function (g, serie, ctx, cx, cy, color, pointSize) {
+                        if (_cursorLock) {
+                            // Necesario para que no se dibuje el circulo de seleccion cuando el cursor se encuentre bloqueado
+                            pointSize = 0;
+                        }
+                        Dygraph.Circles.DEFAULT(g, serie, ctx, cx, cy, color, pointSize);
+                    },
+                    underlayCallback: function (canvas, area, g) {
+                        canvas.strokeStyle = "black";
+                        canvas.strokeRect(area.x, area.y, area.w, area.h);
+                    },
+                    interactionModel: _customInteractionModel,
                     axes: {
                         x: {
                             pixelsPerLabel: 40,
@@ -420,83 +466,125 @@ BodeGraph = (function () {
                             axisLabelWidth: 38
                         }
                     },
-                    highlightCallback: function (e, x, pts, row) {
+                    plotter: function (e) {
+                        Dygraph.Plugins.Plotter.prototype.smoothPlotter(e, 0.35);
+                        _createTags();
+                    },
+                    visibility: [true, false]
+                }
+            );
+            _chartAmplitude = new Dygraph(
+                _ampContainer,
+                [[0, 0, 0, 0]],
+                {
+                    colors: ["#006ACB", "#002547", "#008000"],
+                    digitsAfterDecimal: 4,
+                    legend: "never",
+                    avoidMinZero: true,
+                    xRangePad: 1,
+                    yRangePad: 2, // Espacio extra en los extremos para que sea visible el valor del eje
+                    xlabel: "RPM",
+                    ylabel: "Amplitud [" + _subvariables.overall.Units + "]",
+                    labels: labelsAmp,
+                    labelsDivWidth: 0,
+                    axisLabelFontSize: 10,
+                    hideOverlayOnMouseOut: false,
+                    highlightCallback: function (e, x, pts, row, customFlag) {
                         var
-                            color,
-                            current,
-                            i;
+                            needRestoreLock;
 
+                        needRestoreLock = false;
+                        // Permitir mover el cursor usando el teclado, mientras se encuentre bloqueado para el hover del mouse
+                        if (customFlag !== undefined && _cursorLock) {
+                            _cursorLock = !_cursorLock;
+                            needRestoreLock = true;
+                        }
+                        if (_cursorLock || pts.length === 0) {
+                            // En caso de que la serie no este visible mas, cambiar los valores en el rotulo
+                            if (!_seriesVisibility[2].Visible) {
+                                txt = "<span style=\"color:#008000;font-weight:bold;\">" + _seriesName[1] + "</span>: --";
+                                $("#" + _seriesName[1] + _widgetId + " > span").html(txt);
+                            }
+                            return;
+                        }
+                        _cursor.followCursor(pts);
                         for (i = 0; i < pts.length; i += 1) {
-                            if (_cursorLock) {
-                                continue;
+                            if (!_bodeData || !_bodeData[pts[i].idx]) {
+                                return;
                             }
-                            if (pts[i].name === "Fase" || pts[i].name === "Fase Compensada" && !Number.isNaN(pts[i].yval)) {
-                                if (!_bodeData || !_bodeData[pts[i].idx]) {
-                                    return;
+                            if (!Number.isNaN(pts[i].yval) && (pts[i].name === labelsAmp[1] || pts[i].name === labelsAmp[2])) {
+                                phaseReference = (_phaReference < 0) ? _phaReference + 360 : _phaReference;
+                                if (_seriesVisibility[0].Visible) {
+                                    txt = "<span style=\"color:#006ACB;font-weight:bold;\">" + _seriesVisibility[0].Name + "</span>: ";
+                                    txt += _bodeData[pts[i].idx].amplitude.toFixed(2) + " " + _subvariables.overall.Units;
+                                    txt += " &ang;" + _bodeData[pts[i].idx].phase.toFixed(2) + "&deg;";
+                                } else {
+                                    txt = "<span style=\"color:#002547;font-weight:bold;\">" + _seriesVisibility[1].Name + "</span>: ";
+                                    txt += (_bodeData[pts[i].idx].amplitude - _ampReference).toFixed(2);
+                                    phaseCompensated = _bodeData[pts[i].idx].phase - phaseReference;
+                                    phaseCompensated = (phaseCompensated < 0) ? phaseCompensated + 360 : phaseCompensated;
+                                    txt += " " + _subvariables.overall.Units + " &ang;" + phaseCompensated.toFixed(2) + "&deg;";
+                                    txt += "&nbsp;(<span style=\"font-weight:bold;\">" + _ampReference.toFixed(2);
+                                    txt += " &ang;" + phaseReference.toFixed(2) + "&deg;</span>)";
                                 }
-                                txt = "";
-                                if (_flagsSeries.S1X.visible) {
-                                    color = _chartPhase.plotter_.colors[ _chartPhase.attributes_.labels_[0]];
-                                    current = clone(_bodeData[pts[i].idx]);
-                                    txt += "<span style=\"color:" + color + "\">" + _seriesName[0] + "</span>:&nbsp;";
-                                    txt += (current.amplitude < 0 ? "" : "&nbsp;") + current.amplitude.toFixed(2) + " " + _subvariables.overall.Units;
-                                    txt += " &ang;+" + current.phase.toFixed(2) + "&deg; ";
+                                txt += ",&nbsp;" + _bodeData[pts[i].idx].velocity.toFixed(0) + " RPM, " + _bodeData[pts[i].idx].timeStamp;
+                                $("#" + _seriesName[0] + _widgetId + " > span").html(txt);
+                                // Valor global (Directa)
+                                txt = "<span style=\"color:#008000;font-weight:bold;\">" + _seriesName[1] + "</span>: ";
+                                if (_seriesVisibility[2].Visible) {
+                                    txt += _bodeData[pts[i].idx].overall.toFixed(2) + " " + _subvariables.overall.Units + ",&nbsp;";
+                                    txt += _bodeData[pts[i].idx].velocity.toFixed(0) + " RPM, " + _bodeData[pts[i].idx].timeStamp;
+                                } else {
+                                    txt += "--";
                                 }
-                                if (_flagsSeries.S1XComp.visible) {
-                                    color = _chartPhase.plotter_.colors[_chartPhase.attributes_.labels_[1]];
-                                    current = clone(_bodeData[pts[i].idx]);
-                                    txt += "<span style=\"color:" + color + "\">" + _seriesName[0] + " Comp</span>:&nbsp;";
-                                    txt += (current.amplitude < 0 ? "" : "&nbsp;") + (current.amplitude - _ampReference).toFixed(2) + " " + _subvariables.overall.Units;
-                                    txt += " &ang;+" + (current.phase - _phaReference).toFixed(0) + "&deg; ";
-                                }
-                                
-                                //txt += ", " + current.velocity.toFixed(0) + " RPM, " + current.timeStamp;
-                                $("#" + _seriesName[0].replace(/\s/g, "") + _widgetId + " > span").html(txt);
-                                color = _chartAmplitude.plotter_.colors[_subvariables.overall.Name];
-                                txt = "<span style=\"color:" + color + "\">" + _subvariables.overall.Name + "</span>:&nbsp;";
-                                txt += (current.overall < 0 ? "" : "&nbsp;") + current.overall.toFixed(2) + " " + _subvariables.overall.Units;
-                                txt += ", " + current.velocity.toFixed(0) + " RPM, " + current.timeStamp;
-                                $("#" + _seriesName[1].replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                                $("#" + _seriesName[1] + _widgetId + " > span").html(txt);
                             }
                         }
-                        if (!_cursorLock) {
-                            _cursor.followCursor(pts);
+                        // Restaurar el bloqueo para el hover del mouse
+                        if (needRestoreLock) {
+                            _cursorLock = !_cursorLock;
                         }
+                        _lastMousemoveEvt = e;
+                        _mouseover = true;
+                    },
+                    unhighlightCallback: function (e) {
+                        _mouseover = false;
                     },
                     drawCallback: function (g, is_initial) {
+                        var
+                            // DIVs contenedores de los labels en los ejes X e Y de la grafica
+                            axisLabelDivs;
+
                         if (is_initial) {
                             _cursor.attachCanvas(g);
-                            g.canvas_.style.zIndex = 1;
+                            g.canvas_.style.zIndex = 1000;
+                        }
+                        // xlabel + ylabel
+                        $("#" + _ampContainer.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1025);
+                        $("#" + _ampContainer.id + " .dygraph-ylabel").eq(0).parent().css("z-index", 1025);
+                        // Recorrer todos los axis-labels
+                        axisLabelDivs = $("#" + _ampContainer.id + " .dygraph-axis-label");
+                        for (i = 0; i < axisLabelDivs.length; i += 1) {
+                            axisLabelDivs.eq(i).parent().css("z-index", 1025);
+                        }
+                        if (_chartAmplitude !== undefined && _chartPhase !== undefined) {
+                            _getSelectedPoints(clone(_chartAmplitude.selectedRow_), [_chartAmplitude, _chartPhase]);
+                            _cursor.followCursor(_chartAmplitude.selPoints_);
+                            _cursor.followCursor(_chartPhase.selPoints_);
                         }
                     },
-                    drawHighlightPointCallback: function (g, serie, ctx, cx, cy, color, p) {
-                        if (!_cursorLock) {
-                            Dygraph.Circles.DEFAULT(g, serie, ctx, cx, cy, color, p);
+                    drawHighlightPointCallback: function (g, serie, ctx, cx, cy, color, pointSize) {
+                        if (_cursorLock) {
+                            // Necesario para que no se dibuje el circulo de seleccion cuando el cursor se encuentre bloqueado
+                            pointSize = 0;
                         }
+                        Dygraph.Circles.DEFAULT(g, serie, ctx, cx, cy, color, pointSize);
                     },
                     underlayCallback: function (canvas, area, g) {
                         canvas.strokeStyle = "black";
                         canvas.strokeRect(area.x, area.y, area.w, area.h);
                     },
-                    interactionModel: _customInteractionModel
-                }
-            );
-
-            _chartAmplitude = new Dygraph(
-                _ampContainer,
-                [[0, 0, 0, 0]],
-                {
-                    colors: ["#006ACB", "#FF0000", "#008000"],
-                    digitsAfterDecimal: 4,
-                    legend: "never",
-                    xlabel: "RPM",
-                    ylabel: "Amplitud [" + _subvariables.overall.Units + "]",
-                    labels: labelAmp,
-                    labelsDivWidth: 0,
-                    includeZero: true,
-                    yRangePad: 3,
-                    axisLabelFontSize: 10,
-                    hideOverlayOnMouseOut: false,
+                    interactionModel: _customInteractionModel,
                     axes: {
                         x: {
                             pixelsPerLabel: 40
@@ -506,80 +594,16 @@ BodeGraph = (function () {
                             axisLabelWidth: 38
                         }
                     },
-                    highlightCallback: function (e, x, pts, row) {
-                        var
-                            color,
-                            current,
-                            i;
-
-                        for (i = 0; i < pts.length; i += 1) {
-                            if (_cursorLock) {
-                                continue;
-                            }
-                            if (pts[i].name === _subvariables.overall.Name && !Number.isNaN(pts[i].yval)) {
-                                if (!_bodeData || !_bodeData[pts[i].idx]) {
-                                    return;
-                                }
-                                color = _chartAmplitude.plotter_.colors[pts[i].name];
-                                current = clone(_bodeData[pts[i].idx]);
-                                txt = "<span style=\"color:" + color + "\">" + pts[i].name + "</span>:&nbsp;";
-                                txt += (pts[i].yval < 0 ? "" : "&nbsp;") + pts[i].yval.toFixed(2) + " " + _subvariables.overall.Units;
-                                txt += ", " + pts[i].xval.toFixed(0) + " RPM, " + current.timeStamp;
-                                $("#" + _seriesName[1].replace(/\s/g, "") + _widgetId + " > span").html(txt);
-                            } else if (pts[i].name === "Amplitud" || pts[i].name === "Amplitud Compensada" && !Number.isNaN(pts[i].yval)) {
-                                if (!_bodeData || !_bodeData[pts[i].idx]) {
-                                    return;
-                                }
-
-                                txt = "";
-                                if (_flagsSeries.S1X.visible) {
-                                    color = _chartAmplitude.plotter_.colors[_chartAmplitude.attributes_.labels_[0]];
-                                    current = clone(_bodeData[pts[i].idx]);
-                                    txt += "<span style=\"color:" + color + "\">" + _seriesName[0] + "</span>:&#09;";
-                                    txt += (current.amplitude < 0 ? "" : "&nbsp;") + current.amplitude.toFixed(2) + " " + _subvariables.overall.Units;
-                                    txt += " &ang;+" + current.phase.toFixed(2) + "&deg; ";
-                                }
-                                if (_flagsSeries.S1XComp.visible) {
-                                    color = _chartAmplitude.plotter_.colors[_chartAmplitude.attributes_.labels_[1]];
-                                    current = clone(_bodeData[pts[i].idx]);
-                                    txt += "<span style=\"color:" + color + "\">" + _seriesName[0] +  " Comp"+ "</span>:&#09;";
-                                    txt += (current.amplitude < 0 ? "" : "&nbsp;") + (current.amplitude - _ampReference).toFixed(2) + " " + _subvariables.overall.Units;
-                                    txt += " &ang;+" + (current.phase - _phaReference).toFixed(0) + "&deg; ";
-                                }
-                                //txt += ", " + current.velocity.toFixed(0) + " RPM, " + current.timeStamp;
-                                $("#" + _seriesName[0].replace(/\s/g, "") + _widgetId + " > span").html(txt);
-                            }
-                        }
-                        if (!_cursorLock) {
-                            _cursor.followCursor(pts);
-                        }
-                        _lastMousemoveEvt = e;
-                        _mouseover = true;
+                    plotter: function (e) {
+                        Dygraph.Plugins.Plotter.prototype.smoothPlotter(e, 0.35);
+                        _createTags();
                     },
-                    unhighlightCallback: function (e) {
-                        _mouseover = false;
-                    },
-                    drawCallback: function (g, is_initial) {
-                        if (is_initial) {
-                            _cursor.attachCanvas(g);
-                            g.canvas_.style.zIndex = 1;
-                        }
-                    },
-                    drawHighlightPointCallback: function (g, serie, ctx, cx, cy, color, p) {
-                        if (!_cursorLock) {
-                            Dygraph.Circles.DEFAULT(g, serie, ctx, cx, cy, color, p);
-                        }
-                    },
-                    underlayCallback: function (canvas, area, g) {
-                        canvas.strokeStyle = "black";
-                        canvas.strokeRect(area.x, area.y, area.w, area.h);
-                    },
-                    interactionModel: _customInteractionModel
+                    visibility: [true, false, true]
                 }
             );
-            Dygraph.synchronize([_chartPhase, _chartAmplitude], {
+            Dygraph.synchronize([_chartAmplitude, _chartPhase], {
                 zoom: true,
-                selection: true,
+                selection: false,
                 range: false
             });
             $(".grid-stack-item").on("resizestop", function () {
@@ -588,13 +612,15 @@ BodeGraph = (function () {
                 setTimeout(function () {
                     _chartPhase.resize();
                     _chartAmplitude.resize();
+                    _getSelectedPoints(clone(_chartAmplitude.selectedRow_), [_chartAmplitude, _chartPhase]);
+                    _cursor.followCursor(_chartAmplitude.selPoints_);
+                    _cursor.followCursor(_chartPhase.selPoints_);
                 }, 100);
             });
             _chartPhase.ready(function () {
                 _getHistoricalData(timeStampArray, rpmPositions);
+                document.body.addEventListener("keydown", _keyDownEventHandler);
             });
-           
-
         };
 
         _setReferencePoint = function () {
@@ -611,78 +637,360 @@ BodeGraph = (function () {
             dialogPosition = { top: widgetPosition.top + 10, left: (widgetPosition.left + (widgetWidth / 2) - (dialogSize.width / 2)) };
             configContainer = $("#graphConfigAreaDialog").clone();
             configContainer.css("display", "block");
-            configContainer[0].id = _widgetId + "bode";
+            configContainer[0].id = _widgetId + "polar";
             $("#awContainer").append(configContainer);
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div>div").append("<div class=\"col-md-5\"><label for=\"amp" +
-                _widgetId + "\" style=\"font-size:12px;\">Amplitud 1X</label></div>");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div>div").append("<div class=\"col-md-7\"><input type=\"text\" " +
-                "id=\"amp" + _widgetId + "\" name=\"amp" + _widgetId + "\" style=\"width:100%;\" readonly></div>");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div").append("<div class=\"col-md-5\">" +
-                "<label for=\"pha" + _widgetId + "\" style=\"font-size:12px;\">Fase 1X</label></div>");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div").append("<div class=\"col-md-7\">" +
-                "<input type=\"text\" id=\"pha" + _widgetId + "\" name=\"pha" + _widgetId + "\" style=\"width:100%;\" readonly></div>");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group zeroMarginBottom\">" +
-                "<div class=\"row\"></div></div>");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(3)>div").append("<div style=\"text-align:center;\"></div>");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(3)>div>div:nth-child(1)").append("\n<a id=\"btnSaveReference" +
-                _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
-            $("#btnSaveReference" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
-            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(3)>div>div:nth-child(1)").append("\n<a id=\"btnCancelReference" +
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-5\"><label for=\"amp1x" +
+                _widgetId + "\" " + "style=\"font-size:12px;\">Amplitud:</label></div>");
+            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div > div").append("<div class=\"col-md-7\"><input type=\"text\" id=\"amp1x" +
+                _widgetId + "\" " + "name=\"amplitude" + _widgetId + "\" style=\"width:100%;\" readonly></div>");
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div:nth-child(2) > div").append("<div class=\"col-md-5\"><label for=\"pha1x" +
+                _widgetId + "\" " + "style=\"font-size:12px;\">Fase:</label></div>");
+            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div:nth-child(2) > div").append("<div class=\"col-md-7\">" +
+                "<input type=\"text\" id=\"pha1x" + _widgetId + "\" name=\"phase" + _widgetId + "\" style=\"width:100%;\" readonly></div>");
+            $("#" + configContainer[0].id + " > div.graphConfigArea > div > form").append("<div class=\"form-group zeroMarginBottom\">" +
+              "<div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div:nth-child(3) > div").append("<div style=\"text-align: center;\"></div>");
+            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div:nth-child(3) > div > div:nth-child(1)").append("\n<a id=\"btnSave" +
               _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
-            $("#btnCancelReference" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
-            $("#amp" + _widgetId).val(Number(_bodeData[_chartAmplitude.selectedRow_].amplitude.toFixed(2)));
-            $("#pha" + _widgetId).val(Number(_bodeData[_chartAmplitude.selectedRow_].phase.toFixed(2)));
+            $("#btnSave" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
+            $("#" + configContainer[0].id + "> div.graphConfigArea > div > form > div:nth-child(3) > div > div:nth-child(1)").append("\n<a id=\"btnCancel" +
+              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnCancel" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
+            $("#amp1x" + _widgetId).val(_bodeData[_chartAmplitude.lastRow_].amplitude.toFixed(2));
+            $("#pha1x" + _widgetId).val(_bodeData[_chartAmplitude.lastRow_].phase.toFixed(2));
+            $("#" + configContainer[0].id + " > div.graphConfigArea").attr("title", "Compensar");
             $("#" + configContainer[0].id + " > div.graphConfigArea").ejDialog({
                 enableResize: false,
-                title: "Compensar Amplitud/Fase 1X",
+                title: "Compensar",
                 width: dialogSize.width,
                 height: dialogSize.height,
                 zIndex: 2000,
                 close: function () {
-                    $("#btnCancelReference" + _widgetId).off("click");
-                    $("#btnSaveReference" + _widgetId).off("click");
+                    $("#btnCancel" + _widgetId).off("click");
+                    $("#btnSave" + _widgetId).off("click");
                     $("#" + configContainer[0].id).remove();
                 },
                 content: "#" + configContainer[0].id,
                 tooltip: {
-                    close: "Cerrar",
-                    collapse: "Colapsar",
-                    expand: "Expandir"
+                    close: "Cerrar"
                 },
-                actionButtons: ["close", "collapsible"],
+                actionButtons: ["close"],
                 position: {
                     X: dialogPosition.left,
                     Y: dialogPosition.top
                 }
             });
-            // Abrir el dialogo
+
             $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("open");
-            // Boton cancelar
-            $("#btnCancelReference" + _widgetId).click(function (e) {
-                e.preventDefault();
+            $("#btnCancel" + _widgetId).click(function (evt) {
+                evt.preventDefault();
                 $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
             });
-            // Boton aceptar
-            $("#btnSaveReference" + _widgetId).click(function (e) {
-                e.preventDefault();
-                _ampReference = parseFloat($("#amp" + _widgetId).val());
-                _phaReference = parseFloat($("#pha" + _widgetId).val());
-                _compensated = true;
-                if (_compensated) {
-                    _flagsSeries.S1X.visible = false;
-                    _flagsSeries.S1XComp.visible = true;
-                } else {
-                    _flagsSeries.S1X.visible = true;
-                    _flagsSeries.S1XComp.visible = false;
+            $("#btnSave" + _widgetId).click(function (evt) {
+                evt.preventDefault();
+                _ampReference = Number($("#amp1x" + _widgetId).val());
+                _phaReference = Number($("#pha1x" + _widgetId).val());
+                if (!_seriesVisibility[1].Visible) {
+                    _seriesVisibility[0].Visible = false;
+                    _seriesVisibility[1].Visible = true;
                 }
                 _refresh();
                 $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
             });
         };
         
-        _customInteractionModel = clone(Dygraph.defaultInteractionModel);
+        /*
+         * Permite encontrar el punto mas proximo del evento hover generado por el mouse
+         */
+        _findClosestPoint = function (domX, domY, layout) {
+            var
+                minDist,
+                setIdx,
+                pts, i,
+                dist, dx, dy,
+                closestPoint,
+                closestSeries,
+                closestRow;
+
+            minDist = Infinity;
+            for (setIdx = layout.points.length - 1; setIdx >= 0; --setIdx) {
+                pts = layout.points[setIdx];
+                for (i = 0; i < pts.length; ++i) {
+                    if (!Dygraph.isValidPoint(pts[i])) {
+                        continue;
+                    }
+                    dx = pts[i].canvasx - domX;
+                    dy = pts[i].canvasy - domY;
+                    dist = dx * dx + dy * dy;
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestPoint = pts[i];
+                        closestSeries = setIdx;
+                        closestRow = pts[i].idx;
+                    }
+                }
+            }
+            return {
+                row: closestRow,
+                seriesName: layout.setNames[closestSeries],
+                point: closestPoint
+            };
+        };
+
+        /*
+         * Metodo usado para actualizar el punto seleccionado
+         * Invacodo por la funcion _findClosestPoint
+         */
+        _updateSelection = function (chartArray) {
+            var
+                i, j,
+                ctx,
+                maxCircleSize,
+                labels,
+                currentRatio,
+                canvasx,
+                point,
+                colorSerie,
+                circleSize,
+                callback;
+
+            for (i = 0; i < chartArray.length; i += 1) {
+                chartArray[i].cascadeEvents_("select", {
+                    selectedRow: chartArray[i].lastRow_,
+                    selectedX: chartArray[i].lastx_,
+                    selectedPoints: chartArray[i].selPoints_
+                });
+
+                // Contexto de canvas
+                ctx = chartArray[i].canvas_ctx_;
+                if (chartArray[i].previousVerticalX_ >= 0) {
+                    // Determinar el radio maximo del circulo resaltado
+                    maxCircleSize = 0;
+                    labels = chartArray[i].attr_("labels");
+                    for (j = 1; j < labels.length; j += 1) {
+                        currentRatio = chartArray[i].getNumericOption("highlightCircleSize", labels[j]);
+                        if (currentRatio > maxCircleSize) {
+                            maxCircleSize = currentRatio;
+                        }
+                    }
+                    ctx.clearRect(0, 0, chartArray[i].width_, chartArray[i].height_);
+                }
+
+                if (chartArray[i].isUsingExcanvas_ && chartArray[i].currentZoomRectArgs_) {
+                    Dygraph.prototype.drawZoomRect_.apply(chartArray[i], chartArray[i].currentZoomRectArgs_);
+                }
+
+                if (chartArray[i].selPoints_.length > 0) {
+                    // Dibuja circulos de colores sobre el centro de cada punto seleccionado
+                    canvasx = chartArray[i].selPoints_[0].canvasx;
+                    ctx.save();
+                    for (j = 0; j < chartArray[i].selPoints_.length; j += 1) {
+                        point = chartArray[i].selPoints_[j];
+                        if (point) {
+                            if (!Dygraph.isOK(point.canvasy)) {
+                                continue;
+                            }
+                            circleSize = chartArray[i].getNumericOption("highlightCircleSize", point.name);
+                            callback = chartArray[i].getFunctionOption("drawHighlightPointCallback", point.name);
+                            if (!callback) {
+                                callback = Dygraph.Circles.DEFAULT;
+                            }
+                            colorSerie = chartArray[i].colorsMap_[point.name];
+                            ctx.lineWidth = chartArray[i].getNumericOption("strokeWidth", point.name);
+                            ctx.strokeStyle = colorSerie;
+                            ctx.fillStyle = colorSerie;
+                            callback.call(chartArray[i], chartArray[i], point.name, ctx, point.canvasx, point.canvasy, colorSerie, circleSize, point.idx);
+                        }
+                    }
+                    ctx.restore();
+                    chartArray[i].previousVerticalX_ = canvasx;
+                }
+            }
+        };
+
+        _getSelectedPoints = function (row, chartArray) {
+            var
+                i,
+                setIdx,
+                points,
+                setRow,
+                point,
+                pointIdx;
+
+            for (i = 0; i < chartArray.length; i += 1) {
+                chartArray[i].lastRow_ = row;
+                chartArray[i].selPoints_ = [];
+                for (setIdx = 0; setIdx < chartArray[i].layout_.points.length; setIdx += 1) {
+                    points = chartArray[i].layout_.points[setIdx];
+                    setRow = row - chartArray[i].getLeftBoundary_(setIdx);
+                    if (!points[setRow]) {
+                        // Indica que la fila buscada no esta en la grafica (por ejemplo, zoom rectangular no igual para ambos lados)
+                        continue;
+                    }
+                    if (setRow < points.length && points[setRow].idx === row) {
+                        point = points[setRow];
+                        if (point.yval !== null && !Number.isNaN(point.yval)) {
+                            chartArray[i].selPoints_.push(point);
+                        }
+                    } else {
+                        for (pointIdx = 0; pointIdx < points.length; pointIdx += 1) {
+                            point = points[pointIdx];
+                            if (point.idx === row) {
+                                if (point.yval !== null && !Number.isNaN(point.yval)) {
+                                    chartArray[i].selPoints_.push(point);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (chartArray[i].selPoints_.length) {
+                    chartArray[i].lastx_ = chartArray[i].selPoints_[0].xval;
+                } else {
+                    chartArray[i].lastx_ = -1;
+                }
+            }
+        };
+
+        _customInteractionModel = {
+            mousedown: function (e, g, ctx) {
+                // Evita que el clic derecho inicialice el zoom
+                if (e.button && e.button === 2) {
+                    return;
+                }
+                ctx.initializeMouseDown(e, g, ctx);
+                if (e.altKey || e.shiftKey || e.ctrlKey) {
+                    Dygraph.startPan(e, g, ctx);
+                } else {
+                    Dygraph.startZoom(e, g, ctx);
+                }
+            },
+            mousemove: function (e, g, ctx) {
+                var
+                    closestPoint,
+                    selectionChanged,
+                    chartArray,
+                    callback;
+
+                if (ctx.isZooming) {
+                    Dygraph.moveZoom(e, g, ctx);
+                } else if (ctx.isPanning) {
+                    Dygraph.movePan(e, g, ctx);
+                } else {
+                    if (_cursorLock) {
+                        closestPoint = { row: clone(_chartAmplitude.selectedRow_) };
+                    } else {
+                        closestPoint = _findClosestPoint(g.eventToDomCoords(e)[0], g.eventToDomCoords(e)[1], g.layout_);
+                    }
+                    selectionChanged = (closestPoint.row !== g.lastRow_);
+                    chartArray = [_chartAmplitude, _chartPhase];
+                    _getSelectedPoints(closestPoint.row, chartArray);
+                    if (selectionChanged) {
+                        _updateSelection(chartArray);
+                    }
+                    _chartAmplitude.selectedRow_ = clone(g.lastRow_);
+                    _chartPhase.selectedRow_ = clone(g.lastRow_);
+                    callback = _chartAmplitude.getFunctionOption("highlightCallback");
+                    if (callback && selectionChanged) {
+                        callback.call(_chartAmplitude, e, _chartAmplitude.lastx_, _chartAmplitude.selPoints_, g.lastRow_);
+                    }
+                }
+            },
+            mouseup: function (e, g, ctx) {
+                if (ctx.isZooming) {
+                    ctx.justClick = false;
+                    _maybeTreatMouseOpAsClick(e, g, ctx);
+                    if (ctx.regionWidth <= 10 && ctx.regionHeight <= 10) {
+                        ctx.justClick = true;
+                    }
+                    Dygraph.endZoom(e, g, ctx);
+                } else if (ctx.isPanning) {
+                    Dygraph.endPan(e, g, ctx);
+                }
+            },
+            contextmenu: function (e, g, ctx) {
+                e.preventDefault();
+                _cursorLock = true;
+                $(_contextMenuContainer).css("top", (e.offsetY + $(g.canvas_).parent().parent()[0].offsetTop));
+                $(_contextMenuContainer).css("left", (e.offsetX + _contentBody.offsetLeft));
+                $(_contextMenuContainer).css("display", "block");
+                return false;
+            },
+            click: function (e, g, ctx) {
+                e.preventDefault();
+                if (ctx.justClick) {
+                    _cursorLock = !_cursorLock;
+                }
+                $(_contextMenuContainer).css("display", "none");
+                return false;
+            },
+            dblclick: function (event, g, context) {
+                var
+                    xRange,
+                    yRange;
+
+                if (context.cancelNextDblclick) {
+                    context.cancelNextDblclick = false;
+                    return;
+                }
+                if (event.altKey || event.shiftKey || event.ctrlKey) {
+                    return;
+                }
+                switch ($(g.canvas_).parent().parent()[0].id) {
+                    case _ampContainer.id:
+                        xRange = _graphRange.amplitude.X;
+                        yRange = _graphRange.amplitude.Y;
+                        break;
+                    case _phaseContainer.id:
+                        xRange = _graphRange.phase.X;
+                        yRange = _graphRange.phase.Y;
+                        break;
+                }
+                g.updateOptions({
+                    "dateWindow": xRange,
+                    "valueRange": yRange
+                });
+                _cursorLock = false;
+            }
+        };
+
+        _pageX = function (evt) {
+            if (evt.pageX) {
+                return (!evt.pageX || evt.pageX < 0) ? 0 : evt.pageX;
+            } else {
+                return evt.clientX + (document.scrollLeft || document.body.scrollLeft) - (document.clientLeft || 0);
+            }
+        };
+
+        _pageY = function (evt) {
+            if (evt.pageY) {
+                return (!evt.pageY || evt.pageY < 0) ? 0 : evt.pageY;
+            } else {
+                return evt.clientY + (document.scrollTop || document.body.scrollTop) - (document.clientTop || 0);
+            }
+        };
+
+        _maybeTreatMouseOpAsClick = function (e, g, ctx) {
+            var
+                regionWidth,
+                regionHeight;
+
+            ctx.dragEndX = _pageX(e) - ctx.px;
+            ctx.dragEndY = _pageY(e) - ctx.py;
+            if (Math.abs(ctx.dragStartX - ctx.dragEndX) > Math.abs(ctx.dragStartY - ctx.dragEndY)) {
+                ctx.dragEndY = (ctx.dragEndY > ctx.dragStartY) ? Math.abs(ctx.dragStartX - ctx.dragEndX) : -Math.abs(ctx.dragStartX - ctx.dragEndX);
+                ctx.dragEndY = ctx.dragStartY + ctx.dragEndY;
+            } else {
+                ctx.dragEndX = (ctx.dragEndX > ctx.dragStartX) ? Math.abs(ctx.dragStartY - ctx.dragEndY) : -Math.abs(ctx.dragStartY - ctx.dragEndY);
+                ctx.dragEndX = ctx.dragStartX + ctx.dragEndX;
+            }
+            regionWidth = Math.abs(ctx.dragEndX - ctx.dragStartX);
+            regionHeight = Math.abs(ctx.dragEndY - ctx.dragStartY);
+            ctx.regionWidth = regionWidth;
+            ctx.regionHeight = regionHeight;
+        };
 
         /*
          * Obtiene la informacion asociada al grafico
@@ -691,7 +999,6 @@ BodeGraph = (function () {
             var
                 i, j, k,
                 idList,
-				velocity,
                 group,
                 items,
                 tmpData,
@@ -704,7 +1011,6 @@ BodeGraph = (function () {
                 idList.push(_angularSubvariable.Id);
             }
             aidbManager.GetNumericBySubVariableIdAndTimeStampList(idList, timeStampArray, _assetData.NodeId, function (resp) {
-				velocity = [];
                 group = ej.DataManager(resp).executeLocal(new ej.Query().sortBy("timeStamp", ej.sortOrder.Ascending, false).group("timeStamp"));
                 for (i = 0; i < group.length; i += 1) {
                     items = group[i].items;
@@ -732,8 +1038,6 @@ BodeGraph = (function () {
                     }
                     // Filtramos unicamente los datos con amplitud 1X mayor que cero
                     if (tmpData[1].Value !== null && tmpData[1].Value > 0) {
-						// Capturamos el vector de velocidad que permite determinar las categorias de arranque, parada y estable
-						velocity.push(tmpData[3].Value);
                         _bodeData.push({
                             overall: tmpData[0].Value,
                             amplitude: tmpData[1].Value,
@@ -744,206 +1048,137 @@ BodeGraph = (function () {
                         });
                     }
                 }
-                _resolveVelocityStates();
-
-                txt = "<b style=\"color:" + _msColor + ";\">" + _measurementPoint.Name + "</b>&nbsp;&nbsp;Ang:&nbsp;";
-                txt += parseAng(_measurementPoint.SensorAngle) + "&deg;" + ", ";
-                txt += "(" + _bodeData[0].timeStamp + " - " + _bodeData[_bodeData.length - 1].timeStamp + ")";
-                _ampReference = _measurementPoint.CompAmp1X;
-                _phaReference = _measurementPoint.CompPhase1X;
-                _compensated = (_ampReference !== 0.0 && _phaReference !== 0.0) ? true : false;
-                txt += (_compensated) ? ", Ref: " + _ampReference.toFixed(2) + "&ang;+" + _phaReference.toFixed(2) + "&deg;" : "";
-                $("#" + _measurementPoint.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
-
-                
+                // Agrupar los datos segun: arranque, parada y estado estable, con base a los cambios de velocidad
+                _groupVelocityStates();
+                // Realizar la graficacion de los datos
                 _refresh();
-                
                 _playerSubscription = PublisherSubscriber.subscribe("/player/refresh", null, function (currentTimeStamp) {
                     var
-                        row,
-                        ampSubVar;
+                        timeStampArray,
+                        index;
 
                     if (!Number.isNaN(currentTimeStamp)) {
-						
-                        //data = data[_measurementPoint.Id];
-                        //if (data && data.SubVariables.length > 0) {
-                        //    ampSubVar = new ej.DataManager(data.SubVariables).executeLocal(new ej.Query().where("Id", "equal", amp1xId));
-                        //    if (ampSubVar && ampSubVar.length > 0) {
-                        //        for (row = 0; row < _chartAmplitude.file_.length; row += 1) {
-                        //            if (_chartAmplitude.file_[row][1] === ampSubVar[0].Value) {
-                        //                _chartPhase.setSelection(row);
-                        //                _cursorLock = true;
-                        //                _cursor.followCursor(_chartPhase.selPoints_);
-                        //                break;
-                        //            }
-                        //        }
-                        //    }
-                        //}
+                        // Obtenemos el array correspondiente a las estampas de tiempo
+                        timeStampArray = arrayColumn(_bodeData, "timeStamp");
+                        // Obtenemos la posicion en el array de estampas de tiempo que corresponden al valor actual en el reproductor
+                        index = timeStampArray.indexOf(formatDate(new Date(currentTimeStamp)));
+                        // Cambiamos el valor de la fila actualmente seleccionada
+                        _chartAmplitude.selectedRow_ = index;
+                        _chartPhase.selectedRow_ = index;
+                        _cursorLock = true;
+                        // Aplicamos la seleccion de la fila correspondiente a la posicion encontrada
+                        _chartAmplitude.setSelection(index);
+                        // Dibujamos el cursor
+                        _cursor.followCursor(_chartAmplitude.selPoints_);
                     }
                 });
             });
            
         };
 
-        /*
-         * Algoritmo para graficado de fase
-         */
-        _getDataForPhaseChart = function () {
+        _getValueRanges = function (data, inverted) {
             var
-                // Informacion a graficar de amplitud
+                boundariesX,
+                minValue,
+                maxValue,
+                ranges,
+                i,
+                tmpValue;
+
+            inverted = inverted || false;
+            boundariesX = minMaxArray(arrayColumn(data, 0));
+            minValue = boundariesX.min;
+            maxValue = boundariesX.max;
+            ranges = {
+                X: [minValue - 5, maxValue * 1.01]
+            };
+            minValue = undefined;
+            maxValue = undefined;
+            for (i = 1; i < data[0].length; i += 1) {
+                if (_seriesVisibility[i - 1].Visible) {
+                    tmpValue = arrayColumn(data, i).min();
+                }
+                if (!minValue || tmpValue < minValue) {
+                    minValue = tmpValue;
+                }
+                if (_seriesVisibility[i - 1].Visible) {
+                    tmpValue = arrayColumn(data, i).max();
+                }
+                if (!maxValue || tmpValue > maxValue) {
+                    maxValue = tmpValue;
+                }
+            }
+            if (inverted) {
+                ranges.Y = [maxValue * 1.1, minValue * (minValue > 0 ? 0.9 : 1.1)];
+            } else {
+                if (minValue > 0) {
+                    minValue = 0;
+                }
+                ranges.Y = [minValue * 0.9, maxValue * 1.1];
+            }
+            return ranges;
+        };
+
+        _getAmplitudeData = function () {
+            var
+                amplitudeValues,
+                amplitudeReference,
                 ampData,
-                // Informacion a graficar de fase
-                phaData,
-                phaseValues,
-                currentRpm,
-                //factor para graficar Amplitud
-                factAmp,
-                //factor para graficar fase
-                factPha,
-                //factor para graficar Rpm
-                factRpm,
-                // Valor maximo de amplitud
-                maxAmp,
-                // Valor maximo de fase
-                maxPha,
-                // Valor maximo de velocidad/rpm del conjunto de datos
-                maxRpm,
-                // Valor minimo de velocidad/rpm del conjunto de datos
-                minRpm,
-                // Valor minimo de amplitud
-                minAmp,
-                // Valor minimo de fase
-                minPha,
-                dataObj,
-                step,
-                // Contador
                 i;
 
-
+            amplitudeValues = [];
             ampData = [];
-            phaData = [];
-            phaseValues = [];
-            maxAmp = 0;
-            maxPha = 0;
-            maxRpm = 0;
-            factRpm = 0;
-
-           
-            if (_bodeData.length > 0) {
-                phaseValues[0] = -_bodeData[0].phase;
-            }
-
             for (i = 0; i < _bodeData.length; i += 1) {
-
-                if (i > 0) {
-                    if (currentRpm === 0) {
-                        phaseValues[i] = 0;
-                        _boxPhaseChart = 0;
-                    } else {
-                        step = _bodeData[i].phase - _bodeData[i - 1].phase;
-                        if (step > 180 && (_bodeData[i - 1].phase !== 0 || phaseValues[i] !== 0)) {
-                            _boxPhaseChart -= 1;
-                        } else if (step < -180 && (_bodeData[i - 1].phase !== 0 || phaseValues[i] !== 0)) {
-                            _boxPhaseChart += 1;
-                        } else if (step > -180 || step < 180) {
-                            _boxPhaseChart = _boxPhaseChart;
-                        }
-                        phaseValues[i] = _bodeData[i].phase + 360 * _boxPhaseChart;
-                    }
+                if (Number(_bodeData[i].velocity) === 0) {
+                    amplitudeValues[i] = 0;
                 } else {
-                    
-                    if (currentRpm === 0) {
-                        phaseValues[i] = 0;
-                        _boxPhaseChart = 0;
-                    } else {
-                        if (i > 0) {
-                            step = _bodeData[i + 1].phase - _bodeData[i].phase;
-                            if (step > 180 && (_bodeData[i].phase !== 0 || phaseValues[i] !== 0)) {
-                                _boxPhaseChart += 1;
-                            } else if (step < -180 && (_bodeData[i].phase !== 0 || phaseValues[i] !== 0)) {
-                                _boxPhaseChart -= 1;
-                            } else if (step > -180 || step < 180) {
-                                _boxPhaseChart = _boxPhaseChart;
-                            }
-                            phaseValues[i] = _bodeData[i].phase + 360 * _boxPhaseChart;
-                        }                      
-                    }
+                    amplitudeValues[i] = Number(_bodeData[i].amplitude);
                 }
-
-                maxRpm = (_bodeData[i].velocity > maxRpm) ? _bodeData[i].velocity : maxRpm;
-
-                ampData.push([_bodeData[i].velocity, _bodeData[i].amplitude, _bodeData[i].amplitude - _ampReference, _bodeData[i].overall]);
-                phaData.push([_bodeData[i].velocity, phaseValues[i], phaseValues[i] - _phaReference]);
-                if (_flagsSeries.S1XComp.visible) {
-                    if (maxAmp < _bodeData[i].amplitude - _ampReference) {
-                        maxAmp = _bodeData[i].amplitude - _ampReference;
-                    }
-                    if (maxPha < phaseValues[i] - _phaReference) {
-                        maxPha = phaseValues[i] - _phaReference;
-                    }
-                }
-                if (maxAmp < _bodeData[i].amplitude) {
-                    maxAmp = _bodeData[i].amplitude;
-                }
-                if (maxPha < phaseValues[i]) {
-                    maxPha = phaseValues[i];
-                }
-                if (maxAmp < _bodeData[i].overall) {
-                    maxAmp = _bodeData[i].overall;
-                }
+                ampData.push([Number(_bodeData[i].velocity.toFixed(4)), amplitudeValues[i], amplitudeValues[i] - _ampReference, Number(_bodeData[i].overall)]);
             }
+            return ampData;
+        };
 
-            minRpm = maxRpm;
-            minPha = maxPha;
-            minAmp = maxAmp;
+        _getPhaseData = function () {
+            var
+                phaseValues,
+                phaseReference,
+                phaseCompensated,
+                phaData,
+                i,
+                step;
 
-            for (i = 0; i < _bodeData.length; i += 1) {
-                if (minRpm > _bodeData[i].velocity) {
-                    minRpm = _bodeData[i].velocity;
-                }
-                if (_flagsSeries.S1XComp.visible) {
-                    if (minAmp > _bodeData[i].amplitude - _ampReference) {
-                        minAmp = _bodeData[i].amplitude - _ampReference;
-                    }
-                    if (minPha > phaseValues[i] - _phaReference) {
-                        minPha = phaseValues[i] - _phaReference;
-                    }
-                }
-
-                if (minAmp > _bodeData[i].amplitude) {
-                    minAmp = _bodeData[i].amplitude;
-                }
-                if (minPha > phaseValues[i]) {
-                    minPha = phaseValues[i];
-                }
-                if (minAmp > _bodeData[i].overall) {
-                    minAmp = _bodeData[i].overall;
-                }
+            phaseValues = [];
+            phaData = [];
+            _boxPhaseChart = 0;
+            if (_bodeData.length > 0) {
+                phaseValues[0] = Number(_bodeData[0].phase);
+                phaseReference = _phaReference < 0 ? _phaReference + 360 : _phaReference;
+                phaseCompensated = phaseValues[0] - phaseReference;
+                phaseCompensated = phaseCompensated < 0 ? phaseCompensated + 360 : phaseCompensated;
+                phaData.push([Number(_bodeData[0].velocity.toFixed(4)), phaseValues[0], phaseCompensated]);
             }
-
-            factRpm = (maxRpm - minRpm) * 0.08 + 0.3;
-            factAmp = (maxAmp - minAmp) * 0.12 + 0.3;
-            factPha = (maxPha - minPha) * 0.12 + 0.3;
-
-            maxRpm = maxRpm + factRpm;
-            minRpm = minRpm - factRpm;
-            maxAmp = maxAmp + factAmp;
-            minAmp = minAmp - factAmp;
-            maxPha = maxPha + factPha;
-            minPha = minPha - factPha;
-
-            dataObj = {
-                ampData: ampData,
-                phaData: phaData,
-                maxPha: maxPha,
-                minPha: minPha,
-                maxAmp: maxAmp,
-                minAmp: minAmp,
-                maxRpm: maxRpm,
-                minRpm: minRpm
-            };
-
-            return dataObj;
+            for (i = 1; i < _bodeData.length; i += 1) {
+                if (Number(_bodeData[i].velocity) === 0) {
+                    phaseValues[i] = 0;
+                    _boxPhaseChart = 0;
+                } else {
+                    step = _bodeData[i].phase - _bodeData[i - 1].phase;
+                    if (step > 180 && (_bodeData[i - 1].phase !== 0 || phaseValues[i] !== 0)) {
+                        _boxPhaseChart -= 1;
+                    } else if (step < -180 && (_bodeData[i - 1].phase !== 0 || phaseValues[i] !== 0)) {
+                        _boxPhaseChart += 1;
+                    } else if (step > -180 || step < 180) {
+                        _boxPhaseChart = _boxPhaseChart;
+                    }
+                    phaseValues[i] = Number(_bodeData[i].phase + 360 * _boxPhaseChart);
+                }
+                phaseReference = _phaReference < 0 ? _phaReference + 360 : _phaReference;
+                phaseCompensated = phaseValues[i] - phaseReference;
+                phaseCompensated = phaseCompensated < 0 ? phaseCompensated + 360 : phaseCompensated;
+                phaData.push([Number(_bodeData[i].velocity.toFixed(4)), phaseValues[i], phaseCompensated]);
+            }
+            return phaData;
         };
 
         /*
@@ -951,32 +1186,35 @@ BodeGraph = (function () {
          */
         _refresh = function () {
             var
-               // Objeto que contiene la informacion a graficar
-               dataObj;
+                // Valores X,Y a graficar
+                xyData,
+                // Texto a mostrar de forma dinamica
+                txt;
             
-            dataObj = _getDataForPhaseChart();
-            _graphRange.amplitude = { X: [dataObj.minRpm, dataObj.maxRpm], Y: [dataObj.minAmp, dataObj.maxAmp] };
+            txt = "<b style=\"color:" + _measurementPoint.Color + ";\">" + _measurementPoint.Name + "</b>&nbsp;";
+            txt += "Ang:&nbsp;" + parseAng(_measurementPoint.SensorAngle) + "&deg;" + ", ";
+            txt += "(" + _bodeData[0].timeStamp + " - " + _bodeData[_bodeData.length - 1].timeStamp + ")";
+            $("#point" + _measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
+            // Informacion de amplitud
+            xyData = _getAmplitudeData();
+            _graphRange.amplitude = _getValueRanges(xyData);
             _chartAmplitude.is_initial_draw_ = true;
             _chartAmplitude.updateOptions({
-                "file": dataObj.ampData,
+                "file": xyData,
                 "valueRange": _graphRange.amplitude.Y,
-                "dateWindow": _graphRange.amplitude.X
+                "dateWindow": _graphRange.amplitude.X,
+                "visibility": [_seriesVisibility[0].Visible, _seriesVisibility[1].Visible, _seriesVisibility[2].Visible]
             });
-            
-            _chartAmplitude.setVisibility(_flagsSeries.S1X.index, _flagsSeries.S1X.visible);
-            _chartPhase.setVisibility(_flagsSeries.S1X.index, _flagsSeries.S1X.visible);
-            _chartAmplitude.setVisibility(_flagsSeries.S1XComp.index, _flagsSeries.S1XComp.visible);
-            _chartPhase.setVisibility(_flagsSeries.S1XComp.index, _flagsSeries.S1XComp.visible);
-            _chartAmplitude.setVisibility(_flagsSeries.Direct.index, _flagsSeries.Direct.visible);
-
-            _graphRange.phase = { X: [dataObj.minRpm, dataObj.maxRpm], Y: [dataObj.maxPha * 1.1, dataObj.minPha * 0.9] };
+            // Informacion de fase
+            xyData = _getPhaseData();
+            _graphRange.phase = _getValueRanges(xyData, true);
             _chartPhase.is_initial_draw_ = true;
             _chartPhase.updateOptions({
-                "file": dataObj.phaData,
+                "file": xyData,
                 "valueRange": _graphRange.phase.Y,
-                "dateWindow": _graphRange.phase.X
+                "dateWindow": _graphRange.phase.X,
+                "visibility": [_seriesVisibility[0].Visible, _seriesVisibility[1].Visible]
             });
-            _createAnnotations();
             if (_mouseover) {
                 _chartAmplitude.mouseMove_(_lastMousemoveEvt);
                 _chartPhase.mouseMove_(_lastMousemoveEvt);
@@ -984,324 +1222,403 @@ BodeGraph = (function () {
                 DygraphOps.dispatchMouseMove(_chartAmplitude, 0, 0);
                 DygraphOps.dispatchMouseMove(_chartPhase, 0, 0);
             }
-
-            Dygraph.synchronize([_chartPhase, _chartAmplitude], {
-                zoom: true,
-                selection: true,
-                range: false
-            });
         };
 
-        _createAnnotations = function () {
+        _keyDownEventHandler = function (e) {
             var
-                annotationsPha,
-                annotationsAmp,
-                i;
+                chartArray,
+                i, j,
+                callback;
 
-            annotationsPha = [];
-            annotationsAmp = [];
-            switch (_annotationType) {
-                case 1: // Rpm
-                    for (i = 0; i < _annotations.length; i += 1) {
-                        if (_annotations[i]) {
-                            annotationsPha.push({
-                                series: _chartPhase.attributes_.labels_[0],
-                                x: _annotations[i].rpm,
-                                width: 30,
-                                height: 14,
-                                shortText: _annotations[i].rpm.toFixed(0),
-                                text: _annotations[i].rpm.toFixed(0),
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                            annotationsPha.push({
-                                series: _chartPhase.attributes_.labels_[1],
-                                x: _annotations[i].rpm,
-                                width: 30,
-                                height: 14,
-                                shortText: _annotations[i].rpm.toFixed(0),
-                                text: _annotations[i].rpm.toFixed(0),
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                            annotationsAmp.push({
-                                series: _chartAmplitude.attributes_.labels_[0],
-                                x: _annotations[i].rpm,
-                                width: 30,
-                                height: 14,
-                                shortText: _annotations[i].rpm.toFixed(0),
-                                text: _annotations[i].rpm.toFixed(0),
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                            annotationsAmp.push({
-                                series: _chartAmplitude.attributes_.labels_[1],
-                                x: _annotations[i].rpm,
-                                width: 30,
-                                height: 14,
-                                shortText: _annotations[i].rpm.toFixed(0),
-                                text: _annotations[i].rpm.toFixed(0),
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                            annotationsAmp.push({
-                                series: _chartAmplitude.attributes_.labels_[2],
-                                x: _annotations[i].rpm,
-                                width: 30,
-                                height: 14,
-                                shortText: _annotations[i].rpm.toFixed(0),
-                                text: _annotations[i].rpm.toFixed(0),
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
+            if (e.keyCode === 37 || e.keyCode === 39) {
+                if (_mouseover && _lastMousemoveEvt.isTrusted) {
+                    // Necesario para evitar la propagacion del evento keydown en otros graficos
+                    // (Principalmente ocurre con tiempo real).
+                    chartArray = [_chartAmplitude, _chartPhase];
+                    for (i = 0; i < chartArray.length; i += 1) {
+                        if (e.keyCode === 37) {
+                            chartArray[i].selectedRow_ -= 1;
+                        } else if (e.keyCode === 39) {
+                            chartArray[i].selectedRow_ += 1;
+                        }
+                        // Validacion de valores fuera de rango
+                        if (chartArray[i].selectedRow_ < 0) {
+                            chartArray[i].selectedRow_ = 0;
+                        }
+                        if (chartArray[i].selectedRow_ >= chartArray[i].file_.length) {
+                            chartArray[i].selectedRow_ = chartArray[i].file_.length - 1;
+                        }
+                        chartArray[i].lastRow_ = clone(chartArray[i].selectedRow_);
+                        chartArray[i].row = chartArray[i].lastRow_;
+                        chartArray[i].lastx_ = chartArray[i].file_[chartArray[i].row][0];
+                        for (j = 0; j < chartArray[i].selPoints_.length; j += 1) {
+                            chartArray[i].selPoints_[j] = chartArray[i].layout_.points[j][chartArray[i].row];
                         }
                     }
+                    _updateSelection(chartArray);
+                    callback = chartArray[0].getFunctionOption("highlightCallback");
+                    callback.call(chartArray[0], e, chartArray[0].lastx_, chartArray[0].selPoints_, chartArray[0].row, true);
+                }
+            }
+        };
+
+        _createTags = function () {
+            var
+                // Variable que contiene el contexto 2D del canvas del chart de amplitud
+                ampCtx,
+                // Variable que contiene el contexto 2D del canvas del chart de fase
+                phaCtx,
+                // Puntos visibles en la serie en el chart de amplitud
+                ampPoints,
+                // Puntos visibles en la serie en el chart de fase
+                phaPoints,
+                // Contadores
+                i, j,
+                // Valores X,Y sobre el canvas de cada punto visible en la serie
+                domx, domy,
+                // Area de graficacion
+                area,
+                // Texto a mostrar
+                txt,
+                // Ancho del texto
+                txtWidth,
+                // Alto del texto
+                txtHeight,
+                // Array de anotaciones visibles
+                showedTags;
+
+            // Validamos el tipo de tag seleccionado
+            if (_selectedTag.Value === TagTypes.None.Value) {
+                // No es necesario realizar ninguna accion adicional
+                return;
+            }
+            // Caso no se encuentre creado aun el chart, no realizar ninguna accion
+            if (!_chartAmplitude) {
+                return;
+            }
+            // Obtenemos el indice de la primer posicion en el array boundaryIds
+            for (i in _chartAmplitude.boundaryIds_) {
+                j = Number(i);
+                break;
+            }
+            // Validamos que los graficos tengan los mismos limites en el eje de las abscisas
+            if (_chartAmplitude.boundaryIds_[j][0] !== _chartPhase.boundaryIds_[j][0] ||
+                _chartAmplitude.boundaryIds_[j][1] !== _chartPhase.boundaryIds_[j][1]) {
+                return;
+            }
+            // Capturamos los contextos tanto del grafico de amplitud, como de fase
+            ampCtx = _chartAmplitude.hidden_ctx_;
+            phaCtx = _chartPhase.hidden_ctx_;
+            // Capturamos los puntos correspondientes a los puntos visibles tanto del grafico de amplitud, como de fase
+            ampPoints = _chartAmplitude.layout_.points[0];
+            phaPoints = _chartPhase.layout_.points[0];
+            // Creamos la primer etiqueta en el primero de todos los puntos
+            domx = ampPoints[0].canvasx;
+            domy = ampPoints[0].canvasy;
+            switch (_selectedTag.Value) {
+                case TagTypes.Velocity.Value:
+                    txt = _bodeData[ampPoints[0].idx].velocity.toFixed(0);
                     break;
-                case 2: // TimeStamp
-                    for (i = 0; i < _annotations.length; i += 1) {
-                        if (_annotations[i]) {
-                            annotationsPha.push({
-                                series: _chartPhase.attributes_.labels_[0],
-                                x: _annotations[i].rpm,
-                                width: 32,
-                                height: 14,
-                                shortText: _annotations[i].time.split(" ")[1],
-                                text: _annotations[i].time,
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                            annotationsPha.push({
-                                series: _chartPhase.attributes_.labels_[1],
-                                x: _annotations[i].rpm,
-                                width: 32,
-                                height: 14,
-                                shortText: _annotations[i].time.split(" ")[1],
-                                text: _annotations[i].time,
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                            annotationsAmp.push({
-                                series: _chartAmplitude.attributes_.labels_[0],
-                                x: _annotations[i].rpm,
-                                width: 32,
-                                height: 14,
-                                shortText: _annotations[i].time.split(" ")[1],
-                                text: _annotations[i].time,
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                            annotationsAmp.push({
-                                series: _chartAmplitude.attributes_.labels_[1],
-                                x: _annotations[i].rpm,
-                                width: 32,
-                                height: 14,
-                                shortText: _annotations[i].time.split(" ")[1],
-                                text: _annotations[i].time,
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                            annotationsAmp.push({
-                                series: _chartAmplitude.attributes_.labels_[2],
-                                x: _annotations[i].rpm,
-                                width: 32,
-                                height: 14,
-                                shortText: _annotations[i].time.split(" ")[1],
-                                text: _annotations[i].time,
-                                tickHeight: 0,
-                                cssClass: "rpmChangesAnnotation"
-                            });
-                        }
-                    }
+                case TagTypes.TimeStamp.Value:
+                    txt = _bodeData[ampPoints[0].idx].timeStamp.split(" ")[1];
                     break;
                 default:
-                    break;
+                    console.log("Tipo de anotación o label desconocido.");
             }
-            _chartAmplitude.setAnnotations(annotationsAmp);
-            _chartPhase.setAnnotations(annotationsPha);
+            area = _chartAmplitude.plotter_.area;
+            // Definir los valores de stroke & fill
+            ampCtx.strokeStyle = "#000000";
+            ampCtx.fillStyle = "#000000";
+            phaCtx.strokeStyle = "#000000";
+            phaCtx.fillStyle = "#000000";
+            txtWidth = ampCtx.measureText(txt).width;
+            txtHeight = parseInt(ampCtx.font) * 1.0;
+            showedTags = [];
+            ampCtx.textAlign = "left";
+            phaCtx.textAlign = "left";
+            if ((domx) > (area.x) && (domx + txtWidth) < (area.x + area.w)) {
+                ampCtx.beginPath();
+                if (area.y > (domy - 3 * txtHeight / 2)) {
+                    ampCtx.strokeText(txt, domx, domy + 3 * txtHeight / 2);
+                    showedTags.push({
+                        xMin: domx - 5,
+                        xMax: domx + 5 + txtWidth,
+                        yMin: domy + txtHeight / 2 - 5,
+                        yMax: domy + 3 * txtHeight / 2 + 5
+                    });
+                } else {
+                    ampCtx.strokeText(txt, domx, domy - txtHeight / 2);
+                    showedTags.push({
+                        xMin: domx - 5,
+                        xMax: domx + 5 + txtWidth,
+                        yMin: domy - 3 * txtHeight / 2 - 5,
+                        yMax: domy - txtHeight / 2 + 5
+                    });
+                }
+                ampCtx.arc(domx, domy, 2, 0, 2 * Math.PI, false);
+                ampCtx.fill();
+                ampCtx.stroke();
+                ampCtx.closePath();
+                // Fase
+                domx = phaPoints[0].canvasx;
+                domy = phaPoints[0].canvasy;
+                phaCtx.beginPath();
+                if (_chartPhase.plotter_.area.y > (domy - 3 * txtHeight / 2)) {
+                    phaCtx.strokeText(txt, domx, domy + 3 * txtHeight / 2);
+                } else {
+                    phaCtx.strokeText(txt, domx, domy - txtHeight / 2);
+                }
+                phaCtx.arc(domx, domy, 2, 0, 2 * Math.PI, false);
+                phaCtx.fill();
+                phaCtx.stroke();
+                phaCtx.closePath();
+            }
+            // Recorrer todos los puntos para determinar la separacion de los labels basado en la distancia en Y de los puntos
+            loop1:
+                for (i = 0; i < ampPoints.length; i += 1) {
+                    domx = ampPoints[i].canvasx;
+                    domy = ampPoints[i].canvasy;
+                    switch (_selectedTag.Value) {
+                        case TagTypes.Velocity.Value:
+                            txt = _bodeData[ampPoints[i].idx].velocity.toFixed(0);
+                            break;
+                        case TagTypes.TimeStamp.Value:
+                            txt = _bodeData[ampPoints[i].idx].timeStamp.split(" ")[1];
+                            break;
+                    }
+                    txtWidth = ampCtx.measureText(txt).width;
+                    if ((domx) < (area.x) && (domx + txtWidth) > (area.x + area.w)) {
+                        continue loop1;
+                    }
+                    // Se valida si la etiqueta se debe mostrar o no
+                    loop2:
+                        for (j = 0; j < showedTags.length; j += 1) {
+                            if (domx < showedTags[j].xMax) {
+                                continue loop1;
+                            }
+                        }
+                    ampCtx.beginPath();
+                    if (area.y > (domy - 3 * txtHeight / 2)) {
+                        ampCtx.strokeText(txt, domx, domy + 3 * txtHeight / 2);
+                        showedTags.push({
+                            xMin: domx - 5,
+                            xMax: domx + 5 + txtWidth,
+                            yMin: domy + txtHeight / 2 - 5,
+                            yMax: domy + 3 * txtHeight / 2 + 5
+                        });
+                    } else {
+                        ampCtx.strokeText(txt, domx, domy - txtHeight / 2);
+                        showedTags.push({
+                            xMin: domx - 5,
+                            xMax: domx + 5 + txtWidth,
+                            yMin: domy - 3 * txtHeight / 2 - 5,
+                            yMax: domy - txtHeight / 2 + 5
+                        });
+                    }
+                    ampCtx.arc(domx, domy, 2, 0, 2 * Math.PI, false);
+                    ampCtx.fill();
+                    ampCtx.stroke();
+                    ampCtx.closePath();
+                    // Fase
+                    domx = phaPoints[i].canvasx;
+                    domy = phaPoints[i].canvasy;
+                    phaCtx.beginPath();
+                    if (_chartPhase.plotter_.area.y > (domy - 3 * txtHeight / 2)) {
+                        phaCtx.strokeText(txt, domx, domy + 3 * txtHeight / 2);
+                    } else {
+                        phaCtx.strokeText(txt, domx, domy - txtHeight / 2);
+                    }
+                    phaCtx.arc(domx, domy, 2, 0, 2 * Math.PI, false);
+                    phaCtx.fill();
+                    phaCtx.stroke();
+                    phaCtx.closePath();
+                }
         };
 
         /*
-        * Muestra-oculta las series 1X - 1X Compensada - Directa
+        * Mostrar u ocultar las diferentes series de la grafica
         */
-        _showHideSeries = function (navHeight) {
+        _showHideSeries = function () {
             var
-                // Ancho del DIV padre
-                parentWidth,
-                // Ancho del widget
                 widgetWidth,
-                // Posicion del widget
                 widgetPosition,
-                // Definicion de ancho y alto del dialgo
                 dialogSize,
-                // Posicionamiento del dialogo
                 dialogPosition,
-                // Contadores
-                 i,
-                // Listado completo de puntos
-                allSeriesList;
+                configContainer;
 
-            parentWidth = $("#" + _container.id).parents(".grid-stack-item").parent().width() - 22;
             widgetWidth = $("#" + _container.id).width();
             widgetPosition = $("#" + _container.id).parents(".grid-stack-item").first().position();
-            dialogSize = { width: 250, height: "auto" };
-            dialogPosition = {
-                X: widgetPosition.left - (parentWidth - widgetWidth) / 2 + dialogSize.width / 2,
-                Y: widgetPosition.top - navHeight
-            };
-            $("#bodeSeriesVisibilityAreaDialog").css("display", "block");
-            $("#bodeSeriesVisibility").ejDialog({
+            dialogSize = { width: 350, height: 150 };
+            dialogPosition = { top: widgetPosition.top + 10, left: (widgetPosition.left + (widgetWidth / 2) - (dialogSize.width / 2)) };
+            configContainer = $("#graphConfigAreaDialog").clone();
+            configContainer.css("display", "block");
+            configContainer[0].id = _widgetId + "bodeConfig";
+            $("#awContainer").append(configContainer);
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div>div").append("<div class=\"col-md-12\"><ul id=\"seriesCheckList" +
+                _widgetId + "\"></ul></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group zeroMarginBottom\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div").append("<div style=\"text-align: center;\"></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div>div:nth-child(1)").append("\n<a id=\"btnSaveVisibility" +
+              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnSaveVisibility" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div>div:nth-child(1)").append("\n<a id=\"btnCancelVisibility" +
+              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnCancelVisibility" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
+            $("#seriesCheckList" + _widgetId).ejListBox({
+                dataSource: _seriesVisibility,
+                fields: { id: "Id", text: "Name", value: "Id", checkBy: "Visible" },
+                height: "auto",
+                showCheckbox: true,
+                checkChange: function (args) {
+                    var
+                        idxList,
+                        i;
+
+                    idxList = [];
+                    if (args.data.Id === 0) {
+                        _seriesVisibility[0].Visible = args.isChecked;
+                        _seriesVisibility[1].Visible = !args.isChecked;
+                    } else if (args.data.Id === 1) {
+                        _seriesVisibility[1].Visible = args.isChecked;
+                        _seriesVisibility[0].Visible = !args.isChecked;
+                    } else {
+                        _seriesVisibility[2].Visible = args.isChecked;
+                    }
+                    for (i = 0; i < _seriesVisibility.length; i += 1) {
+                        if (_seriesVisibility[i].Visible) {
+                            $("#seriesCheckList" + _widgetId).ejListBox("checkItemByIndex", i);
+                            $("#seriesCheckList" + _widgetId).ejListBox("getItemByIndex", i).data.Visible = true;
+                        } else {
+                            $("#seriesCheckList" + _widgetId).ejListBox("uncheckItemByIndex", i);
+                            $("#seriesCheckList" + _widgetId).ejListBox("getItemByIndex", i).data.Visible = false;
+                        }
+                    }
+                }
+            });
+            $("#" + configContainer[0].id + " > div.graphConfigArea").ejDialog({
                 enableResize: false,
-                width: dialogSize.width,
-                height: dialogSize.height,
-                zIndex: 20000,
+                width: "auto",
+                height: "auto",
+                zIndex: 2000,
                 close: function () {
                     // Destruir objeto Listbox Syncfusion
-                    $("#seriesCheckList").ejListBox("destroy");
+                    $("#seriesCheckList" + _widgetId).ejListBox("destroy");
                     // Desasociar el evento clic
-                    $('#bodeSeriesVisibilityAreaDialog #btnSave').off("click");
-                    $('#bodeSeriesVisibilityAreaDialog #btnCancel').off("click");
-                    $("#bodeSeriesVisibilityAreaDialog").css("display", "none");
+                    $("#btnCancelVisibility" + _widgetId).off("click");
+                    $("#btnSaveVisibility" + _widgetId).off("click");
+                    $("#" + configContainer[0].id).remove();
                 },
-                open: function () {
-                    /*
-                    if (_flagsSeries.S1X) {
-                        $("#seriesCheckList").ejListBox("checkItemByIndex", 1);
-                    } else {
-                        $("#seriesCheckList").ejListBox("uncheckItemByIndex", 1);
-                    }
-                    if (_flagsSeries.S1XComp) {
-                        $("#seriesCheckList").ejListBox("checkItemByIndex", 2);
-                    } else {
-                        $("#seriesCheckList").ejListBox("uncheckItemByIndex", 2);
-                    }*/
-                },
-                content: "#bodeSeriesVisibilityAreaDialog",
+                content: "#" + configContainer[0].id,
                 tooltip: {
                     close: "Cerrar"
                 },
                 actionButtons: ["close"],
-                position: dialogPosition
-            });
-
-            allSeriesList = [
-            { Id: 1, Name: "S1X", Text: "1X", Visible: _flagsSeries.S1X.visible },
-            { Id: 2, Name: "S1XComp", Text: "1X Compensada", Visible: _flagsSeries.S1XComp.visible },
-            { Id: 3, Name: "Direct", Text: "Directa", Visible: _flagsSeries.Direct.visible }];
-            //allSeriesList.pushArray(_filteredMeasurementPoints);
-            $("#seriesCheckList").ejListBox({
-                dataSource: allSeriesList,
-                fields: { id: "Id", text: "Text", name: "Name", value: "Id", checkBy: "Visible" },
-                height: "100",
-                showCheckbox: true,
-                checkChange: function (args) {
-                    console.log(args);
-                    _flagsSeries[args.data.Name].visible = args.isChecked;
-                    _refresh();
+                position: {
+                    X: dialogPosition.left,
+                    Y: dialogPosition.top
                 }
             });
-
             // Abrir el dialogo
-            $("#bodeSeriesVisibility").ejDialog("open");
+            $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("open");
             // Boton cancelar
-            $("#bodeSeriesVisibilityAreaDialog #btnCancel").click(function (e) {
+            $("#btnCancelVisibility" + _widgetId).click(function (e) {
                 e.preventDefault();
-                $("#bodeSeriesVisibility").ejDialog("close");
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
             });
-            // Boton aceptar
-            $("#bodeSeriesVisibilityAreaDialog #btnSave").click(function (e) {
+            // Botono aceptar
+            $("#btnSaveVisibility" + _widgetId).click(function (e) {
+                var
+                    visibleCheckList;
+
                 e.preventDefault();
+                for (i = 0; i < _seriesVisibility.length; i += 1) {
+                    _seriesVisibility[i].Visible = false;
+                }
+                visibleCheckList = $("#seriesCheckList" + _widgetId).ejListBox("getCheckedItems");
+                for (i = 0; i < visibleCheckList.length; i += 1) {
+                    _seriesVisibility[visibleCheckList[i].index].Visible = true;
+                }
                 _refresh();
-
-                $("#bodeSeriesVisibility").ejDialog("close");
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
             });
         };
 
         /*
-        * Actualiza los valores a graficar
+        * Agrupar los diferentes estados de velocidad
         */
-        _resolveVelocityStates = function () {
+        _groupVelocityStates = function () {
+            var
+                velocityArray,
+                maxVelocity,
+                stable,
+                startUp,
+                shutDown,
+                i;
 
-            var velocityState,
-                velArray,
-                stateArray,
-                prevVel,
-                actualVel;
-
-            stateArray = [null];
-            prevVel = _bodeData[0].velocity;
-
-            for (var i = 1; i < _bodeData.length; i++) {
-                actualVel = _bodeData[i].velocity;
-                
-                if (actualVel < prevVel * 1.02 && actualVel > prevVel * 0.98) {
-                    stateArray.push(0);
-                    if (stateArray[i] != stateArray[i - 1]) {
-                        _arraysVelocityState.push({ type: "nominal", index: i} );
-                    }                 
-                } else if (actualVel < prevVel ) {
-                    stateArray.push(-1);
-                    if (stateArray[i] != stateArray[i - 1]) {
-                        _arraysVelocityState.push({ type: "stop", index: i });
+            velocityArray = arrayColumn(_bodeData, "velocity");
+            maxVelocity = velocityArray.max();
+            stable = [];
+            startUp = [];
+            shutDown = [];
+            for (i = 1; i < velocityArray.length; i++) {
+                if ((velocityArray[i - 1] >= (maxVelocity - 10))) {
+                    stable.push(_bodeData[i - 1]);
+                    if (i === velocityArray.length - 1) {
+                        stable.push(_bodeData[i]);
                     }
-                } else if (actualVel > prevVel) {
-                    stateArray.push(1);
-                    if (stateArray[i] != stateArray[i - 1]) {
-                        _arraysVelocityState.push({ type: "start", index: i });
+                } else {
+                    if (velocityArray[i - 1] < velocityArray[i]) {
+                        startUp.push(_bodeData[i - 1]);
+                        if (i === velocityArray.length - 1) {
+                            startUp.push(_bodeData[i]);
+                        }
+                    } else if (velocityArray[i - 1] > velocityArray[i]) {
+                        shutDown.push(_bodeData[i - 1]);
+                        if (i === velocityArray.length - 1) {
+                            shutDown.push(_bodeData[i]);
+                        }
                     }
                 }
-                prevVel = _bodeData[i].velocity;
             }
-            _arraysVelocityState[0].index = 0;
-            stateArray[0] = stateArray[1] = stateArray[2];
-            _orderBodeArray();
+            // Ordenamos de forma ascendente con base a la velocidad
+            _bodeData = ej.DataManager(startUp).executeLocal(
+                    new ej.Query().sortBy("velocity", ej.sortOrder.Ascending, false));
+            // El estado estable no se ordena de por velocidad, se deja el orden de estampa de tiempo
+            _bodeData.pushArray(stable);
+            // Ordenamos de forma descendente con base a la velocidad
+            _bodeData.pushArray(ej.DataManager(shutDown).executeLocal(
+                    new ej.Query().sortBy("velocity", ej.sortOrder.Descending, false)));
         };
 
-        /*
-        * Ordena los valores de velocidad, depensiendo si es un arranque, parada, o está en estado nominal, y elimina las velocidades repetidas
-        */
-        _orderBodeArray = function () {
+        _subscribeToResizeChart = function () {
+            _resizeChartSubscription = PublisherSubscriber.subscribe("/resizechart", null, function () {
+                var
+                    // Ancho y alto actual del grid
+                    h, w,
+                    // Referencia global de gridStack
+                    gridStack,
+                    // Referencia al grid actual
+                    grid;
 
-            var i, j,
-                tempArray,
-                newArray,
-                tempBodeData;
+                gridStack = $(".grid-stack").data("gridstack");
+                grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
+                h = parseInt(grid[0].attributes["data-gs-height"].value);
+                w = parseInt(grid[0].attributes["data-gs-width"].value);
 
-            tempBodeData = [];
-            newArray = [];
-
-            for (i = 0; i < _arraysVelocityState.length; i++) {
-                if (i < _arraysVelocityState.length - 1) {
-                    tempArray = _bodeData.slice(_arraysVelocityState[i].index, _arraysVelocityState[i + 1].index);
-                    
-                } else {
-                    tempArray = _bodeData.slice(_arraysVelocityState[i].index, _bodeData.length - 1);
-                }
-                if (_arraysVelocityState[i].type == "start" || _arraysVelocityState[i].type == "nominal") {
-                    tempArray.sort(function (a, b) {
-                        return a.velocity - b.velocity;
-                    });
-                } else {
-                    tempArray.sort(function (a, b) {
-                        return b.velocity - a.velocity;
-                    });
-                }
-                for (j = 1; j < tempArray.length; j++) {
-                    if (tempArray[j].velocity === tempArray[j - 1].velocity) {
-                        tempArray = tempArray.splice(j, 1);
-                    }
-                }
-                newArray.push(tempArray);
-            }
-
-            for (i = 0; i < newArray.length; i++) {
-                for (j = 0; j < newArray[i].length; j++) {
-                    if (newArray[i][j].velocity) {
-                        tempBodeData.push(newArray[i][j]);
-                    }
-                }
-            }
-
-            _bodeData = tempBodeData;
+                gridStack.batchUpdate();
+                gridStack.resize(grid, 2, 2);
+                gridStack.commit();
+                _chartAmplitude.resize();
+                _chartPhase.resize();
+                gridStack.batchUpdate();
+                gridStack.resize(grid, w, h);
+                gridStack.commit();
+                setTimeout(function () {
+                    _chartAmplitude.resize();
+                    _chartPhase.resize();
+                }, 50);
+            });
         };
 
         this.Show = function (measurementPointId, currentColor, timeStampArray, rpmPositions) {
@@ -1318,6 +1635,8 @@ BodeGraph = (function () {
                 angularReference,
                 // Menu de opciones para la grafica
                 settingsMenu,
+                // Sub-menu de opciones para los menus que requieren sub-menus asociados
+                settingsSubmenu,
                 // Listado de subVariables necesarias para actualizar los datos (aplica unicamente para RT)
                 subVariableIdList,
                 // Concatena las unidades configuradas para la SubVariable del punto de medicion en X con el valor global y su tipo de medida
@@ -1385,11 +1704,11 @@ BodeGraph = (function () {
                     break;
             }
             _subvariables.overall.Units += overallUnits;
-            _msColor = currentColor;
+            _measurementPoint.Color = currentColor;
             // Agregamos los items al menu de opciones para la grafica.
             settingsMenu = [];
-            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Series", "showSeries"));
-            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Ver etiquetas...", "showTagsBode"));
+            _createTagMenu(settingsMenu, settingsSubmenu);
+            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Series", "showSeries" + _widgetId));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Exportar imagen", "saveImageBode" + _widgetId));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Exportar a Excel", "exportToExcel" + _widgetId));
 
@@ -1408,7 +1727,7 @@ BodeGraph = (function () {
                 timeMode: 1,
                 asset: _assetData.Name,
                 seriesName: _seriesName,
-                measurementPointList: [_measurementPoint.Name.replace(/\s/g, "")],
+                measurementPointList: [_measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "")],
                 pause: false,
                 settingsMenu: settingsMenu,
                 onSettingsMenuItemClick: _onSettingsMenuItemClick,
@@ -1417,27 +1736,55 @@ BodeGraph = (function () {
                 },
                 onMove: function () {
                     var
-                            grid;
+                        grid;
 
                     _movableGrid = !_movableGrid;
                     grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                     $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
             });
 
-            labelAmp = ["RPM", "Amplitud", "Amplitud Compensada", _subvariables.overall.Name];
-            labelPha = ["RPM", "Fase", "Fase Compensada"];
-
+            labelAmp = ["RPM", "Amplitud", "AmplitudCompensada", _subvariables.overall.Name];
+            labelPha = ["RPM", "Fase", "FaseCompensada"];
             // Abrir AspectrogramWidget.
             _aWidget.open();
             // Construir y mostrar grafica.
             _buildGraph(labelAmp, labelPha, timeStampArray, rpmPositions);
         };
 
+        _createTagMenu = function (settingsMenu, settingsSubmenu) {
+            settingsSubmenu = [];
+            settingsSubmenu.push(AspectrogramWidget.createSettingsMenuElement(
+                    "item",
+                    "<i class=\"fa fa-check-square\" aria-hidden=\"true\"></i> " + TagTypes.None.Text,
+                    TagTypes.None.Text + _widgetId
+                ));
+            settingsSubmenu.push(AspectrogramWidget.createSettingsMenuElement(
+                "item",
+                "<i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> " + TagTypes.Velocity.Text,
+                TagTypes.Velocity.Text + _widgetId
+            ));
+            settingsSubmenu.push(AspectrogramWidget.createSettingsMenuElement(
+                "item",
+                "<i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> " + TagTypes.TimeStamp.Text,
+                TagTypes.TimeStamp.Text + _widgetId
+            ));
+            settingsMenu.push(
+                AspectrogramWidget.createSettingsMenuElement("submenu", "Ver etiquetas", "showTags" + _widgetId, settingsSubmenu));
+        };
+
         this.Close = function () {
             var
                 el;
 
+            // Remover el evento manejador de KeyDown
+            document.body.removeEventListener("keydown", _keyDownEventHandler);
             if (_playerSubscription) {
                 // Eliminar suscripcion de reproductor.
                 _playerSubscription.remove();

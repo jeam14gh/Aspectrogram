@@ -121,12 +121,12 @@
         /// <summary>
         /// Actualiza un punto de medición incluyendo la propiedad ParameterValues
         /// </summary>
-        public void UpdateIncludingParameterValues(MdVariableExtension mdVariable)
+        public MdVariableExtension UpdateIncludingParameterValues(MdVariableExtension mdVariable)
         {
             string postBody = JsonConvert.SerializeObject(mdVariable);
             StringContent content = new StringContent(postBody, Encoding.UTF8, "application/json");
             string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
-            HttpPost<string>(path, Url, _userState, content);
+            return HttpPost<MdVariableExtension>(path, Url, _userState, content);
         }
 
         /// <summary>
@@ -165,12 +165,12 @@
         /// <summary>
         /// Calcula los parametros M y B de cada punto de medición a partir de una lista obtenida en la configuración de canales de un Asdaq
         /// </summary>
-        public void CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto)
+        public List<MdVariableExtension> CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto)
         {
             string postBody = JsonConvert.SerializeObject(mdVariablesDto);
             StringContent content = new StringContent(postBody, Encoding.UTF8, "application/json");
             string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
-            HttpPost<string>(path, Properties.UrlLocalApi, _userState, content);
+            return HttpPost<List<MdVariableExtension>>(path, Properties.UrlLocalApi, _userState, content);
         }
 
         /// <summary>
@@ -187,12 +187,12 @@
         /// <summary>
         /// Actualiza una lista de puntos de medición
         /// </summary>
-        public void UpdatePoints(List<MdVariableExtension> points)
+        public List<MdVariableExtension> UpdatePoints(List<MdVariableExtension> points)
         {
             string postBody = JsonConvert.SerializeObject(points);
             StringContent content = new StringContent(postBody, Encoding.UTF8, "application/json");
             string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
-            HttpPost<string>(path, Url, _userState, content);
+            return HttpPost<List<MdVariableExtension>>(path, Url, _userState, content);
         }
 
         /// <summary>

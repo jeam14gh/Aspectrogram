@@ -934,6 +934,21 @@
             Retorna todas las referencias angulares
             </summary>
         </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetAllBearingFaultFrequency">
+            <summary>
+            Retorna todo el listado de rodamientos
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.GetUserPreferences">
+            <summary>
+            Retorna la configuracion
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.WebSite.Controllers.HomeController.UpdateUserPreferences(Amaq.Acloud.Aspectrogram.Entities.Dtos.UserPreferences)">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:Amaq.Acloud.Aspectrogram.WebSite.Models.Business.AssetExtensionBl">
             <summary>
             Logica de negocio AssetExtension
@@ -1271,6 +1286,11 @@
             Controlador Aconditioner
             </summary>
         </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.BearingFaultFrequencyController">
+            <summary>
+            Controlador de Frecuencia de falla del rodamiento
+            </summary>
+        </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.RecordedEventController">
             <summary>
             Controlador Api RecordedEvent
@@ -1311,6 +1331,16 @@
             <param name="overallPackageId">Id del paquete de valores globales a obtener</param>
             <param name="waveformPackageId">Id del paquete de formas de onda a obtener</param>
             <returns></returns>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.UserConfigurationExtensionController">
+            <summary>
+            Controlador UserConfiguration
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Controllers.Api.Core.UserConfigurationExtensionController.UpdateByUser(Amaq.Acloud.Entities.Core.UserConfiguration)">
+            <summary>
+            
+            </summary>
         </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Controllers.Api.LocationController">
             <summary>
@@ -1741,6 +1771,16 @@
             <param name="atrId">Id de atr</param>
             <param name="subVariableIdList">Lista de id de subVariables a eliminar de la lista de solicitudes tiempo real</param>
         </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.BearingFaultFrequencyBl">
+            <summary>
+            Lógica de negocio BearingFaultFrequency
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.BearingFaultFrequencyBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.LocationBl">
             <summary>
             Logica de negocio LocationExtension
@@ -1853,6 +1893,9 @@
             <summary>
             Calcula los parametros M y B de cada punto de medición a partir de una lista obtenida en la configuración de canales de un Asdaq
             </summary>
+            <param name="mdVariablesDto"></param>
+            <param name="processType">Nos indica el tipo de proceso que se realiazó previamente</param>
+            <returns>Todos los puntos de medición</returns>
         </member>
         <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.UpdateAiMeasureMethodOfMB(System.Collections.Generic.List{System.String})">
             <summary>
@@ -1897,6 +1940,11 @@
         <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.RegisterInLog(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension,System.Boolean,System.String,System.String)">
             <summary>
             Registra todos lo errores de cálculos respecto a la M y B de un punto de medición en un archivo de texto plano.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.MdVariableExtensionBl.CalculateMB(Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension)">
+            <summary>
+            Retorna el objeto AiMeasureMethod con sus parámetros M y B cálculados de un punto de medición.
             </summary>
         </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.NodeBl">
@@ -2156,7 +2204,7 @@
         </member>
         <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.UpdateMany(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension})">
             <summary>
-            Actualiza una lista de SubVariables
+            Actualiza y retorna una lista de SubVariables
             </summary>
         </member>
         <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.DeleteById(System.String)">
@@ -2191,6 +2239,21 @@
         <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.SubVariableExtensionBl.UpdateDirect(Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension)">
             <summary>
             Actualiza la subvariable de Directa
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.UserConfigurationExtensionBl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.UserConfigurationExtensionBl.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Business.UserConfigurationExtensionBl.UpdateByUser(Amaq.Acloud.Entities.Core.UserConfiguration)">
+            <summary>
+            
             </summary>
         </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Models.Business.XYMeasurementPointPairBl">
@@ -2410,6 +2473,16 @@
             <param name="atrId">Id de asdaq</param>
             <param name="subVariableIdList">Lista de id de subVariables a eliminar de la lista de solicitudes tiempo real</param>
         </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.BearingFaultFrequencyRepository">
+            <summary>
+            Repositorio BearingFaultFrequency
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.BearingFaultFrequencyRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
         <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.LocationRepository.#ctor(System.String)">
             <summary>
             Selecciona como Url de conexion la base de datos indicada por parametro.
@@ -2596,6 +2669,21 @@
         <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.SubVariableExtensionRepository.UpdateDirect(Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension,System.Collections.Generic.List{Amaq.Acloud.Entities.ValueObjects.Band})">
             <summary>
             Actualiza la subvariable de Directa 
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.UserConfigurationExtensionRepository">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.UserConfigurationExtensionRepository.#ctor(System.String)">
+            <summary>
+            Selecciona como Url de conexion la base de datos indicada por parametro.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Models.Data.UserConfigurationExtensionRepository.UpdateByUser(Amaq.Acloud.Entities.Core.UserConfiguration)">
+            <summary>
+            
             </summary>
         </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Models.Data.XYMeasurementPointPairRepository">

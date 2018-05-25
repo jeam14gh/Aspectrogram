@@ -59,6 +59,7 @@ CustomContextMenu = (function () {
             $(ulEl).append("<li id=\"menuOrbit" + _rnd + "\" class=\"menuOrbit\">Órbita</li>");
             $(ulEl).append("<li id=\"menuBarChart" + _rnd + "\" class=\"menuBarChart\">Gráfico de barras</li>");
             $(ulEl).append("<li id=\"menuViewer3D" + _rnd + "\" class=\"menuViewer3D\">Visor 3D</li>");
+            //$(ulEl).append("<li id=\"menuTest" + _rnd + "\" class=\"menuTest\">Test</li>");
             
             $(_containerByTimeStamp).append(ulEl);
             _currentMeasurementPoint = document.createElement("input");
@@ -110,6 +111,10 @@ CustomContextMenu = (function () {
                             graph = new App3d(1, 12, 6, false, assetData.Id, "Viewer");
                             graph.Show("Visor 3D", $(_currentMeasurementPoint).val(), $(_currentTimeStamp).val());
                             break;
+                        case "menuTest" +_rnd:
+                            graph = new TestGraph(1);
+                            graph.Show($(_currentMeasurementPoint).val(), $(_currentTimeStamp).val());
+                            break;
                     }
                     // Cerramos el menu contextual
                     $(_containerByTimeStamp).css("display", "none");
@@ -149,9 +154,9 @@ CustomContextMenu = (function () {
             $(ulEl).append("<li id=\"amplitudePhasePlot" + _rnd + "\" class=\"amplitudePhasePlotMenu\">Amplitud-Fase 1X</li>");
             $(ulEl).append("<li id=\"cascadePlot" + _rnd + "\" class=\"cascadePlotMenu\">Cascada</li>");
             $(ulEl).append("<li id=\"fSCascadePlot" + _rnd + "\" class=\"fSCascadePlotMenu\">Cascada de Órbita</li>");
-            $(ulEl).append("<li id=\"cascadeRPMPlot" + _rnd + "\" class=\"cascadeRPMPlotMenu\">Cascada RPM</li>");
-            $(ulEl).append("<li id=\"fSCascadeRPMPlot" + _rnd + "\" class=\"fSCascadeRPMPlotMenu\">Cascada de Órbita RPM</li>");
-            $(ulEl).append("<li id=\"scatterPlot" + _rnd + "\" class=\"scatterPlotMenu\">Dispersión</li>");
+            //$(ulEl).append("<li id=\"cascadeRPMPlot" + _rnd + "\" class=\"cascadeRPMPlotMenu\">Cascada RPM</li>");
+            //$(ulEl).append("<li id=\"fSCascadeRPMPlot" + _rnd + "\" class=\"fSCascadeRPMPlotMenu\">Cascada de Órbita RPM</li>");
+            //$(ulEl).append("<li id=\"scatterPlot" + _rnd + "\" class=\"scatterPlotMenu\">Dispersión</li>");
 
             $(_containerByRange).append(ulEl);
             _currentMeasurementPoint = document.createElement("input");
@@ -176,17 +181,17 @@ CustomContextMenu = (function () {
                             break;
                         case "bodePlot" + _rnd:
                             currentColor = $(_currentMeasurementPoint).attr("currentColor");
-                            graph = new BodeGraph(6, 4, true);
+                            graph = new BodeGraph(12, 5, true);
                             graph.Show($(_currentMeasurementPoint).val(), currentColor, _historicalRange, _rpmPositions);
                             break;                      
                         case "polarPlot" + _rnd:
                             currentColor = $(_currentMeasurementPoint).attr("currentColor");
-                            graph = new PolarGraph(5, 5, true);
+                            graph = new PolarGraph(6, 6, true);
                             graph.Show($(_currentMeasurementPoint).val(), currentColor, _historicalRange, _rpmPositions);
                             break;
                         case "amplitudePhasePlot" +_rnd:
                             currentColor = $(_currentMeasurementPoint).attr("currentColor");
-                            graph = new AmplitudePhaseGraph(1, 6, 4, true);
+                            graph = new AmplitudePhaseGraph(1, 12, 5, true);
                             graph.Show($(_currentMeasurementPoint).val(), currentColor, _historicalRange, _rpmPositions);
                             break;
                         case "fSCascadePlot" + _rnd:

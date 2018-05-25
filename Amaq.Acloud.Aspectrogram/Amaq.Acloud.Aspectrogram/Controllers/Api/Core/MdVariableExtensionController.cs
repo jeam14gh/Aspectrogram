@@ -88,8 +88,7 @@
         [Roles("Admin")]
         public async Task<IHttpActionResult> UpdateIncludingParameterValues(MdVariableExtension mdVariable)
         {
-            new MdVariableExtensionBl(CoreDbUrl).UpdateIncludingParameterValues(mdVariable);
-            return await Task.FromResult(Ok());
+            return await Task.FromResult(Ok(new MdVariableExtensionBl(CoreDbUrl).UpdateIncludingParameterValues(mdVariable)));
         }
 
         /// <summary>
@@ -129,10 +128,10 @@
         /// </summary>
         [HttpPost]
         [Roles("Admin")]
-        public async Task<IHttpActionResult> CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto)
+        public async Task<List<MdVariableExtension>> CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto)
         {
-            new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesDto,"Relación punto de medición - canal Asdaq");
-            return await Task.FromResult(Ok());
+            //new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesDto,"Relación punto de medición - canal Asdaq");
+            return await Task.FromResult<List<MdVariableExtension>>(new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesDto, "Relación punto de medición - canal Asdaq"));
         }
 
         /// <summary>
@@ -153,15 +152,14 @@
         [Roles("Admin")]
         public IHttpActionResult UpdatePoints(List<MdVariableExtension> points)
         {
-            new MdVariableExtensionBl(CoreDbUrl).UpdatePoints(points);
-            return Ok();
+            return Ok(new MdVariableExtensionBl(CoreDbUrl).UpdatePoints(points));
         }
 
         /// <summary>
         /// Retorna todas las referencias angulares
         /// </summary>
         [HttpGet]
-        [Roles("Admin")]
+        //[Roles("Admin")]
         public IHttpActionResult GetAllReferenceAngular()
         {
             return Ok(new MdVariableExtensionBl(CoreDbUrl).GetAllReferenceAngular());

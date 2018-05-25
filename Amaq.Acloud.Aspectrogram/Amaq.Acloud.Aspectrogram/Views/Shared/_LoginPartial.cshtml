@@ -4,7 +4,7 @@
     using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
     {
         @Html.AntiForgeryToken()
-
+        <!--
         <ul class="nav navbar-nav navbar-left">
             <li class="dropdown">
                 <a data-toggle="dropdown" class="dropdown-toggle">
@@ -15,25 +15,47 @@
                 </ul>
             </li>
         </ul>
+             -->
 
         <ul class="nav navbar-nav navbar-left">
-            <li class="dropdown">
+            <li class="dropdown mainMenu">
                 <a data-toggle="dropdown" class="dropdown-toggle">
-                    <i class="fa fa-cog" aria-hidden="true"></i>
+                    <i class="icon-reporte" aria-hidden="true" style="font-size: 30px;"></i>
                 </a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                    <li><a href="#" class="mainDropDownMenu" id="filterMenu">Activar Filtro</a></li>
-                    <li class="divider"></li>
-                    <li><a href="#" class="mainDropDownMenu">Mosaico horizontal</a></li>
-                    <li class="divider"></li>
-                    <li><a href="#" class="mainDropDownMenu">Mosaico vertical</a></li>
-                    <li class="divider"></li>
-                    <li><a href="#" class="mainDropDownMenu" id="eventListMenu">Listado de eventos</a></li>
+                    <li><a href="#" class="mainDropDownMenu" id="newTextReport">Nuevo Texto</a></li>
+                    <li><a href="#" class="mainDropDownMenu" id="newHeaderReport">Nuevo Encabezado</a></li>
+                    <li><a href="#" class="mainDropDownMenu" id="generateReport">Generar Reporte</a></li>
+                    <li><a href="#" class="mainDropDownMenu" id="previewReport">Vista Previa Reporte</a></li>
                 </ul>
             </li>
         </ul>
 
+
         <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown mainMenu">
+                <a data-toggle="dropdown" class="dropdown-toggle">
+                    <i class="icon-herramientas" aria-hidden="true" style="font-size: 30px;"></i>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                    <li><a href="#" class="mainDropDownMenu" id="filterMenu">Activar Filtro</a></li>
+                    @*<li class="divider"></li>
+                    <li><a href="#" class="mainDropDownMenu">Mosaico horizontal</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#" class="mainDropDownMenu">Mosaico vertical</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#" class="mainDropDownMenu" id="eventListMenu">Listado de eventos</a></li>*@
+                    <li class="divider"></li>
+                    <li>@Html.ActionLink(linkText: "Configuración Asdaq", actionName: "Asdaq", controllerName: "Config", routeValues: null, htmlAttributes: new { target = "_blank" })</li>
+                    <li class="divider"></li>
+                    <li>@Html.ActionLink(linkText: "Configuración Atr", actionName: "Atr", controllerName: "Config", routeValues: null, htmlAttributes: new { target = "_blank" })</li>
+                    <li class="divider"></li>
+                    <li><a href="#" class="mainDropDownMenu" id="BearingsListMenu">Listado de rodamientos</a></li>
+                </ul>
+            </li>
+        </ul>
+       
+         <!--<ul class="nav navbar-nav navbar-left">
             <li class="dropdown">
                 <a data-toggle="dropdown" class="dropdown-toggle">
                     <i class="fa fa-font" aria-hidden="true"></i>
@@ -44,19 +66,9 @@
                 </ul>
             </li>
         </ul>
+            -->
 
-        <ul class="nav navbar-nav navbar-left">
-            <li class="dropdown">
-                <a data-toggle="dropdown" class="dropdown-toggle">
-                    <i class="fa fa-print" aria-hidden="true"></i>
-                </a>
-                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                    <li><a href="#" class="mainDropDownMenu" id="generateReport">Generar Reporte</a></li>
-                    <li><a href="#" class="mainDropDownMenu" id="previewReport">Vista Previa Reporte</a></li>
-                </ul>
-            </li>
-        </ul>
-
+        <!--
         <ul class="nav navbar-nav navbar-left">
             <li class="dropdown">
                 <a data-toggle="dropdown" class="dropdown-toggle">
@@ -64,16 +76,15 @@
                 </a>
             </li>
         </ul>
-
+        -->
         <ul class="nav navbar-nav navbar-left">
-            <li class="dropdown">
-                <a data-toggle="dropdown" class="dropdown-toggle">
-                    @User.Identity.GetUserName() <b class="caret"></b>
+            <li class="dropdown mainMenu">
+                <a data-toggle="dropdown" class="dropdown-toggle" style="padding: 8px 5px 2px 5px;">
+                    <i class="user-profile" aria-hidden="true" style=""></i>
+                    <!--@User.Identity.GetUserName() <b class="caret"></b>-->
                 </a>
-                <ul class="dropdown-menu">
-                    <li>@Html.ActionLink("Configuración Asdaq", "Asdaq", "Config")</li>
-                    <li>@Html.ActionLink("Configuración Atr", "Atr", "Config")</li>
-                    <li class="divider"></li>
+                <ul class="dropdown-menu" role="menu" style="z-index:9999;">
+                    <li><a href="#" id="dialogUserPreferencesAdmin" class="mainDropDownMenu">Preferencias</a></li>
                     <li><a href="javascript:document.getElementById('logoutForm').submit();">Salir</a></li>
                 </ul>
             </li>
@@ -101,5 +112,79 @@ else
             }
             event.stopPropagation();
         });
+        // Cuando hacemos el submit de "salir", lanzamos la alerta de eliminacion de datos en local
+        $("#userLogoutSystem").click(function () {
+            var
+                configContainer;
+
+            configContainer = $("#graphConfigAreaDialog").clone();
+            configContainer.css("display", "block");
+            configContainer[0].id = "removeDatabaseIndexedDB";
+            $("#outterSpliter").append(configContainer);
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div>div").append("<div class=\"col-md-12\"><label for=\"info\" " +
+              "style=\"font-size:12px;\">Está abandonando el sitio Web, desea eliminar la información almacenada localmente?<br>" +
+              "Si desea permanecer en el sitio Web, seleccione la opción \"Cancelar\".</label></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group zeroMarginBottom\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div").append("<div style=\"text-align: center;\"></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div>div:nth-child(1)").append("\n<a id=\"btnDropDatabase\" " +
+                "class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnDropDatabase").append("Eliminar");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div>div:nth-child(1)").append("\n<a id=\"btnKeepDatabase\" " +
+                "class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnKeepDatabase").append("Conservar");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div>div:nth-child(1)").append("\n<a id=\"btnCancelLogout\" " +
+                "class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnCancelLogout").append("Cancelar");
+            $("#" + configContainer[0].id + ">div.graphConfigArea").attr("title", "Abandonando el sitio Web");
+            $("#" + configContainer[0].id + ">div.graphConfigArea").ejDialog({
+                title: "Abandonando el sitio Web",
+                isResponsive: true,
+                enableModal: true,
+                showRoundedCorner: true,
+                enableResize: false,
+                width: "auto",
+                height: "auto",
+                close: function () {
+                    $("#btnDropDatabase").off("click");
+                    $("#btnKeepDatabase").off("click");
+                    $("#btnCancelLogout").off("click");
+                    $("#" + configContainer[0].id).remove();
+                },
+                content: "#" + configContainer[0].id,
+                tooltip: {
+                    close: "Cerrar"
+                },
+                actionButtons: ["close"]
+            });
+            // Abrir el dialogo
+            $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("open");
+            // Boton eliminar base de datos
+            $("#btnDropDatabase").click(function (e) {
+                e.preventDefault();
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
+                logoutSystem(true);
+            });
+            // Boton conservar base de datos
+            $("#btnKeepDatabase").click(function (e) {
+                e.preventDefault();
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
+                logoutSystem(false);
+            });
+            // Boton cancelar
+            $("#btnCancelLogout").click(function (e) {
+                e.preventDefault();
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
+            });
+        });
+
+        function logoutSystem(needDropDb) {
+            if (needDropDb) {
+                aidbManager.DropDatabase();
+            }
+            window.onbeforeunload = null;
+            $("#logoutForm").submit();
+        };
     });
+
 </script>

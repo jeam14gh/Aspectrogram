@@ -21,7 +21,8 @@
             }
 
             byte[] textAsBytes = System.Convert.FromBase64String(encodedText);
-            return encoding.GetString(textAsBytes);
+
+            return encoding.GetString(textAsBytes); 
         }
     }
 }

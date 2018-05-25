@@ -78,7 +78,7 @@ MeasurementPointAdmin = (function () {
         _isCreatedFieldsRTD = false;
         _isCreatedFieldsVolOrCur = false;
         _isCreatedFieldsMagneticFlow = false;
-        sensorTypeNumeric = [0, 1, 2, 3, 4, 9]; 
+        sensorTypeNumeric = [0, 1, 2, 3, 4, 9];
         _coefficients = new RTDCoefficient().Coefficients;
         _listRefAngular = [{ Name: "Ninguno", Id: "0" }];
         _subVariablesOriginal = [];
@@ -92,7 +92,7 @@ MeasurementPointAdmin = (function () {
         _gap = new SubVariables(_idSubVariable++).Gap;
         _pulsos = new SubVariables(_idSubVariable++).Pulsos;
 
-        _measureType = [ 
+        _measureType = [
                         { text: "Pico", value: 1 },
                         { text: "Pico a Pico", value: 2 },
                         { text: "RMS", value: 3 },
@@ -109,7 +109,7 @@ MeasurementPointAdmin = (function () {
                     { text: "Integrado", value: 1 }];
 
         _rotationDirection = [{ Name: "CCW", Code: 2 },
-                                { Name: "CW", Code: 1 }]; 
+                                { Name: "CW", Code: 1 }];
 
         _createFieldsMagneticFlow = function (pc, p1a, pgr) {
             _isCreatedFieldsMagneticFlow = true;
@@ -136,12 +136,14 @@ MeasurementPointAdmin = (function () {
                 dataSource: _data,
                 fields: { text: "Name", value: "Value" },
                 //selectedIndex: 0,
+                width: "100%",
                 enabled: _data.length > 1 ? true : false,
                 value: coefficient != null ? coefficient : null,
             });
 
             $("#ddlMaterial").ejDropDownList({
                 dataSource: _materials,
+                width: "100%",
                 //cascadeTo: "ddlCoefficient",
                 fields: { text: "Name", value: "Code" },
                 value: material,
@@ -156,8 +158,8 @@ MeasurementPointAdmin = (function () {
                     $('#ddlCoefficient').ejDropDownList("selectItemsByIndices", 0);
                 },
             });
-            $("#txtRo").ejNumericTextbox({ value: ro, decimalPlaces: 2, });
-            $("#txtIex").ejNumericTextbox({ value: iEx, decimalPlaces: 3, minValue: 0 });
+            $("#txtRo").ejNumericTextbox({ value: ro, decimalPlaces: 2, width: "100%", });
+            $("#txtIex").ejNumericTextbox({ value: iEx, decimalPlaces: 3, minValue: 0, width: "100%", });
         };
 
         _createMeasurementPointDiaolog = function (_title) {
@@ -226,6 +228,7 @@ MeasurementPointAdmin = (function () {
                         },
                         rowSelected: function (args) {
                             _subVariableSelected = args.data;
+                            //_subVariableSelected = JSON.parse(JSON.stringify(args.data));
 
                             // Habilita o desahibilita el icono de eliminar al seleccionar una subvariable directa o velocidad
                             var $toolbar = $("#gridSubVariables_toolbarItems");
@@ -234,10 +237,23 @@ MeasurementPointAdmin = (function () {
                             } else {
                                 $toolbar.ejToolbar("enableItem", $("#gridSubVariables_delete"));
                             }
+
+                            // Obtenemos el tipo de sensor seleccionado cuando se va a crear un punto, debido a que la propiedad no existe en ese momento
+                            var sensorTypeSelected = $("#ddlSensorType").ejDropDownList("getSelectedValue");
+                            if (args.data.SensorTypeCode == 1 || args.data.SensorTypeCode == 9 || sensorTypeSelected == 1 || sensorTypeSelected == 9) { // Es PRX o DA y la SubVar es Gap des-habilita el icono de eliminar
+                                if (args.data.MeasureType == 7)
+                                    $toolbar.ejToolbar("disableItem", $("#gridSubVariables_delete"));
+                            }
                         },
                         toolbarClick: function (args) {
-                            if (args.itemName == "Agregar")
+                            if (args.itemName == "Agregar") {
                                 _subVariableSelected = null;
+
+                                var sensorTypeSelected = $("#ddlSensorType").ejDropDownList("getSelectedValue");
+                                if (["1", "2", "3", "4", "5", "9"].includes(sensorTypeSelected)) {
+                                    args.cancel = true;
+                                }
+                            }
 
                             // Elimina una subvariable en base de datos cuando está en modo de edición de un pto de medición
                             if (_typeOperation == "editMdVariable") {
@@ -270,26 +286,27 @@ MeasurementPointAdmin = (function () {
                         columns: [
                                   { field: "Id", headerText: "Id", width: "1%", allowEditing: false, isPrimaryKey: true, visible: false },
                                   { field: "ParentId", headerText: "IdPadre", width: "1%", allowEditing: false, visible: false, defaultValue: _objMdVariable != null ? _objMdVariable.Id : "" },
-                                  { field: "Name", headerText: "Nombre", width: "15%", textAlign: "center", allowEditing: true },
+                                  { field: "Name", headerText: "Nombre", width: "15%", textAlign: "center", allowEditing: false },
                                   //{ field: "Description", headerText: "Descripción", width: "20%", textAlign: "center", },
-                                  { field: "MeasureType", headerText: "Cálculo", width: "15%", textAlign: "center", editType: ej.Grid.EditingType.Dropdown, dataSource: _measureType, foreignKeyField: "value", foreignKeyValue: "text", },
-                                  { field: "Units", headerText: "Unidad", width: "15%", textAlign: "center", },
+                                  { field: "MeasureType", headerText: "Cálculo", width: "15%", textAlign: "center", editType: ej.Grid.EditingType.Dropdown, dataSource: _measureType, foreignKeyField: "value", foreignKeyValue: "text", allowEditing: false },
+                                  { field: "Units", headerText: "Unidad", width: "15%", textAlign: "center", allowEditing: false },
                                   { field: "Maximum", headerText: "Máximo", width: "15%", textAlign: "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 } },
                                   { field: "Minimum", headerText: "Mínimo", width: "15%", textAlign: "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 } },
-                                  { field: "FromIntegratedWaveform", headerText: 'Fuente', textAlign: "center", width: "15%", editType: ej.Grid.EditingType.Dropdown, dataSource: _arrayIntegratedWaveform, foreignKeyField: "value", foreignKeyValue: "text", allowEditing: true, visible: false },
+                                  { field: "FromIntegratedWaveform", headerText: 'Fuente', textAlign: "center", width: "15%", editType: ej.Grid.EditingType.Dropdown, dataSource: _arrayIntegratedWaveform, foreignKeyField: "value", foreignKeyValue: "text", allowEditing: false, visible: false },
                                   {
-                                      field: "Config", headerText: "Bandas", width: "8%",
+                                      field: "Config", headerText: "Alarmas", width: "8%",
+                                      //template:true, templateID:"#templateAlarms",allowEditing: false,                                      
                                       commands:
                                       [{
                                           type: "details",
                                           buttonOptions: {
                                               contentType: "imageonly",
-                                              prefixIcon: "e-icon e-settings",
+                                              prefixIcon: "e-icon e-settings",  
                                               width: "50px",
                                               size: "normal",
                                               click: function (args) {
                                                   if (!_subVariableSelected) {
-                                                      popUp("error", "Actualice primero la SubVariable para configurar sus Bandas!");
+                                                      popUp("error", "Actualice primero la SubVariable para configurar sus alarmas!");
                                                   }
                                                   else {
                                                       var sensorType = $("#ddlSensorType").ejDropDownList("getSelectedValue");
@@ -306,17 +323,48 @@ MeasurementPointAdmin = (function () {
                                       isUnbound: true,
                                       textAlign: ej.TextAlign.Center
                                   },
+                                  {
+                                      field: "Config2", headerText: "Opciones", width: "8%",
+                                      //template: true, templateID: "#templateOptions", allowEditing: false,
+                                      commands:
+                                      [{
+                                          type: "details",
+                                          buttonOptions: {
+                                              contentType: "imageonly",
+                                              prefixIcon: "e-icon e-settings",
+                                              width: "50px",
+                                              size: "normal",
+                                              click: function (args) {
+                                                  if (!_subVariableSelected) {
+                                                      popUp("error", "Actualice primero la SubVariable para configurar sus opciones!");
+                                                  }
+                                                  else {
+                                                      CreateDialogOptions(_subVariableSelected);
+                                                  }
+                                              }
+                                          },
+                                      }],
+                                      isUnbound: true,
+                                      textAlign: ej.TextAlign.Center
+                                  },
                         ],
                         showStackedHeader: true,
-                        stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "SubVariables", column: "Id,ParentId,Name,MeasureType,Units,Maximum,Minimum,FromIntegratedWaveform,Config" }] }],
+                        stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "SubVariables", column: "Id,ParentId,Name,MeasureType,Units,Maximum,Minimum,FromIntegratedWaveform,Config,Config2" }] }],
                         load: function (args) {
                             var subVariable = args.model.dataSource;
                             if (_typeOperation != "createMdVariable") {
                                 // Si el pto de medición tiene la propiedad Integrate en true, se pone visible la columna Fuente
                                 if (_objMdVariable.Integrate) {
-                                    args.model.columns[7].visible = true;
+                                    //args.model.columns[7].visible = true;
                                 }
                             }
+
+                            //if (_typeOperation == "editMdVariable") {
+                            //    // Des-habilita la edición de los siguientes campos por su posición en el grid
+                            //    this.model.columns[2]["allowEditing"] = false; // Name
+                            //    this.model.columns[3]["allowEditing"] = false; // MeasureType
+                            //    this.model.columns[4]["allowEditing"] = false; // Units
+                            //}
                         },
                         actionComplete: function (args) {
                             if (args.requestType == "add") {
@@ -340,7 +388,7 @@ MeasurementPointAdmin = (function () {
                                 $("#btnCreateOrEditMdVariable").attr('disabled', 'disabled');
                             } else { // "cancel","delete","save"
                                 $("#btnCreateOrEditMdVariable").removeAttr('disabled');
-                            } 
+                            }
                         },
                         actionBegin: function (args) {
                             // Al momento de guardar una subVariable valida que todos los campos esten llenos y que el máximo sea mayor al mínimo
@@ -353,6 +401,11 @@ MeasurementPointAdmin = (function () {
                                         args.cancel = true;
                                         popUp("error", "El campo máximo debe ser mayor al mínimo!");
                                     }
+                                }
+                            } else if (args.requestType == "beginedit") {
+                                if (args.rowData.Units == "") {
+                                    args.cancel = true;
+                                    popUp("warning", "Seleccione o digite la unidad del punto de medición para editar la SubVariable!");
                                 }
                             }
                         }
@@ -367,7 +420,7 @@ MeasurementPointAdmin = (function () {
 
                         for (var i = 0; i < tr.length; i++) {
                             if (sensorType == 11) // Si es RDS se muestran todas sus Subvariables.
-                                break;                            
+                                break;
 
                             if (tr[i].action == "removeClass")
                                 $("#gridSubVariables > .e-gridcontent > div > .e-table > tbody").children("tr:eq('" + tr[i].index + "')").removeClass("hidden");
@@ -376,10 +429,11 @@ MeasurementPointAdmin = (function () {
                         }
 
                         if (sensorType == 11) // RDS
-                            $("#gridSubVariables").ejGrid("hideColumns", ["Cálculo"]);                        
+                            $("#gridSubVariables").ejGrid("hideColumns", ["Cálculo"]);
                     }
 
                     autoHeightEjDialog("#formMdVariable", _heightWindow);
+                    $(".e-resize-handle").removeClass("e-js");
                 },
                 beforeOpen: function (args) {
                     if (_typeOperation != "createMdVariable") {
@@ -457,11 +511,11 @@ MeasurementPointAdmin = (function () {
             $("#formMdVariable").removeClass('hidden');
         }
 
-        function CreateDialogBands(subVariable, visible, text, fieldName) {
+        function CreateDialogOptions(subVariable) {
 
             $("#txtThresholdLatency").ejNumericTextbox({
                 width: "100%",
-                value: subVariable.ThresholdLatency,//*
+                value: subVariable.ThresholdLatency,
                 decimalPlaces: 1,
             });
 
@@ -483,20 +537,113 @@ MeasurementPointAdmin = (function () {
                 decimalPlaces: 1,
                 //minValue: 0.1
             });
-            
-            //$("#txtLowerThreshold").ejNumericTextbox({
+
+            $("#formOptionsSubvar").ejDialog({
+                title: "Opciones " + subVariable.Name,
+                showOnInit: false,
+                actionButtons: ["close"],
+                enableAnimation: true,
+                width: "35%",
+                minWidth: "35%",
+                height: "23%",
+                minHeight: "23%",
+                //scrollSettings: { height: "100%" },
+                zIndex: 11000,
+                allowDraggable: true,
+                enableResize: true,
+                allowScrolling: false,
+                enableModal: true,
+                isResponsive: true,
+                showRoundedCorner: true,
+                animation: { show: { effect: "slide", duration: 500 }, hide: { effect: "fade", duration: 500 } },
+                open: function (args) { $(".e-resize-handle").removeClass("e-js"); },
+                beforeOpen: function (args) {
+
+                    // Guarda los cambios hechos en la configuración de bandas
+                    $("#btnSaveOptions").click(function () {
+                        var upperThreshold = $("#txtUpperThreshold").ejNumericTextbox("getValue");
+                        //var lowerThreshold = $("#txtLowerThreshold").ejNumericTextbox("getValue");
+
+                        var subvariable = $("#gridSubVariables").ejGrid("getSelectedRecords")[0];
+
+                        if ((upperThreshold == null) || (upperThreshold == 0)) {
+                            subvariable.MinimumHistoricalDataBand = null;
+                        }
+                        else {
+                            subvariable.MinimumHistoricalDataBand = {
+                                UpperThreshold: { Value: upperThreshold },
+                                LowerThreshold: null,
+                                //LowerThreshold: (lowerThreshold == null) ? null : { Value: lowerThreshold },
+                            };
+                        }
+
+                        subvariable.DeadBand = $("#txtDeadBand").ejNumericTextbox("getValue");
+                        subvariable.ThresholdLatency = $("#txtThresholdLatency").ejNumericTextbox("getValue");
+                        $("#formOptionsSubvar").addClass('hidden');
+                        $("#formOptionsSubvar").ejDialog("close");
+                    });
+
+                    // Cierre y cancela el formulario "Configurar evento de velocidad" de un activo principal
+                    $("#btnCancelOptions").click(function () {
+                        $("#formOptionsSubvar").addClass('hidden');
+                        $("#formOptionsSubvar").ejDialog("close");
+                    });
+                },//Fin beforeOpen
+                close: function (args) {
+                    $("#btnSaveOptions").off("click"); // Necesario desasociar el evento
+                    $("#btnCancelOptions").off("click"); // Necesario desasociar el evento
+                    $("#txtThresholdLatency").ejNumericTextbox("destroy");
+                    $("#txtDeadBand").ejNumericTextbox("destroy");
+                    $("#txtUpperThreshold").ejNumericTextbox("destroy");
+                    //$("#txtLowerThreshold").ejNumericTextbox("destroy");
+                    $("#btnSaveOptions").removeAttr('disabled');
+                },//Fin close
+            });
+
+            $("#formOptionsSubvar").ejDialog("open");
+            $("#formOptionsSubvar").removeClass('hidden');
+        }
+
+        function CreateDialogBands(subVariable, visible, text, fieldName) {
+
+            //$("#txtThresholdLatency").ejNumericTextbox({
             //    width: "100%",
-            //    value: bandMinimum == null ? null : bandMinimum.LowerThreshold.Value,
-            //    //value: bandMinimum.LowerThreshold.Value,
+            //    value: subVariable.ThresholdLatency,//*
             //    decimalPlaces: 1,
-            //});            
+            //});
+
+            //$("#txtDeadBand").ejNumericTextbox({
+            //    width: "100%",
+            //    value: subVariable.DeadBand,
+            //    decimalPlaces: 2,
+            //});
+
+            //var bandMinimum = subVariable.MinimumHistoricalDataBand;
+
+            //if (!bandMinimum || typeof bandMinimum === "undefined")
+            //    bandMinimum = null;
+
+            //$("#txtUpperThreshold").ejNumericTextbox({
+            //    width: "100%",
+            //    value: bandMinimum == null ? null : bandMinimum.UpperThreshold.Value,
+            //    //value: bandMinimum.UpperThreshold.Value,
+            //    decimalPlaces: 1,
+            //    //minValue: 0.1
+            //});
+
+            ////$("#txtLowerThreshold").ejNumericTextbox({
+            ////    width: "100%",
+            ////    value: bandMinimum == null ? null : bandMinimum.LowerThreshold.Value,
+            ////    //value: bandMinimum.LowerThreshold.Value,
+            ////    decimalPlaces: 1,
+            ////});            
 
             // Filtramos la lista de estados con una severity mayor a 1 para mostrar 
             var filteredStatusList = ej.DataManager(arrayObjectStatus).executeLocal(ej.Query().where("Severity", "greaterThan", 1, false));
 
             //Grid de bandas
             $("#gridBands").ejGrid({
-                dataSource: subVariable.Bands,
+                dataSource: JSON.parse(JSON.stringify(subVariable.Bands)),
                 locale: "es-ES",
                 isResponsive: true,
                 enableResponsiveRow: true,
@@ -519,16 +666,22 @@ MeasurementPointAdmin = (function () {
                     showToolbar: true, toolbarItems: ["add", "update", "cancel", "delete"]
                 },
                 columns: [
-                  { field: "Index", headerText: 'Id', textAlign: "center", width: "5%", visible: false, isPrimaryKey: true },
-                  { field: "StatusId", headerText: 'Estado Condición', textAlign: "center", width: "35%", editType: ej.Grid.EditingType.Dropdown, dataSource: filteredStatusList, foreignKeyField: "Id", foreignKeyValue: "Name", },
-                  { field: "Description", headerText: 'Nombre', textAlign: "center", width: "40%", },
-                  { field: "UpperThreshold.Value", headerText: text, textAlign: "center", width: "10%", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 } },
-                  { field: fieldName, headerText: 'Umbral Mín', textAlign: "center", width: "10%", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 }, visible: visible, defaultValue: "" },
+                  { field: "Index", headerText: 'Id', textAlign: "center", width: "10%", visible: false, isPrimaryKey: true },
+                  { field: "StatusId", headerText: 'Estado Condición', textAlign: "center", width: "30%", editType: ej.Grid.EditingType.Dropdown, dataSource: filteredStatusList, foreignKeyField: "Id", foreignKeyValue: "Name", },
+                  { field: "Description", headerText: 'Nombre', textAlign: "center", width: "30%", },
+                  { field: "UpperThreshold.Value", headerText: text, textAlign: "center", width: "15%", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 }, type: "number" },
+                  { field: fieldName, headerText: 'Umbral Mín', textAlign: "center", width: "15%", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 }, visible: visible, defaultValue: "", type: "number" },
                   //{ field: "LowerThreshold.Value", headerText: 'Umbral Mín', textAlign: "center", width: "10%", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 2 }, visible: visible, defaultValue: df },
                 ],
                 showStackedHeader: true,
-                stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Bandas", column: "Description,UpperThreshold.Value,LowerThreshold.Value,StatusId" }] }],
+                stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "", column: "Description,UpperThreshold.Value,LowerThreshold.Value,StatusId" }] }],
                 queryCellInfo: function (args) {
+
+                    //var value = args.text.replace(".", ",");
+                    //var $element = $(args.cell);
+                    //if (args.column.headerText == text) {
+                    //    $element.text(value);
+                    //}
                     //var statusId = args.data.StatusId;
                     //var name = args.foreignKeyData.Name;
                     //var color = args.foreignKeyData.Color;
@@ -543,16 +696,16 @@ MeasurementPointAdmin = (function () {
                     var statu = ej.DataManager(arrayObjectStatus).executeLocal(ej.Query().where("Id", "equal", args.rowData.StatusId, false))[0];
                     var $element = $(args.row[0].children[1]);
                     //Le agregamos a la columna "Estado Condición" el icono "circulo" con el color perteneciente al tipo de estado                    
-                    $element.html("<span class='fa fa-circle icon-large' style='background-color: transparent; color:" + statu.Color + "; padding: 2px;'></span> " + statu.Name);                    
-                    
+                    $element.html("<span class='fa fa-circle icon-large' style='background-color: transparent; color:" + statu.Color + "; padding: 2px;'></span> " + statu.Name);
+
                 },
                 actionComplete: function (args) {
                     if (args.requestType == "add")
                         _index++;
                     else if (args.requestType == "save")
-                        args.data.Index = _index;                    
+                        args.data.Index = _index;
 
-                    // Habilita o no el boton "Aceptar" del ejDialog de Configuración de Bandas
+                    // Habilita o no el boton "Aceptar" del ejDialog de Configuración de alarmas
                     if (["add", "beginedit"].includes(args.requestType)) {
                         $("#btnSaveBands").attr('disabled', 'disabled');
 
@@ -589,14 +742,14 @@ MeasurementPointAdmin = (function () {
             });
 
             $("#formBands").ejDialog({
-                title: "Configuración de Bandas",
+                title: "Configuración de alarmas",
                 showOnInit: false,
                 actionButtons: ["close"],
                 enableAnimation: true,
-                width: "50%",
-                minWidth: "50%",
-                height: "60%",
-                //minHeight: "95%",
+                width: "40%",
+                minWidth: "40%",
+                height: "30%",
+                minHeight: "30%",
                 //scrollSettings: { height: "100%" },
                 zIndex: 11000,
                 allowDraggable: true,
@@ -606,30 +759,32 @@ MeasurementPointAdmin = (function () {
                 isResponsive: true,
                 showRoundedCorner: true,
                 animation: { show: { effect: "slide", duration: 500 }, hide: { effect: "fade", duration: 500 } },
-                open: function (args) { },
+                open: function (args) {
+                    $(".e-resize-handle").removeClass("e-js");
+                },
                 beforeOpen: function (args) {
 
                     // Guarda los cambios hechos en la configuración de bandas
                     $("#btnSaveBands").click(function () {
-                        var upperThreshold = $("#txtUpperThreshold").ejNumericTextbox("getValue");
+                        //var upperThreshold = $("#txtUpperThreshold").ejNumericTextbox("getValue");
                         //var lowerThreshold = $("#txtLowerThreshold").ejNumericTextbox("getValue");
 
                         var subvariable = $("#gridSubVariables").ejGrid("getSelectedRecords")[0];
                         subvariable.Bands = $("#gridBands").data("ejGrid").model.dataSource;
 
-                        if ((upperThreshold == null) || (upperThreshold == 0)) {
-                            subvariable.MinimumHistoricalDataBand = null;
-                        }
-                        else {
-                            subvariable.MinimumHistoricalDataBand = {
-                                UpperThreshold: { Value: upperThreshold },
-                                LowerThreshold: null,
-                                //LowerThreshold: (lowerThreshold == null) ? null : { Value: lowerThreshold },
-                            };
-                        }
+                        //if ((upperThreshold == null) || (upperThreshold == 0)) {
+                        //    subvariable.MinimumHistoricalDataBand = null;
+                        //}
+                        //else {
+                        //    subvariable.MinimumHistoricalDataBand = {
+                        //        UpperThreshold: { Value: upperThreshold },
+                        //        LowerThreshold: null,
+                        //        //LowerThreshold: (lowerThreshold == null) ? null : { Value: lowerThreshold },
+                        //    };
+                        //}
 
-                        subvariable.DeadBand = $("#txtDeadBand").ejNumericTextbox("getValue");
-                        subvariable.ThresholdLatency = $("#txtThresholdLatency").ejNumericTextbox("getValue");
+                        //subvariable.DeadBand = $("#txtDeadBand").ejNumericTextbox("getValue");
+                        //subvariable.ThresholdLatency = $("#txtThresholdLatency").ejNumericTextbox("getValue");
                         $("#formBands").addClass('hidden');
                         $("#formBands").ejDialog("close");
                     });
@@ -643,9 +798,9 @@ MeasurementPointAdmin = (function () {
                 close: function (args) {
                     $("#btnSaveBands").off("click"); // Necesario desasociar el evento
                     $("#btnCancelBands").off("click"); // Necesario desasociar el evento
-                    $("#txtThresholdLatency").ejNumericTextbox("destroy");
-                    $("#txtDeadBand").ejNumericTextbox("destroy");
-                    $("#txtUpperThreshold").ejNumericTextbox("destroy");
+                    //$("#txtThresholdLatency").ejNumericTextbox("destroy");
+                    //$("#txtDeadBand").ejNumericTextbox("destroy");
+                    //$("#txtUpperThreshold").ejNumericTextbox("destroy");
                     //$("#txtLowerThreshold").ejNumericTextbox("destroy");
                     $("#gridBands").ejGrid("destroy");
                     $("#btnSaveBands").removeAttr('disabled');
@@ -673,7 +828,7 @@ MeasurementPointAdmin = (function () {
 
         this.Copy = function (mdVariable) {
             var dataset = $('#measurementPoints').ejListBox("getSelectedItems");
-           
+
             if (dataset.length > 1) {
                 copiedNodes = [];
                 for (var d = 0; d < dataset.length; d++) {
@@ -736,82 +891,125 @@ MeasurementPointAdmin = (function () {
                 title = "¿Desea eliminar estos puntos de medición?";
             else
                 title = "¿Desea eliminar el punto de medición " + selectedMeasurementPoint.Name + "?";
-            
+
             _createConfirmDialogDeleting("<b>Eliminar</b>", title);
         };
 
         //Función que retorna una lista de SubVariables del gridSubvariables
         function getListSubVariables(mdVariableId, parentId, operation) {
-            var _subVariables = $("#gridSubVariables").ejGrid("getCurrentViewData");
-            var _listSubVariables = [];
-            var thresholdLatency;
+            var _subVariables = $("#gridSubVariables").ejGrid("model.dataSource"),
+                //_subVariables = $("#gridSubVariables").ejGrid("getCurrentViewData"),
+                _listSubVariables = [],
+                thresholdLatency;
 
             for (var i = 0; i < _subVariables.length; i++) {
 
-                if (_subVariables[i].FromIntegratedWaveform == 1) {
-                    _subVariables[i].FromIntegratedWaveform = true;
-                } else if (_subVariables[i].FromIntegratedWaveform == 0) {
-                    _subVariables[i].FromIntegratedWaveform = false;
-                }
+                //_listSubVariables[i] = {
+                //    //Id: operation == "Create" ? null : _subVariables[i].Id,
+                //    //ParentId: operation == "Create" ? null : parentId,
+                //    Name: _subVariables[i].Name,
+                //    Description: _subVariables[i].Description,
+                //    ValueType: _subVariables[i].ValueType,
+                //    Units: _subVariables[i].Units,
+                //    //ThresholdLatency: _subVariables[i].ThresholdLatency,
+                //    Bands: _subVariables[i].Bands,
+                //    Maximum: _subVariables[i].Maximum,
+                //    Minimum: _subVariables[i].Minimum,
+                //    IsDefaultValue: _subVariables[i].IsDefaultValue,
+                //    DeadBand: _subVariables[i].DeadBand,
+                //    MinimumHistoricalDataBand: _subVariables[i].MinimumHistoricalDataBand,
+                //    MeasureType: _subVariables[i].MeasureType,
+                //    FromIntegratedWaveform: _subVariables[i].FromIntegratedWaveform,
+                //    GapCalibrationValue: _subVariables[i].GapCalibrationValue,
+                //    //InitialAxialPosition: _subVariables[i].InitialAxialPosition
+                //};
+
+                //if (_subVariables[i].FromIntegratedWaveform == 1) {
+                //    _listSubVariables[i].FromIntegratedWaveform = true;
+                //} else if (_subVariables[i].FromIntegratedWaveform == 0) {
+                //    _listSubVariables[i].FromIntegratedWaveform = false;
+                //}
 
                 if (operation == "Actualizar") {
                     parentId = _subVariables[i].ParentId;
+                    //_listSubVariables[i].ParentId = (operation == "Create") ? null : _subVariables[i].ParentId;
                 }
 
-                _subVariables[i].Maximum = _subVariables[i].Minimum != null ? _subVariables[i].Maximum.toString().replace('.', ',') : null;
-                _subVariables[i].Minimum = _subVariables[i].Minimum != null ? _subVariables[i].Minimum.toString().replace('.', ',') : null;
+                _subVariables[i].ThresholdLatency = ConvertSecondsToMilliseconds(_subVariables[i].ThresholdLatency);
+
+                //_listSubVariables[i].Maximum = (_subVariables[i].Minimum != null) ? _subVariables[i].Maximum.toString().replace('.', ',') : null;
+                //_listSubVariables[i].Minimum = (_subVariables[i].Minimum != null) ? _subVariables[i].Minimum.toString().replace('.', ',') : null;
 
                 // Cuando se agregó una nueva subVariable y no existe esta propiedad
-                if ((typeof _subVariables[i].ThresholdLatency === "undefined") || _subVariables[i].ThresholdLatency == null)
-                    _subVariables[i].ThresholdLatency = 0;
-                else {
-                    thresholdLatency = ConvertSecondsToMilliseconds(_subVariables[i].ThresholdLatency);
-                    _subVariables[i].ThresholdLatency = thresholdLatency.toString().replace('.', ',');
-                }
+                //if ((typeof _subVariables[i].ThresholdLatency === "undefined") || _subVariables[i].ThresholdLatency == null)
+                //    _listSubVariables[i].ThresholdLatency = 0;
+                //else {
+                //    thresholdLatency = ConvertSecondsToMilliseconds(_subVariables[i].ThresholdLatency);
+                //    _listSubVariables[i].ThresholdLatency = thresholdLatency.toString().replace('.', ',');
+                //}
 
-                if (typeof _subVariables[i].InitialAxialPosition !== "undefined")
-                    _subVariables[i].InitialAxialPosition = _subVariables[i].InitialAxialPosition != 0 ? _subVariables[i].InitialAxialPosition.toString().replace('.', ',') : 0;
+                //if (typeof _subVariables[i].InitialAxialPosition !== "undefined")
+                //    _listSubVariables[i].InitialAxialPosition = (_subVariables[i].InitialAxialPosition != 0) ? _subVariables[i].InitialAxialPosition.toString().replace('.', ',') : 0;
 
                 // Validamos si la subvariable es tipo numérica para asignarle la propiedad "DeadBand"
-                if (_subVariables[i].ValueType == 3 || _subVariables[i].ValueType == 5)
-                    _subVariables[i].DeadBand = "";
-                else {
-                    if (_subVariables[i].DeadBand == null) // Si el campo se deja vacio
-                        _subVariables[i].DeadBand = "";
-                    else
-                        _subVariables[i].DeadBand = _subVariables[i].DeadBand != 0 ? _subVariables[i].DeadBand.toString().replace('.', ',') : 0;
-                }
+                //if (_subVariables[i].ValueType == 3 || _subVariables[i].ValueType == 5) // Forma de onda ó Pulso
+                //    _listSubVariables[i].DeadBand = "";
+                //else {
+                //    if (_subVariables[i].DeadBand == null) // Si el campo se deja vacio
+                //        _listSubVariables[i].DeadBand = "";
+                //    else
+                //        _listSubVariables[i].DeadBand = (_subVariables[i].DeadBand != 0) ? _subVariables[i].DeadBand.toString().replace('.', ',') : 0;
+                //}
 
-                if (_subVariables[i].MinimumHistoricalDataBand) {
-                    //var lowerThreshold = _subVariables[i].MinimumHistoricalDataBand.LowerThreshold;
-                    var upperThreshold = _subVariables[i].MinimumHistoricalDataBand.UpperThreshold;
+                //if (_subVariables[i].MinimumHistoricalDataBand) {
+                //    //var lowerThreshold = _subVariables[i].MinimumHistoricalDataBand.LowerThreshold;
+                //    var upperThreshold = _subVariables[i].MinimumHistoricalDataBand.UpperThreshold;
 
-                    //_subVariables[i].MinimumHistoricalDataBand.LowerThreshold = (lowerThreshold != null) ? { Value: lowerThreshold.Value.toString().replace('.', ',') } : null;
-                    _subVariables[i].MinimumHistoricalDataBand.LowerThreshold = null;
-                    _subVariables[i].MinimumHistoricalDataBand.UpperThreshold = (upperThreshold != null) ? { Value: upperThreshold.Value.toString().replace('.', ',') } : null;
-                }
+                //    //_subVariables[i].MinimumHistoricalDataBand.LowerThreshold = (lowerThreshold != null) ? { Value: lowerThreshold.Value.toString().replace('.', ',') } : null;
+                //    _listSubVariables[i].MinimumHistoricalDataBand.LowerThreshold = null;
+                //    _listSubVariables[i].MinimumHistoricalDataBand.UpperThreshold = (upperThreshold != null) ? { Value: upperThreshold.Value.toString().replace('.', ',') } : null;
+                //}
 
-                if (_subVariables[i].Bands) {
-                    for (var x = 0; x < _subVariables[i].Bands.length; x++) {
-                        if (_subVariables[i].Bands[x] != null) {
-                            var upperT = _subVariables[i].Bands[x].UpperThreshold;
-                            var lowerT = _subVariables[i].Bands[x].LowerThreshold;
+                //if (_subVariables[i].Bands) {
+                //    _listSubVariables[i].Bands = new Array();
+                //    for (var x = 0; x < _subVariables[i].Bands.length; x++) {
+                //        if (_subVariables[i].Bands[x] != null) {
 
-                            if (upperT && upperT.Value) {
-                                _subVariables[i].Bands[x].UpperThreshold.Value = upperT.Value.toString().replace('.', ',');
-                            }
-                            if (lowerT && lowerT.Value) {
-                                _subVariables[i].Bands[x].LowerThreshold.Value = lowerT.Value.toString().replace('.', ',');
-                            }
-                        }
-                    }
-                } else {
-                    _subVariables[i].Bands = [];
-                }
+                //            _listSubVariables[i].Bands[x] = {
+                //                Description: _subVariables[i].Bands[x].Description,
+                //                StatusId: _subVariables[i].Bands[x].StatusId,
+                //                UpperThreshold: {},
+                //                LowerThreshold: new Object()
+                //            };
+
+                //            var upperT = _subVariables[i].Bands[x].UpperThreshold,
+                //                lowerT = _subVariables[i].Bands[x].LowerThreshold,
+                //                _value;
+
+                //            if (upperT && upperT.Value) {
+                //                //_value = upperT.Value.toString().replace('.', ',');
+                //                _listSubVariables[i].Bands[x].UpperThreshold = { Value: upperT.Value };
+                //                //_value = upperT.Value.toString().replace('.', ',');
+                //                //_value = JSON.parse(JSON.stringify(upperT)).Value;
+                //                //_subVariables[i].Bands[x].UpperThreshold = null;
+                //                //_value = upperT.Value;
+                //                //_subVariables[i].Bands[x].UpperThreshold = { Value: _value.toString().replace('.', ',') };
+                //                //_subVariables[i].Bands[x].UpperThreshold.Value= _subVariables[i].Bands[x].UpperThreshold.Value.toLocaleString();
+                //            }
+                //            if (lowerT && lowerT.Value) {
+                //                _listSubVariables[i].Bands[x].LowerThreshold = { Value: lowerT.Value.toLocaleString() };
+                //                //_subVariables[i].Bands[x].LowerThreshold.Value = lowerT.Value.toString().replace('.', ',');
+                //            }
+                //        }
+                //    }
+                //} else {
+                //    //_subVariables[i].Bands = [];
+                //    _listSubVariables[i].Bands = [];
+                //}
 
                 _listSubVariables[i] = {
-                    Id: operation == "Create" ? null : _subVariables[i].Id,
-                    ParentId: operation == "Create" ? null : parentId,
+                    Id: (operation == "Create") ? null : _subVariables[i].Id,
+                    ParentId: (operation == "Create") ? null : parentId,
                     Name: _subVariables[i].Name,
                     Description: _subVariables[i].Description,
                     ValueType: _subVariables[i].ValueType,
@@ -866,7 +1064,7 @@ MeasurementPointAdmin = (function () {
             }
             else if (_sensorType == 5) {
                 material = $('#ddlMaterial').ejDropDownList("getSelectedValue");
-                coefficient = $('#ddlCoefficient').ejDropDownList("getSelectedValue");
+                coefficient = parseFloat($('#ddlCoefficient').ejDropDownList("getSelectedValue"));
                 ro = $("#txtRo").ejNumericTextbox("getValue");
                 iEx = $("#txtIex").ejNumericTextbox("getValue");
             }
@@ -891,8 +1089,8 @@ MeasurementPointAdmin = (function () {
                 description: $("#txtDescription").val(),
                 sensorType: _sensorType,
                 unit: $("#txtUnit").val(),
-                sensorAngle: _sensorAngle != null ? _sensorAngle.toString().replace('.', ',') : null,
-                sensibility: _sensibility != null ? _sensibility.toString().replace('.', ',') : null,
+                sensorAngle: _sensorAngle,// != null ? _sensorAngle.toString().replace('.', ',') : null,
+                sensibility: _sensibility,// != null ? _sensibility.toString().replace('.', ',') : null,
                 orientation: $('#ddlOrientation').ejDropDownList("getSelectedValue"),
 
                 vMax: vMax,
@@ -911,34 +1109,34 @@ MeasurementPointAdmin = (function () {
                 hysteresisTresholdPercentage: hysteresisTresholdPercentage,
             };
 
-            if (_sensorType == 1 || _sensorType == 2 || _sensorType == 3) { // Priximidad, Acelerometro ó Velocimetro 
+            if (_sensorType == 1 || _sensorType == 2 || _sensorType == 3) { // Proximidad, Acelerometro ó Velocimetro 
 
                 if (_sensorType == 2) {
                     control.Integrate = $("#chbIntegrate").ejCheckBox("isChecked");
                 }
                 control.angularReferenceId = _angularReferenceId;
-                control.parameterM = ((1000 / _sensibility) * factor).toString().replace('.', ',');
+                control.parameterM = ((1000 / _sensibility) * factor);//.toString().replace('.', ',');
                 control.parameterB = 0;
             }
             else if (_sensorType == 4) { // Referencia Angular
                 if (![minimumNoiseInVolts, tresholdPercentage, hysteresisTresholdPercentage].includes(null)) {
                     control.RotationDirection = $('#ddlRotationDirection').ejDropDownList("getSelectedValue");
-                    control.minimumNoiseInVolts = minimumNoiseInVolts.toString().replace('.', ',');
-                    control.tresholdPercentage = tresholdPercentage.toString().replace('.', ',');
-                    control.hysteresisTresholdPercentage = hysteresisTresholdPercentage.toString().replace('.', ',');
+                    control.minimumNoiseInVolts = minimumNoiseInVolts;//.toString().replace('.', ',');
+                    control.tresholdPercentage = tresholdPercentage;//.toString().replace('.', ',');
+                    control.hysteresisTresholdPercentage = hysteresisTresholdPercentage;//.toString().replace('.', ',');
                 }
             }
             else if (_sensorType == 8) { // Personalizado                
                 if (![m, b].includes(null)) {
                     control.angularReferenceId = _angularReferenceId;
-                    control.parameterM = m.toString().replace('.', ',');
-                    control.parameterB = b.toString().replace('.', ',');
+                    control.parameterM = m;//.toString().replace('.', ',');
+                    control.parameterB = b;//.toString().replace('.', ',');
                     control.sensibility = 1; // "0,0D"; // Hace que no guarde en base de datos, ya que en la entidad esta propiedad tiene [BsonIgnoreIfDefault]
                 }
             }
             else if (_sensorType == 9) { // Desplazamiento axial
                 control.angularReferenceId = _angularReferenceId;
-                control.parameterM = ((1000 / _sensibility) * factor).toString().replace('.', ',');
+                control.parameterM = ((1000 / _sensibility) * factor);//.toString().replace('.', ',');
                 control.parameterB = 0;
             }
 
@@ -946,14 +1144,14 @@ MeasurementPointAdmin = (function () {
                 if (![ro, iEx].includes(null)) {
                     mVoltage = 1000 / (coefficient * ro * iEx);
                     bVoltage = -1 / coefficient;
-                    control.parameterM = mVoltage.toString().replace('.', ',');
-                    control.parameterB = bVoltage.toString().replace('.', ',');
+                    control.parameterM = mVoltage;//.toString().replace('.', ',');
+                    control.parameterB = bVoltage;//.toString().replace('.', ',');
                     control.angularReferenceId = _angularReferenceId;
                     control.RtdParams = {
                         MaterialType: material,
-                        Coefficient: coefficient.toString().replace('.', ','),
-                        Ro: ro.toString().replace('.', ','),
-                        Iex: iEx.toString().replace('.', ','),
+                        Coefficient: coefficient,//.toString().replace('.', ','),
+                        Ro: ro,//.toString().replace('.', ','),
+                        Iex: iEx,//.toString().replace('.', ','),
                     };
                     control.sensibility = 1; // "0,0D";
                 }
@@ -964,14 +1162,14 @@ MeasurementPointAdmin = (function () {
                 if (![vMax, vMin, xMax, xMin].includes(null)) {
                     mVoltage = (xMax - xMin) / (vMax - vMin);
                     bVoltage = xMax - ((xMax - xMin) / (vMax - vMin) * vMax);
-                    control.parameterM = mVoltage.toString().replace('.', ',');
-                    control.parameterB = bVoltage.toString().replace('.', ',');
+                    control.parameterM = mVoltage;//.toString().replace('.', ',');
+                    control.parameterB = bVoltage;//.toString().replace('.', ',');
                     control.angularReferenceId = _angularReferenceId;
                     control.VoltageParams = {
-                        Vmax: vMax.toString().replace('.', ','),
-                        Vmin: vMin.toString().replace('.', ','),
-                        Xmax: xMax.toString().replace('.', ','),
-                        Xmin: xMin.toString().replace('.', ','),
+                        Vmax: vMax,//.toString().replace('.', ','),
+                        Vmin: vMin,//.toString().replace('.', ','),
+                        Xmax: xMax,//.toString().replace('.', ','),
+                        Xmin: xMin,//.toString().replace('.', ','),
                     };
                     control.sensibility = 1; // "0,0D";
                 }
@@ -982,14 +1180,14 @@ MeasurementPointAdmin = (function () {
                 if (![vMax, vMin, xMax, xMin].includes(null)) {
                     mVoltage = (xMax - xMin) / (rin * (vMax - vMin));
                     bVoltage = xMax - ((xMax - xMin) / (vMax - vMin) * vMax);
-                    control.parameterM = mVoltage.toString().replace('.', ',');
-                    control.parameterB = bVoltage.toString().replace('.', ',');
+                    control.parameterM = mVoltage;//.toString().replace('.', ',');
+                    control.parameterB = bVoltage;//.toString().replace('.', ',');
                     control.angularReferenceId = _angularReferenceId;
                     control.CurrentParams = {
-                        Imax: vMax.toString().replace('.', ','),
-                        Imin: vMin.toString().replace('.', ','),
-                        Xmax: xMax.toString().replace('.', ','),
-                        Xmin: xMin.toString().replace('.', ','),
+                        Imax: vMax,//.toString().replace('.', ','),
+                        Imin: vMin,//.toString().replace('.', ','),
+                        Xmax: xMax,//.toString().replace('.', ','),
+                        Xmin: xMin,//.toString().replace('.', ','),
                     };
                     control.sensibility = 1; // "0,0D";
                 }
@@ -1000,17 +1198,17 @@ MeasurementPointAdmin = (function () {
                 if (![vMax, vMin, xMax, xMin, polesCount, pole1Angle, polarGraphRange].includes(null)) {
                     mVoltage = (xMax - xMin) / (rin * (vMax - vMin));
                     bVoltage = xMax - ((xMax - xMin) / (vMax - vMin) * vMax);
-                    control.parameterM = mVoltage.toString().replace('.', ',');
-                    control.parameterB = bVoltage.toString().replace('.', ',');
+                    control.parameterM = mVoltage;//.toString().replace('.', ',');
+                    control.parameterB = bVoltage;//.toString().replace('.', ',');
                     control.angularReferenceId = _angularReferenceId;
                     control.MagneticFlowParams = {
                         PolesCount: polesCount,
-                        Pole1Angle: pole1Angle.toString().replace('.', ','),
-                        PolarGraphRange: polarGraphRange.toString().replace('.', ','),
-                        Imax: vMax.toString().replace('.', ','),
-                        Imin: vMin.toString().replace('.', ','),
-                        Xmax: xMax.toString().replace('.', ','),
-                        Xmin: xMin.toString().replace('.', ','),
+                        Pole1Angle: pole1Angle,//.toString().replace('.', ','),
+                        PolarGraphRange: polarGraphRange,//.toString().replace('.', ','),
+                        Imax: vMax,//.toString().replace('.', ','),
+                        Imin: vMin,//.toString().replace('.', ','),
+                        Xmax: xMax,//.toString().replace('.', ','),
+                        Xmin: xMin,//.toString().replace('.', ','),
                     };
                     control.sensibility = 1; // "0,0D";
                 }
@@ -1071,7 +1269,7 @@ MeasurementPointAdmin = (function () {
                                 },
                                 RotationDirection: input.RotationDirection,
                                 Units: input.unit,
-                                Orientation: input.orientation, 
+                                Orientation: input.orientation,
                                 OrderPosition: nPosition,
                             }
                     };
@@ -1103,11 +1301,12 @@ MeasurementPointAdmin = (function () {
                     }
 
                     var _subVariables = getListSubVariables(null, null, "Create");
+                    
                     if (input.sensorType == "9") {
                         ej.DataManager(_subVariables).update("IsDefaultValue",
                             {
                                 IsDefaultValue: true,
-                                InitialAxialPosition: $("#txtPositionCero").ejNumericTextbox("getValue").toString().replace('.', ','),
+                                InitialAxialPosition: $("#txtPositionCero").ejNumericTextbox("getValue"),//.toString().replace('.', ','),
                             }, _subVariables);
                     }
 
@@ -1115,7 +1314,9 @@ MeasurementPointAdmin = (function () {
                     $.ajax({
                         url: "/Home/CreateNodeMdVariableAndSubVariables",
                         method: "POST",
-                        data: { nodeAndMdVariableDto: _nodeAndMdVariableDto, subVariables: _subVariables },
+                        data: JSON.stringify({ nodeAndMdVariableDto: _nodeAndMdVariableDto, subVariables: _subVariables }),
+                        contentType: "application/json; charset=utf-8",
+                        //data: { nodeAndMdVariableDto: _nodeAndMdVariableDto, subVariables: _subVariables },
                         success: function (result) {
                             var _newMdVariable = result.mdVariable;
                             var _newNode = result.node;
@@ -1215,6 +1416,7 @@ MeasurementPointAdmin = (function () {
                         _mdVariable.AiMeasureMethod.ParameterValues = _objMdVariable.AiMeasureMethod.ParameterValues != null ? _objMdVariable.AiMeasureMethod.ParameterValues : [];
                         _mdVariable.AiMeasureMethod.M = input.parameterM == null ? 1 : input.parameterM;
                         _mdVariable.AiMeasureMethod.B = input.parameterB;
+                        _mdVariable.AiMeasureMethod.AiCoupling = _objMdVariable.AiMeasureMethod.AiCoupling;
                     } else {
                         _mdVariable.AiMeasureMethod = null;
                     }
@@ -1233,11 +1435,16 @@ MeasurementPointAdmin = (function () {
                             _mdVariable.MagneticFlowParams = input.MagneticFlowParams;
                     }
 
+                    //ValidateData(_mdVariable);
+
                     $.ajax({
                         url: "/Home/UpdateMdVariableAndNode",
                         method: "POST",
-                        data: { mdVariable: _mdVariable },
+                        //data: { mdVariable: _mdVariable },
+                        data: JSON.stringify({ mdVariable: _mdVariable }),
+                        contentType: "application/json; charset=utf-8",
                         success: function (result) {
+                            _mdVariable = result;
 
                             var _subVariables = getListSubVariables(_objMdVariable.Id, null, "Actualizar");
                             // Si el pto de medición es "Desplazamiento axial" la subvariable "Directa" se le setea la propiedad "InitialAxialPosition"
@@ -1245,36 +1452,52 @@ MeasurementPointAdmin = (function () {
                                 ej.DataManager(_subVariables).update("IsDefaultValue",
                                     {
                                         IsDefaultValue: true,
-                                        InitialAxialPosition: $("#txtPositionCero").ejNumericTextbox("getValue").toString().replace('.', ','),
+                                        InitialAxialPosition: $("#txtPositionCero").ejNumericTextbox("getValue"),//.toString().replace('.', ','),
                                     }, _subVariables);
                             }
 
                             //var hasChanges = HasChangesSubVariables(_subVariablesOriginal, _subVariables);
-                            //alert(hasChanges);                        
+                            //alert(hasChanges); 
+                            //ValidateData(_subVariables);
 
                             $.ajax({
                                 url: "/Home/UpdateSubVariables",
-                                data: { subVariables: _subVariables },
+                                //data: { subVariables: _subVariables },
+                                data: JSON.stringify({ subVariables: _subVariables }),
+                                contentType: "application/json; charset=utf-8",
                                 method: "POST",
-                                success: function (result) { },
+                                success: function (result) {
+                                    _mdVariable.SubVariables = result;
+                                    //$("#measurementPoints").ejListBox("refresh", true);
+
+                                    //var point = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("Id", "equal", _mdVariable.Id, false))[0];
+                                    //if (point !== undefined) {
+                                    //    _mdVariable.ParentNodeId = point.ParentNodeId; // Se agrega "ParentNodeId" ya que no es retornada en el objeto "result" pero si existe en el mainCache.loadedMeasurementPoints
+                                    //    point = _mdVariable;
+                                    //}
+                                    ej.DataManager(mainCache.loadedMeasurementPoints).update("Id", _mdVariable, mainCache.loadedMeasurementPoints);
+                                    $("#measurementPoints").ejListBox("refresh", true);
+                                    $("#formMdVariable").ejDialog("close");
+                                    popUp("success", "Se actualizó correctamente el punto de medición!");
+                                },
                                 complete: function (result) {
 
                                     //Actualiza el nombre del punto de medición editado
-                                    selectedMeasurementPoint.Name = input.name;
-                                    selectedMeasurementPoint.Orientation = input.orientation;
-                                    selectedMeasurementPoint.SensorTypeCode = input.sensorType;
-                                    selectedMeasurementPoint.Units = input.unit;
-                                    selectedMeasurementPoint.SensorAngle = input.sensorAngle;
-                                    selectedMeasurementPoint.RtdParams = input.RtdParams,
-                                    selectedMeasurementPoint.CurrentParams = input.CurrentParams;
-                                    selectedMeasurementPoint.VoltageParams = input.VoltageParams;
-                                    selectedMeasurementPoint.MagneticFlowParams = input.MagneticFlowParams;
+                                    //selectedMeasurementPoint.Name = input.name;
+                                    //selectedMeasurementPoint.Orientation = input.orientation;
+                                    //selectedMeasurementPoint.SensorTypeCode = input.sensorType;
+                                    //selectedMeasurementPoint.Units = input.unit;
+                                    //selectedMeasurementPoint.SensorAngle = input.sensorAngle;
+                                    //selectedMeasurementPoint.RtdParams = input.RtdParams,
+                                    //selectedMeasurementPoint.CurrentParams = input.CurrentParams;
+                                    //selectedMeasurementPoint.VoltageParams = input.VoltageParams;
+                                    //selectedMeasurementPoint.MagneticFlowParams = input.MagneticFlowParams;
 
-                                    $("#measurementPoints").ejListBox("refresh", true);
-                                    ej.DataManager(mainCache.loadedMeasurementPoints).update("Id", _mdVariable, mainCache.loadedMeasurementPoints);
+                                    //$("#measurementPoints").ejListBox("refresh", true);
+                                    //ej.DataManager(mainCache.loadedMeasurementPoints).update("Id", _mdVariable, mainCache.loadedMeasurementPoints);
 
-                                    $("#formMdVariable").ejDialog("close");
-                                    popUp("success", "Se actualizó correctamente el punto de medición!");
+                                    //$("#formMdVariable").ejDialog("close");
+                                    //popUp("success", "Se actualizó correctamente el punto de medición!");
                                 },
                                 error: function (jqXHR, textStatus) {
                                     popUp("error", "Ha ocurrido un error, intentelo de nuevo!")
@@ -1327,12 +1550,12 @@ MeasurementPointAdmin = (function () {
                         contentType: "textandimage",
                         showRoundedCorner: true,
                         prefixIcon: "e-icon e-delete",
-                        click: function (args) {                            
+                        click: function (args) {
                             var dsPoints = [];
-                            var listPoints= $('#measurementPoints').ejListBox("getSelectedItems");
+                            var listPoints = $('#measurementPoints').ejListBox("getSelectedItems");
                             $.each(listPoints, function (i, item) {
                                 dsPoints.push(item.data);
-                            });                            
+                            });
 
                             $.ajax({
                                 //url: "/Home/DeleteMdVariableById",
@@ -1378,6 +1601,9 @@ MeasurementPointAdmin = (function () {
                             $("#dialogDelete").ejDialog("close");
                         }
                     });
+                },
+                open: function (args) {
+                    $(".e-resize-handle").removeClass("e-js");
                 },
                 close: function (args) {
                     $("#btnDelete").ejButton("destroy");
@@ -1459,8 +1685,10 @@ MeasurementPointAdmin = (function () {
                 }
 
                 if (brothers.length > 0) {
-                    var assetId = ej.DataManager(mainCache.loadedAssets).executeLocal(ej.Query().where("Id", "equal", brothers[0].ParentId, false))[0].AssetId;
-                    GetListReferenceAngular(assetId);
+                    var _asset = ej.DataManager(mainCache.loadedAssets).executeLocal(ej.Query().where("Id", "equal", brothers[0].ParentId, false))[0];
+                    if (_asset !== undefined) {
+                        GetListReferenceAngular(_asset.AssetId);
+                    }
                 }
             }
         }
@@ -1707,24 +1935,29 @@ MeasurementPointAdmin = (function () {
                 case 1: // Proximidad
                     if (unit == "um") {
                         updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 1000, Minimum: 0 }, subVariables);
+                        ej.DataManager(subVariables).update("MeasureType", { MeasureType: 4, Units: unit, Maximum: 900, Minimum: 0 }, subVariables);
                         $("#txtSensibility").ejNumericTextbox({ value: 7.87 });
                     }
                     else if (unit == "mils") {
                         updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 40, Minimum: 0 }, subVariables);
+                        ej.DataManager(subVariables).update("MeasureType", { MeasureType: 4, Units: unit, Maximum: 36, Minimum: 0 }, subVariables);
                         $("#txtSensibility").ejNumericTextbox({ value: 200 });
                     }
                     break;
                 case 2: // Acelerómetro    
                     if (unit == "g") {
-                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 50, Minimum: 0 }, subVariables);
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 10, Minimum: 0 }, subVariables);
+                        ej.DataManager(subVariables).update("MeasureType", { MeasureType: 4, Units: unit, Maximum: 9, Minimum: 0 }, subVariables);
                         $("#txtSensibility").ejNumericTextbox({ value: 100 });
                     }
                     else if (unit == "mg") {
-                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: integrate == true ? "mm/s" : unit, Maximum: integrate == false ? 50000 : 40, Minimum: 0, FromIntegratedWaveform: integrate == true ? 1 : 0, MeasureType: integrate == true ? 3 : 1 }, subVariables);
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: integrate ? "mm/s" : unit, Maximum: integrate ? 50 : 10000, Minimum: 0, FromIntegratedWaveform: integrate ? 1 : 0, MeasureType: integrate ? 3 : 1 }, subVariables);
+                        ej.DataManager(subVariables).update("MeasureType", { MeasureType: 4, Units: unit, Maximum: integrate ? 45 : 9000, Minimum: 0 }, subVariables);
                         $("#txtSensibility").ejNumericTextbox({ value: 0.1 });
                     }
                     else if (unit == "m/s^2") {
-                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 500, Minimum: 0 }, subVariables);
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 98, Minimum: 0 }, subVariables);
+                        ej.DataManager(subVariables).update("MeasureType", { MeasureType: 4, Units: unit, Maximum: 90, Minimum: 0 }, subVariables);
                         $("#txtSensibility").ejNumericTextbox({ value: 10 });
                     }
 
@@ -1747,7 +1980,7 @@ MeasurementPointAdmin = (function () {
 
                         if (original.length == 1) {
                             original[0].Units = unit;
-                            original[0].Maximum = integrate == false ? 50000 : 40,
+                            original[0].Maximum = (integrate == false) ? 1 : 10000,
                             original[0].Minimum = 0,
                             original = original[0];
                             $("#gridSubVariables").ejGrid("updateRecord", "Id", original);
@@ -1756,12 +1989,30 @@ MeasurementPointAdmin = (function () {
                     break;
                 case 3: // Velocímetro
                     if (unit == "mm/s") {
-                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 1250, Minimum: 0 }, subVariables);
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 50, Minimum: 0 }, subVariables);
+                        ej.DataManager(subVariables).update("MeasureType", { MeasureType: 4, Units: unit, Maximum: 45, Minimum: 0 }, subVariables);
                         $("#txtSensibility").ejNumericTextbox({ value: 4 });
                     }
                     else if (unit == "In/s") {
-                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 50, Minimum: 0 }, subVariables);
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 2, Minimum: 0 }, subVariables);
+                        ej.DataManager(subVariables).update("MeasureType", { MeasureType: 4, Units: unit, Maximum: 1.8, Minimum: 0 }, subVariables);
                         $("#txtSensibility").ejNumericTextbox({ value: 100 });
+                    }
+                    break;
+                case 5: // RTD
+                    if (unit == "°C") {
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 100, Minimum: 0 }, subVariables);
+                    }
+                    else if (unit == "°F") {
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 212, Minimum: 0 }, subVariables);
+                    }
+                    break;
+                case 9: // Desplazamient axial
+                    if (unit == "um") {
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 1000, Minimum: 0 }, subVariables);
+                    }
+                    else if (unit == "mils") {
+                        updateData = ej.DataManager(subVariables).update("IsDefaultValue", { IsDefaultValue: true, Units: unit, Maximum: 40, Minimum: 0 }, subVariables);
                     }
                     break;
                 default:
@@ -1824,7 +2075,7 @@ MeasurementPointAdmin = (function () {
                             $("#lblSensibility").text("Sensibilidad [mV/Unidad]");
                             var _instance = $("#gridSubVariables").ejGrid("instance");
                         }
-                        $("#gridSubVariables").ejGrid("hideColumns", "Fuente");
+                        //$("#gridSubVariables").ejGrid("hideColumns", "Fuente");
                         $("#voltageOrCurrentFields").addClass('hidden');
                         $("#sensorCustomFields").addClass('hidden');
                         $("#magneticFlowFields").addClass('hidden');
@@ -2009,7 +2260,7 @@ MeasurementPointAdmin = (function () {
                                 $("#gridSubVariables").ejGrid("dataSource", []);
                                 $("#gridSubVariables").ejGrid("dataSource", [
                                     new SubVariables(_idSubVariable++).Resistencia, new SubVariables(_idSubVariable++).Inductancia, new SubVariables(_idSubVariable++).Capacitancia,
-                                    new SubVariables(_idSubVariable++).VoltajeCampo, new SubVariables(_idSubVariable++).CorrienteCampo, 
+                                    new SubVariables(_idSubVariable++).VoltajeCampo, new SubVariables(_idSubVariable++).CorrienteCampo,
                                     new SubVariables(_idSubVariable++).DCFugasTierra, new SubVariables(_idSubVariable++).AmpFugasTierra]);
                             }
                             $("#gridSubVariables").ejGrid("hideColumns", ["Cálculo"]);
@@ -2107,7 +2358,7 @@ MeasurementPointAdmin = (function () {
                         var unit = $("#txtUnit").val();
                         var kph = $("#ddlAngularReference").ejDropDownList("getSelectedValue");
                         if (args.isChecked) {
-                            $("#gridSubVariables").ejGrid("showColumns", "Fuente");
+                            //$("#gridSubVariables").ejGrid("showColumns", "Fuente");
                             updateFieldsGridSubVariables(true, "mm/s");
                             var exist = ej.DataManager(data).executeLocal(ej.Query().where("FromIntegratedWaveform", "equal", 0, false));
                             if (exist.length == 0) {
@@ -2130,7 +2381,7 @@ MeasurementPointAdmin = (function () {
                             $('#ddlUnits').ejDropDownList("disable");
                         }
                         else {
-                            $("#gridSubVariables").ejGrid("hideColumns", "Fuente");
+                            //$("#gridSubVariables").ejGrid("hideColumns", "Fuente");
                             updateFieldsGridSubVariables(false, unit);
 
                             for (var i = 0; i < data.length; i++) {
@@ -2157,12 +2408,12 @@ MeasurementPointAdmin = (function () {
                         var sensorType = $('#ddlSensorType').ejDropDownList("getSelectedValue");
                         if (sensorType == "2") {
                             if (args.isChecked) {
-                                $("#gridSubVariables").ejGrid("showColumns", "Fuente");
+                                //$("#gridSubVariables").ejGrid("showColumns", "Fuente");
                                 $("#gridSubVariables").ejGrid("addRecord", _original);
                                 $('#ddlUnits').ejDropDownList("selectItemByValue", "mg");
                                 $('#ddlUnits').ejDropDownList("disable");
                             } else {
-                                $("#gridSubVariables").ejGrid("hideColumns", "Fuente");
+                                //$("#gridSubVariables").ejGrid("hideColumns", "Fuente");
                                 $("#gridSubVariables").ejGrid("deleteRecord", "Id", { Id: _original.Id });
                                 $('#ddlUnits').ejDropDownList("enable");
                             }
@@ -2214,6 +2465,7 @@ MeasurementPointAdmin = (function () {
                 value: operation == "edit" ? (data.AngularReferenceId != null ? data.AngularReferenceId : "0") : "0",
                 width: "100%",
                 change: function (args) {
+                    var unit = $("#txtUnit").val();
                     if (operation == "edit") {
                         var data = $("#gridSubVariables").data("ejGrid").model.dataSource;
                         if (args.value != "0") {
@@ -2223,13 +2475,39 @@ MeasurementPointAdmin = (function () {
                                 if (integrate) {
                                     _amplitud1x.ParentId = selectedMeasurementPoint.Id;
                                     _amplitud1x.Units = "mm/s";
+                                    _amplitud1x.Maximum = 45;
                                     _amplitud1x.FromIntegratedWaveform = 1;
                                     _fase1x.ParentId = selectedMeasurementPoint.Id;
                                     _fase1x.FromIntegratedWaveform = 1;
                                 } else {
                                     _amplitud1x.ParentId = selectedMeasurementPoint.Id;
-                                    _amplitud1x.Units = $("#txtUnit").val();
+                                    _amplitud1x.Units = unit; //$("#txtUnit").val();
                                     _amplitud1x.FromIntegratedWaveform = 0;
+                                    switch (selectedMeasurementPoint.SensorTypeCode) {
+                                        case 1: // PRX
+                                            if (unit == "um")
+                                                _amplitud1x.Maximum = 900;
+                                            else if (unit == "mils")
+                                                _amplitud1x.Maximum = 36;
+                                            break;
+                                        case 2: // ACC
+                                            if (unit == "g")
+                                                _amplitud1x.Maximum = 9;
+                                            else if (unit == "mg")
+                                                _amplitud1x.Maximum = 9000;
+                                            else if (unit == "m/s^2")
+                                                _amplitud1x.Maximum = 90;
+                                            break
+                                        case 3: // VEL
+                                            if (unit == "mm/s")
+                                                _amplitud1x.Maximum = 45;
+                                            else if (unit == "In/s")
+                                                _amplitud1x.Maximum = 1.8;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    //_amplitud1x.Maximum = 90;
                                     _fase1x.ParentId = selectedMeasurementPoint.Id;
                                     _fase1x.FromIntegratedWaveform = 0;
                                 }
@@ -2254,7 +2532,7 @@ MeasurementPointAdmin = (function () {
                         var _instance = $("#gridSubVariables").ejGrid("instance").model.currentViewData;
                         var sensorType = $('#ddlSensorType').ejDropDownList("getSelectedValue");
                         var integrate = $("#chbIntegrate").ejCheckBox("isChecked");
-                        var unit = $("#txtUnit").val();
+                        //var unit = $("#txtUnit").val();
                         if (args.value != "0") {
                             if (sensorType == "1" || sensorType == "2" || sensorType == "3") {
                                 var exist = ej.DataManager(_instance).executeLocal(ej.Query().where(
@@ -2288,18 +2566,32 @@ MeasurementPointAdmin = (function () {
                 decimalPlaces: 2,
             });
 
-            var _subVariables;
+            //var _subVariables;
+            //if (operation == "edit") {
+            //    _subVariables = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("Id", "equal", data.Id, false))[0].SubVariables;
+            //    _subVariables = ej.DataManager(_subVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, false));
+
+            //    if (_subVariables.length == 0) {
+            //        _subVariables = null;
+            //    }
+            //}
+            var initialAxialPosition;
             if (operation == "edit") {
-                _subVariables = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("Id", "equal", data.Id, false))[0].SubVariables;
+                var _subVariables = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("Id", "equal", data.Id, false))[0].SubVariables;
                 _subVariables = ej.DataManager(_subVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, false));
 
-                if (_subVariables.length == 0)
+                if (_subVariables.length == 0) {
                     _subVariables = null;
+                    initialAxialPosition = 10;
+                } else {
+                    initialAxialPosition = _subVariables[0].InitialAxialPosition;
+                }
             }
 
             $("#txtPositionCero").ejNumericTextbox({
                 width: "100%",
-                value: operation == "edit" ? (_subVariables[0].InitialAxialPosition != 0 ? _subVariables[0].InitialAxialPosition : 10) : 10,
+                value: (operation == "edit") ? initialAxialPosition : 10,
+                //value: operation == "edit" ? (_subVariables[0].InitialAxialPosition != 0 ? _subVariables[0].InitialAxialPosition : 10) : 10,
                 decimalPlaces: 2,
                 focusOut: function (args) {
                     // Cambia el valor de la propiedad InitialAxialPosition de la subvariable "Directa"
@@ -2391,6 +2683,65 @@ MeasurementPointAdmin = (function () {
                     $("#divSaveWaveform").hide();
                     $("#notRefenceAngularFields").hide();
                 }
+            }
+        }
+
+
+        // Valida los datos antes de enviarse al servidor para evitar valores NaN en propiedades double
+        function ValidateData(data) {
+            for (var p in data) {
+                if (["Sensibility", "SensorAngle", "Coefficient", "Ro", "Iex", "Vmax", "Vmin", "Xmax", "Xmin", "Imax", "Imin", "M", "B", "Value", "InitialAxialPosition", "Pole1Angle", "PolarGraphRange","ThresholdLatency"].includes(p)) {
+                    var value = isNaN(data[p]);
+                    if (value) {
+                        console.log("Propiedad '" + p + "' obtuvo un valor NaN");
+                        data[p] = 1;
+                    }
+                }
+
+                if (p == "AiMeasureMethod") {
+                    if (data.AiMeasureMethod)
+                        ValidateData(data.AiMeasureMethod);
+                }
+
+                if (p == "SensorTypeCode") {
+                    if (data.SensorTypeCode == 5)
+                        ValidateData(data.RtdParams);
+                    else if (p.SensorTypeCode == 6)
+                        ValidateData(data.VoltageParams);
+                    else if (p.SensorTypeCode == 7)
+                        ValidateData(data.CurrentParams);
+                    else if (p.SensorTypeCode == 10)
+                        ValidateData(data.MagneticFlowParams);
+                }
+
+                if (p == "SubVariables") {
+                    if (data.SubVariables) {
+                        for (var s in data.SubVariables) {
+                            ValidateData(data.SubVariables);
+                        }
+                    }
+                }
+
+                if (p == "Bands") {
+                    if (data.Bands) {
+                        for (var b in data.Bands) {
+                            if (data.Bands[b].UpperThreshold)
+                                ValidateData(data.Bands[b].UpperThreshold);
+                            else if (data.Bands[b].LowerThreshold)
+                                ValidateData(data.Bands[b].LowerThreshold);
+                        }
+                    }
+                }
+            }
+        }
+
+        function ValidateSubvariables(data) {            
+            if (data) {
+                for (var i = 0; i < data.length; i++) {
+                    for (var d in data[i]) {
+
+                    }
+                }                
             }
         }
     };

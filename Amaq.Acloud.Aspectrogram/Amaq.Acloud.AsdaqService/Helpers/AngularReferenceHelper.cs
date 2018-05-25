@@ -23,18 +23,10 @@
         public static uint[] GetAngularReferencePositions(double[] waveformInVolts, double minimumNoiseInVolts, double thresholdPercentage, double hysteresisThresholdPercentage)
         {
             var angularReferencePositions = new List<uint>();
-            //for (int i = 0; i < waveformInVolts.Length; i++)
-            //{
-            //    waveformInVolts[i] = Math.Abs(waveformInVolts[i]);
-            //}
             var noiseInVolts = OverallMeasureHelper.CalculatePeakToPeak(waveformInVolts);
             var minimum = waveformInVolts.Min();
             var threshold = minimum + (noiseInVolts * thresholdPercentage);
             var hysteresisThreshold = minimum + (noiseInVolts * hysteresisThresholdPercentage);
-            //for (int i = 0; i < waveformInVolts.Length; i++)
-            //{
-            //    waveformInVolts[i] = Math.Abs(waveformInVolts[i]);
-            //}
 
             if (noiseInVolts >= minimumNoiseInVolts)
             {
@@ -78,29 +70,19 @@
         /// <summary>
         /// Calcula la velocidad en Rpm
         /// </summary>
-        /// <param name="numberOfFlanks">Cantidad de flancos</param>
-        /// <param name="firstFlank">Posición primer flanco</param>
-        /// <param name="lastFlank">Posición último flanco</param>
+        /// <param name="angularPositions">Total de flancos</param>
         /// <param name="sampleRate">Frecuencia de muestreo con la que se están adquiriendo las formas de onda</param>
         /// <param name="samplesToRead">Número de muestras</param>
-        /// <param name="step">Cantidad de señales entre el primer flanco y el último flanco</param>
         /// <returns></returns>
-        public static double CalculateRpm(int numberOfFlanks, int firstFlank, int lastFlank, double sampleRate, int samplesToRead,
-            int step)
+        public static double CalculateRpm(uint[] angularPositions, double sampleRate, int samplesToRead)
         {             
-            //double rpmMinimum = 2.0 / WINDOW_IN_SECONDS * 60.0; // Velocidad mínima: 20 rpm.
             var rpm = 0.0;
-
-            if (numberOfFlanks <= 1)
+            if (angularPositions.Length <= 1)
+            {
                 return rpm;
-
-            var lastF = (int)(lastFlank + (AsdaqProperties.WINDOW_IN_SECONDS - 1) * samplesToRead);
-            var firstF = (int)(firstFlank + (AsdaqProperties.WINDOW_IN_SECONDS - 1 - step) * samplesToRead);
-
-            var T = (lastF - firstF) / sampleRate;
-
-            rpm = (numberOfFlanks - 1) / T * 60;
-
+            }
+            var T = (angularPositions.Last() - angularPositions.First()) / sampleRate;
+            rpm = (angularPositions.Length - 1) / T * 60;
             return rpm;
         }
 

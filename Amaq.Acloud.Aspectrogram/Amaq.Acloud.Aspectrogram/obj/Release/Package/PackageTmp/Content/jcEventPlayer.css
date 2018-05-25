@@ -1,0 +1,27 @@
+﻿/*
+ * jcEventPlayer.css
+ * Estilos por defecto para el reproductor de eventos
+ * @author Jorge Calderon
+ */
+
+button {
+	border:none;
+	cursor:pointer;
+    font-size:16px;
+    background-color:white;
+}
+
+/* Background del slider en lo que ha avanzado el tiempo */
+.ui-slider-range {
+    background: #ef2929;
+}
+
+/* Background de inicio de la suma progressBar + slider */
+.ui-widget-content {
+    background:#aaa;
+}
+
+.ui-progressbar .ui-progressbar-value {
+    margin-top: -1px;
+    margin-left: 1px;
+}

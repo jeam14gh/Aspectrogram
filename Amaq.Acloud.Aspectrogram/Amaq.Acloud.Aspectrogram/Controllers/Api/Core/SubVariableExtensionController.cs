@@ -89,9 +89,8 @@
         /// </summary>
         [HttpPost]
         public async Task<IHttpActionResult> UpdateMany2(List<SubVariableExtension> subVariables)
-        {
-            new SubVariableExtensionBl(CoreDbUrl).UpdateMany(subVariables);
-             return await Task.FromResult(Ok());
+        {            
+            return await Task.FromResult(Ok(new SubVariableExtensionBl(CoreDbUrl).UpdateMany(subVariables)));
         }
 
         /// <summary>

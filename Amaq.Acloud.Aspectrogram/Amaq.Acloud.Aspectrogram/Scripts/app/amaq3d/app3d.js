@@ -13,7 +13,7 @@ App3d = (function () {
      * Constructor.
      */
     App3d = function (timeMode, width, height, aspectRatio, id3d, canvasType, historicCount) {
-        // Propiedades privadas
+        // Propiedades privadas_scene
         var
             // Contenedor HTML de la grafica
             _container,
@@ -44,6 +44,7 @@ App3d = (function () {
             // Mantiene la lista de los diferentes tipos de medida de los diferentes tipos de sensor del activo seleccionado
             _distinctMeasures = [],
             _filteredMeasurementPoints,
+            _xCoordinateUnit,
             _showEditor,
             _showViewer3d,
             _onSettingsMenuItemClick,
@@ -99,6 +100,7 @@ App3d = (function () {
             _timeStart,
             _timeEnd,
             _waterfall,
+            _realFrec,
             _maxSpecInWaterfall,
             _flagFirstWaterfall = true,
             _specContent,
@@ -110,6 +112,9 @@ App3d = (function () {
             _nominalVelocity,
             _inValWatFilterSpac,
             _inValWatFilterSpec,
+            _changeFreqParameters,
+            _xCoordinateUnitManagement,
+            _frecType,
             _calculateSpacementArray,
             _createWaterfallAreaDialog,
             _createAreaDialogApp3d,
@@ -135,17 +140,10 @@ App3d = (function () {
         _valueType1 = [];
         _valueType3 = [];
         _maxSpecInWaterfall = 200;
-
-        /*
-        if (canvasType == "Viewer") {
-            _wId = "-" + _widgetId;
-        } else if (canvasType == "Waterfall" || canvasType == "FullSpecWaterfall") {
-            _wId = "";
-        }*/
-
+        _xCoordinateUnit = clone(xCoordinateUnits.Cpm);
         _wId = "-" + _widgetId;
-        
-        
+        _frecType = "Cpm";
+
         this.containerHistoricalId = "";
 
         /*
@@ -173,7 +171,7 @@ App3d = (function () {
                 parentContainer.append('<div id="' + idContLoader + '" style="width: 100%; height: 100%; position: absolute; top: 0px; background-color: black; display: block; z-index: 2; "></div>');
                 _contLoader = $("#" + idContLoader);
                 _contLoader.html('<center><img src="../Content/images/loading.gif" height="126px" width="232px" style="margin: auto; top: 100px; position: relative;"><div style="color: white; position: relative; top: 70px;">Cargando...</div></center>');
-            }          
+            }
         };
 
         /*
@@ -181,9 +179,8 @@ App3d = (function () {
          * @param {String} title Titulo a ser mostrado en la parte superior del chart
          */
         _buildViewer3d = function () {
-           
-            var loadMeshes, flagsPlots;
 
+            var loadMeshes, flagsPlots;
 
             _manageCanvas = new ManageCanvas3d(id3d, "Viewer", _containerParentId, null, _wId);
             _manageCanvas.openCanvas();
@@ -201,60 +198,58 @@ App3d = (function () {
 
 
             _loadData = new LoadDataViewer3d(id3d, _wId);
-            flagsPlots = globals3d.flags[id3d + _wId].plots;  
+            flagsPlots = globals3d.flags[id3d + _wId].plots;
 
             _userInterface = new UiViewer3d(id3d, loadMeshes, _loadData, _wId);
             _userInterface.timeMode = _timeMode;
             _userInterface.createUI();
 
-            
-
             for (var i = 0; i < _userInterface.mainMenu.children.length; i++) {
                 for (var j = 0; j < _userInterface.mainMenu.children[i].objs.length; j++) {
 
-                   
-                        _userInterface.mainMenu.children[i].objs[j].obj.on("click", function (args) {
-                            _userInterface.chooseFunction(args.currentTarget.id);
-                            if (timeMode == 0) {
-                                if (flagsPlots.spec || flagsPlots.spec100p || flagsPlots.orb || flagsPlots.orb1X || flagsPlots.ShaftDef) {
 
-                                    var currentSubVariableIdList = clone(_subVariableIdList);
-                                    // Eliminar de la cache las subVariables a consultar en el servidor
-                                    _aWidget.manageCache(currentSubVariableIdList, "delete");
-                                    // Remover las subvariables especificadas dentro de la suscripcion
-                                    _subscription.detachItems(currentSubVariableIdList);
-                                    _subVariableIdList = [];
+                    _userInterface.mainMenu.children[i].objs[j].obj.on("click", function (args) {
+                        _userInterface.chooseFunction(args.currentTarget.id);
+                        if (timeMode == 0) {
+                            if (flagsPlots.spec || flagsPlots.spec100p || flagsPlots.orb || flagsPlots.orb1X || flagsPlots.ShaftDef) {
 
-                                    for (var k = 0; k < _valueType3.length; k++) {
-                                        _subVariableIdList.push(_valueType3[k]);
-                                    }
-                                    for (var l = 0; l < _valueType1.length; l++) {
-                                        _subVariableIdList.push(_valueType1[l]);
-                                    }
+                                var currentSubVariableIdList = clone(_subVariableIdList);
+                                // Eliminar de la cache las subVariables a consultar en el servidor
+                                _aWidget.manageCache(currentSubVariableIdList, "delete");
+                                // Remover las subvariables especificadas dentro de la suscripcion
+                                _subscription.detachItems(currentSubVariableIdList);
+                                _subVariableIdList = [];
 
-                                    // Actualizar en la cache las subVariables a consultar en el servidor
-                                    _aWidget.manageCache(_subVariableIdList, "update");
-                                    // Agrega las nuevas subvariables a la suscripcion
-                                    _subscription.attachItems(_subVariableIdList);
+                                for (var k = 0; k < _valueType3.length; k++) {
+                                    _subVariableIdList.push(_valueType3[k]);
                                 }
-                                else {
-
-                                    var currentSubVariableIdList = clone(_subVariableIdList);
-                                    // Eliminar de la cache las subVariables a consultar en el servidor
-                                    _aWidget.manageCache(currentSubVariableIdList, "delete");
-                                    // Remover las subvariables especificadas dentro de la suscripcion
-                                    _subscription.detachItems(currentSubVariableIdList);
-                                    _subVariableIdList = [];
-
-                                    _subVariableIdList = clone(_valueType1);
-                                    // Actualizar en la cache las subVariables a consultar en el servidor
-                                    _aWidget.manageCache(_subVariableIdList, "update");
-                                    // Agrega las nuevas subvariables a la suscripcion
-                                    _subscription.attachItems(_subVariableIdList);
+                                for (var l = 0; l < _valueType1.length; l++) {
+                                    _subVariableIdList.push(_valueType1[l]);
                                 }
+
+                                // Actualizar en la cache las subVariables a consultar en el servidor
+                                _aWidget.manageCache(_subVariableIdList, "update");
+                                // Agrega las nuevas subvariables a la suscripcion
+                                _subscription.attachItems(_subVariableIdList);
                             }
-                        });
-                    
+                            else {
+
+                                var currentSubVariableIdList = clone(_subVariableIdList);
+                                // Eliminar de la cache las subVariables a consultar en el servidor
+                                _aWidget.manageCache(currentSubVariableIdList, "delete");
+                                // Remover las subvariables especificadas dentro de la suscripcion
+                                _subscription.detachItems(currentSubVariableIdList);
+                                _subVariableIdList = [];
+
+                                _subVariableIdList = clone(_valueType1);
+                                // Actualizar en la cache las subVariables a consultar en el servidor
+                                _aWidget.manageCache(_subVariableIdList, "update");
+                                // Agrega las nuevas subvariables a la suscripcion
+                                _subscription.attachItems(_subVariableIdList);
+                            }
+                        }
+                    });
+
                 }
             }
 
@@ -262,7 +257,6 @@ App3d = (function () {
             _buffer = globals3d.bufferTrend[id3d + _wId];
             _buffer = {};
 
-            
             for (var i = 0; i < nodes[id3d + _wId].Properties3d.points.children.length; i++) {
                 _buffer[nodes[id3d + _wId].Properties3d.points.children[i].idPoint] = [];
             }
@@ -278,7 +272,7 @@ App3d = (function () {
                 _uiVbles.vblesViewer3d.push(_measurementPoints[i].Id);
             }
             //_uiVbles.vblesViewer3d = _measurementPoints.length;
-           // _uiVbles.createVblesWindows();
+            // _uiVbles.createVblesWindows();
             _createAreaDialogApp3d();
             _createFilterAreaDialogApp3d();
 
@@ -288,7 +282,6 @@ App3d = (function () {
          * Construye la visualizacion 3d - Waterfall, caso no exista.
          * @param {String} title Titulo a ser mostrado en la parte superior del chart
          */
-
         _buildWaterfall3d = function (timeMode, data) {
             var
                 i,
@@ -296,6 +289,7 @@ App3d = (function () {
                 uiWaterfall3d,
                 currentTime,
                 timeStamp,
+                frecMax,
                 vel,
                 arraySignal,
                 date,
@@ -333,12 +327,20 @@ App3d = (function () {
             }
 
             if (timeMode == 1) {
+                frecMax = (data[0].signal.length / data[0].sampleTime) / 2;
                 waterfall = new Waterfall3d(id3d, _wId, false);
                 _waterfall = waterfall;
+
+                waterfall.freqMax.Cpm = frecMax * _xCoordinateUnit.Factor;
+                waterfall.freqMax.Hz = frecMax;
+
                 waterfall.nomVel = vel;
                 waterfall.flagRPM = false;
                 waterfall.createHistoricWaterfall();
-                
+                waterfall.freqChoosed = 1 * _xCoordinateUnit.Factor;
+                waterfall.xCoordinateUnit = _xCoordinateUnit;
+                cascade3d.events[id3d + _wId].waterfall = waterfall;
+
                 arraySignal = [];
                 waterfall.unitsAmp = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, true).select("Units"))[0];
                 overallSubVariable = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, false))[0];
@@ -346,7 +348,13 @@ App3d = (function () {
                 if (overallSubVariable) {
                     waterfall.overallMeasureType = overallSubVariable.MeasureType;
                 }
-                $("#" + _frecContent[1].inputId).val(waterfall.nomVel / 6);
+
+                if (_xCoordinateUnit.Text == "Cpm") {
+                    $("#" + _frecContent[1].inputId).val(frecMax * _xCoordinateUnit.Factor);
+                } else {
+                    $("#" + _frecContent[1].inputId).val(frecMax);
+                }
+
 
                 if (watConfig.type == "espectrograma") {
                     waterfall.fillWaterfallHistCubes(data);
@@ -354,43 +362,47 @@ App3d = (function () {
                 else if (watConfig.type == "clasica") {
                     waterfall.fillClassicWaterfallHist(data);
                 }
-                
+
             }
-            waterfall.chooseFrecuency(100, false);
+            waterfall.chooseFrecuency(false);
 
             uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, data, null, false);
-            uiWaterfall3d.pointInfo.pointName = nameGrandParentAsset + " "  + parentAsset.Name + " - " + _measurementPoint.Name;
+            uiWaterfall3d.pointInfo.pointName = nameGrandParentAsset + " " + parentAsset.Name + " - " + _measurementPoint.Name;
 
 
             uiWaterfall3d.pointInfo.timeRange = [formatDate(new Date(_arraySpecFilter[0])), formatDate(new Date(_arraySpecFilter[_arraySpecFilter.length - 1]))];
             uiWaterfall3d.createUI();
 
-            _scene = cascade3d.scene[id3d + _wId ];
+            _scene = cascade3d.scene[id3d + _wId];
             _canvas = cascade3d.canvas[id3d + _wId];
-            
-            _uiWaterfall3d = uiWaterfall3d;
 
-            
-            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": 1 });
-            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": 1 });
+            _uiWaterfall3d = uiWaterfall3d;
+            if (_xCoordinateUnit.Text == "Cpm") {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": frecMax * _xCoordinateUnit.Factor, "min": _xCoordinateUnit.Factor });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": frecMax * _xCoordinateUnit.Factor, "min": _xCoordinateUnit.Factor });
+            } else {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": frecMax, "min": 1 });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": frecMax, "min": 1 });
+            }
         };
 
         /*
          * Construye la visualizacion 3d - Waterfall, caso no exista.
          * @param {String} title Titulo a ser mostrado en la parte superior del chart
          */
-
         _buildFullSpecWaterfall3d = function (timeMode, data) {
             var
                 i,
                 waterfall,
                 uiWaterfall3d,
                 timeStamp,
+                frecMax,
                 vel,
                 arraySignalX,
                 arraySignalY,
                 date,
                 resp,
+                rotDir,
                 currentTime,
                 dataArrayX,
                 dataArrayY,
@@ -425,38 +437,70 @@ App3d = (function () {
             }
 
             waterfall = new Waterfall3d(id3d, _wId, true);
+            frecMax = (data[_subVariablesId.x][0].signal.length / data[_subVariablesId.x][0].sampleTime) / 2;
             _waterfall = waterfall;
             waterfall.nomVel = vel;
             waterfall.flagRPM = false;
+            waterfall.freqChoosed = 0;
+            fullSpecCascade3d.events[id3d + _wId].waterfall = waterfall;
+
+            waterfall.freqMax.Cpm = frecMax * _xCoordinateUnit.Factor;
+            waterfall.freqMax.Hz = frecMax;
 
             waterfall.createHistoricWaterfall();
+            waterfall.freqChoosed = 1 * _xCoordinateUnit.Factor;
+            waterfall.xCoordinateUnit = _xCoordinateUnit;
+
+            if (_xCoordinateUnit.Text == "Cpm") {
+                $("#" + _frecContent[1].inputId).val(frecMax * _xCoordinateUnit.Factor);
+            } else {
+                $("#" + _frecContent[1].inputId).val(frecMax);
+            }
+            //waterfall.freqMax.Cpm = waterfall.nomVel * _xCoordinateUnit.Factor / 6;
+            //waterfall.freqMax.Hz = waterfall.nomVel / 6;
+
 
             waterfall.unitsAmp = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, true).select("Units"))[0];
 
-            $("#" + _frecContent[1].inputId).val(waterfall.nomVel / 6);
+            rotDir = ej.DataManager(_measurementPoints).executeLocal(
+                    new ej.Query().where("Id", "equal", _measurementPoint.AngularReferenceId, false))[0].RotationDirection;
 
+            rotDir = (rotDir == 1) ? "CW" : "CCW";
 
             if (fSWatConfig.type == "espectrograma") {
-                waterfall.fillWaterfallHistCubesFullSpec(data[_subVariablesId.x], data[_subVariablesId.y]);
+                waterfall.fillWaterfallHistCubesFullSpec(data[_subVariablesId.x], data[_subVariablesId.y], rotDir);
             }
             else if (fSWatConfig.type == "clasica") {
-                waterfall.fillClassicWaterfallHistFullSpec(data[_subVariablesId.x], data[_subVariablesId.y]);
+                waterfall.fillClassicWaterfallHistFullSpec(data[_subVariablesId.x], data[_subVariablesId.y], rotDir);
             }
 
-            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, data[_subVariablesId.x], data[_subVariablesId.y], true);
+            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, data[_subVariablesId.x], data[_subVariablesId.y], true, rotDir);
             uiWaterfall3d.pointInfo.pointName = nameGrandParentAsset + " " + parentAsset.Name + " - " + _measurementPoint.Name;
-
-
             uiWaterfall3d.pointInfo.timeRange = [formatDate(new Date(_arraySpecFilter[0])), formatDate(new Date(_arraySpecFilter[_arraySpecFilter.length - 1]))];
             uiWaterfall3d.createUI();
-
             _scene = fullSpecCascade3d.scene[id3d + _wId];
             _canvas = fullSpecCascade3d.canvas[id3d + _wId];
-
             _uiWaterfall3d = uiWaterfall3d;
 
-            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": -(waterfall.nomVel / 60) * 10 });
-            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": -(waterfall.nomVel / 60) * 10 });
+            if (_xCoordinateUnit.Text == "Cpm") {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                    "max": frecMax * _xCoordinateUnit.Factor,
+                    "min": -frecMax * _xCoordinateUnit.Factor
+                });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                    "max": frecMax * _xCoordinateUnit.Factor,
+                    "min": -frecMax * _xCoordinateUnit.Factor
+                });
+            } else {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                    "max": frecMax,
+                    "min": -frecMax
+                });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                    "max": frecMax,
+                    "min": -frecMax
+                });
+            }
         };
 
         _buildWaterfallRPM3d = function (timeMode, data) {
@@ -467,6 +511,7 @@ App3d = (function () {
                 currentTime,
                 timeStamp,
                 vel,
+                frecMax,
                 arraySignal,
                 date,
                 resp,
@@ -490,30 +535,42 @@ App3d = (function () {
                     nameGrandParentAsset = treeObj.model.fields.dataSource[i].Name + "-";
                 }
             }
-           
+
             if (_measurementPoint.AngularReferenceId != null) {
                 vel = _velocitySubVariable.Maximum;
                 if (vel <= 60) {
                     vel = 1800;
                 }
-            }
-            else {
+            } else {
                 vel = _nominalVelocity;
             }
 
             waterfall = new Waterfall3d(id3d, _wId, false);
+            frecMax = (data[0].signal.length / data[0].sampleTime) / 2;
             _waterfall = waterfall;
             waterfall.nomVel = vel;
             waterfall.flagRPM = true;
+
+            waterfall.freqMax.Cpm = frecMax * _xCoordinateUnit.Factor;
+            waterfall.freqMax.Hz = frecMax;
+
             waterfall.createHistoricWaterfall();
 
-            $("#" + _frecContent[1].inputId).val(waterfall.nomVel / 6);
+            waterfall.freqChoosed = _xCoordinateUnit.Factor;
+            waterfall.xCoordinateUnit = _xCoordinateUnit;
 
+            if (_xCoordinateUnit.Text == "Cpm") {
+                $("#" + _frecContent[1].inputId).val(frecMax * _xCoordinateUnit.Factor);
+            } else {
+                $("#" + _frecContent[1].inputId).val(frecMax);
+            }
+
+
+            cascade3d.events[id3d + _wId].waterfall = waterfall;
 
             if (watConfig.type == "espectrograma") {
                 waterfall.fillWaterfallHistCubes(data);
-            }
-            else if (watConfig.type == "clasica") {
+            } else if (watConfig.type == "clasica") {
                 waterfall.fillClassicWaterfallHist(data);
             }
 
@@ -527,8 +584,25 @@ App3d = (function () {
             _canvas = cascade3d.canvas[id3d + _wId];
             _uiWaterfall3d = uiWaterfall3d;
 
-            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": 1 });
-            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": 1 });
+            if (_xCoordinateUnit.Text == "Cpm") {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                    "max": frecMax * _xCoordinateUnit.Factor,
+                    "min": 1
+                });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                    "max": frecMax * _xCoordinateUnit.Factor,
+                    "min": 1
+                });
+            } else {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                    "max": frecMax,
+                    "min": 1
+                });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                    "max": frecMax,
+                    "min": 1
+                });
+            }
         };
 
         _buildFullSpecWaterfallRPM3d = function (timeMode, data) {
@@ -538,6 +612,8 @@ App3d = (function () {
                 uiWaterfall3d,
                 timeStamp,
                 vel,
+                rotDir,
+                frecMax,
                 arraySignalX,
                 arraySignalY,
                 date,
@@ -570,30 +646,47 @@ App3d = (function () {
                 if (vel <= 60) {
                     vel = 1800;
                 }
-            }
-            else {
+            } else {
                 vel = _nominalVelocity;
             }
 
             waterfall = new Waterfall3d(id3d, _wId, true);
+            frecMax = (data[_subVariablesId.x][0].signal.length / data[_subVariablesId.x][0].sampleTime) / 2;
             _waterfall = waterfall;
             waterfall.nomVel = vel;
             waterfall.flagRPM = true;
-            waterfall.createHistoricWaterfall();
 
-            $("#" + _frecContent[1].inputId).val(waterfall.nomVel / 6);
+
+            waterfall.freqMax.Cpm = frecMax * _xCoordinateUnit.Factor;
+            waterfall.freqMax.Hz = frecMax;
+
+            waterfall.createHistoricWaterfall();
+            waterfall.freqChoosed = 1 * _xCoordinateUnit.Factor;
+            waterfall.xCoordinateUnit = _xCoordinateUnit;
+
+            if (_xCoordinateUnit.Text == "Cpm") {
+                $("#" + _frecContent[1].inputId).val(frecMax * _xCoordinateUnit.Factor);
+            } else {
+                $("#" + _frecContent[1].inputId).val(frecMax);
+            }
+
+            fullSpecCascade3d.events[id3d + _wId].waterfall = waterfall;
 
             waterfall.unitsAmp = ej.DataManager(_measurementPoint.SubVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true, true).select("Units"))[0];
-            
+
+            rotDir = ej.DataManager(_measurementPoints).executeLocal(
+                new ej.Query().where("Id", "equal", _measurementPoint.AngularReferenceId, false))[0].RotationDirection;
+
+            rotDir = (rotDir === 1) ? "CW" : "CCW";
 
             if (fSWatConfig.type == "espectrograma") {
-                waterfall.fillWaterfallHistCubesFullSpec(data[_subVariablesId.x], data[_subVariablesId.y]);
+                waterfall.fillWaterfallHistCubesFullSpec(data[_subVariablesId.x], data[_subVariablesId.y], rotDir);
             }
             else if (fSWatConfig.type == "clasica") {
-                waterfall.fillClassicWaterfallHistFullSpec(data[_subVariablesId.x], data[_subVariablesId.y]);
+                waterfall.fillClassicWaterfallHistFullSpec(data[_subVariablesId.x], data[_subVariablesId.y], rotDir);
             }
 
-            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, _subVariablesId.x, _subVariablesId.y, true);
+            uiWaterfall3d = new UiWaterfall3d(id3d, waterfall, _wId, data[_subVariablesId.x], data[_subVariablesId.y], true, rotDir);
             uiWaterfall3d.pointInfo.pointName = nameGrandParentAsset + " " + parentAsset.Name + " - " + _measurementPoint.Name;
 
 
@@ -605,8 +698,25 @@ App3d = (function () {
 
             _uiWaterfall3d = uiWaterfall3d;
 
-            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": -(waterfall.nomVel / 60) * 10 });
-            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": (waterfall.nomVel / 60) * 10, "min": -(waterfall.nomVel / 60) * 10 });
+            if (_xCoordinateUnit.Text == "Cpm") {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                    "max": frecMax * _xCoordinateUnit.Factor,
+                    "min": -frecMax * _xCoordinateUnit.Factor
+                });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                    "max": frecMax * _xCoordinateUnit.Factor,
+                    "min": -frecMax * _xCoordinateUnit.Factor
+                });
+            } else {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                    "max": frecMax,
+                    "min": -frecMax
+                });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                    "max": frecMax,
+                    "min": -frecMax
+                });
+            }
         };
 
         /*
@@ -707,7 +817,7 @@ App3d = (function () {
                                 };
                                 idx = notStored.indexOf(items[i].timeStamp);
                                 notStored.splice(idx, 1);
-                                if (_sampleRate == null && i== 0) {
+                                if (_sampleRate == null && i == 0) {
                                     _sampleRate = items[i].value.length / items[i].sampleTime;
                                 }
                             }
@@ -722,11 +832,11 @@ App3d = (function () {
                                             dataArray[idx].vel = _nominalVelocity;
                                         }
                                     }
-                                    
+
                                     _refresh(dataArray);
                                 });
                             }
-                           
+
                         });
                         new HistoricalTimeMode().GetDynamicHistoricalData([_measurementPoint.Id], subVariableIdList, _nodeId, _firstArraySpecFilter, _widgetId);
                         break;
@@ -920,28 +1030,39 @@ App3d = (function () {
                         break;
                 }
             }
-            
+
         };
 
 
         // Agregamos los items al menu de opciones para la grafica
-        var settingsMenu = [];
-        if (canvasType === "Waterfall" || canvasType === "FullSpecWaterfall" || canvasType === "WaterfallRPM" || canvasType === "FullSpecWaterfallRPM") {
+        var settingsMenu = [], settingsSubmenu = [];
+        if (canvasType === "Waterfall" || canvasType === "FullSpecWaterfall" || canvasType === "WaterfallRPM" || canvasType === "FullSpecWaterfallRPM" && _flagFirstWaterfall) {
 
-            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Personalización", "personalizateWaterfall"));
+            settingsSubmenu.push(AspectrogramWidget.createSettingsMenuElement(
+              "item",
+              "<i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> Hertz",
+              "xCoordinateHertz" + _widgetId
+            ));
+            settingsSubmenu.push(AspectrogramWidget.createSettingsMenuElement(
+                "item",
+                "<i class=\"fa fa-check-square\" aria-hidden=\"true\"></i> CPM",
+                "xCoordinateCpm" + _widgetId
+            ));
+
+            //settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Personalización", "personalizateWaterfall"));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Filtro", "filterWaterfall"));
+            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("submenu", "Cambiar unidad abscisa", "abscissaUnit", settingsSubmenu));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Información", "infoWaterfall"));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Vista Inicial", "initialViewWaterfall"));
-            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Pantalla Completa", "FullScreenWaterfall"));
-            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Guardar Imagen", "SaveImageWaterfall"));
+            //settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Pantalla Completa", "FullScreenWaterfall"));
+            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Exportar a Excel", "ExportToExcelWaterfall"));
+            //settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Guardar Imagen", "SaveImageWaterfall"));
         }
         if (canvasType === "Viewer") {
-
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Personalización", "configViewer3d"));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Filtro", "filterViewer3d"));
-            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Pantalla Completa", "FullScreenViewer3d"));
+            //settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Pantalla Completa", "FullScreenViewer3d"));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Guardar Imagen", "SaveImageViewer3d"));
-
         }
 
         _createWidget = function (timeStamp, historicalRange, rpmPositions) {
@@ -973,17 +1094,22 @@ App3d = (function () {
                     var gridStack = $(".grid-stack").data("gridstack");
                     var grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                     gridStack.movable(grid, _movableGrid);
-                    
+
                     if (_movableGrid && _scene) {
-                        _scene.cameras[0].detachControl(_canvas);                     
+                        _scene.cameras[0].detachControl(_canvas);
                     } else if (!_movableGrid && _scene) {
                         _scene.cameras[0].attachControl(_canvas, false);
-                        //_scene.camera.inputs.attachInput(camera.inputs.attached.pointers);
                     }
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id, true);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
             });
 
-           
+
             _aWidget.open(); // Abrir AspectrogramWidget
 
             if (canvasType !== "Viewer") {
@@ -998,6 +1124,8 @@ App3d = (function () {
             var $target = $(event.currentTarget),
                  settingsMenuItem = $target.attr("data-value"),
                  i,
+                 target,
+                 menuItem,
                  widgetWidth,
                  widgetPosition,
                  dialogSize,
@@ -1027,11 +1155,12 @@ App3d = (function () {
                 case "filterWaterfall":
                     var element = $("#waterfallAreaDialog-" + canvasType + "-" + _wId).detach();
                     $("#" + _containerParentId).append(element);
-
                     $("#waterfallAreaDialogCont-" + canvasType + "-" + _wId).ejDialog("open");
                     $("#waterfallAreaDialog-" + canvasType + "-" + _wId).css("display", "block");
-
-
+                    break;
+                case "xCoordinateCpm" + _widgetId:
+                case "xCoordinateHertz" + _widgetId:
+                    _xCoordinateUnitManagement($target, settingsMenuItem);
                     break;
                 case "infoWaterfall":
                     _uiWaterfall3d.showArmonicInfo();
@@ -1043,10 +1172,85 @@ App3d = (function () {
                     _uiWaterfall3d.loadInFullScreen();
                     break;
                 case "SaveImageWaterfall":
-                    _uiWaterfall3d.saveImage();
+                    //_uiWaterfall3d.saveImage();
+                    break;
+                case "ExportToExcelWaterfall":
+                    var rpm, timeStamp, contId,
+                        x = [], y = [], // Array de valores de frecuencia y amplitud (x,y) respectivamente para un solo registro
+                        data = [], // Array de arrays
+                        arrayObj = [], //Array de objetos 
+                        factor = _waterfall.xCoordinateUnit.Factor,
+                        unitAmp = _waterfall.unitsAmp, // Unidad de amplitud
+                        unitFre = _waterfall.xCoordinateUnit.Text, // Unidad de frecuencia
+                        labels = ["RPM", "Estampa de tiempo", "Frecuencia " + "(" + unitFre + ")", "Amplitud " + "(" + unitAmp + ")"],
+                        buffer = JSON.parse(JSON.stringify( _waterfall.bufferSpectrum)); // Hacemos una copia de los datos para evitar cambios en sus datos originales
+
+                    if (canvasType == "Waterfall" || canvasType == "WaterfallRPM") {
+                        rpm = cascade3d.vbles[id3d + _wId].RPM;
+                        timeStamp = cascade3d.vbles[id3d + _wId].timeStamp;
+
+                        for (var rt = 0; rt < rpm.length; rt++) {
+                            data[rt] = [];
+                            data[rt].push(rpm[rt].toFixed(0), timeStamp[rt]);
+                        }
+
+                        for (var b = 0; b < buffer.length; b++) {
+                            for (var s = 0; s < buffer[b].spec.length; s++) {
+                                x.push((buffer[b].spec[s][0] * factor).toFixed(2)); // X[0]
+                                y.push(buffer[b].spec[s][1].toFixed(2)); // Y[1]
+                            }
+
+                            data[b].push(x, y);
+                            x = [];
+                            y = [];
+
+                            var obj = new Object({
+                                RPM: data[b][0],
+                                TimeStamp : data[b][1],
+                                Frequency : data[b][2],
+                                Amplitud : data[b][3],
+                            });
+                            arrayObj.push(obj);
+                        }                        
+                    }
+                    else if (canvasType == "FullSpecWaterfall" || canvasType == "FullSpecWaterfallRPM") {
+                        rpm = fullSpecCascade3d.vbles[id3d + _wId].RPM;
+                        timeStamp = fullSpecCascade3d.vbles[id3d + _wId].timeStamp;
+
+                        for (var rt = 0; rt < rpm.length; rt++) {
+                            data[rt] = [];
+                            data[rt].push(rpm[rt].toFixed(0), timeStamp[rt]);
+                        }
+
+                        for (var b = 0; b < buffer.length; b++) {
+                            for (var s = 0; s < buffer[b].spec.length; s++) {
+                                x.push((buffer[b].spec[s][0] * factor).toFixed(2)); // X[0]
+                                if (buffer[b].spec[s][1] != null) {
+                                    y.push(buffer[b].spec[s][1].toFixed(2)); // Y[1] Cuando pertence al lado izquierdo de la gráfica
+                                } else {
+                                    y.push(buffer[b].spec[s][2].toFixed(2)); // Y[2] Cuando pertence al lado derecho de la gráfica
+                                }
+                            }
+                            data[b].push(x, y);
+                            x = [];
+                            y = [];
+
+                            var obj = new Object({
+                                RPM: data[b][0],
+                                TimeStamp: data[b][1],
+                                Frequency: data[b][2],
+                                Amplitud: data[b][3],
+                            });
+                            arrayObj.push(obj);
+                        }
+                    }
+
+                    name = "Historico, " + canvasType + " - " + _measurementPoint.Name;
+                    contId = "tableToExcel" + canvasType + _wId;
+                    var jsonData = JSON.parse(JSON.stringify(arrayObj));
+                    JsonToCSVConvert(jsonData, name, true, labels);
                     break;
                 case "configViewer3d":
-
                     $("#app3dAreaDialog-" + canvasType + "-" + _wId).css("display", "block");
                     $("#app3dDialogCont-" + canvasType + "-" + _wId).ejDialog("open");
 
@@ -1078,7 +1282,6 @@ App3d = (function () {
                     });
                     break;
                 case "filterViewer3d":
-
                     measureTypesGroupBySensorType = new ej.DataManager(_distinctMeasures).executeLocal(new ej.Query().group("SensorType"));
                     var nameDivsVbles = "divVblesViewer3d-";
                     $('#measureTypesContainer' + canvasType + "-" + _wId).empty();
@@ -1141,9 +1344,9 @@ App3d = (function () {
                         _aWidget.manageCache(_subVariableIdList, "update");
                         // Agrega las nuevas subvariables a la suscripcion
                         //_subscription.attachItems(_subVariableIdList);
-                        
 
-                       // $("#app3dAreaDialogFilter-" + canvasType + '-' + _wId).css("display", "none"); // Ocultar de nuevo el html de la modal
+
+                        // $("#app3dAreaDialogFilter-" + canvasType + '-' + _wId).css("display", "none"); // Ocultar de nuevo el html de la modal
                         //$("#app3dDialogFilterCont-" + canvasType + "-" + _wId).ejDialog("close");
                     });
                     $("#" + nameDivsVbles + 0 + "-" + id3d + _wId).show();
@@ -1166,23 +1369,21 @@ App3d = (function () {
 
             var xVal, yVal, sampleRate, xId, yId, flagSpec = false, indexSpec = 0, flagDefShaft = false, indexDefShaft = 0, timeStampHist, currentDefaultValueSubVar, statusId, nominalVelocity;
 
-            
-
             if (!_pause && canvasType === "Viewer") {
                 _uiVbles.subVblesViewer3d = [];
-                    
+
                 for (var i = 0; i < _measurementPoints.length; i++) {
-                    
+
                     for (var j = 0; j < _measurementPoints[i].SubVariables.length; j++) {
                         if (data[_measurementPoints[i].SubVariables[j].Id] !== undefined) {
                             if (_measurementPoints[i].SubVariables[j].ValueType == 1) {
-                               
+
                                 _statusIdList.push(data[_measurementPoints[i].SubVariables[j].Id].StatusId);
                                 _statusColorList.push(data[_measurementPoints[i].SubVariables[j].Id].StatusColor);
                                 if (_selectedMeasureBySensor) {
 
                                     for (var k = 0; k < _selectedMeasureBySensor.length; k++) {
-                                            //console.log()
+                                        //console.log()
                                         if (timeMode == 0) {
                                             if (_selectedMeasureBySensor[k].sensorTypeCode == _measurementPoints[i].SensorTypeCode &&
                                                                                        _selectedMeasureBySensor[k].selectedMeasureType == _measurementPoints[i].SubVariables[j].MeasureType &&
@@ -1200,15 +1401,15 @@ App3d = (function () {
                                             }
                                         }
                                         if (timeMode == 1) {
-                                            dataHist = clone(data);                                           
-                                        }                                      
+                                            dataHist = clone(data);
+                                        }
                                     }
-                                    
+
                                 }
                             }
-                        }                     
+                        }
                     }
-                    
+
                     _uiVbles.loadValues();
 
                     if (vbles[_measurementPoints[i].Id] != undefined) {
@@ -1221,7 +1422,7 @@ App3d = (function () {
                                 _loadData.dataTextAndSensors.push({ idPoint: _measurementPoints[i].Id, value: currentDefaultValueData.Value, statusColor: currentDefaultValueData.StatusColor });
                             }
                         }
-                        
+
                     }
 
                     if (_measurementPoints[i].SensorTypeCode === 4) {
@@ -1232,9 +1433,9 @@ App3d = (function () {
                             globals3d.vel.asset.axis[id3d + _wId][0] = currentDefaultValueDataVel.Value;
                             _realVel = currentDefaultValueDataVel.Value;
                         }
-                        
+
                     }
-                    
+
                     var allNumericValueTypes;
 
                     if (_timeMode !== 0) {
@@ -1243,10 +1444,10 @@ App3d = (function () {
                     }
                     else {
 
-                         allNumericValueTypes = ej.DataManager(_measurementPoints[i].SubVariables).executeLocal(
-                            new ej.Query().where(ej.Predicate("ValueType", "equal", 1, false).and("Name", "equal", _userInterface.tipoMedida, false)));
+                        allNumericValueTypes = ej.DataManager(_measurementPoints[i].SubVariables).executeLocal(
+                           new ej.Query().where(ej.Predicate("ValueType", "equal", 1, false).and("Name", "equal", _userInterface.tipoMedida, false)));
                     }
-                    
+
                     var currentDefaultValueDataCB;
 
                     if (_timeMode !== 0) {
@@ -1255,14 +1456,14 @@ App3d = (function () {
                                 if (data[currentDefaultValueSubVar.Id].TimeStamp !== undefined) {
                                     timeStampHist = data[currentDefaultValueSubVar.Id].TimeStamp + "+00:00";
                                 }
-                            }                                                 
-                        }                       
+                            }
+                        }
                     }
-                   if (_measurementPoints[i].SensorTypeCode === 1 || _measurementPoints[i].SensorTypeCode === 2) {
+                    if (_measurementPoints[i].SensorTypeCode === 1 || _measurementPoints[i].SensorTypeCode === 2) {
 
                         if (vbles[_measurementPoints[i].Id]) {
                             if (_measurementPoints[i].AssociatedMeasurementPointId !== null && _measurementPoints[i].Orientation === 1) {
-                                
+
                                 if (data[vbles[_measurementPoints[i].Id].SubVariables.WaveForm.Id]) {
 
 
@@ -1305,13 +1506,12 @@ App3d = (function () {
                                                     sampleRate: data[vbles[_measurementPoints[i].Id].SubVariables.WaveForm.Id].SampleRate,
                                                     tS: _measurementPoints[i].RotationDirection,
                                                     flagDefShaft: true,
-                                                    vel: nominalVelocity,
-                                                    //xAmp1XId: data[vbles[_measurementPoints[i].Id].XAmp1X]
+                                                    vel: nominalVelocity
                                                 }
                                             });
 
                                         }
-                                        else if (_timeMode === 0 && (globals3d.flags[id3d + _wId].plots.orb || globals3d.flags[id3d + _wId].plots.orb1X || globals3d.flags[id3d + _wId].plots.ShaftDef ||(globals3d.flags[id3d + _wId].plots.sCL))) {
+                                        else if (_timeMode === 0 && (globals3d.flags[id3d + _wId].plots.orb || globals3d.flags[id3d + _wId].plots.orb1X || globals3d.flags[id3d + _wId].plots.ShaftDef || (globals3d.flags[id3d + _wId].plots.sCL))) {
                                             if (!data[vbles[_measurementPoints[i].Id].VelocityId].Value) {
                                                 nominalVelocity = _nominalVelocity;
                                             } else {
@@ -1343,7 +1543,7 @@ App3d = (function () {
                                         }
                                     }
                                 }
-                                
+
                             }
 
                             if (vbles[_measurementPoints[i].Id].SubVariables.WaveForm) {
@@ -1367,7 +1567,7 @@ App3d = (function () {
 
                                         });
                                     }
-                                   
+
                                 }
                                 if (_timeMode === 0 && (globals3d.flags[id3d + _wId].plots.spec ||
                                     globals3d.flags[id3d + _wId].plots.waterfall || globals3d.flags[id3d + _wId].plots.spec100p)) {
@@ -1393,12 +1593,12 @@ App3d = (function () {
                     if (currentDefaultValueSubVar) {
                         _userInterface.loadValuesCategoryVble(_timeMode, data[currentDefaultValueSubVar.Id].TimeStamp + "+00:00", _pathSubActive);
                     }
-                    
+
                     _loadData.drawChartsPairs();
                     _loadData.dataPairs = [];
                     _loadData.dataTextAndSensors = [];
                     _userInterface.dataIndicators = [];
-                    //_loadData.dataPairs = [];
+
                     if (!globals3d.flags[id3d + _wId].plots.spec) {
                         _loadData.drawChartsWaveform();
                         _loadData.dataWaveform = [];
@@ -1414,14 +1614,14 @@ App3d = (function () {
                     _loadData.dataWaveform = [];
                 }
             }
-            else  if (_pause){
+            else if (_pause) {
                 globals3d.flags[id3d + _wId].animation = false;
             }
             if (canvasType === "Waterfall") {
                 _buildWaterfall3d(1, data);
                 _createAreaDialogApp3d();
             }
-           else if (canvasType === "FullSpecWaterfall") {
+            else if (canvasType === "FullSpecWaterfall") {
                 _buildFullSpecWaterfall3d(1, data);
                 _createAreaDialogApp3d();
             }
@@ -1434,14 +1634,14 @@ App3d = (function () {
                 _createAreaDialogApp3d();
             }
             if (_timeMode === 1 && canvasType !== "Waterfall" && canvasType !== "FullSpecWaterfall" && canvasType !== "WaterfallRPM" && canvasType !== "FullSpecWaterfallRPM") {
-                
-            setTimeout(function () {
-                _loadData.loadDataTextAndSensors();
-            }, 5000);
+
+                setTimeout(function () {
+                    _loadData.loadDataTextAndSensors();
+                }, 5000);
                 //_loadData.loadDataTextAndSensors();
                 _userInterface.loadValuesCategoryVble(_timeMode, timeStampHist, _pathSubActive);
             }
-            
+
         };
 
         _showViewer3d = function (measurementPoints, selectedNode, timeStamp, historicalRange, rpmPositions) {
@@ -1494,79 +1694,79 @@ App3d = (function () {
                                     infoPoint.idPoint = idPoint;
                                     infoPoint.info.relatedIdPoint = measurementPoint.AssociatedMeasurementPointId;
 
-                                    
-                                        vbles[idPoint] = {};
-                                        vbles[idPoint].Id = idPoint;
-                                        vbles[idPoint].Name = measurementPoint.Name;
-                                        vbles[idPoint].Orientation = measurementPoint.Orientation;
-                                        vbles[idPoint].Angle = measurementPoint.SensorAngle;
-                                        vbles[idPoint].SubVariables = {};
-                                        vbles[idPoint].Axis = infoPoint.axis;
-                                        vbles[idPoint].AssociatedMeasurementPointId = measurementPoint.AssociatedMeasurementPointId;
-                                        
 
-                                        nodes[id3d + _wId].Properties3d.points.children.push(infoPoint);
+                                    vbles[idPoint] = {};
+                                    vbles[idPoint].Id = idPoint;
+                                    vbles[idPoint].Name = measurementPoint.Name;
+                                    vbles[idPoint].Orientation = measurementPoint.Orientation;
+                                    vbles[idPoint].Angle = measurementPoint.SensorAngle;
+                                    vbles[idPoint].SubVariables = {};
+                                    vbles[idPoint].Axis = infoPoint.axis;
+                                    vbles[idPoint].AssociatedMeasurementPointId = measurementPoint.AssociatedMeasurementPointId;
 
-                                        for (var k = 0; k < measurementPoint.SubVariables.length; k++) {
-                                            if (measurementPoint.SubVariables[k].IsDefaultValue) {
-                                                vbles[idPoint].SubVariables.DefaultValue = new Object(measurementPoint.SubVariables[k]);
-                                            }
-                                            else if (measurementPoint.SubVariables[k].ValueType === 3) {
-                                                vbles[idPoint].SubVariables.WaveForm = new Object(measurementPoint.SubVariables[k]);
+
+                                    nodes[id3d + _wId].Properties3d.points.children.push(infoPoint);
+
+                                    for (var k = 0; k < measurementPoint.SubVariables.length; k++) {
+                                        if (measurementPoint.SubVariables[k].IsDefaultValue) {
+                                            vbles[idPoint].SubVariables.DefaultValue = new Object(measurementPoint.SubVariables[k]);
+                                        }
+                                        else if (measurementPoint.SubVariables[k].ValueType === 3) {
+                                            vbles[idPoint].SubVariables.WaveForm = new Object(measurementPoint.SubVariables[k]);
+                                        }
+                                    }
+
+                                    for (var j = 0; j < _measurementPoints.length; j++) {
+                                        if (_measurementPoints[j].Id == measurementPoint.AngularReferenceId) {
+                                            for (var k = 0; k < _measurementPoints[j].SubVariables.length; k++) {
+                                                if (_measurementPoints[j].SubVariables[k].MeasureType == 9) {
+                                                    vbles[idPoint].VelocityId = _measurementPoints[j].SubVariables[k].Id;
+                                                }
                                             }
                                         }
-                                    
-                                        for (var j = 0; j < _measurementPoints.length; j++) {
-                                            if (_measurementPoints[j].Id == measurementPoint.AngularReferenceId) {
+                                        if (_measurementPoints[j].AssociatedMeasurementPointId != null) {
+                                            if (_measurementPoints[j].Id == measurementPoint.Id) {
                                                 for (var k = 0; k < _measurementPoints[j].SubVariables.length; k++) {
-                                                    if (_measurementPoints[j].SubVariables[k].MeasureType == 9) {
-                                                        vbles[idPoint].VelocityId = _measurementPoints[j].SubVariables[k].Id;            
+
+                                                    if (_measurementPoints[j].SubVariables[k].MeasureType == 4) {
+                                                        if (_measurementPoints[j].Orientation == 1) {
+                                                            vbles[idPoint].XAmp1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                        } else if (_measurementPoints[j].Orientation == 2) {
+                                                            vbles[idPoint].YAmp1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                        }
+                                                    }
+                                                    else if (_measurementPoints[j].SubVariables[k].MeasureType == 6) {
+                                                        if (_measurementPoints[j].Orientation == 1) {
+                                                            vbles[idPoint].XPha1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                        } else if (_measurementPoints[j].Orientation == 2) {
+                                                            vbles[idPoint].YPha1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                        }
+                                                    }
+                                                    else if (_measurementPoints[j].SubVariables[k].IsDefaultValue) {
+                                                        vbles[idPoint].measureType = _measurementPoints[j].SubVariables[k].MeasureType;
                                                     }
                                                 }
                                             }
-                                            if (_measurementPoints[j].AssociatedMeasurementPointId != null) {
-                                                if (_measurementPoints[j].Id == measurementPoint.Id) {
-                                                    for (var k = 0; k < _measurementPoints[j].SubVariables.length; k++) {
-                                                        
-                                                        if (_measurementPoints[j].SubVariables[k].MeasureType == 4) {
-                                                            if (_measurementPoints[j].Orientation == 1) {
-                                                                vbles[idPoint].XAmp1XId = _measurementPoints[j].SubVariables[k].Id;
-                                                            } else if (_measurementPoints[j].Orientation == 2) {
-                                                                vbles[idPoint].YAmp1XId = _measurementPoints[j].SubVariables[k].Id;
-                                                            }
-                                                        }
-                                                        else if (_measurementPoints[j].SubVariables[k].MeasureType == 6) {
-                                                            if (_measurementPoints[j].Orientation == 1) {
-                                                                vbles[idPoint].XPha1XId = _measurementPoints[j].SubVariables[k].Id;
-                                                            } else if (_measurementPoints[j].Orientation == 2) {
-                                                                vbles[idPoint].YPha1XId = _measurementPoints[j].SubVariables[k].Id;
-                                                            }
-                                                        }
-                                                        else if (_measurementPoints[j].SubVariables[k].IsDefaultValue) {
-                                                            vbles[idPoint].measureType = _measurementPoints[j].SubVariables[k].MeasureType;
+                                            else if (_measurementPoints[j].Id == measurementPoint.AssociatedMeasurementPointId) {
+                                                for (var k = 0; k < _measurementPoints[j].SubVariables.length; k++) {
+                                                    if (_measurementPoints[j].SubVariables[k].MeasureType == 4) {
+                                                        if (_measurementPoints[j].Orientation == 1) {
+                                                            vbles[idPoint].XAmp1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                        } else if (_measurementPoints[j].Orientation == 2) {
+                                                            vbles[idPoint].YAmp1XId = _measurementPoints[j].SubVariables[k].Id;
                                                         }
                                                     }
-                                                }
-                                                else if (_measurementPoints[j].Id == measurementPoint.AssociatedMeasurementPointId) {
-                                                    for (var k = 0; k < _measurementPoints[j].SubVariables.length; k++) {
-                                                        if (_measurementPoints[j].SubVariables[k].MeasureType == 4) {
-                                                            if (_measurementPoints[j].Orientation == 1) {
-                                                                vbles[idPoint].XAmp1XId = _measurementPoints[j].SubVariables[k].Id;
-                                                            } else if (_measurementPoints[j].Orientation == 2) {
-                                                                vbles[idPoint].YAmp1XId = _measurementPoints[j].SubVariables[k].Id;
-                                                            }
-                                                        }
-                                                        else if (_measurementPoints[j].SubVariables[k].MeasureType == 6) {
-                                                            if (_measurementPoints[j].Orientation == 1) {
-                                                                vbles[idPoint].XPha1XId = _measurementPoints[j].SubVariables[k].Id;
-                                                            } else if (_measurementPoints[j].Orientation == 2) {
-                                                                vbles[idPoint].YPha1XId = _measurementPoints[j].SubVariables[k].Id;
-                                                            }
-                                                        }
+                                                    else if (_measurementPoints[j].SubVariables[k].MeasureType == 6) {
+                                                        if (_measurementPoints[j].Orientation == 1) {
+                                                            vbles[idPoint].XPha1XId = _measurementPoints[j].SubVariables[k].Id;
+                                                        } else if (_measurementPoints[j].Orientation == 2) {
+                                                            vbles[idPoint].YPha1XId = _measurementPoints[j].SubVariables[k].Id;
                                                         }
                                                     }
                                                 }
                                             }
+                                        }
+                                    }
                                 }
                                 if (measurementPoint.SensorTypeCode !== 4) {
                                     var waveform = ej.DataManager(measurementPoint.SubVariables).executeLocal(new ej.Query().where("ValueType", "equal", 3, false))[0];
@@ -1644,7 +1844,7 @@ App3d = (function () {
                         _filteredSubVariables = ej.DataManager(_subVariables).executeLocal(new ej.Query().where("IsDefaultValue", "equal", true));
                         if (_filteredSubVariables.length === 0) {
                             popUp("info", "No hay subvariables marcadas para valor por defecto.");
-                            return;
+                            //return;
                         }
 
                         var subVariablesGroupBySensor = new ej.DataManager(_filteredSubVariables).executeLocal(new ej.Query().group("SensorTypeCode"));
@@ -1672,11 +1872,8 @@ App3d = (function () {
                     console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
                 }
             });
-            
-            //if()
-            
         };
-       
+
         _showWaterfall3d = function (measurementPointId) {
 
             _angularReference = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(
@@ -1758,32 +1955,6 @@ App3d = (function () {
                 waveforms = {},
                 subVariablesX,
                 subVariablesY;
-            //switch (_timeMode) {
-            //    case 0:
-
-            //        break;
-            //    case 1:
-            //    case 2:
-            //        measurementPoint = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(
-            //            new ej.Query().where("Id", "equal", measurementPointId, false))[0];
-            //        /*
-            //        subVariables = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("Id", "equal", measurementPointId, false))[0].SubVariables;
-            //        subVarId = ej.DataManager(subVariables).executeLocal(new ej.Query().where("Name", "equal", "Forma de onda", false))[0].Id;
-            //        _subVariableIdList.push(subVarId);
-            //        _angularReference = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(
-            //            new ej.Query().where("Id", "equal", _measurementPoint.AngularReferenceId, false))[0];
-            //        if (_angularReference) {
-            //            _velocitySubVariable = ej.DataManager(_angularReference.SubVariables).executeLocal(
-            //            new ej.Query().where("MeasureType", "equal", 9, false))[0];
-            //        }
-
-            //        if (_velocitySubVariable) {
-            //            _subVariableIdList.push(_velocitySubVariable.Id);
-            //        }*/
-            //        break;
-            //    default:
-
-            //}
 
             if (_measurementPoint.AssociatedMeasurementPointId != null) {
                 if (_measurementPoint.Orientation == 1) {
@@ -1901,12 +2072,12 @@ App3d = (function () {
             newPanel.append(panelBody);
 
             statusTypesContainer.append(newPanel);
-            
+
             var statusIds;
 
             for (var i = 0; i < statusId.length; i++) {
                 $("#" + statusId[i] + canvasType + "-" + _wId).change(function () {
-                    
+
                     if (this.checked) {
                         _statusFilter[this.id.split(canvasType + "-" + _wId)[0]] = "checked";
                     } else {
@@ -2027,11 +2198,9 @@ App3d = (function () {
                     if (timeMode == 1) {
                         _filterDataHist();
                     }
-                    
+
                 });
             }
-
-
         };
 
         _filterDataHist = function () {
@@ -2077,13 +2246,13 @@ App3d = (function () {
         };
 
         _calculateSpacementArray = function (historicalRange, rpmPositions) {
+
             var specArray = [], numSpac = 0, divSpec, totalSpec, newArray, lastSpacIn;
 
             if (_flagFirstWaterfall) {
                 totalSpec = (canvasType == "Waterfall" || canvasType == "FullSpecWaterfall") ? historicCount : rpmPositions.length;
                 _lengthArraySpec = totalSpec;
                 _firstArraySpecFilter = historicalRange;
-                //_arraySpecFilter = _firstArraySpecFilter;
             }
 
             totalSpec = (canvasType == "Waterfall" || canvasType == "FullSpecWaterfall") ? historicCount : rpmPositions.length;
@@ -2094,7 +2263,7 @@ App3d = (function () {
                 for (var i = 0; i < _firstArraySpecFilter.length ; i += parseInt(_inValWatFilterSpac)) {
                     specArray.push(_firstArraySpecFilter[i]);
                 }
-                
+
                 $("#inQtySpec" + canvasType + '-' + _wId).val(parseInt(_lengthArraySpec / _inValWatFilterSpac));
             } else if (_optWatFilter == 1) {//Número de Espectros
                 _inValWatFilterSpec = parseInt($("#inQtySpec" + canvasType + '-' + _wId).val());
@@ -2104,12 +2273,12 @@ App3d = (function () {
                     specArray.push(_firstArraySpecFilter[parseInt(divSpec * i)]);
                 }
                 $("#inSpacement" + canvasType + '-' + _wId).val(_lengthArraySpec / _inValWatFilterSpec);
-                //lastSpacIn =  
             }
+
             _lengthArraySpec = specArray.length;
             _arraySpecFilter = specArray;
             _newArraySpec = _arraySpecFilter;
-            
+
             if (_flagFirstWaterfall) {
                 _firstLengthArray = _lengthArraySpec;
                 _firstArraySpecFilter = specArray;
@@ -2117,7 +2286,7 @@ App3d = (function () {
                 $("#inSpacement" + canvasType + '-' + _wId).attr("max", _firstLengthArray);
 
             } else {
-                
+
                 if (canvasType == "Waterfall" || canvasType == "WaterfallRPM") {
                     cascade3d.vbles[id3d + _wId].arrayFilter = specArray;
                     cascade3d.vbles[id3d + _wId].firstWaterfall = false;
@@ -2127,9 +2296,41 @@ App3d = (function () {
                     fullSpecCascade3d.vbles[id3d + _wId].firstWaterfall = false;
                 }
             }
-            
-            //$("#inSpacement" + canvasType + '-' + _wId).val(_lengthArraySpec / _inValWatFilterSpec);
             $("#inQtySpec" + canvasType + '-' + _wId).val(_lengthArraySpec);
+
+        };
+
+        _xCoordinateUnitManagement = function (target, menuItem) {
+            var
+                children,
+                i;
+
+            children = target.parent().parent().children();
+
+            console.log(children.length);
+            for (i = 0; i < children.length; i += 1) {
+                children.eq(i).children().children().eq(0).addClass("fa-square-o").removeClass("fa-check-square");
+            }
+
+            target.children().eq(0).addClass("fa-check-square").removeClass("fa-square-o");
+
+            switch (menuItem) {
+                case "xCoordinateCpm" + _widgetId:
+                    _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).val() * xCoordinateUnits.Cpm.Factor);
+                    _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).val());
+                    _xCoordinateUnit = clone(xCoordinateUnits.Cpm);
+                    $("#Label2-" + _frecContent[1].inputId).text(" (Cpm)");
+                    break;
+                case "xCoordinateHertz" + _widgetId:
+                    _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).val());
+                    _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).val() / xCoordinateUnits.Cpm.Factor);
+                    _xCoordinateUnit = clone(xCoordinateUnits.Hertz);
+                    $("#Label2-" + _frecContent[1].inputId).text(" (Hz)");
+                    break;
+            }
+            _changeFreqParameters();
+            _waterfall.xCoordinateUnit = _xCoordinateUnit;
+            _waterfall.redrawFrecText();
 
         };
 
@@ -2140,37 +2341,38 @@ App3d = (function () {
             title = "Filtro Visor 3d";
             width = 450;
             height = 450;
-            posY = parseInt($("#containerParent-" +id3d +_wId).parent().parent().parent().css("top")) -$("#canvasViewer3D-" + canvasType + '-' +_wId).height();
+            posY = parseInt($("#containerParent-" + id3d + _wId).parent().parent().parent().css("top")) - $("#canvasViewer3D-" + canvasType + '-' + _wId).height();
 
             parentPPal = $("#aspectrogramMainContent");
 
             parentPPal.append('<div id="app3dAreaDialogFilter-' + canvasType + '-' + _wId + '" style="display:none;"><div class="control"></div></div>');//style='display:none;'
-            parentAreaDialog = $("#app3dAreaDialogFilter-" + canvasType + "-" +_wId);
+            parentAreaDialog = $("#app3dAreaDialogFilter-" + canvasType + "-" + _wId);
 
             parentAreaDialog.append('<div id="app3dDialogFilterCont-' + canvasType + '-' + _wId + '" title:"' + title + '"></div>');
-            parentContAreaDialog = $("#app3dDialogFilterCont-" + canvasType + "-" +_wId);
+            parentContAreaDialog = $("#app3dDialogFilterCont-" + canvasType + "-" + _wId);
 
 
-            $("#app3dDialogFilterCont-" + canvasType + "-" +_wId).ejDialog({
+            $("#app3dDialogFilterCont-" + canvasType + "-" + _wId).ejDialog({
                 enableResize: false,
                 width: width,
-                    height: height,
-                    title: "Filtro",
+                height: height,
+                title: "Filtro",
                 zIndex: 2000,
-                    close: function () {
-                        //$("#measurementPointCheckList").ejListBox("destroy"); // Destruir objeto Listbox Syncfusion
+                close: function () {
+                    //$("#measurementPointCheckList").ejListBox("destroy"); // Destruir objeto Listbox Syncfusion
                     $("#app3dAreaDialogFilter-" + canvasType + '-' + _wId + "#btnSave").off("click"); // Necesario desasociar el evento
                     $("#app3dAreaDialogFilter-" + canvasType + '-' + _wId + "#btnCancel").off("click"); // Necesario desasociar el evento
-                    $("#app3dAreaDialogFilter-" + canvasType + '-' +_wId).css("display", "none"); // Ocultar de nuevo el html de la modal
-            },
-                    content: "#app3dAreaDialogFilter-" + canvasType + '-' +_wId,
-                    actionButtons: ["close"],
-                    position: { X: 250, Y: 50 +posY
-            } // Posicionar el ejDialog
-                });
+                    $("#app3dAreaDialogFilter-" + canvasType + '-' + _wId).css("display", "none"); // Ocultar de nuevo el html de la modal
+                },
+                content: "#app3dAreaDialogFilter-" + canvasType + '-' + _wId,
+                actionButtons: ["close"],
+                position: {
+                    X: 250, Y: 50 + posY
+                } // Posicionar el ejDialog
+            });
 
-            $("#app3dDialogFilterCont-" + canvasType + "-" +_wId).ejDialog("open");
-            $("#app3dDialogFilterCont-" + canvasType + "-" +_wId).css("display", "block");
+            $("#app3dDialogFilterCont-" + canvasType + "-" + _wId).ejDialog("open");
+            $("#app3dDialogFilterCont-" + canvasType + "-" + _wId).css("display", "block");
 
 
             var event;
@@ -2183,10 +2385,6 @@ App3d = (function () {
                             '<div id="statusContainer' + canvasType + "-" + _wId + '" style="height: 350px; max-height: 350px; overflow-y: auto; width: 170px;"></div></div>' +
                             '</div></div></form></div>');
 
-                    /*
-                    parentContAreaDialog.append('<div><form role="form"><div class="row"><div class="form-group"><div class="col-md-3"><div id="measureTypesContainer' + canvasType + "-" + _wId + '" style="height: 350px; max-height: 350px; overflow-y: auto; width: 170px; margin-left: 20px;"></div></div></div></form></div>');
-                    parentContAreaDialog.append('<div><form role="form"><div class="row"><div class="form-group"><div class="col-md-3"><div id="statusContainer' + canvasType + "-" + _wId + '" style="height: 450px; max-height: 350px; overflow-y: auto; width: 170px; margin-left: 20px;"></div></div></div></form></div>');
-                    */
 
             parentContAreaDialog.append('<div class="form-group" style="display:block; top: 370px; left: 200px; position: absolute;">' +
                                     '<div class="row">' +
@@ -2402,8 +2600,6 @@ App3d = (function () {
                     break;
             }
 
-
-
             parentContAreaDialog.append('<div class="form-group" style="display:block; top:290px; left: 70px; position: absolute;">' +
                                     '<div class="row">' +
                                         '<div style="text-align: center;">' +
@@ -2416,6 +2612,54 @@ App3d = (function () {
                                         '</div>' +
                                     '</div>' +
                                '</div>');
+
+        };
+
+        _changeFreqParameters = function () {
+
+            var freqMax,
+                factor,
+                value;
+
+            if (_xCoordinateUnit.Text == "Cpm") {
+                freqMax = _waterfall.freqMax.Cpm;
+                value = _waterfall.freqChoosed * xCoordinateUnits.Cpm.Factor;
+            } else {
+                freqMax = _waterfall.freqMax.Hz;
+                value = _waterfall.freqChoosed;
+            }
+
+            factor = _waterfall.xCoordinateUnit.Factor;
+
+            if (canvasType != "FullSpecWaterfall" && canvasType != "FullSpecWaterfallRPM") {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                    "min": _xCoordinateUnit.Factor,
+                    "max": freqMax,
+                    "step": _xCoordinateUnit.Factor
+                });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                    "min": _xCoordinateUnit.Factor,
+                    "max": freqMax,
+                    "step": _xCoordinateUnit.Factor
+                });
+
+            } else {
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                    "min": -freqMax,
+                    "max": freqMax,
+                    "step": _xCoordinateUnit.Factor
+                });
+                $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                    "min": -freqMax,
+                    "max": freqMax,
+                    "step": _xCoordinateUnit.Factor
+                });
+            }
+            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).val(value);
+            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).val(value);
+
+            $("#" + _frecContent[1].inputId).val(freqMax);
+            $("#" + _uiWaterfall3d.gralInfo.frequency.parts[3] + "-" + id3d + _wId).text(_xCoordinateUnit.Text);
 
         };
 
@@ -2437,7 +2681,6 @@ App3d = (function () {
             if (historicCount > _maxSpecInWaterfall) {
                 historicCount = _maxSpecInWaterfall;
             }
-
 
             _specContent = [
                 {
@@ -2467,7 +2710,7 @@ App3d = (function () {
                     extra: " X"
                 },
                 {
-                    description: " Máxima Frecuencia : ",
+                    description: " Máxima Frecuencia  ",
                     inputId: "inMaxFrec" + canvasType + '-' + _wId,
                     disabled: "",
                     value: 600,
@@ -2477,7 +2720,6 @@ App3d = (function () {
 
 
             if ($("#canvas" + canvasType + "3D-" + id3d + '-' + _wId)) {
-                // posY = parseInt($("#containerParent-" + id3d + _wId).parent().parent().parent().css("top")) - $("#canvas" + canvasType + "3D-" + id3d + '-' + _wId).height();
                 posY = $("#" + _this.containerHistoricalId[0].id).parent().parent().parent().position().top;
             } else {
                 posY = 0;
@@ -2487,7 +2729,7 @@ App3d = (function () {
 
             parentPPal = $("#aspectrogramMainContent");
 
-            parentPPal.append('<div id="waterfallAreaDialog-' + canvasType + '-' + _wId + '" style="display:block;"><div class="control"></div></div>');//style='display:none;'
+            parentPPal.append('<div id="waterfallAreaDialog-' + canvasType + '-' + _wId + '" style="display:block;"><div class="control"></div></div>');
             parentAreaDialog = $("#waterfallAreaDialog-" + canvasType + "-" + _wId);
 
             parentAreaDialog.append('<div id="waterfallAreaDialogCont-' + canvasType + '-' + _wId + '" title:"Cantidad de Espectros"></div>');
@@ -2503,9 +2745,15 @@ App3d = (function () {
                 open: function () {
                     if (!flagFirstWaterfall) {
 
-                        minFrec = _waterfall.nomVel * 4 / 60;
-                        maxFrec = _sampleRate / 2;
-                        maxArmonic = Math.ceil($("#" + _frecContent[1].inputId).val() / (_waterfall.nomVel / 60));
+                        if (_xCoordinateUnit.Text == "Cpm") {
+                            minFrec = _waterfall.nomVel * 4 * _xCoordinateUnit.Factor / 60;
+                            maxFrec = _sampleRate * _xCoordinateUnit.Factor / 2;
+                            maxArmonic = Math.ceil($("#" + _frecContent[1].inputId).val() / ((_waterfall.nomVel * _xCoordinateUnit.Factor / 60)));
+                        } else {
+                            minFrec = _waterfall.nomVel * 4 / 60;
+                            maxFrec = _sampleRate / 2;
+                            maxArmonic = Math.ceil($("#" + _frecContent[1].inputId).val() / ((_waterfall.nomVel / 60)));
+                        }
 
                         $("#inSpacement" + canvasType + '-' + _wId).val(1);
                         $("#" + _frecContent[0].inputId).attr({ "max": maxArmonic });
@@ -2513,8 +2761,6 @@ App3d = (function () {
 
                         $("#Label-" + _frecContent[0].inputId).css("display", "block");
                         $("#Label-" + _frecContent[1].inputId).css("display", "block");
-                        //$("#inMaxFrecWaterfall--94619").attr("max", 800)
-                        //_velocitySubVariable.Maximum
                     }
                 },
                 close: function () {
@@ -2532,8 +2778,7 @@ App3d = (function () {
             $("#waterfallAreaDialogCont-" + canvasType + "-" + _wId).css("display", "block");
 
 
-
-            var event;
+            var event, units;
 
             radioGroupName = "rdQtySpec";
 
@@ -2552,22 +2797,24 @@ App3d = (function () {
                 $("#Label-" + _specContent[i].inputId).css({ "top": 30 * (i + 1) + "px" });
             }
 
-
             for (var i = 0; i < _frecContent.length; i++) {
+                if (i == 0) {
+                    units = "";
+                } else {
+                    units = " (" + _xCoordinateUnit.Text + ")";
+                }
+
                 parentContAreaDialog.append(
-                        "<br><label id=\"Label-{1}\" style=\"left: 40px; display: none; position: absolute;\">{0}<input type=\"number\" id=\"{1}\" value=\"{2}\" {3} min=\"0\" max=\"{4}\" style=\"width: 50px; position: absolute; left: 150px; top:0px;\"></input></label>".JsFormat(
+                        "<br><label id=\"Label-{1}\" style=\"left: 40px; display: none; position: absolute;\">{0}<input type=\"number\" id=\"{1}\" value=\"{2}\" {3} min=\"0\" max=\"{4}\" style=\"width: 50px; position: absolute; left: 150px; top:0px;\"></input><label id=\"Label2-{1}\" >{5}</label></label>".JsFormat(
                             _frecContent[i].description,
                             _frecContent[i].inputId,
                             _frecContent[i].value,
                             _frecContent[i].disabled,
-                            6400
+                            6400,
+                            units
                     ));
                 $("#Label-" + _frecContent[i].inputId).css({ "top": 30 * (i + 3) + "px" });
             }
-
-
-            //$("#Label-" + _frecContent[0].inputId).css("marginTop", "12px");
-            //$("#Label-" + _frecContent[1].inputId).css("marginTop", "-16px");
 
             parentContAreaDialog.append('<div class="form-group" style="display:block; top: 150px; left: 80px; position: absolute;">' +
                                     '<div class="row">' +
@@ -2589,9 +2836,9 @@ App3d = (function () {
             });
             $("#waterfallAreaDialogCont-" + canvasType + "-" + _wId + " #btnSave").click(function (e) {
 
-                
+
                 e.preventDefault();
-                //_uiWaterfall3d.saveInfoWaterfall();
+
                 if ($("#" + _specContent[0].inputId).val() > historicCount) {
                     $("#" + _specContent[0].inputId).val(historicCount);
                 }
@@ -2599,19 +2846,49 @@ App3d = (function () {
                     $("#" + _specContent[1].inputId).val(historicCount);
                 }
                 if (!_flagFirstWaterfall) {
+                    if (_xCoordinateUnit.Text == "Cpm") {
+                        _xCoordinateUnit = clone(xCoordinateUnits.Cpm);
+                        _waterfall.xCoordinateUnit = _xCoordinateUnit;
+                    } else {
+                        _xCoordinateUnit = clone(xCoordinateUnits.Hertz);
+                        _waterfall.xCoordinateUnit = _xCoordinateUnit;
+                    }
                     if ($("#" + _frecContent[1].inputId).val() > parseInt($("#" + _frecContent[1].inputId).attr("max"))) {
                         $("#" + _frecContent[1].inputId).val($("#" + _frecContent[1].inputId).attr("max"));
-                        _waterfall.frecMax = parseInt($("#" + _frecContent[1].inputId).attr("max"));
+                        if (_xCoordinateUnit.Text == "Cpm") {
+                            _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).attr("max"));
+                            _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).attr("max") / _xCoordinateUnit.Factor);
+                        } else {
+                            _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).attr("max") * _xCoordinateUnit.Factor);
+                            _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).attr("max"));
+                        }
                     } else {
-                        _waterfall.frecMax = parseInt($("#" + _frecContent[1].inputId).val());
+                        if (_xCoordinateUnit.Text == "Cpm") {
+                            _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).val());
+                            _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).val() / _xCoordinateUnit.Factor);
+                        } else {
+                            _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).val() * _xCoordinateUnit.Factor);
+                            _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).val());
+                        }
                     }
-                    if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) {
-                        $("#" + _frecContent[0].inputId).val($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
-                        _waterfall.armonicValue = parseInt($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
+                    if (_xCoordinateUnit.Text == "Cpm") {
+                        if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 * _xCoordinateUnit.Factor / _waterfall.nomVel) {
+                            $("#" + _frecContent[0].inputId).val($("#" + _frecContent[1].inputId).val() * 60 * _xCoordinateUnit.Factor / _waterfall.nomVel);
+                            _waterfall.armonicValue = parseInt($("#" + _frecContent[1].inputId).val() * 60 / (_waterfall.nomVel * _xCoordinateUnit.Factor));
+                        }
+                    } else {
+                        if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) {
+                            $("#" + _frecContent[0].inputId).val($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
+                            _waterfall.armonicValue = parseInt($("#" + _frecContent[1].inputId).val() * 60 / (_waterfall.nomVel));
+                        }
                     }
                 }
 
                 _calculateSpacementArray(historicalRange, rpmPositions);
+
+                if (!flagFirstWaterfall) {
+                   // _waterfall.redrawFrecText();
+                }
 
                 if (flagFirstWaterfall) {
                     if (canvasType === "Waterfall") {
@@ -2626,17 +2903,13 @@ App3d = (function () {
                     else if (canvasType === "FullSpecWaterfallRPM") {
                         _showFullSpecWaterfallRPM3d(_measurementPoint.Id);
                     }
-                    
 
                     _createWidget(_timeStamp, historicalRange, rpmPositions);
-                    //_createLoadingScreen();
                     flagFirstWaterfall = false;
-
                 }
                 else {
                     _uiWaterfall3d.actualizeGralInfo(true);
                     _uiWaterfall3d.saveInfoWaterfall();
-                   
 
                     if (canvasType === "Waterfall" || canvasType === "WaterfallRPM") {
                         cascade3d.vbles[id3d + _wId].arrayFilter = _arraySpecFilter;
@@ -2644,15 +2917,14 @@ App3d = (function () {
                     else if (canvasType === "FullSpecWaterfall" || canvasType === "FullSpecWaterfallRPM") {
                         fullSpecCascade3d.vbles[id3d + _wId].arrayFilter = _arraySpecFilter;
                     }
-
                 }
 
                 $("#waterfallAreaDialogCont-" + canvasType + '-' + _wId).css("display", "none"); // Ocultar de nuevo el html de la modal
                 $("#waterfallAreaDialogCont-" + canvasType + "-" + _wId).ejDialog("close");
             });
 
-           
-               if (radioGroupName) {
+
+            if (radioGroupName) {
                 $("input[name=\"{0}\"]:radio".JsFormat(radioGroupName)).change(function () {
                     var
                         i,
@@ -2662,13 +2934,13 @@ App3d = (function () {
                         fromIntegratedWaveform;
 
                     radioObj = $(this);
-                    
+
                     if (radioObj.val() == 1) { // Si es por número de espectros
-                        
+
                         _optWatFilter = 1;
                         $("#" + _specContent[0].inputId).attr("disabled", false);
                         $("#" + _specContent[1].inputId).attr("disabled", true);
-                        
+
 
                     } else if (radioObj.val() == 2) { // Si es por espaciamiento
                         _optWatFilter = 2;
@@ -2676,66 +2948,122 @@ App3d = (function () {
                         $("#" + _specContent[1].inputId).attr("disabled", false);
                     }
                 });
-               }
+            }
 
-               $("#" + _specContent[0].inputId).change(function () {
+            $("#" + _specContent[0].inputId).change(function () {
 
-                   if (_flagFirstWaterfall) {
-                       $("#" + _specContent[1].inputId).val(parseInt(historicCount / $("#" + _specContent[0].inputId).val()));
-                   }
-                   else {
-                       $("#" + _specContent[1].inputId).val(parseInt(_lengthArraySpec / $("#" + _specContent[0].inputId).val()));
-                       if ($("#" + _specContent[0].inputId).val > parseInt($("#" + _specContent[0].inputId).attr("max"))) {
-                           $("#" + _specContent[0].inputId).val($("#" + _specContent[0].inputId).attr("max"));
-                       }    
-                   }
-               });
+                if (_flagFirstWaterfall) {
+                    $("#" + _specContent[1].inputId).val(parseInt(historicCount / $("#" + _specContent[0].inputId).val()));
+                }
+                else {
+                    $("#" + _specContent[1].inputId).val(parseInt(_lengthArraySpec / $("#" + _specContent[0].inputId).val()));
+                    if ($("#" + _specContent[0].inputId).val > parseInt($("#" + _specContent[0].inputId).attr("max"))) {
+                        $("#" + _specContent[0].inputId).val($("#" + _specContent[0].inputId).attr("max"));
+                    }
+                }
+            });
 
-               $("#" + _specContent[1].inputId).change(function () {
+            $("#" + _specContent[1].inputId).change(function () {
 
-                   if (_flagFirstWaterfall) {
-                       $("#" + _specContent[0].inputId).val(parseInt(historicCount / $("#" + _specContent[1].inputId).val()));
-                   }
-                   else {
-                       $("#" + _specContent[0].inputId).val(parseInt(_lengthArraySpec / $("#" + _specContent[1].inputId).val()));
-                   }
-               });
+                if (_flagFirstWaterfall) {
+                    $("#" + _specContent[0].inputId).val(parseInt(historicCount / $("#" + _specContent[1].inputId).val()));
+                }
+                else {
+                    $("#" + _specContent[0].inputId).val(parseInt(_lengthArraySpec / $("#" + _specContent[1].inputId).val()));
+                }
+            });
 
-               $("#" + _frecContent[0].inputId).change(function () {
-                  
-                   if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) {
-                       $("#" + _frecContent[0].inputId).val($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
-                       _waterfall.armonicValue = $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel;
-                   } else {
-                       _waterfall.armonicValue = $("#" + _frecContent[0].inputId).val();
-                   }
-                   _uiWaterfall3d.actualizeGralInfo(false);
-               });
+            $("#" + _frecContent[0].inputId).change(function () {
 
-               $("#" + _frecContent[1].inputId).change(function () {
-                  
-                   $("#" + _frecContent[0].inputId).attr({ "max": Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) });
-                   if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) {
-                       $("#" + _frecContent[0].inputId).val(Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel));
-                       _waterfall.armonicValue = Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
-                       _waterfall.frecMax = parseInt($("#" + _frecContent[1].inputId).val());
-                   } else {
-                       _waterfall.frecMax = parseInt($("#" + _frecContent[1].inputId).val());
-                   }
+                if (_xCoordinateUnit.Text == "Cpm") {
+                    if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * _xCoordinateUnit.Factor / _sampleRate) {
+                        $("#" + _frecContent[0].inputId).val($("#" + _frecContent[1].inputId).val() * _xCoordinateUnit.Factor / _sampleRate);
+                        _waterfall.armonicValue = $("#" + _frecContent[1].inputId).val() / (_sampleRate * _xCoordinateUnit.Factor);
+                    } else {
+                        _waterfall.armonicValue = $("#" + _frecContent[0].inputId).val() / _xCoordinateUnit.Factor;
+                    }
+                    _waterfall.freqMax.Hz = $("#" + _frecContent[1].inputId).val() / _xCoordinateUnit.Factor;
+                    _waterfall.freqMax.Cpm = $("#" + _frecContent[1].inputId).val();
+                } else {
+                    if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() / _sampleRate) {
+                        $("#" + _frecContent[0].inputId).val($("#" + _frecContent[1].inputId).val() / _sampleRate);
+                        _waterfall.armonicValue = $("#" + _frecContent[1].inputId).val() / _sampleRate;
+                    } else {
+                        _waterfall.armonicValue = $("#" + _frecContent[0].inputId).val();
+                    }
+                    _waterfall.freqMax.Hz = $("#" + _frecContent[1].inputId).val();
+                    _waterfall.freqMax.Cpm = $("#" + _frecContent[1].inputId).val() * _xCoordinateUnit.Factor;
+                }
 
-                   $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": _waterfall.frecMax});
-                   $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": _waterfall.frecMax});
+                _uiWaterfall3d.actualizeGralInfo(false);
+            });
 
-                   if (canvasType != "FullSpecWaterfall" && canvasType != "FullSpecWaterfallRPM") {
-                       $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({"min": 1 });
-                       $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({"min": 1 });
-                   } else {
-                       $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({"min": -_waterfall.frecMax });
-                       $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({"min": -_waterfall.frecMax });
-                   }
-                   
-               });
+            $("#" + _frecContent[1].inputId).change(function () {
 
+                $("#" + _frecContent[0].inputId).attr({ "max": Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / (_waterfall.nomVel)) });
+
+                if (_xCoordinateUnit.Text == "Cpm") {
+                    if ($("#" + _frecContent[1].inputId).val() > _sampleRate * 30) {
+                        $("#" + _frecContent[1].inputId).val(_sampleRate * 30);
+                    }
+                    if ($("#" + _frecContent[1].inputId).val() < 6000) {
+                        $("#" + _frecContent[1].inputId).val(6000);
+                    }
+                    if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) {
+                        $("#" + _frecContent[0].inputId).val(Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel));
+                        _waterfall.armonicValue = Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / (_waterfall.nomVel * _xCoordinateUnit.Factor));
+                        _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).val());
+                        _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).val() / _xCoordinateUnit.Factor);
+                    } else {
+                        _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).val());
+                        _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).val() / _xCoordinateUnit.Factor);
+                    }
+
+                    $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": _waterfall.freqMax.Cpm });
+                    $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": _waterfall.freqMax.Cpm });
+
+                    if (canvasType != "FullSpecWaterfall" && canvasType != "FullSpecWaterfallRPM") {
+                        $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "min": _xCoordinateUnit.Factor });
+                        $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                            "min": _xCoordinateUnit.Factor
+                        });
+                    } else {
+                        $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "min": -_waterfall.freqMax.Cpm });
+                        $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "min": -_waterfall.freqMax.Cpm });
+                    }
+                } else {
+                    if ($("#" + _frecContent[1].inputId).val() > _sampleRate / 2) {
+                        $("#" + _frecContent[1].inputId).val(_sampleRate / 2);
+                    }
+                    if ($("#" + _frecContent[1].inputId).val() < 100) {
+                        $("#" + _frecContent[1].inputId).val(100);
+                    }
+                    if ($("#" + _frecContent[0].inputId).val() > $("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel) {
+                        $("#" + _frecContent[0].inputId).val(Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel));
+                        _waterfall.armonicValue = Math.ceil($("#" + _frecContent[1].inputId).val() * 60 / _waterfall.nomVel);
+                        _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).val() * _xCoordinateUnit.Factor);
+                        _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).val());
+                    } else {
+                        _waterfall.freqMax.Cpm = parseInt($("#" + _frecContent[1].inputId).val() * _xCoordinateUnit.Factor);
+                        _waterfall.freqMax.Hz = parseInt($("#" + _frecContent[1].inputId).val());
+                    }
+
+                    $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "max": _waterfall.freqMax.Hz });
+                    $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "max": _waterfall.freqMax.Hz });
+
+                    if (canvasType != "FullSpecWaterfall" && canvasType != "FullSpecWaterfallRPM") {
+                        $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({
+                            "min": _xCoordinateUnit.Factor
+                        });
+                        $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({
+                            "min": _xCoordinateUnit.Factor
+                        });
+                    } else {
+                        $("#" + _uiWaterfall3d.gralInfo.frequency.parts[1] + "-" + id3d + _wId).attr({ "min": -_waterfall.freqMax.Hz });
+                        $("#" + _uiWaterfall3d.gralInfo.frequency.parts[2] + "-" + id3d + _wId).attr({ "min": -_waterfall.freqMax.Hz });
+                    }
+                }
+            });
         };
 
         this.Show = function (title, measurementPointId, timeStamp, historicalRange, rpmPositions) {
@@ -2749,7 +3077,7 @@ App3d = (function () {
                 i, all,
                 measurementPoint,
                 asset;
-            
+
             subAssets = [];
             _containerParentId = "containerParent-" + id3d + _wId;
             _container = document.createElement("div");
@@ -2757,17 +3085,7 @@ App3d = (function () {
             _container.style.width = "100%";
             _container.style.height = "100%";
 
-            
-            /*
-            if (timeMode == 0) {
-                asset = selectedAsset;
-            }
-            else if (timeMode == 1) {
-                measurementPoint = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("Id", "equal", measurementPointId, false))[0];
-                asset = ej.DataManager(mainCache.loadedAssets).executeLocal(new ej.Query().where("Id", "equal", measurementPoint.ParentNodeId, false))[0];
-            }
-            */
-            
+
             switch (_timeMode) {
                 case 0:
                     // Si el asset no tiene un asdaq asociado, significa que no se están actualizando los datos tiempo real de las subVariables
@@ -2804,8 +3122,6 @@ App3d = (function () {
                     if (asset.NominalVelocity) {
                         _nominalVelocity = asset.NominalVelocity;
                     }
-                    //_timeStart = timeStart
-                    //_timeEnd = timeEnd;
                     break;
                 default:
                     break;
@@ -2815,7 +3131,7 @@ App3d = (function () {
 
                 for (i = 0; i < mainCache.loadedAssets.length; i++) {
                     if (mainCache.loadedAssets[i].ParentId == asset.Id)
-                        subAssets.push(mainCache.loadedAssets[i].Id);
+                        subAssets.push(mainCache.loadedAssets[i].AssetId);
                 }
 
                 if (subAssets) {
@@ -2824,12 +3140,12 @@ App3d = (function () {
                     }
                 }
             } else if (!asset.IsPrincipal) {
-                _measurementPoints = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("ParentId", "equal", asset.Id, false));
+                _measurementPoints = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("ParentId", "equal", asset.AssetId, false));
                 viewer3d.parentId[id3d + _wId] = asset.ParentId;
             } else if (asset.IsPrincipal && !asset.HasChild) {
                 _measurementPoints = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(new ej.Query().where("ParentId", "equal", asset.AssetId, false));
             }
-                        
+
             if (viewer3d.containerCanvas[id3d + _wId] === undefined && canvasType === "Viewer") {
                 // Construir y mostrar visualización 3d
                 _showViewer3d(_measurementPoints, asset, timeStamp, historicalRange, rpmPositions);
@@ -2838,9 +3154,9 @@ App3d = (function () {
             else if (cascade3d.containerCanvas[id3d + _wId] === undefined && (canvasType === "Waterfall")) {
                 if (_measurementPoint.SensorTypeCode === 1 || _measurementPoint.SensorTypeCode === 2 && _measurementPoint.AngularReferenceId != null) {
                     _createWaterfallAreaDialog(historicalRange, rpmPositions);
-                } 
+                }
             }
-            else if (cascade3d.containerCanvas[id3d + _wId] === undefined && canvasType ===  "WaterfallRPM") {
+            else if (cascade3d.containerCanvas[id3d + _wId] === undefined && canvasType === "WaterfallRPM") {
                 if (_measurementPoint.SensorTypeCode === 1 || _measurementPoint.SensorTypeCode === 2 && _measurementPoint.AngularReferenceId != null) {
                     if (rpmPositions.length > 1) {
                         _createWaterfallAreaDialog(historicalRange, rpmPositions);
@@ -2864,7 +3180,7 @@ App3d = (function () {
                     else {
                         popUp("info", "No hay datos para mostrar");
                     }
-                    
+
                 }
             }
             else if (canvasType === "Editor") {
@@ -2876,7 +3192,6 @@ App3d = (function () {
             globalsReport.elem3D.push({ 'id': id3d + _wId, 'src': null, type: canvasType });
             _assetId = asset.AssetId;
             _nodeId = asset.Id;
-            //_createAreaDialogApp3d();
         };
 
         this.Close = function () {

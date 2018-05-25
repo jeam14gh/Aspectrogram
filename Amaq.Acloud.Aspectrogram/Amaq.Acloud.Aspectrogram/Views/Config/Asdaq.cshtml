@@ -6,9 +6,9 @@
     <!--Inicio contenedor del detalle Asdaq-->
     <div id="aspectrogramMainContent" class="container-fluid fullHeight cf">
         <div class="row">
-            <div id="GridAsdaq"></div>
-            <div id="gridAconditioners"></div>
-            <div id="GridNiDevices"></div>
+            <div id="GridAsdaq" class="gridFull"></div>
+            <div id="gridAconditioners" class="gridFull"></div>
+            <div id="GridNiDevices" class="gridFull"></div>
         </div>
     </div>
     <!--Fin del detalle-->
@@ -75,6 +75,7 @@
 
 @section scripts {
     @Scripts.Render("~/Scripts/helpers/managementIndexedDB.js")
+    @Scripts.Render("~/Scripts/acloudIcons.js")
 }
 
 @section applicationScripts {
@@ -181,10 +182,10 @@
                     toolbarItems:["search","edit","update","cancel"]
                 },
                 columns: [
-                            { field: "Id", headerText: "Id", headerTextAlign: "center", textAlign : "center", visible: false, isPrimaryKey: true },
-                            { field: "Alias", headerText: "Nombre", headerTextAlign: "center", textAlign : "center", },
+                            { field: "Id", headerText: "Id", headerTextAlign: "center", width: "0%", textAlign : "center", visible: false, isPrimaryKey: true },
+                            { field: "Alias", headerText: "Nombre", headerTextAlign: "center", width: "40%", textAlign : "center", },
                             {
-                                field: "MailAccount", headerText: "Cuenta de Correo", width: "13%",
+                                field: "MailAccount", headerText: "Cuenta de Correo", width: "30%",
                                 commands:
                                 [{
                                     type: "details",
@@ -203,7 +204,7 @@
                                 textAlign: ej.TextAlign.Center
                             },
                             {
-                                field: "Reconfigure", headerText: " ",
+                                field: "Reconfigure", headerText: " ", width: "30%",
                                 commands:
                                 [
                                     {
@@ -237,12 +238,14 @@
                     // Carga todos los Acondiotioner relacionados a un Asdaq seleccionado para el childgrid de canales de su columna "Canal Aconditioner"
                     _dsAconditioners = getAconditionersType(args.data.Aconditioners);
 
-                    if ($("#GridNiDevices")[0].className != "")
+                    //if ($("#GridNiDevices")[0].className != "")
+                    if ($("#GridNiDevices").hasClass("e-grid"))
                         $("#GridNiDevices").ejGrid("destroy");
 
                     CreateGridNiDevices(devices);
 
-                    if ($("#gridAconditioners")[0].className != "")
+                    //if ($("#gridAconditioners")[0].className != "")
+                    if ($("#gridAconditioners").hasClass("e-grid"))
                         $("#gridAconditioners").ejGrid("destroy");
 
                     CreateGridAconditioners(_aconditionersType, args.data.Aconditioners);
@@ -341,11 +344,11 @@
                 showStackedHeader: true,
                 stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "A-Conditioners", column: "Id,Serial,AconditionerTypeId,Name,Description" }] }],
                 columns: [
-                              { field: "Id", headerText: "Id", width: 10,  headerTextAlign: "center", textAlign : "center", allowEditing: false, isPrimaryKey: true, visible:false },
-                              { field: "Serial", headerText: "Serial", width: 80, headerTextAlign: "center", textAlign : "center"},
-                              { field: "AconditionerTypeId", headerText: "Referencia", width: 80, headerTextAlign: "center", textAlign : "center", allowEditing: true, editType: "dropdownedit", dataSource:listReference, foreignKeyField: "value", foreignKeyValue: "text", },
-                              { field: "Name", headerText: "Nombre", width: 100,  headerTextAlign: "center", textAlign : "center", allowEditing: true,},
-                              { field: "Description", headerText: "Descripción", width: 120, headerTextAlign: "center", textAlign : "center" },
+                              { field: "Id", headerText: "Id", width: "0%",  headerTextAlign: "center", textAlign : "center", allowEditing: false, isPrimaryKey: true, visible:false },
+                              { field: "Serial", headerText: "Serial", width: "25%", headerTextAlign: "center", textAlign : "center"},
+                              { field: "AconditionerTypeId", headerText: "Referencia", width: "25%", headerTextAlign: "center", textAlign : "center", allowEditing: true, editType: "dropdownedit", dataSource:listReference, foreignKeyField: "value", foreignKeyValue: "text", },
+                              { field: "Name", headerText: "Nombre", width: "25%",  headerTextAlign: "center", textAlign : "center", allowEditing: true,},
+                              { field: "Description", headerText: "Descripción", width: "25%", headerTextAlign: "center", textAlign : "center" },
                 ],
                 actionBegin: function (args) {
                     if (args.requestType == "save") {
@@ -415,6 +418,24 @@
                             method: "POST",
                             data:  { asdaqId: _asdaqId, serial: args.data.Serial, niDevices: devices },
                             success: function (response) {
+                                var points = response;
+                                for (var p = 0; p < points.length; p++) {
+                                    ej.DataManager(_dto).remove("MdVariableId", points[p].Id, _dto);
+                                    ej.DataManager(_pointsToRecalculate).remove("MdVariableId", points[p].Id, _pointsToRecalculate);
+                                    // Se elimina la propiedad "SubVariables" ya que del backend retorna null y al actualizarla (update) con la del mainCache esta es seteada tambien
+                                    delete points[p].SubVariables;
+                                    ej.DataManager(mainCache.loadedMeasurementPoints).update("Id", points[p], mainCache.loadedMeasurementPoints);
+                                    //var mdvar = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("Id", "Equal", points[p].Id, false))[0];
+                                    //if (mdvar !== undefined){
+                                    //    mdvar.AiMeasureMethod = points[p].AiMeasureMethod;
+                                    //}
+
+                                    //$("#GridNiDevices td[data-cell='MdVar Id']:contains('"+ points[p].Id +"')").siblings().each(function(){
+                                    //    if (this.cellIndex == 0){
+                                    //        $(this).children("input").prop('checked',false);
+                                    //    }
+                                    //});
+                                }
                                 //var asdaq=$("#GridAsdaq").data("ejGrid").model.dataSource;
                                 $("#GridAsdaq").ejGrid("getSelectedRecords")[0].Aconditioners= dataAcon;
                                 _asdaqSelected.Aconditioners = dataAcon;
@@ -426,6 +447,7 @@
                                             devices[d].AiChannels[ch].SerialAcon = null;
                                             devices[d].AiChannels[ch].AconChannel = null;
                                             devices[d].AiChannels[ch].Acon =null;
+                                            devices[d].AiChannels[ch].Disassociate = false;
                                         }
                                     }
                                 }
@@ -433,9 +455,9 @@
                                 _DevicesCache= $.extend(true,[],devices); //
 
                                 popUp("success","Aconditioner eliminado correctamente!!!");
-                                //// Variables globales se ponen nuevamente vacias
-                                //_dto =[];
-                                //_copyAiChannels = [];
+                                _copyAiChannels = [];
+                                // Si existen checbox marcados, los cuales son para eliminar la relación canal-punto se buscan para desmarcarlos.
+                                //$("#GridNiDevices td[data-cell=''] :checked").prop('checked',false);
                             },
                             error: function (jqXHR, textStatus) {
                                 popUp("error","Error al eliminar. Intente nuevamente!!!");
@@ -452,13 +474,15 @@
                         editSettings: { allowEditing: true, editMode: "normal" },
                         toolbarSettings: { showToolbar: true, toolbarItems: ["update","edit","cancel"], },
                         isResponsive: true,
+                        //width: "100%",
+                        cssClass: "gridFull",
                         enableResponsiveRow: true,
                         allowPaging: false,
                         //pageSettings:{ pageSize: 32 },
                         columns: [
-                          { field: "Number", headerText: 'Canal', headerTextAlign: "center", textAlign : "center", isPrimaryKey: true },
-                          { field: "Gain", headerText: "Ganancia", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 3 }, },//format:"{0:N}"
-                          { field: "Displacement", headerText: 'Desplazamiento', headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 3 } },
+                          { field: "Number", headerText: 'Canal', width: "33%", headerTextAlign: "center", textAlign : "center", isPrimaryKey: true },
+                          { field: "Gain", headerText: "Ganancia", headerTextAlign: "center", width: "34%", textAlign : "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 3 }, },//format:"{0:N}"
+                          { field: "Displacement", headerText: 'Desplazamiento', width: "33%", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, editParams: { decimalPlaces: 3 } },
                         ],
                         showStackedHeader: true,
                         stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Canales", column: "Number,Gain,Displacement" }] }],
@@ -535,6 +559,17 @@
                         method: "POST",
                         data:  { asdaqId: _asdaqId, aconditioners: dataAcon, mdVariablesToUpdate: _pointsWithAcon },
                         success: function (response) {
+                            var points= response;
+                            for (var p = 0; p < points.length; p++) {
+                                // Se elimina la propiedad "SubVariables" ya que del backend retorna null y al actualizarla (update) con la del mainCache esta es seteada tambien
+                                delete points[p].SubVariables;
+                                ej.DataManager(mainCache.loadedMeasurementPoints).update("Id", points[p], mainCache.loadedMeasurementPoints);
+                                //var mdvar = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("Id", "Equal", points[p].Id, false))[0];
+                                //if (mdvar !== undefined){
+                                //    mdvar.AiMeasureMethod = points[p].AiMeasureMethod;
+                                //}
+                            }
+
                             // Actualizamos el dataSource del grid Asdaq en su propiedad Aconditioners
                             $("#GridAsdaq").ejGrid("getSelectedRecords")[0].Aconditioners = dataAcon;
                             _asdaqSelected.Aconditioners= dataAcon;
@@ -601,15 +636,15 @@
                 showStackedHeader: true,
                 stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Dispositivos de Adquisición", column: "Name,ProductCategory,SampleRate,SamplesToRead,TerminalConfiguration,FrecuencyRange,NumberOfLines,SamplingTime,FrecuencyDelta" }] }],
                 columns: [
-                              { field: "Name", headerText: "Nombre", width: "12%",  headerTextAlign: "center", textAlign : "center", allowEditing: false, isPrimaryKey: true },
-                              { field: "ProductCategory", headerText: "Categoria", width: "3%", headerTextAlign: "center", textAlign : "center", allowEditing: false, visible: false },
-                              { field: "FrecuencyRange", headerText: "Rango de Frecuencia", width: "10%", headerTextAlign: "center", textAlign : "center", editType: "dropdownedit",  foreignKeyField: "value", foreignKeyValue: "text", },
-                              { field: "NumberOfLines", headerText: "Número de Líneas", width: "10%", headerTextAlign: "center", textAlign : "center", editType: "dropdownedit", foreignKeyField: "value", foreignKeyValue: "text", },
+                              { field: "Name", headerText: "Nombre", width: "14%",  headerTextAlign: "center", textAlign : "center", allowEditing: false, isPrimaryKey: true },
+                              { field: "ProductCategory", headerText: "Categoria", width: "0%",  headerTextAlign: "center", textAlign : "center", allowEditing: false, visible: false },
+                              { field: "FrecuencyRange", headerText: "Rango de Frecuencia", width: "13%", headerTextAlign: "center", textAlign : "center", editType: "dropdownedit",  foreignKeyField: "value", foreignKeyValue: "text", },
+                              { field: "NumberOfLines", headerText: "Número de Líneas", width: "13%", headerTextAlign: "center", textAlign : "center", editType: "dropdownedit", foreignKeyField: "value", foreignKeyValue: "text", },
                               { field: "FrecuencyDelta", headerText: "&Delta;f", width: "5%", headerTextAlign: "center", textAlign : "center", editType: "numericedit", editParams: { decimalPlaces: 2}, allowEditing: false },
-                              { field: "SamplingTime", headerText: "Tiempo de Muestreo", width: "10%", headerTextAlign: "center", textAlign : "center", editType: "numericedit", editParams: { decimalPlaces: 2}, allowEditing: false },
-                              { field: "SampleRate", headerText: "Frecuencia de Muestreo", width: "10%", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, allowEditing: false },
-                              { field: "SamplesToRead", headerText: "Número de Muestras", width: "10%", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, allowEditing: false },
-                              { field: "TerminalConfiguration", headerText: "Configuración Terminal", width: "10%", headerTextAlign: "center", textAlign : "center", allowEditing: true, visible:true, editType: "dropdownedit", dataSource:_terminalConfiguration, foreignKeyField: "value", foreignKeyValue: "text",},
+                              { field: "SamplingTime", headerText: "Tiempo de Muestreo", width: "13%", headerTextAlign: "center", textAlign : "center", editType: "numericedit", editParams: { decimalPlaces: 2}, allowEditing: false },
+                              { field: "SampleRate", headerText: "Frecuencia de Muestreo", width: "13%", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, allowEditing: false },
+                              { field: "SamplesToRead", headerText: "Número de Muestras", width: "13%", headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric, allowEditing: false },
+                              { field: "TerminalConfiguration", headerText: "Configuración Terminal", width: "16%", headerTextAlign: "center", textAlign : "center", allowEditing: true, visible:true, editType: "dropdownedit", dataSource:_terminalConfiguration, foreignKeyField: "value", foreignKeyValue: "text",},
                 ],
                 actionBegin: function (args) {
                     if (args.requestType == "save") {
@@ -621,6 +656,18 @@
                         if (args.data.FrecuencyRange == 0 || (args.data.NumberOfLines == 0 || args.data.NumberOfLines == null)) {
                             popUp("error","Valor(es) incorrecto(s)!");
                             args.cancel= true;
+                        } else {
+                            // Si el tiempo de muestreo es menor a 1seg no permite que se guarde la información
+                            var sampleRate = args.data.NumberOfLines / args.data.FrecuencyRange;
+                            if (sampleRate < 1) {
+                                args.cancel = true;
+                                popUp("warning","El tiempo de muestreo debe ser mayor o igual a 1seg. Por favor seleccione otro tipo de opciones!");
+                            }
+                        }
+                    } else if (args.requestType == "beginedit") {
+                        if  ($.isEmptyObject(args.rowData.ProductType)){
+                            popUp("warning","La propiedad ProductType no está registrada en este dispositivo. Regístrela para poder entrar en modo edición!");
+                            args.cancel = true;
                         }
                     }
                 },
@@ -753,9 +800,8 @@
 
                             data.FrecuencyDelta = (_fr / _nl).toFixed(2);
                             var st= _nl / _fr;
-                            data.SamplingTime = st.toFixed(2);// (_nl / _fr).toFixed(2);
+                            data.SamplingTime = st.toFixed(2);
                             data.SamplesToRead = Math.round(data.SampleRate * st);
-                            //this.updateRecord("Name",data);
 
                             // Si el ProductType es diferente al 9205 actualiza todos los módulos que compartan la misma NiCompactDaq
                             if ( pt != "9205") {
@@ -823,34 +869,26 @@
                         },
                         toolbarClick: "onToolBarClick_AiChannels",
                         isResponsive: true,
+                        cssClass: "gridFull",
+                        //width: "100%",
                         enableResponsiveRow: true,
                         allowPaging: false,
                         //allowSelection: true,
                         columns: [
-                          { field: "Disassociate", headerText: "", headerTextAlign: "center", textAlign : "center", width: "3%", editType: "booleanedit", type:"boolean"},
-                          { field: "MdVariableId", headerText: 'MdVar Id', headerTextAlign: "center", textAlign : "center", visible: false, isPrimaryKey: true },
-                          { field: "MdVariableTag", headerText: "Punto de Medición", headerTextAlign: "center", textAlign : "center", allowEditing: false },
-                          { field: "Name", headerText: 'Nombre', headerTextAlign: "center", textAlign : "center", allowEditing: false, isPrimaryKey: true },
-                          { field: "Acon", headerText: "Canal Aconditioner", editType:"dropdownedit", headerTextAlign: "center", textAlign : "center", dataSource:_dsAconditioners, foreignKeyField: "value", foreignKeyValue: "text",},
-                          { field: "ExcitationIEPE", headerText: 'Excitación IEPE', width: "13%", headerTextAlign: "center", textAlign : "center", editType: "booleanedit", allowEditing: true },
-                          { field: "Enabled", headerText: 'Habilitado', width: "10%", headerTextAlign: "center", textAlign : "center", editType: "booleanedit" },
+                          { field: "Disassociate", headerText: "", headerTextAlign: "center", textAlign : "center", width: "5%", editType: "booleanedit", type:"boolean"},
+                          { field: "MdVariableId", headerText: 'MdVar Id', headerTextAlign: "center", width: "0%", textAlign : "center", visible: false, isPrimaryKey: true },
+                          { field: "MdVariableTag", headerText: "Punto de Medición", headerTextAlign: "center", width: "20%", textAlign : "center", allowEditing: false },
+                          { field: "Name", headerText: 'Nombre', headerTextAlign: "center", width: "20%", textAlign : "center", allowEditing: false, isPrimaryKey: true },
+                          { field: "Acon", headerText: "Canal Aconditioner", editType:"dropdownedit", headerTextAlign: "center", width: "20%", textAlign : "center", dataSource:_dsAconditioners, foreignKeyField: "value", foreignKeyValue: "text",},
+                          { field: "ExcitationIEPE", headerText: 'Excitación IEPE', width: "15%", headerTextAlign: "center", textAlign : "center", editType: "booleanedit", allowEditing: true },
+                          { field: "Enabled", headerText: 'Habilitado', width: "15%", headerTextAlign: "center", textAlign : "center", editType: "booleanedit" },
                         ],
                         //{ field: "ByPassed", headerText: 'ByPassed', width: "10%", headerTextAlign: "center", editType: "booleanedit" },
                         showStackedHeader: true,
                         stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Canales", column: "Disassociate, MdVariableId, MdVariableTag, Name, Acon, Enabled, ExcitationIEPE" }] }],
                         actionComplete: function (args) {
-                            // Agrega o actualiza el "_dto" al arrastrar un punto de medición a un canal Asdaq si existe previamente un canal Aconditioner
-                            if (args.requestType == "refresh") {
-                                //if (_pointByToAssociate != null) {
-                                //    var channelAsdaq = args.model.dataSource[_pointByToAssociate.Index];
-                                //    if (channelAsdaq.SerialAcon != null && channelAsdaq.AconChannel != null) {
-                                //        getAcconditioner({ MdVariableId: _pointByToAssociate.MdVarIdNew, AconChannel: channelAsdaq.AconChannel, SerialAcon: channelAsdaq.SerialAcon}, false, _asdaqId);
-                                //    }
-                                //    _pointByToAssociate = null;
-                                //}
-                            }
-                                // Gestiona todos los Canales Asdaq que tengan punto de medición relacionado y que se les asocie o no un canal Aconditioner al momento de editarlo y posterior guardado en memoria
-                            else if (args.requestType == "save") {
+                            // Gestiona todos los Canales Asdaq que tengan punto de medición relacionado y que se les asocie o no un canal Aconditioner al momento de editarlo y posterior guardado en memoria
+                            if (args.requestType == "save") {
                                 // Agrega o actualiza el "_dto" al arrastrar un punto de medición a un canal Asdaq si existe previamente un canal Aconditioner
                                 if (_pointByToAssociate != null) {
                                     var channelAsdaq = args.model.dataSource[_pointByToAssociate.Index];
@@ -870,8 +908,8 @@
                                     ej.DataManager(args.model.dataSource).update("Name", { Name: args.data.Name, SerialAcon: null, AconChannel: null }, args.model.dataSource);
                                 }
 
-                                var indexChannel = args.selectedRow === undefined ? args.rowIndex : args.selectedRow; //new
-                                var nameDevice = args.data["Name"].split('/')[0]; //new
+                                var indexChannel = args.selectedRow === undefined ? args.rowIndex : args.selectedRow;
+                                var nameDevice = args.data["Name"].split('/')[0];
 
                                 var channelEdited = $("#"+this._id).data("ejGrid").model.dataSource[indexChannel];
                                 var channelOld = ej.DataManager(_copyAiChannels).executeLocal(ej.Query().where("Name","equal", nameDevice,false))[0].AiChannels[indexChannel];
@@ -903,6 +941,8 @@
                                         getAcconditioner(channelOld, true, _asdaqId);
                                     }
                                 }
+
+                                MarkOrUnmarkChannel(args, args.data.Disassociate);
                             }
                                 // Antes de editar un canal, en la columna "Canal Aconditioner" verificamos cuales ya estan asociados a un canal para deshabilitarlos en el dropdownlist
                             else if (args.requestType == "beginedit") {
@@ -950,41 +990,36 @@
                         recordClick: function (args) {
                             // Estado del checkbox de la 1er o última columna de canales Asdaq
                             var isChecked= $(args.cell).find(":checkbox").is(":checked");
-                            // 1er celda (checkbox) para des-relacionar punto de medición de un canal Asdaq
-                            if (args.cellIndex == 0) {
+                            // 1er celda de un canal para marcar (checkbox) que indica que se va a des-relacionar
+                            if ((args.cellIndex == 0) && (args.event.target.nodeName == "INPUT")) {
 
                                 if (args.data.MdVariableId) {
-                                    var name= args.data.Name;
-                                    // Actualiza la propiedad Disassociate dependiendo del estado del checkbox
-                                    ej.DataManager(args.model.dataSource).update("Name", { Name: name, Disassociate: isChecked }, args.model.dataSource);
+                                    MarkOrUnmarkChannel(args, isChecked);
+                                    //var name= args.data.Name;
+                                    //// Actualiza la propiedad Disassociate dependiendo del estado del checkbox
+                                    //ej.DataManager(args.model.dataSource).update("Name", { Name: name, Disassociate: isChecked }, args.model.dataSource);
 
-                                    // Añade todos los puntos de medición que se eliminaran de la relacion con un canal Asdaq para recalcular su M y B al valor original
-                                    if (args.data.MdVariableId != null && args.data.SerialAcon != null) {
-                                        // Lista de canales Asdaq sin ninguna modificacíon
-                                        var aiChannelsOld = ej.DataManager(_copyAiChannels).executeLocal(ej.Query().where("Name","equal", name.split('/')[0], false))[0].AiChannels
-                                        var exist = ej.DataManager(aiChannelsOld).executeLocal(ej.Query().where("MdVariableId", "equal", args.data.MdVariableId, false));
+                                    //// Añade todos los puntos de medición que se eliminaran de la relacion con un canal Asdaq para recalcular su M y B al valor original
+                                    //if (args.data.MdVariableId != null && args.data.SerialAcon != null) {
+                                    // Lista de canales Asdaq sin ninguna modificacíon
+                                    //    var aiChannelsOld = ej.DataManager(_copyAiChannels).executeLocal(ej.Query().where("Name","equal", name.split('/')[0], false))[0].AiChannels
+                                    //    var exist = ej.DataManager(aiChannelsOld).executeLocal(ej.Query().where("MdVariableId", "equal", args.data.MdVariableId, false));
 
-                                        if (exist.length > 0) {
-                                            // Validamos que sólo exista un solo punto de medición con respecto a su Id
-                                            //var point = ej.DataManager(_pointsToRecalculate).executeLocal(ej.Query().where(
-                                            //        ej.Predicate("MdVariableId", "equal", args.data.MdVariableId, true).and("Recalculate", "equal", true, true)));
-
-                                            if (!isChecked) {
-                                                // Buscamos y eliminamos el punto de medición si el checkbox no está chequeado
-                                                ej.DataManager(_pointsToRecalculate).remove("MdVariableId", args.data.MdVariableId, _pointsToRecalculate);
-                                            } else {
-                                                //if (point.length == 0) {
-                                                _pointsToRecalculate.push({
-                                                    AsdaqId: _asdaqId,
-                                                    MdVariableId: args.data.MdVariableId,
-                                                    SerialAcon: args.data.SerialAcon,
-                                                    AconChannel: args.data.AconChannel,
-                                                    Recalculate: true
-                                                });
-                                                //}
-                                            }
-                                        }
-                                    }
+                                    //    if (exist.length > 0) {
+                                    //        if (!isChecked) {
+                                    //            // Buscamos y eliminamos el punto de medición si el checkbox no está chequeado
+                                    //            ej.DataManager(_pointsToRecalculate).remove("MdVariableId", args.data.MdVariableId, _pointsToRecalculate);
+                                    //        } else {
+                                    //            _pointsToRecalculate.push({
+                                    //                AsdaqId: _asdaqId,
+                                    //                MdVariableId: args.data.MdVariableId,
+                                    //                SerialAcon: args.data.SerialAcon,
+                                    //                AconChannel: args.data.AconChannel,
+                                    //                Recalculate: true
+                                    //            });
+                                    //        }
+                                    //    }
+                                    //}
                                 }
                                 else {
                                     // Si no existe punto relacionado no permite chekearlo
@@ -1022,6 +1057,9 @@
                             var aconditioners= $("#gridAconditioners").ejGrid("model.dataSource");
                             this.model.columns[4].dataSource = getAconditionersType(aconditioners);
                             //this.columns(this.model.columns[4].dataSource);
+                        },
+                        rowDragStart: function (args) {
+                            args.cancel= true;
                         }
                     });
                 },
@@ -1063,10 +1101,12 @@
                     }
                     $("#GridNiDevices").ejGrid("dataSource", _dataSource);
                     _dto =[];
+                    _pointsToRecalculate = [];
                     break;
                 case "Guardar":
-                    var dataNiDevice=$("#GridNiDevices").ejGrid("getCurrentViewData");
-                    //$("#GridNiDevices").data("ejGrid").model.dataSource;
+                    // var dataNiDevice = $("#GridNiDevices").data("ejGrid").model.dataSource;
+                    var dataNiDevice = $("#GridNiDevices").ejGrid("getCurrentViewData");
+
                     for (var nd = 0; nd < dataNiDevice.length; nd++) {
                         dataNiDevice[nd].AICurrentExcitationValue = dataNiDevice[nd].AICurrentExcitationValue.toString().replace('.', ',');
                         dataNiDevice[nd].SampleRate = dataNiDevice[nd].SampleRate.toString().replace('.', ',');
@@ -1090,6 +1130,16 @@
                         method: "POST",
                         data:  { asdaqId: _asdaqId, devices: dataNiDevice, mdVariablesDto: mdVariablesToUpdateMB },
                         success: function (response) {
+                            var points= response;
+                            for (var p = 0; p < points.length; p++) {
+                                // Se elimina la propiedad "SubVariables" ya que del backend retorna null y al actualizarla (update) con la del mainCache esta es seteada tambien
+                                delete points[p].SubVariables;
+                                ej.DataManager(mainCache.loadedMeasurementPoints).update("Id", points[p], mainCache.loadedMeasurementPoints);
+                                //var mdVar = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("Id", "equal", points[p].Id, false));
+                                //if (mdVar.length == 1) {
+                                //    mdVar[0].AiMeasureMethod= points[p].AiMeasureMethod;
+                                //}
+                            }
                             _asdaqSelected.NiDevices= dataNiDevice;
                             _DevicesCache= $.extend(true,[],dataNiDevice);
                             $("#GridNiDevices").ejGrid("refreshContent", true);
@@ -1097,6 +1147,11 @@
                             // Variables globales se ponen nuevamente vacias
                             _dto =[];
                             _copyAiChannels = [];
+                            _pointsToRecalculate = [];
+
+                            // Si existen checbox marcados, los cuales son para eliminar la relación canal-punto se buscan para desmarcarlos.
+                            $("#GridNiDevices td[data-cell=''] :checked").prop('checked',false);
+                            //$("#GridNiDevices td[data-cell='']").children().prop('checked',false);
                         },
                         error: function (jqXHR, textStatus) {
                             popUp("error","A ocurrido un error. Intente nuevamente");
@@ -1135,6 +1190,17 @@
                         method: "POST",
                         data:  { asdaqId: _asdaqId, device: _device, mdVariablesDto: pointsToRecalculateMB },
                         success: function (response) {
+                            var points= response;
+                            for (var p = 0; p < points.length; p++) {
+                                // Se elimina la propiedad "SubVariables" ya que del backend retorna null y al actualizarla (update) con la del mainCache esta es seteada tambien
+                                delete points[p].SubVariables;
+                                ej.DataManager(mainCache.loadedMeasurementPoints).update("Id", points[p], mainCache.loadedMeasurementPoints);
+                                //var mdvar = ej.DataManager(mainCache.loadedMeasurementPoints).executeLocal(ej.Query().where("Id", "Equal", points[p].Id, false))[0];
+                                //if (mdvar !== undefined){
+                                //    mdvar.AiMeasureMethod = points[p].AiMeasureMethod;
+                                //}
+                            }
+
                             var dataNiDevice= $("#GridNiDevices").ejGrid("getCurrentViewData");
                             for (var d = 0; d < dataNiDevice.length; d++) {
                                 if (dataNiDevice[d].Name == _device.Name){
@@ -1145,6 +1211,18 @@
                                             _device.AiChannels[i].Disassociate = false;
                                             _device.AiChannels[i].SensorTypeCode= 0;
                                             _device.AiChannels[i].ExcitationIEPE= false;
+
+                                            // Actualizamos el _DevicesCache en en canal al cual se le des-relacionó el punto de medición.
+                                            ej.DataManager(_DevicesCache[d].AiChannels).update("Name", _device.AiChannels[i], _DevicesCache[d].AiChannels);
+                                            // Esto de arriba (↑) es lo mismo que hacer lo de abajo (↓)
+                                            //_DevicesCache[d].AiChannels[i].MdVariableId = null;
+                                            //_DevicesCache[d].AiChannels[i].MdVariableTag = "[Arrastre aquí...]";
+                                            //_DevicesCache[d].AiChannels[i].Disassociate = false;
+                                            //_DevicesCache[d].AiChannels[i].SensorTypeCode = 0;
+                                            //_DevicesCache[d].AiChannels[i].ExcitationIEPE = false;
+                                            //_DevicesCache[d].AiChannels[i].Acon = _device.AiChannels[i].Acon;
+                                            //_DevicesCache[d].AiChannels[i].SerialAcon = _device.AiChannels[i].SerialAcon;
+                                            //_DevicesCache[d].AiChannels[i].AconChannel = _device.AiChannels[i].AconChannel;
                                         }
                                     }
                                 }
@@ -1256,6 +1334,7 @@
                 },
                 open:function (args) {
                     autoHeightEjDialog("#formMailAccount", _heightWindow);
+                    $(".e-resize-handle").removeClass("e-js");
                 },
                 beforeOpen: function (args) {
                     var cloneMailAccount = clone(mailAccount);
@@ -1359,6 +1438,8 @@
 
                     for (var a = 0; a < asdaq.length; a++) {
                         for (var i = 0; i < asdaq[a].NiDevices.length; i++) {
+                            // Esto se hace debido a que cuando el AsdaqService registra por 1er vez un Asdaq, esta propiedad queda al principio con un espacio que no permite visualizar el valor en el grid de dispositivos de adquisición
+                            asdaq[a].NiDevices[i].TerminalConfiguration = asdaq[a].NiDevices[i].TerminalConfiguration.trim();
                             for (var x = 0; x < asdaq[a].NiDevices[i].CompatibleTerminalConfigurations.length; x++) {
                                 // Le hacemos Trim() a cada palabra que contiene este Array para ser comparada
                                 asdaq[a].NiDevices[i].CompatibleTerminalConfigurations[x] = asdaq[a].NiDevices[i].CompatibleTerminalConfigurations[x].trim();
@@ -1547,8 +1628,8 @@
                 title: title,
                 allowDraggable: true,
                 enableAnimation: true,
-                width: "15%",
-                height: "23%",
+                width: "15%",minWidth:"15%", //maxWidth:"20%",
+                height: "23%", maxHeight:"25%", minHeight:"23%",
                 enableResize: true,
                 showHeader: true,
                 enableModal: true,
@@ -1579,6 +1660,40 @@
                 }
             }
             return _pt;
+        }
+
+        // Marca o desmarca un canal para indicar si se debe eliminar o no su relación con un punto de medición.
+        function MarkOrUnmarkChannel(args, isChecked) {
+            var name= args.data.Name;
+            // Actualiza la propiedad Disassociate dependiendo del estado del checkbox
+            var channelUpdated = ej.DataManager(args.model.dataSource).update("Name", { Name: name, Disassociate: isChecked }, args.model.dataSource);
+
+            if (channelUpdated) {
+                // Añade todos los puntos de medición que se eliminaran de la relacion con un canal Asdaq para recalcular su M y B al valor original
+                if (channelUpdated.MdVariableId != null && channelUpdated.SerialAcon != null) {
+                    // Lista de canales Asdaq sin ninguna modificacíon
+                    var aiChannelsOld = ej.DataManager(_copyAiChannels).executeLocal(ej.Query().where("Name","equal", name.split('/')[0], false))[0].AiChannels
+                    var exist = ej.DataManager(aiChannelsOld).executeLocal(ej.Query().where("MdVariableId", "equal", channelUpdated.MdVariableId, false));
+
+                    if (exist.length > 0) {
+                        if (!isChecked) {
+                            // Buscamos y eliminamos el punto de medición si el checkbox no está chequeado
+                            ej.DataManager(_pointsToRecalculate).remove("MdVariableId", channelUpdated.MdVariableId, _pointsToRecalculate);
+                        } else {
+                            // Por si existe un punto existente se elimina y se vuelve agregar.
+                            ej.DataManager(_pointsToRecalculate).remove("MdVariableId", channelUpdated.MdVariableId, _pointsToRecalculate);
+
+                            _pointsToRecalculate.push({
+                                AsdaqId: _asdaqId,
+                                MdVariableId: channelUpdated.MdVariableId,
+                                SerialAcon: channelUpdated.SerialAcon,
+                                AconChannel: channelUpdated.AconChannel,
+                                Recalculate: true
+                            });
+                        }
+                    }
+                }
+            }
         }
     </script>
 }

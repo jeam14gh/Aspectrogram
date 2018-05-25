@@ -100,7 +100,7 @@
                     //Aichannels de CompactDaqs
                     foreach (var m in asdaq.NiCompactDaqs.SelectMany(a => a.CSeriesModules))
                     {
-                        
+
                         m.AiChannels.Where(ch => !string.IsNullOrEmpty(ch.MdVariableId)).ToList().ForEach(mdt =>
                         {
                             // Validamos si el punto de medición tiene excitación IEPE
@@ -120,7 +120,7 @@
                                         }
                                     }
                                 }
-                            }                                                       
+                            }
 
                             // Le agregamos la ruta al punto de medición
                             mdt.MdVariableTag = asset.Where(a => a.Id == mdVariableTagList.Where(md => md.Id == mdt.MdVariableId).FirstOrDefault().ParentId).FirstOrDefault().Name + "/" +
@@ -182,9 +182,9 @@
                     AICurrentExcitationValue = m.AICurrentExcitationValue,
                     ProductType = m.ProductType,
                     FrecuencyRange = m.FrecuencyRange,
-                    NumberOfLines= m.NumberOfLines,
-                    SamplingTime= m.SamplingTime,
-                    FrecuencyDelta= m.FrecuencyDelta
+                    NumberOfLines = m.NumberOfLines,
+                    SamplingTime = m.SamplingTime,
+                    FrecuencyDelta = m.FrecuencyDelta
                 })).ToList()).ToList()
 
                 //.Concat(s.NiCompactDaqs.Select(ndt => new NiDeviceDto
@@ -205,20 +205,22 @@
         /// <summary>
         /// Actualiza todos los dispositivos de adquisición (NiDevices y NiCompactDaqs) asociados a un AsdaqId
         /// </summary>
-        public void UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
+        //public void UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
+        public List<MdVariableExtension> UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
         {
+            var points = new List<MdVariableExtension>();
             // Obtiene todos los Aichannels del Asdaq y toma unicamente los canales relacionados para actualizar el AiMeasureMethod de cada punto de medición. 
             for (int d = 0; d < devices.Count; d++)
             {
                 var channels = devices[d].AiChannels.Where(m => m.MdVariableId != null).ToList();//
-                
+
                 // Verificamos si el dispositivo es compatible o no con un Acelerometro para actualizar el AiMeasureMethod de cada punto de medición.
                 if (devices[d].CompatibleMeasures != null)
                 {
                     if (devices[d].CompatibleMeasures.Exists(e => e == "Accelerometer"))
-                        new MdVariableExtensionBl(CoreDbUrl).UpdateAiMeasureMethod(channels, true, devices[d].AICurrentExcitationValue);
+                        points.AddRange(new MdVariableExtensionBl(CoreDbUrl).UpdateAiMeasureMethod(channels, true, devices[d].AICurrentExcitationValue));
                     else
-                        new MdVariableExtensionBl(CoreDbUrl).UpdateAiMeasureMethod(channels, false, devices[d].AICurrentExcitationValue);
+                        points.AddRange(new MdVariableExtensionBl(CoreDbUrl).UpdateAiMeasureMethod(channels, false, devices[d].AICurrentExcitationValue));
                 }
             }
 
@@ -245,8 +247,8 @@
                 AiChannels = c.AiChannels,
                 FrecuencyRange = c.FrecuencyRange,
                 NumberOfLines = c.NumberOfLines,
-                SamplingTime= c.SamplingTime,
-                FrecuencyDelta= c.FrecuencyDelta
+                SamplingTime = c.SamplingTime,
+                FrecuencyDelta = c.FrecuencyDelta
             }).ToList();
 
             var niDevicesList = asdaq.NiDevices;
@@ -332,6 +334,7 @@
             if (assetIdList.Count > 0)
                 new AssetExtensionBl(CoreDbUrl).UpdateAsdaqId(assetIdList.Distinct().ToList(), asdaqId, false);
 
+            return points;
         }
 
         /// <summary>
@@ -420,7 +423,7 @@
             }
 
             if (niCompactDaqs != null)
-            {               
+            {
                 for (int i = 0; i < niCompactDaqs.AiChannels.Count; i++)
                 {
                     if (!string.IsNullOrEmpty(device.AiChannels[i].MdVariableId))
@@ -441,23 +444,14 @@
                             {
                                 var _index = niCompactDaqs.AiChannels.Select((property, index) => new { Property = property, Index = index }).Where(w => w.Property.Name == name).Select(s => s.Index).FirstOrDefault();
                                 niCompactDaqs.AiChannels[_index].MdVariableId = null;
+                                niCompactDaqs.AiChannels[_index].AconChannel = device.AiChannels[i].AconChannel;
+                                niCompactDaqs.AiChannels[_index].SerialAcon = device.AiChannels[i].SerialAcon;
                             }
 
                             if (_mdVariable.AiMeasureMethod != null)
-                                new MdVariableExtensionBl(CoreDbUrl).setPropertiesAiMeasureMethod(_mdVariable);                            
+                                new MdVariableExtensionBl(CoreDbUrl).setPropertiesAiMeasureMethod(_mdVariable);
                         }
                     }
-                    //if (device.AiChannels[i].Disassociate == true)
-                    //{
-                    //    var name = device.AiChannels[i].Name;
-                    //    var channel = niCompactDaqs.AiChannels.Where(c => c.Name == name).FirstOrDefault();
-                    //    if (channel != null)
-                    //    {
-                    //        new MdVariableExtensionBl(CoreDbUrl).setPropertiesAiMeasureMethod(channel.MdVariableId);
-                    //        var _index = niCompactDaqs.AiChannels.Select((property, index) => new { Property = property, Index = index }).Where(w => w.Property.Name == name).Select(s => s.Index).FirstOrDefault();
-                    //        niCompactDaqs.AiChannels[_index].MdVariableId = null;
-                    //    }
-                    //}
                 }
             }
 
@@ -691,8 +685,9 @@
         /// Actualiza una lista de Aconditioners relacionados a un Asdaq y los parámetros
         /// M y B de los puntos de medición que influyan en cambios de ganancia o desplazamiento que estén relacionados a canales Asdaq
         /// </summary>
-        public void UpdateAconditionerByAsdaq(string asdaqId, List<Aconditioner> aconditioners, List<MdVariableUpdateMBDto> mdVariablesToUpdate)
+        public List<MdVariableExtension> UpdateAconditionerByAsdaq(string asdaqId, List<Aconditioner> aconditioners, List<MdVariableUpdateMBDto> mdVariablesToUpdate)
         {
+            var _points = new List<MdVariableExtension>();
             // Actualiza una lista de puntos de medición en sus parámetros M y B.
             if (mdVariablesToUpdate != null)
             {
@@ -727,17 +722,19 @@
                 // Eliminamos todas las MdVariablesId que estén en Null
                 mdVariablesToUpdate.RemoveAll(w => w.MdVariableId == null);
 
-                new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesToUpdate, "Actualización de canales Aconditioners");
+                _points.AddRange(new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(mdVariablesToUpdate, "Actualización de canales Aconditioners"));
             }
 
             _asdaqRepository.UpdateAconditionerByAsdaq(asdaqId, aconditioners);
+            return _points;
         }
 
         /// <summary>
         /// Elimina un Aconditioner relacionado a un Asdaq por medio del serial y los canales Asdaq que estén relacionados 
         /// </summary>
-        public void DeleteAconditionerBySerial(string asdaqId, string serial, List<NiDeviceDto> niDevices)
+        public List<MdVariableExtension> DeleteAconditionerBySerial(string asdaqId, string serial, List<NiDeviceDto> niDevices)
         {
+            var _points = new List<MdVariableExtension>();
             var pointsToRecalculate = new List<MdVariableUpdateMBDto>();
             var points = niDevices
                 .SelectMany(n => n.AiChannels)
@@ -761,7 +758,7 @@
                     });
                 }
 
-                new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(pointsToRecalculate, "Eliminación de canal Aconditioner con canal Asdaq");
+                _points.AddRange(new MdVariableExtensionBl(CoreDbUrl).CalculateMandB(pointsToRecalculate, "Eliminación de un Aconditioner"));
             }
 
             niDevices
@@ -774,6 +771,7 @@
                 UpdateDevice(asdaqId, niDevices);
 
             _asdaqRepository.DeleteAconditionerBySerial(asdaqId, serial);
+            return _points;
         }
     }
 }

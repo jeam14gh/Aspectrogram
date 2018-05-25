@@ -95,12 +95,12 @@
         /// <summary>
         /// Actualiza todos los dispositivos de adquisición (NiDevices y NiCompactDaqs) asociados a un Asdaq con su respectivo Id
         /// </summary>        
-        public void UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
+        public List<MdVariableExtension> UpdateDevice(string asdaqId, List<NiDeviceDto> devices)
         {
             string postBody = JsonConvert.SerializeObject(devices);
             StringContent content = new StringContent(postBody, Encoding.UTF8, "application/json");
-            string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
-            HttpPost<string>(path + "?asdaqId=" + asdaqId, Url, _userState, content);
+            string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);            
+            return HttpPost<List<MdVariableExtension>>(path + "?asdaqId=" + asdaqId, Url, _userState, content);
         }
 
         /// <summary>
@@ -206,23 +206,23 @@
         /// Actualiza una lista de Aconditioners relacionados a un Asdaq y los parámetros
         /// M y B de los puntos de medición que influyan en cambios de ganancia o desplazamiento que estén relacionados a canales Asdaq
         /// </summary>
-        public void UpdateAconditionerByAsdaq(string asdaqId, List<Aconditioner> aconditioners, List<MdVariableUpdateMBDto> mdVariablesToUpdate)
+        public List<MdVariableExtension> UpdateAconditionerByAsdaq(string asdaqId, List<Aconditioner> aconditioners, List<MdVariableUpdateMBDto> mdVariablesToUpdate)
         {
             string postBody = JsonConvert.SerializeObject(new { asdaqId, aconditioners, mdVariablesToUpdate });
             StringContent content = new StringContent(postBody, Encoding.UTF8, "application/json");
             string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
-            HttpPost<string>(path, Url, _userState, content);
+            return HttpPost<List<MdVariableExtension>>(path, Url, _userState, content);
         }
 
         /// <summary>
         /// Elimina un Aconditioner relacionado a un Asdaq por medio del serial y los canales Asdaq que estén relacionados 
         /// </summary>
-        public void DeleteAconditionerBySerial(string asdaqId, string serial, List<NiDeviceDto> niDevices)
+        public List<MdVariableExtension> DeleteAconditionerBySerial(string asdaqId, string serial, List<NiDeviceDto> niDevices)
         {
             string postBody = JsonConvert.SerializeObject(new { asdaqId, serial, niDevices });
             StringContent content = new StringContent(postBody, Encoding.UTF8, "application/json");
             string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
-            HttpPost<string>(path, Url, _userState, content);
+            return HttpPost<List<MdVariableExtension>>(path, Url, _userState, content);
         }
     }
 }

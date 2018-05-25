@@ -250,15 +250,13 @@
 
                             <div class="form-group">
                                 <div class="col-md-offset-4 col-md-8">
-                                    <button id="btnCreateOrEditMdVariable" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
-                                    <button id="btnCancelMdVariable" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                                    <button id="btnCreateOrEditMdVariable" class="btn btn-primary"> Guardar</button>
+                                    <button id="btnCancelMdVariable" class="btn btn-danger"> Cancelar</button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-9">
-                            <!--Grid Subvariables-->
                             <div id="gridSubVariables"></div>
-                            <!--Fin GridSubvariables-->
                         </div>
                     </div>
                 </div>
@@ -266,46 +264,68 @@
                 <!--Formulario Bandas-->
                 <div class="hidden" id="formBands">
                     <div class="container">
-                        <div class="row" style="margin-left: -6% !important;">
-                            <div class="col-md-4">
-                                <div class="form-group col-md-12">
-                                    <label>Banda Muerta (%):</label>
-                                    <input type="text" id="txtDeadBand">
+                        @*<div class="row" style="margin-left: -6% !important;">
+                                <div class="col-md-4">
+                                    <div class="form-group col-md-12">
+                                        <label>Banda Muerta (%):</label>
+                                        <input type="text" id="txtDeadBand">
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <label>Retardo Umbral (seg):</label>
+                                        <input type="text" id="txtThresholdLatency">
+                                    </div>
                                 </div>
-                                <div class="form-group col-md-12">
-                                    <label>Retardo Umbral (seg):</label>
-                                    <input type="text" id="txtThresholdLatency">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading" style="padding-top: 5px !important; padding-bottom: 5px !important;"><b>BANDA MÍNIMA</b></div>
-                                    <div class="panel-body" style="padding-top: 5px !important; padding-bottom: 0px !important;">
-                                        <div class="row">
-                                            <div class="form-group col-md-9">
-                                                <label>Umbral:</label> @*Umbral máximo*@
-                                                <input type="text" id="txtUpperThreshold">
+                                <div class="col-md-4">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" style="padding-top: 5px !important; padding-bottom: 5px !important;"><b>BANDA MÍNIMA</b></div>
+                                        <div class="panel-body" style="padding-top: 5px !important; padding-bottom: 0px !important;">
+                                            <div class="row">
+                                                <div class="form-group col-md-9">
+                                                    <label>Umbral:</label>
+                                                    <input type="text" id="txtUpperThreshold">
+                                                </div>
                                             </div>
-                                            @*<div class="form-group col-md-6">
-                                                    <label>Umbral Mínimo:</label>
-                                                    <input type="text" id="txtLowerThreshold">
-                                                </div>*@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </div>*@
                         <div class="row">
                             <div id="gridBands"></div>
                         </div>
                         <p></p>
                         <div class="row">
-                            <button id="btnSaveBands" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> Aceptar</button>
-                            <button id="btnCancelBands" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                            <button id="btnSaveBands" class="btn btn-primary"> Aceptar</button>
+                            <button id="btnCancelBands" class="btn btn-primary"> Cancelar</button>
                         </div>
                     </div>
                 </div>
                 <!--Fin formulario Bandas-->
+                <!--EjDialog de opciones de Subvariables-->
+                <div class="hidden" id="formOptionsSubvar">
+                    <div class="container">
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label>Banda Muerta (%):</label>
+                                <input type="text" id="txtDeadBand">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Retardo Umbral (seg):</label>
+                                <input type="text" id="txtThresholdLatency">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Umbral Banda Mínima:</label>
+                                <input type="text" id="txtUpperThreshold">
+                            </div>
+                        </div>
+                        <div class="form-inline">
+                            <div class="form-group">
+                                <button id="btnSaveOptions" class="btn btn-primary"> Aceptar</button>
+                                <button id="btnCancelOptions" class="btn btn-primary"> Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Fin EjDialog de opciones de Subvariables-->
                 <!--Formulario Asset-->
                 <div id="formAsset" class="hidden">
                     <div class="container-fluid">
@@ -357,7 +377,7 @@
 
                                 <div class="form-group">
                                     <div class="col-md-offset-4 col-md-8">
-                                        <button id="btnCloneOrEditAsset" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                                        <button id="btnCloneOrEditAsset" class="btn btn-primary"> Guardar</button>
                                     </div>
                                 </div>
                             </div>
@@ -395,8 +415,8 @@
                         </div>
                         <p></p>
                         <div class="row" style="margin-left:0px">
-                            <button id="btnSavePairsXY" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
-                            <button id="btnCancelPairsXY" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                            <button id="btnSavePairsXY" class="btn btn-primary"> Guardar</button>
+                            <button id="btnCancelPairsXY" class="btn btn-primary"> Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -422,7 +442,7 @@
 
                                     <div class="form-group">
                                         <div class="col-md-offset-4 col-md-8">
-                                            <button id="btnCreateOrEditLocation" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
+                                            <button id="btnCreateOrEditLocation" class="btn btn-primary"> Guardar</button>
                                         </div>
                                     </div>
                                 </div>
@@ -472,8 +492,8 @@
                         </div>
 
                         <div class="row col-md-12">
-                            <button id="btnSaveEventVelocity" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
-                            <button id="btnCancelEventVelocity" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                            <button id="btnSaveEventVelocity" class="btn btn-primary"> Guardar</button>
+                            <button id="btnCancelEventVelocity" class="btn btn-primary"> Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -490,8 +510,8 @@
                         </div>
                         <p></p>
                         <div class="row">
-                            <button id="btnSaveECS" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Guardar</button>
-                            <button id="btnCancelECS" class="btn btn-primary"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                            <button id="btnSaveECS" class="btn btn-primary"> Guardar</button>
+                            <button id="btnCancelECS" class="btn btn-primary"> Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -529,8 +549,8 @@
                         <div class="row" id="divAssets"></div>
                         <div class="row" id="divPoints"></div>
                         <br />
-                        <button id="btnSaveSummaryView" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> Aceptar</button>
-                        <button id="btnCancelSummaryView" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancelar</button>
+                        <button id="btnSaveSummaryView" class="btn btn-primary"> Aceptar</button>
+                        <button id="btnCancelSummaryView" class="btn btn-danger"> Cancelar</button>
                         <p></p>
                         @*<center><label id="lblMessage" class="hidden text-center">Cargando...</label></center>*@
                     </div>
@@ -550,6 +570,175 @@
                     </div>
                 </div>
                 <!--Fin dialog-->
+                <!-- Listado de rodamientos-->
+                <div id="dialogBearings" class="hidden">
+                    <div class="container-fluid cf">
+                        <div class="row" id="gridBearings"></div>
+                        <br />
+                    </div>
+                </div>
+                <!-- Fin listado de rodamientos-->
+                <!--Dialogo de preferencias de usuarios-->
+                <div id="dialogUserPreferences" class="hidden">
+                    <div class="sidebar">
+                        @*<ul class="nav nav-pills nav-stacked" id="listPreferences">*@
+                        <ul class="nav nav-sidebar" id="listPreferences">
+                            <li role="presentation" class="liActive typePreference" id="profile"><a href="#">Perfil</a></li>
+                            <li role="presentation" id="workSpace" class="typePreference"><a href="#">Espacio de trabajo</a></li>
+                            <li role="presentation" id="units" class="typePreference"><a href="#">Unidades</a></li>
+                            <li role="presentation" id="graphs" class="typePreference"><a href="#">Gráficas de análisis</a></li>
+                        </ul>
+                        <div id="divBtnPreferences">
+                            <button type="button" class="btn btn-primary" id="btnSavePreferences">Guardar</button>
+                        </div>
+                    </div>
+                    <div class="container-fluid cf">
+                        <div class="row">
+                            <div class="col-md-10 col-md-offset-2" id="framePreferences">
+                                <div id="infoProfile" class="row">
+                                    <div class="col-md-5 pad">
+                                        <img src="~/Content/images/pictureUser.png" alt="Usuario" class="img-rounded img-responsive">
+                                    </div>
+                                    <div class="col-md-7 pad">
+                                        <h4><span class="lbl-primary">Información del Usuario:</span></h4>
+                                        <br />
+                                        <table class="table table-responsive">
+                                            <tr>
+                                                <td>Nombre:</td>
+                                                <td><input type="text" id="txt_userName" data-propertyName="FullName"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Correo (Usuario):</td>
+                                                <td><input type="text" id="txt_userEmail" data-propertyName="UserName"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Clave:</td>
+                                                <td><input type="text" id="txt_userPass" data-propertyName="PasswordHash"/></td>
+                                            </tr>
+                                            <tr style="height: 60px !important;"> </tr>
+                                            <tr>
+                                                <td>Compañía:</td>
+                                                <td><input type="text" id="txtCompany" data-propertyName="Company"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Cargo:</td>
+                                                <td><input type="text" id="txt_userOccupation" data-propertyName="Occupation"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Teléfono:</td>
+                                                <td><input type="text" id="txt_userPhoneNumbre" data-propertyName="PhoneNumber"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Celular:</td>
+                                                <td><input type="text" id="txt_userCellPhone" data-propertyName="CellPhoneNumber"/></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div id="infoUnits" class="hidden row">
+                                    <div class="col-md-12 pad">
+                                        <h4><span class="lbl-primary">Unidades de medida:</span></h4>
+                                        <br />
+                                        <table class="table table-responsive">
+                                            <tr>
+                                                <td>Sistema de medidas:</td>
+                                                <td><input type="text" id="txtUMeasure" data-propertyName="MeasuresSystem"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Velocidad de giro:</td>
+                                                <td><input type="text" id="txtUTurningVelocity" data-propertyName="TurningVelocity"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Frecuencia:</td>
+                                                <td><input type="text" id="txtUFrequency" data-propertyName="Frequency" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Desplazamiento:</td>
+                                                <td><input type="text" id="txtUDisplacement" data-propertyName="Displacement"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Velocidad:</td>
+                                                <td><input type="text" id="txtUVelocity" data-propertyName="Velocity"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Aceleración:</td>
+                                                <td><input type="text" id="txtUAcceleration" data-propertyName="Acceleration"/></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div id="infoWorkSpace" class="hidden row">
+                                    <div class="col-md-12 pad">
+                                        <h4><span class="lbl-primary">Cuadrícula de gráficos de análisis:</span></h4>
+                                        <br />
+                                        <div class="col-md-4">
+                                            <img src="~/Content/images/oneColumn.png" data-img="1" alt="1 Columna" class="img-rounded img-responsive">
+                                            <br />
+                                            <center>1 Columna</center> 
+                                        </div>
+                                        <div class="col-md-4">
+                                            <img src="~/Content/images/twoColumns.png" data-img="2" alt="2 Columna" class="img-rounded img-responsive">
+                                            <br />
+                                            <center>2 Columnas</center> 
+                                        </div>
+                                        <div class="col-md-4">
+                                            <img src="~/Content/images/threeColumns.png" data-img="3" alt="3 Columnas" class="img-rounded img-responsive">
+                                            <br />
+                                            <center>3 Columnas</center>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="infoGraphs" class="hidden row">
+                                    <div class="col-md-12 pad">
+                                        <h4><span class="lbl-primary">Espectros:</span></h4>
+                                        <br />
+                                        <table class="table table-responsive">
+                                            <tr>
+                                                <td style="border-bottom: none !important;"></td>
+                                                <td>Escala en X</td>
+                                                <td style="border-bottom: none !important;"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Desplazamiento:</td>
+                                                <td><input type="text" id="txtGDisplacementX" data-propertyName="Graphs.Displacement"/></td>
+                                                <td class="hidden" id="DisX"><input type="text" id="txtOtherDisplacementX" data-xScaleValue="Graphs.Displacement"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Velocidad</td>
+                                                <td><input type="text" id="txtGVelocityX" data-propertyName="Graphs.Velocity"/></td>
+                                                <td class="hidden" id="VelX"><input type="text" id="txtOtherVelocityX" data-xScaleValue="Graphs.Velocity"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Aceleración</td>
+                                                <td><input type="text" id="txtGAccelerationX" data-propertyName="Graphs.Acceleration"/></td>
+                                                <td class="hidden" id="AccX"><input type="text" id="txtOtherAccelerationX" data-xScaleValue="Graphs.Acceleration"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Ventaneo:</td>
+                                                <td><input type="text" id="txtGWindowing" data-propertyName="Windowing"/></td>
+                                                <td class="hidden">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Cursos por defecto:</td>
+                                                <td><input type="text" id="txtGCursorDefualt" data-propertyName="CursorDefualt"/></td>
+                                                <td class="hidden">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Nro. armónicos cursor:</td>
+                                                <td><input type="text" id="txtGNumberHarmonic" data-propertyName="NumberHarmonic"/></td>
+                                                <td class="hidden">&nbsp;</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Fin dialogo de preferencias de usuarios-->
 
                 @Html.Partial("../Modals/_ConfirmDialog")
 

@@ -1,0 +1,197 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Amaq.Acloud.CrossCutting</name>
+    </assembly>
+    <members>
+        <member name="T:Amaq.Acloud.CrossCutting.Helpers.AesEnDecryption">
+            <summary>
+            Advanced Encryption Standard (AES), estandar de encriptacion usando autenticacion HMAC.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.AesEnDecryption.EncryptWithPassword(System.String,System.String)">
+            <summary>
+            Simple encriptado (AES) entonces realiza autenticacion (HMAC) de un mensaje UTF8
+            usando derivacion de clave PBKDF2 de una clave proporcionada.
+            </summary>
+            <param name="secretMessage">El mensaje que requiere secreto.</param>
+            <param name="password">La clave para derivacion PBKDF2.</param>
+            <returns>
+            Mensaje encriptado.
+            </returns>
+            <exception cref="T:System.ArgumentException">password</exception>
+            <remarks>
+            Significativamente menos seguro que el uso de claves aleatorias binarias.
+            Adiciona carga no secreta para los parametros de generacion de claves.
+            </remarks>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.AesEnDecryption.DecryptWithPassword(System.String,System.String)">
+            <summary>
+            Simple autenticacion (HMAC) entonces realiza decriptacion (AES) de un mensjae UTF8
+            usando derivacion de clave PBKDF2 de una clave proporcionada.
+            </summary>
+            <param name="encryptedMessage">El mensaje encriptado</param>
+            <param name="password">La clave para derivacion PBKDF2.</param>
+            <returns>
+            Mensage decriptado
+            </returns>
+            <exception cref="T:System.ArgumentException">encryptedMessage</exception>
+            <remarks>
+            Significativamente menos seguro que el uso de claves aleatorias binarias.
+            </remarks>
+        </member>
+        <member name="T:Amaq.Acloud.CrossCutting.Helpers.Base64">
+            <summary>
+            Codificacion y decodificacion en formato Base64
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.Base64.Encode(System.String)">
+            <summary>
+            Codificar texto plano en formato Base64.
+            </summary>
+            <param name="plainText">Texto a codificar</param>
+            <returns>Dato codificado en formato Base64</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.Base64.Decode(System.String)">
+            <summary>
+            Decodificar un dato en formato Base64 a texto plano.
+            </summary>
+            <param name="base64EncodedData">Dato codificado en formato Base64</param>
+            <returns>Texto plano decodificado</returns>
+        </member>
+        <member name="T:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils">
+            <summary>
+            La generacion de cadenas aleatoria no incluye los caracteres ambiguous como
+            I, 1 y l.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.CharactersLowercase">
+            <summary>
+            Caracteres alfabeticos en minuscula.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.CharactersNumeric">
+            <summary>
+            Caracteres numericos.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.CharactersSpecial">
+            <summary>
+            Caracteres especiales.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.CharactersUppercase">
+            <summary>
+            Caracteres alfabeticos en mayuscula.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.DefaultMaxStringLength">
+            <summary>
+            Logitud maxima de cadena de texto por defecto.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.DefaultMinStringLength">
+            <summary>
+            Logitud minima de cadena de texto por defecto.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.Base64Encode(System.String)">
+            <summary>
+            Codificar una cadena de texto a Base64.
+            </summary>
+            <param name="toEncode">Cadena de texto a codificar</param>
+            <returns>Cadena de texto codificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.Base64Decode(System.String)">
+            <summary>
+            Decodificar una cadena de texto en Base64 a normal.
+            </summary>
+            <param name="toDecode">Cadena de texto a decodificar</param>
+            <returns>Cadena de texto decodificada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.Generate">
+            <summary>
+            Generar una cadena de texto aleatoria.
+            La logitud seria determinada de forma aleatoria.
+            </summary>
+            <returns>Cadena de texto aleatoriamente generada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.Generate(System.Int32)">
+            <summary>
+            Generar una cadena de texto aleatoria de una logitud especifica.
+            </summary>
+            <param name="length">Longitud de la cadena de texto</param>
+            <returns>Cadena de texto aleatoriamente generada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.Generate(System.Int32,System.Int32)">
+            <summary>
+            Generar una cadena de texto aleatoria.
+            La logitud es aleatoria dependiendo de la longitud maxima y minima.
+            </summary>
+            <param name="minLength">Longitud minima de la cadena de texto</param>
+            <param name="maxLength">Longitud maxima de la cadena de texto</param>
+            <returns>Cadena de texto aleatoriamente generada</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.CryptoUtils.GenerateSalt">
+            <summary>
+            Genera salt basado en timestamp.
+            </summary>
+            <returns>Salt codificado en Base64</returns>
+        </member>
+        <member name="T:Amaq.Acloud.CrossCutting.Helpers.HashEncryption">
+            <summary>
+            Realiza hash con los siguientes tipos: MD5, SHA-1, SHA256, SHA-384, SHA-512
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.HashEncryption.GetHashMd5(System.String,System.String)">
+            <summary>
+            Calcular el hash MD5 para una determinada cadena de texto.
+            </summary>
+            <param name="input"></param>
+            <returns>Un hash de 32 caracteres de longitud.</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.HashEncryption.GetHashSha1(System.String,System.String)">
+            <summary>
+            Calcular el hash SHA-1 para una determinada cadena de texto.
+            </summary>
+            <param name="input"></param>
+            <returns>Un hash de 40 caracteres de longitud.</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.HashEncryption.GetHashSha256(System.String,System.String)">
+            <summary>
+            Calcular el hash SHA-256 para una determinada cadena de texto.
+            </summary>
+            <param name="input"></param>
+            <returns>Un hash de 64 caracteres de longitud.</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.HashEncryption.GetHashSha384(System.String,System.String)">
+            <summary>
+            Calcular el hash SHA-384 para una determinada cadena de texto.
+            </summary>
+            <param name="input"></param>
+            <returns>Un hash de 96 caracteres de longitud.</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.HashEncryption.GetHashSha512(System.String,System.String)">
+            <summary>
+            Calcular el hash SHA-512 para una determinada cadena de texto.
+            </summary>
+            <param name="input"></param>
+            <returns>Un hash de 128 caracteres de longitud.</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.HashEncryption.ComputeHash(Amaq.Acloud.CrossCutting.Helpers.HashEncryption.HashType,System.String,System.String)">
+            <summary>
+            Calcular el hash de un tipo especificado.
+            </summary>
+            <param name="hashType"></param>
+            <param name="input"></param>
+            <returns>Un hash segun el tipo especificado.</returns>
+        </member>
+        <member name="M:Amaq.Acloud.CrossCutting.Helpers.HashEncryption.GetHasher(Amaq.Acloud.CrossCutting.Helpers.HashEncryption.HashType)">
+            <summary>
+            Obtener el algoritmo de hash que se desea computar.
+            </summary>
+            <param name="hashType"></param>
+            <returns>Tipo de algoritmo a realizar hash</returns>
+        </member>
+    </members>
+</doc>

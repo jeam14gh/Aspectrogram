@@ -61,7 +61,50 @@ Array.prototype.clean = function () {
     return this;
 };
 
+Array.prototype.equals = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+
+    // compare lengths - can save a lot of time 
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0, l = this.length; i < l; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].equals(array[i]))
+                return false;
+        }
+        else if (this[i] != array[i]) {
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;
+        }
+    }
+    return true;
+};
+
 var arrayColumn = (arr, n) => arr.map(x => x[n]);
+
+function minMaxArray(arr) {
+    var
+        max,
+        min,
+        i;
+
+    max = -Number.MAX_VALUE;
+    min = Number.MAX_VALUE;
+    for (i = 0; i < arr.length; i += 1) {
+        if (max < arr[i]) {
+            max = arr[i];
+        }
+        if (min > arr[i]) {
+            min = arr[i];
+        }
+    }
+    return { max: max, min: min };
+}
 
 function xyOnArc(cx, cy, radius, radianAngle) {
     var x = cx + radius * Math.cos(radianAngle);
@@ -161,6 +204,86 @@ var isEmpty = function (obj) {
     return true;
 }
 
+var JsonToCSVConvert = function (JSONData, ReportTitle, ShowLabel, labels) {
+    //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
+    var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
+
+    var CSV = '';
+    //Set Report title in first row or line
+
+    CSV += ReportTitle + '\r\n\n';
+
+    //This condition will generate the Label/Header
+    if (ShowLabel) {
+        var row = "";
+
+        //This loop will extract the label from 1st index of on array
+        //for (var index in arrData[0]) {
+        //    //Now convert each value to string and comma-seprated
+        //    row += index + ';';
+        //}
+
+        // Obtenemos en una fila los headers
+        for (var x = 0; x < labels.length; x++) {
+            row += labels[x] + ';';
+        }
+
+        row = row.slice(0, -1);
+
+        //append Label row with line break
+        CSV += row + '\r\n';
+    }
+
+    //1st loop is to extract each row
+    for (var i = 0; i < arrData.length; i++) {
+        var row = "";
+
+        //2nd loop will extract each column and convert it in string comma-seprated
+        for (var index in arrData[i]) {
+            row += '"' + arrData[i][index] + '";';
+        }
+
+        row.slice(0, row.length - 1);
+
+        //add a line break after each row
+        CSV += row + '\r\n';
+    }
+
+    if (CSV == '') {
+        alert("Invalid data");
+        return;
+    }
+
+    var blob = new Blob([CSV], { type: "application/csv;charset=utf-8;" });
+    saveAs(blob, ReportTitle + ".csv");
+
+    ////Generate a file name
+    //var fileName = "Report_";
+    ////this will remove the blank-spaces from the title and replace it with an underscore
+    //fileName += ReportTitle.replace(/ /g, "_");
+
+    ////Initialize file format you want csv or xls
+    //var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
+
+    //// Now the little tricky part.
+    //// you can use either>> window.open(uri);
+    //// but this will not work in some browsers
+    //// or you will not get the correct file extension    
+
+    ////this trick will generate a temp <a /> tag
+    //var link = document.createElement("a");
+    //link.href = uri;
+    //link.target = "_blank";
+    ////set the visibility hidden so it will not effect on your web-layout
+    //link.style = "visibility:hidden";
+    //link.download = fileName + ".csv";
+
+    ////this part will append the anchor tag and remove it after automatic click
+    //document.body.appendChild(link);
+    //link.click();
+    //document.body.removeChild(link);
+};
+
 var tableToExcel = (function () {
     var uri = 'data:application/vnd.ms-excel;base64,'
       , template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><meta http-equiv="content-type" content="text/plain; charset=UTF-8"/></head><body><table>{table}</table></body></html>'
@@ -169,7 +292,6 @@ var tableToExcel = (function () {
     return function (table, name) {
         if (!table.nodeType) table = document.getElementById(table)
         var ctx = { worksheet: name || 'Worksheet', table: table.innerHTML }
-
         document.getElementById("dlink" + name).href = uri + base64(format(template, ctx));
         document.getElementById("dlink" + name).download = name + '.xls';
         document.getElementById("dlink" + name).click();
@@ -242,4 +364,132 @@ function autoHeightEjDialog(id, heightWindow) {
     var container = $(id + " > div:eq(0)").height() + 50;
     $(id).data("ejDialog").option({ height: container + "px", allowScrolling: true, scrollSettings: { height: _height } });
     $(id).ejDialog("refresh");
+}
+
+var flagFullScreen = {
+    flag: false,
+    containerId: null
+}
+
+ /*
+    * convierte el container del widget completa
+    */
+var launchFullScreen = function (containerId, is3D) {
+
+    var element, parent, closeB, maximizeB, minimizeB, moveB;
+
+    parent = $("#" + containerId).parent();
+    element = parent[0];
+    console.log(parent);
+
+    if (is3D) {
+        $("#" + containerId).css({
+            "padding": "0px"
+        });
+    } else {
+        $("#" + containerId).css({
+            "padding-top": "20px",
+            "padding-left": "20px",
+            "padding-right": "20px"
+        });
+    }
+    
+
+    for (var i = 0; i < element.children.length; i++) {
+        if (element.children[i].className == "btn aw-button aw-close") {
+            console.log(element.children[i]);
+            var el = element.children[i];
+            console.log(el.className);
+        }
+    }
+
+    closeB = element.querySelectorAll('.aw-close');
+    maximizeB = element.querySelectorAll('.aw-maximize');
+    minimizeB = element.querySelectorAll('.aw-minimize');
+    moveB = element.querySelectorAll('.aw-move');
+
+    for (var i = 0; i < closeB.length; i++) {
+        closeB[i].style.display = "none";
+    }
+
+    for (var i = 0; i < moveB.length; i++) {
+        moveB[i].style.display = "none";
+    }
+
+
+    for (var i = 0; i < maximizeB.length; i++) {
+        maximizeB[i].style.display = "none";
+        minimizeB[i].style.display = "block";
+    }
+
+    if (element.requestFullScreen) {
+        element.requestFullScreen();
+    } else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+        $("#" + containerId).css({ "background-color": "white" });
+    } else if (element.webkitRequestFullScreen) {
+        element.webkitRequestFullScreen();
+        element.style.backgroudColor = "white";
+    }
+
+    flagFullScreen.flag = true;
+    flagFullScreen.containerId = containerId;
+
+};
+
+/*
+    *sale de pantalla completa
+    */
+var cancelFullscreen = function () {
+
+    if (document.cancelFullScreen) {
+        document.cancelFullScreen();
+    } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if (document.webkitCancelFullScreen) {
+        document.webkitCancelFullScreen();
+    }
+
+    flagFullScreen.flag = false;
+};
+
+document.addEventListener('fullscreenchange', cancelFullscreenHandler);
+document.addEventListener('webkitfullscreenchange', cancelFullscreenHandler);
+document.addEventListener('mozfullscreenchange', cancelFullscreenHandler);
+document.addEventListener('MSFullscreenChange', cancelFullscreenHandler);
+
+function cancelFullscreenHandler() {
+    var element, containerId, closeB, maximizeB, minimizeB;
+
+    containerId = flagFullScreen.containerId;
+    parent = $("#" + containerId).parent();
+    element = parent[0];
+
+    if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+
+        $("#" + containerId).css({
+            "padding": "0"
+        });
+
+        maximizeB = element.querySelectorAll('.aw-maximize');
+        minimizeB = element.querySelectorAll('.aw-minimize');
+        closeB = element.querySelectorAll('.aw-close');
+        moveB = element.querySelectorAll('.aw-move');
+
+
+        for (var i = 0; i < maximizeB.length; i++) {
+            maximizeB[i].style.display = "block";
+            minimizeB[i].style.display = "none";
+        }
+
+        for (var i = 0; i < closeB.length; i++) {
+            closeB[i].style.display = "block";
+        }
+
+        for (var i = 0; i < moveB.length; i++) {
+            moveB[i].style.display = "block";
+        }
+
+        flagFullScreen.flag = false;
+    }
 }

@@ -489,25 +489,11 @@ ShaftPositionGraph = (function () {
             var
                 // Texto a mostrar de forma dinamica
                 txt,
-                // Configuracion de las series en el grafico
-                series,
                 // Contador
                 i;
 
             _createContextMenu();
             _setMargins();
-            series = [];
-            series[labels[1]] = {
-                plotter: function (e) {
-                    Dygraph.Plugins.Plotter.prototype.drawSensorPositions(e, _measurementPoints.x.SensorAngle,
-                        _measurementPoints.y.SensorAngle, _rotn, _measurementPoints.x.Color, _measurementPoints.y.Color);
-                    Dygraph.Plugins.Plotter.prototype.drawRotationDirection(e, _side, _rotn);
-                    Dygraph.Plugins.Plotter.prototype.smoothPlotter(e, 0.35);
-                    _drawBoundaries();
-                    _createTags();
-                    _drawOrbit();
-                }
-            };
             _chart = new Dygraph(
                 _contentBody,
                 [[0, 0]],
@@ -537,13 +523,13 @@ ShaftPositionGraph = (function () {
                                 txt += (pts[i].xval < 0 ? "" : "+") + pts[i].xval.toFixed(2) + " " + _xSubvariables.overall.Units;
                                 txt += " (" + _shaftData[pts[i].idx].gapX.toFixed(2) + " - (" + _gapRefX.toFixed(2) + ") = ";
                                 txt += (_shaftData[pts[i].idx].gapX.toFixed(2) - _gapRefX.toFixed(2)).toFixed(2) + " V)";
-                                $("#" + _measurementPoints.x.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                                $("#point" + _measurementPoints.x.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
                                 txt = "<b style=\"color:" + _measurementPoints.y.Color + ";\">" + _measurementPoints.y.Name + "</b>";
                                 txt += "&nbsp;Ang:&nbsp;" + parseAng(_measurementPoints.y.SensorAngle) + "&deg; Gap: ";
                                 txt += (pts[i].yval < 0 ? "" : "+") + pts[i].yval.toFixed(2) + " " + _ySubvariables.overall.Units;
                                 txt += " (" + _shaftData[pts[i].idx].gapX.toFixed(2) + " - (" + _gapRefY.toFixed(2) + ") = ";
                                 txt += (_shaftData[pts[i].idx].gapX.toFixed(2) - _gapRefY.toFixed(1)).toFixed(2) + " V)";
-                                $("#" + _measurementPoints.y.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                                $("#point" + _measurementPoints.y.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
                                 txt = _shaftData[pts[i].idx].velocity.toFixed(0) + " RPM, " + _shaftData[pts[i].idx].timeStamp;
                                 if (_shaftData.length > 1) {
                                     txt += " (" + _shaftData[0].timeStamp + " - " + _shaftData[_shaftData.length - 1].timeStamp + ")";
@@ -566,12 +552,12 @@ ShaftPositionGraph = (function () {
                             g.canvas_.style.zIndex = 1000;
                         }
                         // xlabel + ylabel
-                        $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1050);
-                        $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1050);
+                        $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1025);
+                        $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1025);
                         // Recorrer todos los axis-labels
                         axisLabelDivs = $("#" + _contentBody.id + " .dygraph-axis-label");
                         for (i = 0; i < axisLabelDivs.length; i += 1) {
-                            axisLabelDivs.eq(i).parent().css("z-index", 1050);
+                            axisLabelDivs.eq(i).parent().css("z-index", 1025);
                         }
                     },
                     interactionModel: _customInteractionModel,
@@ -584,7 +570,21 @@ ShaftPositionGraph = (function () {
                             axisLabelWidth: 34
                         }
                     },
-                    series: series
+                    plotter: function (e) {
+                        var
+                            xAng,
+                            yAng;
+
+                        xAng = _measurementPoints.x.SensorAngle;
+                        yAng = _measurementPoints.y.SensorAngle;
+                        Dygraph.Plugins.Plotter.prototype.drawSensorPositions(e, xAng, yAng, _rotn, _measurementPoints.x.Color, _measurementPoints.y.Color);
+                        Dygraph.Plugins.Plotter.prototype.drawRotationDirection(e, _side, _rotn);
+                        Dygraph.Plugins.Plotter.prototype.smoothPlotter(e, 0.35);
+                        _drawBoundaries();
+                        _createTags();
+                        _drawOrbit();
+                    },
+                    visibility: [true]
                 }
             );
             $(".grid-stack-item").on("resizestop", function () {
@@ -759,7 +759,7 @@ ShaftPositionGraph = (function () {
          * Metodo usado para actualizar el punto seleccionado
          * Invacodo por la funcion _findClosestPoint
          */
-        _updateSelection = function () {
+        _updateSelection = function (type, selectedKey, e) {
             _chart.cascadeEvents_("select", {
                 selectedRow: _chart.lastRow_,
                 selectedX: _chart.lastx_,
@@ -802,7 +802,38 @@ ShaftPositionGraph = (function () {
                 canvasx = _chart.selPoints_[0].canvasx;
                 ctx.save();
                 for (i = 0; i < _chart.selPoints_.length; i += 1) {
-                    point = _chart.selPoints_[i];
+
+                    if (type == "keyboardEvent") {
+                        if (selectedKey == 1) {
+                            if (_chart.layout_.points[0][_chart.lastRow_ - 1]) {
+                                point = _chart.layout_.points[0][_chart.lastRow_ - 1];
+                                _chart.lastRow_ = _chart.lastRow_ - 1;
+                            } else {
+                                point = _chart.layout_.points[0][_chart.lastRow_];
+                                _chart.lastRow_ = _chart.lastRow_;
+                            }
+
+                        } else if (selectedKey == 2) {
+                            if (_chart.layout_.points[0][_chart.lastRow_ + 1]) {
+                                point = _chart.layout_.points[0][_chart.lastRow_ + 1];
+                                _chart.lastRow_ = _chart.lastRow_ + 1;
+                            } else {
+                                point = _chart.layout_.points[0][_chart.lastRow_];
+                                _chart.lastRow_ = _chart.lastRow_;
+                            }
+                        }
+                        if (point) {
+                            _chart.xval_ = point.xval;
+                            _chart.selPoints_[i] = point;
+                            canvasx = point.canvasx;
+                            //_upgradeLabels(chartArray[i].selPoints_);
+                        }
+                        _chart.selPoints_[i] = point;
+                    } else if (type == "mouseEvent") {
+                        point = _chart.selPoints_[i];
+                    }
+
+                    //point = _chart.selPoints_[i];
                     if (!Dygraph.isOK(point.canvasy)) {
                         continue;
                     }
@@ -904,7 +935,7 @@ ShaftPositionGraph = (function () {
                         _chart.lastx_ = -1;
                     }
                     if (selChanged) {
-                        _updateSelection();
+                        _updateSelection("mouseEvent");
                     }
                     callback = _chart.getFunctionOption("highlightCallback");
                     if (callback && selChanged) {
@@ -1070,6 +1101,11 @@ ShaftPositionGraph = (function () {
                 // Ordenamos por estampas de tiempo la informacion
                 _shaftData = ej.DataManager(_shaftData).executeLocal(
                     new ej.Query().sortBy("timeStamp", ej.sortOrder.Ascending, false));
+                // Por defecto referenciamos el SCL con respecto a la primer muestra
+                if (_shaftData.length > 0) {
+                    _gapRefX = _shaftData[0].gapX;
+                    _gapRefY = _shaftData[0].gapY;
+                }
                 _autoScale = true;
                 _refresh();
             });
@@ -1401,10 +1437,10 @@ ShaftPositionGraph = (function () {
                 xyData = _getShaftPositions();
                 txt = "<b style=\"color:" + _measurementPoints.x.Color + ";\">" + _measurementPoints.x.Name + "</b>&nbsp;";
                 txt += "Ang:&nbsp;" + parseAng(_measurementPoints.x.SensorAngle) + "&deg;";
-                $("#" + _measurementPoints.x.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                $("#point" + _measurementPoints.x.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
                 txt = "<b style=\"color:" + _measurementPoints.y.Color + ";\">" + _measurementPoints.y.Name + "</b>&nbsp;";
                 txt += "Ang:&nbsp;" + parseAng(_measurementPoints.y.SensorAngle) + "&deg;";
-                $("#" + _measurementPoints.y.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                $("#point" + _measurementPoints.y.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
                 _chart.updateOptions({
                     "file": xyData,
                     "valueRange": [_graphRange.yMin, _graphRange.yMax],
@@ -1637,6 +1673,25 @@ ShaftPositionGraph = (function () {
             });
         };
 
+        document.body.addEventListener("keydown", function (e) {
+
+            var callback;
+
+            if (_mouseover && _lastMousemoveEvt.isTrusted) {
+                _chart = _chart;
+
+                if (e.keyCode == 37) {
+                    _updateSelection("keyboardEvent", 1, e);
+                    callback = _chart.getFunctionOption("highlightCallback");
+                    callback.call(_chart, e, _chart.lastx_, _chart.selPoints_, _chart.row);
+                } else if (e.keyCode == 39) {
+                    _updateSelection( "keyboardEvent", 2, e);
+                    callback = _chart.getFunctionOption("highlightCallback");
+                    callback.call(_chart, e, _chart.lastx_, _chart.selPoints_, _chart.row);
+                }
+            }
+        });
+
         this.Show = function (measurementPointId, currentColor, pairedColor, timeStampArray) {
             var
                 // SubVariables del punto de medicion seleccionado, dependiendo del modo
@@ -1784,7 +1839,8 @@ ShaftPositionGraph = (function () {
                     subVariableIdList: subVariableIdList,
                     asset: _assetData.Name,
                     seriesName: _seriesName,
-                    measurementPointList: [_measurementPoints.x.Name.replace(/\s/g, ""), _measurementPoints.y.Name.replace(/\s/g, "")],
+                    measurementPointList: [_measurementPoints.x.Name.replace(/\s|\W|[#$%^&*()]/g, ""),
+                        _measurementPoints.y.Name.replace(/\s|\W|[#$%^&*()]/g, "")],
                     pause: (timeMode === 0) ? true : false,
                     settingsMenu: settingsMenu,
                     onSettingsMenuItemClick: _onSettingsMenuItemClick,
@@ -1801,6 +1857,12 @@ ShaftPositionGraph = (function () {
                         _movableGrid = !_movableGrid;
                         grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                         $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
+                    },
+                    onMaximize: function () {
+                        launchFullScreen(_container.id);
+                    },
+                    onMinimize: function () {
+                        cancelFullscreen();
                     }
                 });
 

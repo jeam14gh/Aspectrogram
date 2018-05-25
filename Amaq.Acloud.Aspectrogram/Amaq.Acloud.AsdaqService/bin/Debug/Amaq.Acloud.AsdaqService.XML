@@ -166,6 +166,11 @@
             Cantidad limite de registros de datos dinámicos históricos que se suben al servidor principal por cada transacción. Por defecto 80
             </summary>
         </member>
+        <member name="P:Amaq.Acloud.AsdaqService.AsdaqProperties.HistoricalDataUploadInterval">
+            <summary>
+            Valor en milisegundos que indica cada cuanto tiempo se suben datos históricos al servidor
+            </summary>
+        </member>
         <member name="T:Amaq.Acloud.AsdaqService.AsdaqService">
             <summary>
             Servicio que gestiona toda la adquisicion y la sincroniza con el servidor de base de datos
@@ -894,14 +899,12 @@
             <param name="offset">Promedio de la señal</param>
             <returns></returns>
         </member>
-        <member name="M:Amaq.Acloud.AsdaqService.Helpers.OverallMeasureHelper.CalculateAmplitude1x(System.Double[],System.Int32,System.Int32,System.Int32,Amaq.Acloud.AsdaqService.Helpers.CircularBuffer.CircularBuffer{Amaq.Acloud.AsdaqService.Models.BufferDataItem},System.Int32)">
+        <member name="M:Amaq.Acloud.AsdaqService.Helpers.OverallMeasureHelper.CalculateAmplitude1x(System.Double[],System.UInt32[],Amaq.Acloud.AsdaqService.Helpers.CircularBuffer.CircularBuffer{Amaq.Acloud.AsdaqService.Models.BufferDataItem},System.Int32)">
             <summary>
             Calcula el valor de amplitud 1x
             </summary>
             <param name="waveform">Forma de onda</param>
-            <param name="firstFlank">Primer flanco</param>
-            <param name="lastFlank">Último flanco</param>
-            <param name="numberOfFlanks">Cantidad de flancos</param>
+            <param name="positions">Total de flancos</param>
             <param name="mPointAcquisitionBuffer">Búfer de adquisición del punto de medición</param>
             <param name="step">Cantidad de señales entre el primer flanco y el último flanco</param>
             <returns></returns>
@@ -913,14 +916,12 @@
             <param name="signal">Señal</param>
             <returns></returns>
         </member>
-        <member name="M:Amaq.Acloud.AsdaqService.Helpers.OverallMeasureHelper.CalculatePhase1x(System.Double[],System.Int32,System.Int32,System.Int32,Amaq.Acloud.AsdaqService.Helpers.CircularBuffer.CircularBuffer{Amaq.Acloud.AsdaqService.Models.BufferDataItem},System.Int32)">
+        <member name="M:Amaq.Acloud.AsdaqService.Helpers.OverallMeasureHelper.CalculatePhase1x(System.Double[],System.UInt32[],Amaq.Acloud.AsdaqService.Helpers.CircularBuffer.CircularBuffer{Amaq.Acloud.AsdaqService.Models.BufferDataItem},System.Int32)">
             <summary>
             Calcula el valor de fase 1x
             </summary>
             <param name="waveform">Forma de onda</param>       
-            <param name="firstFlank">Primer flanco</param>
-            <param name="lastFlank">Último flanco</param>
-            <param name="numberOfFlanks">Cantidad de flancos</param>
+            <param name="positions">Total de flancos</param>
             <param name="mPointAcquisitionBuffer">Búfer de adquisición del punto de medición</param>
             <param name="step">Cantidad de señales entre el primer flanco y el último flanco</param>
             <returns></returns>
@@ -982,16 +983,13 @@
             <param name="hysteresisThresholdPercentage">Umbral de histeresis en porcentaje</param>
             <returns></returns>
         </member>
-        <member name="M:Amaq.Acloud.AsdaqService.Helpers.AngularReferenceHelper.CalculateRpm(System.Int32,System.Int32,System.Int32,System.Double,System.Int32,System.Int32)">
+        <member name="M:Amaq.Acloud.AsdaqService.Helpers.AngularReferenceHelper.CalculateRpm(System.UInt32[],System.Double,System.Int32)">
             <summary>
             Calcula la velocidad en Rpm
             </summary>
-            <param name="numberOfFlanks">Cantidad de flancos</param>
-            <param name="firstFlank">Posición primer flanco</param>
-            <param name="lastFlank">Posición último flanco</param>
+            <param name="angularPositions">Total de flancos</param>
             <param name="sampleRate">Frecuencia de muestreo con la que se están adquiriendo las formas de onda</param>
             <param name="samplesToRead">Número de muestras</param>
-            <param name="step">Cantidad de señales entre el primer flanco y el último flanco</param>
             <returns></returns>
         </member>
         <member name="M:Amaq.Acloud.AsdaqService.Helpers.AngularReferenceHelper.ResolveFirstAndLastFlank(System.Int32,System.Double,System.UInt32[],Amaq.Acloud.AsdaqService.Helpers.CircularBuffer.CircularBuffer{Amaq.Acloud.AsdaqService.Models.BufferDataItem},Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension@)">

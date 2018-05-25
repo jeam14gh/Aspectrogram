@@ -4,9 +4,10 @@
  * @author Jorge Calderon
  */
 
-/* globals Dygraph, windowing, ImageExport, createTableToExcel, tableToExcel, SerieSynchronizer, globalsReport, ej, mainCache, document,
-   PublisherSubscriber, enableFilter, stopFrequency, aidbManager, HistoricalTimeMode, clone, formatDate, GetXYDataOnTime, AspectrogramWidget,
-   GetKeyphasorOnTime, GetFullSpectrum, parseAng, arrayColumn, chartScaleY, selectedMeasurementPoint, selectedAsset, popUp, isEmpty*/
+/* globals Dygraph, windowing, ImageExport, createTableToExcel, tableToExcel, SerieSynchronizer, globalsReport, Cursors, ej, mainCache,
+   xCoordinateUnits, DygraphOps, PublisherSubscriber, enableFilter, stopFrequency, aidbManager, HistoricalTimeMode, selectedAsset,
+   cursorType, clone, formatDate, AspectrogramWidget, HammingWindow, HanningWindow, popUp, isEmpty, FourierTransform, GetBSIFactor,
+   document, parseAng, arrayColumn, chartScaleY, selectedMeasurementPoint, spectrumTypes, GetFullSpectrumWithBin*/
 
 var FullSpectrumGraph = {};
 
@@ -57,12 +58,16 @@ FullSpectrumGraph = (function () {
             _angularSubvariable,
             // Tipo de grafico Aspectrogram, necesario en AspectrogramWidget para gestionar la cache de elementos abiertos
             _graphType,
+            // Sentido de giro (Nomenclatura usada en libros y documentos, abreviacion de RotationDirection)
+            _rotn,
             // Referencia a los ultimos datos que se han graficado
             _currentData,
             // Bandera que indica si la grafica se debe autoescalar
             _autoscale,
             // Valor maximo en Y de todos los graficos del mismo tipo de sensor abiertos
             _largestY,
+            // Valor maximo en la escala manual Y
+            _scaleY,
             // Tipo de ventaneo con que se grafica el espectro
             _windowing,
             // Ultima grafica donde se efectuo clic
@@ -92,7 +97,7 @@ FullSpectrumGraph = (function () {
             // Referencia a la suscripcion que sincroniza el chart con los datos enviados por el reproductor
             _playerSubscription,
             // Referencia a la suscripcion para aplicar filtro dinamico
-            _applyFilterSubscription,
+            _dynamicFilterSubscription,
             // Metodo privado que realiza el control de los modelos de interaccion de eventos sobre la grafica
             _customInteractionModel,
             // Referencia a la suscripcion para aplicar resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
@@ -109,6 +114,10 @@ FullSpectrumGraph = (function () {
             _applyDerivative,
             // Metodo privado que construye el chart caso no exista
             _buildGraph,
+            // Metodo privado que calcula el factor necesario para realizar la derivacion (basado en las unidades actual/destino)
+            _computeFactorToDerive,
+            // Metodo privado que calcula el factor necesario para realizar la integracion (basado en las unidades actual/destino)
+            _computeFactorToIntegrate,
             // Metodo privado para gestionar/configurar el tipo de cursor mostrado
             _configureCursor,
             // Metodo privado que genera el menu de las diferentes unidades del eje de abscisas gestionables en el grafico
@@ -125,16 +134,12 @@ FullSpectrumGraph = (function () {
             _getAccelerationSpectrum,
             // Obtiene las unidades del valor en amplitud mostrado en la grafica, dependiendo del tipo de sensor y el tipo de espectro seleccionado
             _getCurrentYUnits,
-            // Metodo privado que aplica el metodo de derivacion por frecuencia
-            _getDerivativeValue,
             // Metodo privado que obtiene los valores correspondientes al espectro de desplazamiento segun el tipo de sensor y las unidades configuradas
             _getDisplacementSpectrum,
             // Metodo privado que calcula el espectro total (Full Spectrum) a mostrar
             _getFullSpectrum,
             // Metodo privado para calcular los armonicos en los limites del grafico
             _getHarmonicLimits,
-            // Metodo privado que aplica el metodo de integracion por frecuencia
-            _getIntegratedValue,
             // Metodo privado que obtiene los valores correspondientes al espectro de velocidad segun el tipo de sensor y las unidades configuradas
             _getVelocitySpectrum,
             // Metodo privado para calcular el porcentaje de ajuste
@@ -149,7 +154,7 @@ FullSpectrumGraph = (function () {
             _spectrumTypeManagement,
             _serieSynchronizer,
             // Metodo privado que realiza la suscripcion al publisher para aplicar filtro dinamico
-            _subscribeToApplyFilter,
+            _subscribeToDynamicFilter,
             // Metodo privado que realiza la suscripcion a los nuevos datos
             _subscribeToNewData,
             // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
@@ -220,7 +225,6 @@ FullSpectrumGraph = (function () {
                 target,
                 menuItem,
                 imgExport,
-                i,
                 contId,
                 name,
                 labels;
@@ -329,6 +333,9 @@ FullSpectrumGraph = (function () {
                     _xCoordinateUnit = clone(xCoordinateUnits.Hertz);
                     break;
             }
+            _chart.updateOptions({
+                "xlabel": "Frecuencia [" + _xCoordinateUnit.Text + "]"
+            });
             _redrawGraph();
         };
 
@@ -356,7 +363,7 @@ FullSpectrumGraph = (function () {
                     break;
                 case "normalCursor" + _widgetId:
                     _cursorType = clone(cursorType.Normal);
-                    _cursor.normalCursor((velocityValue / 60) * _xCoordinateUnit.Factor);
+                    _cursor.normalCursor((velocityValue / 60) * _xCoordinateUnit.Factor, _xCoordinateUnit);
                     break;
                 case "harmonicCursor" + _widgetId:
                     _cursorType = clone(cursorType.Harmonic);
@@ -400,7 +407,6 @@ FullSpectrumGraph = (function () {
 
         _configureCursor = function () {
             var
-                widgetHeight,
                 configParameters,
                 configContainer,
                 i,
@@ -508,7 +514,7 @@ FullSpectrumGraph = (function () {
         /*
          * Construye la grafica, caso no exista.
          */
-        _buildGraph = function (labels, rotn) {
+        _buildGraph = function (labels) {
             var
                 // Porcentaje de altura del contenendor superior a la grafica
                 headerHeigth,
@@ -528,7 +534,7 @@ FullSpectrumGraph = (function () {
                     colors: ["#006ACB", "#006ACB"],
                     digitsAfterDecimal: 4,
                     legend: "never",
-                    xlabel: "Frecuencia [" + _xCoordinateUnit.Text + "]",
+                    xlabel: "Frecuencia [" + ((_xCoordinateUnit.Text === "X") ? "Orden" : _xCoordinateUnit.Text) + "]",
                     ylabel: "Amplitud [" + _xSubvariables.overall.Units + "]",
                     avoidMinZero: true,
                     xRangePad: 1,
@@ -542,8 +548,8 @@ FullSpectrumGraph = (function () {
 
                         canvas.strokeStyle = "black";
                         canvas.strokeRect(area.x, area.y, area.w, area.h);
-                        left = g.toDomCoords(0, -20);
-                        right = g.toDomCoords(enableFilter ? stopFrequency : 0, +20);
+                        left = g.toDomCoords(enableFilter ? -stopFrequency * _xCoordinateUnit.Factor : 0, -20);
+                        right = g.toDomCoords(enableFilter ? stopFrequency * _xCoordinateUnit.Factor : 0, +20);
                         left = left[0];
                         right = right[0];
                         canvas.fillStyle = "rgba(255, 255, 102, 1.0)";
@@ -644,12 +650,12 @@ FullSpectrumGraph = (function () {
                             g.canvas_.style.zIndex = 1000;
                         }
                         // xlabel + ylabel
-                        $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1050);
-                        $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1050);
+                        $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1025);
+                        $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1025);
                         // Recorrer todos los axis-labels
                         axisLabelDivs = $("#" + _contentBody.id + " .dygraph-axis-label");
                         for (i = 0; i < axisLabelDivs.length; i += 1) {
-                            axisLabelDivs.eq(i).parent().css("z-index", 1050);
+                            axisLabelDivs.eq(i).parent().css("z-index", 1025);
                         }
                     },
                     drawHighlightPointCallback: function (g, serie, ctx, cx, cy, color, p) {
@@ -693,28 +699,17 @@ FullSpectrumGraph = (function () {
                 "src": ""
             });
 
-            
-
-            document.body.addEventListener("keydown", function (e) {
-                if (_mouseover) {
-                    if (e.keyCode == 37) {
-                        _cursor.applyKeyEvent(_cursorType, 1, e);
-                    } else if (e.keyCode == 39) {
-                        _cursor.applyKeyEvent(_cursorType, 2, e);
-                    }
-                    if (_cursorType == 0 && (e.keyCode == 37 || e.keyCode == 39)) {
-                        _serieSynchronizer.YReflectionKey(e, _chart);
-                    }
-                }
-            });
+          
         };
 
         _redrawGraph = function () {
             var
-                // Texto dinamico a desplegar del sensor en X
-                txtX,
-                // Texto dinamico a desplegar del sensor en Y
-                txtY,
+                // Indica si la grafica esta en modo auto
+                auto,
+                // Indica si es un espectro de aceleracion
+                accelerationSprectum,
+                // Indica si es un espectro de velocidad 
+                velocitySprectum,
                 // Datos a graficar
                 xyData,
                 // Valor de velocidad
@@ -723,25 +718,23 @@ FullSpectrumGraph = (function () {
                 nxBase,
                 // Valor maximo de amplitud
                 maximumY,
+                // 
+                scaleY,
                 // Fila de la seleccion actual
                 row,
                 // Posicion inicial de la ventana a mostar del grafico sobre el eje X
                 xIni,
                 // Posicion final de la ventana a mostar del grafico sobre el eje X
                 xEnd,
-                // Indica si la gráfica está en modo auto
-                auto,
-                // Indica si el gráfico está en escala manual
-                manual,
-                // Indica si es un espectro de aceleración
-                accelerationSprectum,
-                // Indica si es un espectro de velocidad 
-                velocitySprectum;
+                // Texto dinamico a desplegar del sensor en X
+                txtX,
+                // Texto dinamico a desplegar del sensor en Y
+                txtY;
 
-            auto = $("li>a[data-value= autoScaleY" + _widgetId + "]>i").hasClass('fa-check-square');
-            manual = $("li>a[data-value= manualScaleY" + _widgetId + "]>i").hasClass('fa-check-square');
-            accelerationSprectum = $("li>a[data-value=accelerationSpectrum" + _widgetId + "]>i").hasClass('fa-check-square');
-            velocitySprectum = $("li>a[data-value=velocitySpectrum" + _widgetId + "]>i").hasClass('fa-check-square');
+            auto = $("li>a[data-value= autoScaleY" + _widgetId + "]>i").hasClass("fa-check-square");
+            // Determinamos si el tipo de espectro (aceleracion, velocidad... en caso de no ser ninguno, el por defecto)
+            accelerationSprectum = $("li>a[data-value=accelerationSpectrum" + _widgetId + "]>i").hasClass("fa-check-square");
+            velocitySprectum = $("li>a[data-value=velocitySpectrum" + _widgetId + "]>i").hasClass("fa-check-square");
             // Aplicar la operacion necesaria segun el tipo de espectro seleccionado
             xyData = _applyDerivative();
             _nxArray = [];
@@ -764,35 +757,20 @@ FullSpectrumGraph = (function () {
             if (_largestY === 0) {
                 _largestY = maximumY;
             }
-
-            //auto = $("li>a[data-value= autoScaleY" + _widgetId + "]>i").hasClass('fa-check-square');
-            // Gestiona la escala en Y manual o auto de la gráfica
+            // Gestiona la escala en Y manual o auto de la grafica
             if (_yScaleValue && !_autoscale) {
                 _largestY = _yScaleValue;
             } else {
-                if (auto && _autoscale) {
-                    _largestY = maximumY;
-                } else {
-                    var scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(_widgetId, "WidgetId"));
+                if (_scaleY !== undefined) {
+                    scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(_widgetId, "WidgetId"));
                     if (scaleY.length == 1) {
-                        //var acceleration = $("li>a[data-value=accelerationSpectrum" + _widgetId + "]>i").hasClass('fa-check-square');
-                        //var velocity = $("li>a[data-value=velocitySpectrum" + _widgetId + "]>i").hasClass('fa-check-square');
-
-                        if (velocitySprectum && (scaleY[0].Velocity != null)){
+                        if (velocitySprectum && (scaleY[0].Velocity !== null)) {
                             _largestY = scaleY[0].Velocity;
-                        } else if (accelerationSprectum && (scaleY[0].Acceleration != null)) {
+                        } else if (accelerationSprectum && (scaleY[0].Acceleration !== null)) {
                             _largestY = scaleY[0].Acceleration;
                         } else {
-                            if (manual) {
-                                $("li>a[data-value=manualScaleY" + _widgetId + "]>i").removeClass('fa-check-square').addClass("fa-square-o");
-                                $("li>a[data-value=autoScaleY" + _widgetId + "]>i").addClass('fa-check-square').removeClass("fa-square-o");
-                                _autoscale = true;
-                            }
-                            _largestY = maximumY;
+                            _largestY = scaleY[0].Proximity;
                         }
-                    }
-                    else {
-                        _largestY = maximumY;
                     }
                 }
             }
@@ -806,7 +784,8 @@ FullSpectrumGraph = (function () {
             _chart.updateOptions({
                 "file": xyData,
                 "ylabel": _chart.user_attrs_.ylabel,
-                "valueRange": [0, _largestY * 1.1],
+                "xlabel": "Frecuencia [" + ((_xCoordinateUnit.Text === "X") ? "Orden" : _xCoordinateUnit.Text) + "]",
+                "valueRange": [0, _largestY * (_autoscale ? 1.1 : 1)],
                 "dateWindow": [xIni, xEnd]
             });
             // Texto a mostrar del sensor X
@@ -870,8 +849,8 @@ FullSpectrumGraph = (function () {
             if ((_angularSubvariable && _angularSubvariable.Value !== null)) {
                 txtY += ", " + _angularSubvariable.Value.toFixed(0) + " RPM";
             }
-            $("#" + _measurementPoints.x.Name.replace(/\s/g, "") + _widgetId + " > span").html(txtX);
-            $("#" + _measurementPoints.y.Name.replace(/\s/g, "") + _widgetId + " > span").html(txtY);
+            $("#point" + _measurementPoints.x.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txtX);
+            $("#point" + _measurementPoints.y.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txtY);
             // Inicializamos caso no exista el valor lastx_
             if (typeof _chart.lastx_ === "undefined") {
                 _chart.lastx_ = 0;
@@ -948,7 +927,7 @@ FullSpectrumGraph = (function () {
                     velocity = Math.round((_angularSubvariable.Value / 60 + 0.00001) * 100) / 100;
                 }
                 g.updateOptions({
-                    "valueRange": [0, _largestY * 1.1],
+                    "valueRange": [0, _largestY * (_autoscale ? 1.1 : 1)],
                     "dateWindow": [-(g.file_.length * _xCoordinateUnit.Factor / 2), (g.file_.length * _xCoordinateUnit.Factor / 2)]
                 });
                 if (_cursorType === 1) {
@@ -1139,8 +1118,8 @@ FullSpectrumGraph = (function () {
                     _newDataSubscription = PublisherSubscriber.subscribe("/realtime/refresh", subVariableIdList, function (data) {
                         waveformX = data[_xSubvariables.waveform.Id];
                         waveformY = data[_ySubvariables.waveform.Id];
-                        if (isEmpty(waveformX) || isEmpty(waveformY)) {
-                            console.error("No se encontró datos de forma de onda");
+                        if (isEmpty(waveformX) || isEmpty(waveformY) || isEmpty(waveformX.RawValue) || isEmpty(waveformY.RawValue)) {
+                            console.error("No se encontró datos de forma de onda.");
                             return;
                         }
                         // Forma de onda en X
@@ -1322,7 +1301,7 @@ FullSpectrumGraph = (function () {
                 xyData;
 
             if (!_pause) {
-                //if ((xWaveform.TimeStamp === yWaveform.TimeStamp) && (_currentTimeStamp !== xWaveform.TimeStamp)) {
+                if ((xWaveform.TimeStamp === yWaveform.TimeStamp) && (_currentTimeStamp !== xWaveform.TimeStamp)) {
                     // Estampa de tiempo actual de graficacion
                     _currentTimeStamp = xWaveform.TimeStamp;
                     // Informacion del grafico
@@ -1330,7 +1309,7 @@ FullSpectrumGraph = (function () {
                     // Mantener en memoria el valor del ultimo espectro mostrado
                     _currentData = clone(xyData);
                     _redrawGraph();
-                //}
+                }
             }
         };
 
@@ -1344,11 +1323,13 @@ FullSpectrumGraph = (function () {
                 xData,
                 yData,
                 windowFactor,
+                i,
                 bSi,
                 Xn,
                 Yn,
                 alpha,
                 beta,
+                rotnSign,
                 resp;
             
             // Bin o espaciamiento de los espectros
@@ -1394,19 +1375,20 @@ FullSpectrumGraph = (function () {
                 Yn[i] = bSi * Math.sqrt(Math.pow(realY[i], 2) + Math.pow(imagY[i], 2)) * windowFactor.value;
                 beta[i] = Math.atan2(imagY[i], realY[i]);
             }
+            rotnSign = (_rotn === "CW") ? -1 : 1;
             resp = { Reverse: [], Forward: [] };
             // Calcular reverse y forward
             for (i = 0; i < (realX.length / 2); i += 1) {
-                resp.Reverse.push(Math.sqrt(Math.pow(Xn[i], 2) + Math.pow(Yn[i], 2) - 2 * Xn[i] * Yn[i] * Math.sin(alpha[i] - beta[i])));
-                resp.Forward.push(Math.sqrt(Math.pow(Xn[i], 2) + Math.pow(Yn[i], 2) + 2 * Xn[i] * Yn[i] * Math.sin(alpha[i] - beta[i])));
+                resp.Reverse.push(Math.sqrt(Math.pow(Xn[i], 2) + Math.pow(Yn[i], 2) - rotnSign * 2 * Xn[i] * Yn[i] * Math.sin(alpha[i] - beta[i])));
+                resp.Forward.push(Math.sqrt(Math.pow(Xn[i], 2) + Math.pow(Yn[i], 2) + rotnSign * 2 * Xn[i] * Yn[i] * Math.sin(alpha[i] - beta[i])));
             }
             resp.Reverse.reverse();
             return GetFullSpectrumWithBin(resp, bin);
         };
 
-        _subscribeToApplyFilter = function () {
-            _applyFilterSubscription = PublisherSubscriber.subscribe("/applyfilter", null, function () {
-                // DIBUJAR LA SOMBRA
+        _subscribeToDynamicFilter = function () {
+            _dynamicFilterSubscription = PublisherSubscriber.subscribe("/applyfilter", null, function () {
+                _redrawGraph();
             });
         };
 
@@ -1446,7 +1428,7 @@ FullSpectrumGraph = (function () {
             sensorCode = _measurementPoints.x.SensorTypeCode;
             if (sensorCode === 1) {
                 _scaleChartDisplacement = PublisherSubscriber.subscribe("/scale/" + _graphType + "/displacement", [sensorCode], function (data) {
-                    if (data[sensorCode] && _selectedSpectrumType === spectrumTypes.Acceleration) {
+                    if (data[sensorCode] && _selectedSpectrumType.Value === spectrumTypes.Displacement.Value) {
                         if (_autoscale) {
                             minMaxArray = data[sensorCode];
                             if (_largestY !== minMaxArray[1]) {
@@ -1460,7 +1442,7 @@ FullSpectrumGraph = (function () {
                 });
             } else {
                 _scaleChartDisplacement = PublisherSubscriber.subscribe("/scale/" + _graphType + "/displacement", [sensorCode], function (data) {
-                    if (data[sensorCode] && _selectedSpectrumType === spectrumTypes.Acceleration) {
+                    if (data[sensorCode] && _selectedSpectrumType.Value === spectrumTypes.Displacement.Value) {
                         if (_autoscale) {
                             minMaxArray = data[sensorCode];
                             if (_largestY !== minMaxArray[1]) {
@@ -1473,7 +1455,7 @@ FullSpectrumGraph = (function () {
                     }
                 });
                 _scaleChartVelocity = PublisherSubscriber.subscribe("/scale/" + _graphType + "/velocity", [sensorCode], function (data) {
-                    if (data[sensorCode] && _selectedSpectrumType === spectrumTypes.Velocity) {
+                    if (data[sensorCode] && _selectedSpectrumType.Value === spectrumTypes.Velocity.Value) {
                         if (_autoscale) {
                             minMaxArray = data[sensorCode];
                             if (_largestY !== minMaxArray[1]) {
@@ -1486,7 +1468,7 @@ FullSpectrumGraph = (function () {
                     }
                 });
                 _scaleChartAcceleration = PublisherSubscriber.subscribe("/scale/" + _graphType + "/acceleration", [sensorCode], function (data) {
-                    if (data[sensorCode] && _selectedSpectrumType === spectrumTypes.Acceleration) {
+                    if (data[sensorCode] && _selectedSpectrumType.Value === spectrumTypes.Acceleration.Value) {
                         if (_autoscale) {
                             minMaxArray = data[sensorCode];
                             if (_largestY !== minMaxArray[1]) {
@@ -1537,22 +1519,28 @@ FullSpectrumGraph = (function () {
         _getDisplacementSpectrum = function (xyData, yLabel) {
             var
                 currentUnit,
-                unitToConvert;
+                unitToConvert,
+                factor,
+                i,
+                yVal1,
+                yVal2;
 
-            if (_measurementPoints.x.SensorTypeCode === 3 && _measurementPoints.x.Integrate) {
-                // VELOCIMETRO MOSTRANDO UNIDADES DE DESPLAZAMIENTO (DERIVAR)
+            if (_measurementPoints.x.SensorTypeCode === 3 && !_measurementPoints.x.Integrate) {
+                // Velocimetro no-integrado mostrando unidades de desplazamiento (Integrar)
                 currentUnit = _xSubvariables.overall.Units;
                 unitToConvert = _xSubvariables.original.Units;
-                // GENERAR ESPECTRO DE DESPLAZAMIENTO
+                // Calcular el factor de conversion necesario para la integracion
+                factor = _computeFactorToIntegrate(currentUnit.toLowerCase(), unitToConvert.toLowerCase());
+                // Generar espectro de desplazamiento
                 for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getDerivateValue(_currentData[i][1], i, currentUnit, unitToConvert),
-                        _getDerivateValue(_currentData[i][2], i, currentUnit, unitToConvert)]);
+                    yVal1 = (_currentData[i][1] / (2 * Math.PI * _currentData[i][0])) * factor;
+                    yVal2 = (_currentData[i][2] / (2 * Math.PI * _currentData[i][0])) * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal1, yVal2]);
                 }
-            } else if (_measurementPoints.x.SensorTypeCode === 1) {
-                // PROXIMIDAD MOSTRANDO UNIDADES DE DESPLAZAMIENTO
+            } else if ((_measurementPoints.x.SensorTypeCode === 1) || (_measurementPoints.x.SensorTypeCode === 3 && _measurementPoints.x.Integrate)) {
+                // Proximidad mostrando unidades de desplazamiento o velocimetro integrado mostrando unidades de desplazamiento
                 currentUnit = _xSubvariables.overall.Units;
-                // GENERAR ESPECTRO DE DESPLAZAMIENTO
+                // Generar espectro de desplazamiento
                 for (i = 0; i < _currentData.length; i += 1) {
                     xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1], _currentData[i][2]]);
                 }
@@ -1565,41 +1553,48 @@ FullSpectrumGraph = (function () {
         _getVelocitySpectrum = function (xyData, yLabel) {
             var
                 currentUnit,
-                unitToConvert;
+                unitToConvert,
+                factor,
+                i,
+                yVal1,
+                yVal2;
 
             if (_measurementPoints.x.SensorTypeCode === 2 && _measurementPoints.x.Integrate) {
-                // ACELEROMETRO MOSTRANDO UNIDADES DE VELOCIDAD
+                // Acelerometro integrado mostrando unidades de velocidad
                 currentUnit = _xSubvariables.overall.Units;
-                unitToConvert = _xSubvariables.original.Units;
-                // EL VALOR DE FORMA DE ONDA ES INTEGRADO POR LO CUAL NO REQUIERE OPERACIONES ADICIONALES
+                // Debido a que el sensor es integrado, los valores de forma de onda son de velocidad
+                for (i = 0; i < _currentData.length; i += 1) {
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1], _currentData[i][2]]);
+                }
+            } else if (_measurementPoints.x.SensorTypeCode === 3 && !_measurementPoints.x.Integrate) {
+                // Velocimetro no-integrado mostrando unidades de velocidad
+                currentUnit = _xSubvariables.overall.Units;
+                // Debido a que el sensor no es integrado, los valores de forma de onda son de velocidad
                 for (i = 0; i < _currentData.length; i += 1) {
                     xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1], _currentData[i][2]]);
                 }
             } else if (_measurementPoints.x.SensorTypeCode === 2 && !_measurementPoints.x.Integrate) {
-                // ACELEROMETRO NO INTEGRADO MOSTRANDO UNIDADES DE VELOCIDAD (INTEGRAR)
+                // Acelerometro no-integrado mostrando unidades de velocidad (Integrar)
                 currentUnit = _xSubvariables.overall.Units;
-                // GENERAR ESPECTRO DE VELOCIDAD
+                // Calcular el factor de conversion necesario para la integracion
+                factor = _computeFactorToIntegrate(currentUnit.toLowerCase(), unitToConvert);
+                // Generar espectro de velocidad
                 for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getIntegratedValue(_currentData[i][1], i, currentUnit, unitToConvert),
-                        _getIntegratedValue(_currentData[i][2], i, currentUnit, unitToConvert)]);
-                }
-            } else if (_measurementPoints.x.SensorTypeCode === 3 && !_measurementPoints.x.Integrate) {
-                // VELOCIMETRO MOSTRANDO UNIDADES POR DEFECTO
-                currentUnit = _xSubvariables.overall.Units;
-                // DEBIDO A QUE EL SENSOR NO ES INTEGRADO, LOS VALORES DE FORMA DE ONDA SON DE VELOCIDAD
-                for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1], _currentData[i][2]]);
+                    yVal1 = (_currentData[i][1] / (2 * Math.PI * _currentData[i][0])) * factor;
+                    yVal2 = (_currentData[i][2] / (2 * Math.PI * _currentData[i][0])) * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal1, yVal2]);
                 }
             } else if (_measurementPoints.x.SensorTypeCode === 3 && _measurementPoints.x.Integrate) {
-                // VELOCIMETRO MOSTRANDO UNIDADES ORIGINALES
-                currentUnit = _xSubvariables.original.Units;
-                unitToConvert = _xSubvariables.overall.Units;
-                // GENERAR ESPECTRO DE VELOCIDAD (INTEGRAR)
+                // Velocimetro integrado mostrando unidades de velocidad (Derivar)
+                currentUnit = _xSubvariables.overall.Units;
+                unitToConvert = _xSubvariables.original.Units;
+                // Calcular el factor de conversion necesario para la derivacion
+                factor = _computeFactorToDerive(currentUnit.toLowerCase(), unitToConvert);
+                // Generar espectro de velocidad (Derivar)
                 for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getIntegratedValue(_currentData[i][1], i, currentUnit, unitToConvert),
-                        _getIntegratedValue(_currentData[i][2], i, currentUnit, unitToConvert)]);
+                    yVal1 = 2 * Math.PI * _currentData[i][1] * _currentData[i][0] * factor;
+                    yVal2 = 2 * Math.PI * _currentData[i][2] * _currentData[i][0] * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal1, yVal2]);
                 }
             }
             yLabel += " [" + currentUnit + "]";
@@ -1610,33 +1605,40 @@ FullSpectrumGraph = (function () {
         _getAccelerationSpectrum = function (xyData, yLabel) {
             var
                 currentUnit,
-                unitToConvert;
+                unitToConvert,
+                factor,
+                i,
+                yVal1,
+                yVal2;
 
-            if (_measurementPoints.x.SensorTypeCode === 2 && _measurementPoints.x.Integrate) {
-                // ACELEROMETRO MOSTRANDO UNIDADES ORIGINALES
-                currentUnit = _xSubvariables.original.Units;
-                unitToConvert = _xSubvariables.overall.Units;
-                // A DIFERENCIA DE LAS UNIDADES, EL VALOR DE FORMA DE ONDA ES INTEGRADO, SE REQUIERE DERIVAR
-                for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getDerivativeValue(_currentData[i][1], i, currentUnit, unitToConvert),
-                        _getDerivativeValue(_currentData[i][2], i, currentUnit, unitToConvert)]);
-                }
-            } else if (_measurementPoints.x.SensorTypeCode === 2 && !_measurementPoints.x.Integrate) {
-                // ACELEROMETRO MOSTRANDO UNIDADES UNICAS O POR DEFECTO
+            if (_measurementPoints.x.SensorTypeCode === 2 && !_measurementPoints.x.Integrate) {
+                // Acelerometro no-integrado mostrando unidades de aceleracion
                 currentUnit = _xSubvariables.overall.Units;
-                // DEBIDO A QUE EL SENSOR NO ES INTEGRADO, LOS VALORES DE FORMA DE ONDA SON DE ACELERACION
+                // Debido a que el sensor no es integrado, los valores de forma de onda son de aceleracion
                 for (i = 0; i < _currentData.length; i += 1) {
                     xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1], _currentData[i][2]]);
                 }
-            } else if (_measurementPoints.x.SensorTypeCode === 3 && !_measurementPoint.Integrate) {
-                // VELOCIMETRO MOSTRANDO UNIDADES DE ACELERACION
+            } else if (_measurementPoints.x.SensorTypeCode === 2 && _measurementPoints.x.Integrate) {
+                // Acelerometro integrado mostrando unidades de aceleracion (Derivar)
                 currentUnit = _xSubvariables.overall.Units;
-                // LOS VALORES DE FORMA DE ONDA REQUIEREN DERIVAR
+                unitToConvert = _xSubvariables.original.Units;
+                // Calcular el factor de conversion necesario para la derivacion
+                factor = _computeFactorToDerive(currentUnit.toLowerCase(), unitToConvert);
+                // Generar espectro de aceleracion (Derivar)
                 for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getDerivativeValue(_currentData[i][1], i, currentUnit, unitToConvert),
-                        _getDerivativeValue(_currentData[i][2], i, currentUnit, unitToConvert)]);
+                    yVal1 = 2 * Math.PI * _currentData[i][1] * _currentData[i][0] * factor;
+                    yVal2 = 2 * Math.PI * _currentData[i][2] * _currentData[i][0] * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal1, yVal2]);
+                }
+            } else if (_measurementPoints.x.SensorTypeCode === 3 && !_measurementPoints.x.Integrate) {
+                // Velocimetro no-integrado mostrando unidades de aceleracion (Derivar)
+                currentUnit = _xSubvariables.overall.Units;
+                // Calcular el factor de conversion necesario para la derivacion
+                factor = _computeFactorToDerive(currentUnit.toLowerCase(), unitToConvert);
+                for (i = 0; i < _currentData.length; i += 1) {
+                    yVal1 = 2 * Math.PI * _currentData[i][1] * _currentData[i][0] * factor;
+                    yVal2 = 2 * Math.PI * _currentData[i][2] * _currentData[i][0] * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal1, yVal2]);
                 }
             }
             yLabel += " [" + currentUnit + "]";
@@ -1644,32 +1646,147 @@ FullSpectrumGraph = (function () {
             return xyData;
         };
 
-        _getDerivativeValue = function (value, frequency, currentUnit, unitToConvert) {
+        // Algoritmo que determina el factor que se debe aplicar para la derivacion
+        _computeFactorToIntegrate = function (currentUnit, unitToConvert) {
             var
                 factor;
 
-            if (unitToConvert === undefined) {
-                // SIGNIFICA QUE LA CONVERSION BUSCADA NO ES CONOCIDA Y SE DEBE SELECCIONAR UNA POR DEFECTO BASADA EN LA ACTUAL
+            // Crear array del valor de unidad donde la primer parte corresponde a la unidad,
+            // mientras la segunda parte corresponde al tipo de medida (pk-pk, 0-pk, RMS).
+            currentUnit = currentUnit.split(" ");
+            switch (currentUnit[0]) {
+                case "g":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "m/s" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "m/s":
+                            factor = 9.8067;
+                            break;
+                        case "mm/s":
+                            factor = 9806.7;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                case "mg":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mm/s" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "mm/s":
+                            factor = 9.8067;
+                            break;
+                        case "m/s":
+                            factor = 9.8067 / 1000;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                case "mm/s":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mm" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "mm":
+                            factor = 1.0;
+                            break;
+                        case "um":
+                            factor = 1000;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                default:
+                    factor = 1.0;
+                    console.log("Unidad de conversión desconocida.");
             }
-            currentUnit = currentUnit.toLowerCase();
-            unitToConvert = unitToConvert.toLowerCase();
-            // GENERAR EL ALGORITMO QUE DETERMINA EL FACTOR QUE SE DEBE APLICAR PARA LA CONVERSION DE UNIDADES
-            factor = 1.0;
-            return value * 2 * Math.PI * frequency * factor;
+            // Aplica un factor adicional en caso de que las unidades de origen y destino no sean iguales
+            if (currentUnit[1] !== unitToConvert[1]) {
+                if (currentUnit[1] === "0-pk" && unitToConvert[1] === "rms") {
+                    factor *= 0.707;
+                } else if (currentUnit[1] === "rms" && unitToConvert[1] === "0-pk") {
+                    factor /= 0.707;
+                }
+            }
+            return factor;
         };
 
-        _getIntegratedValue = function (value, frequency, currentUnit, unitToConvert) {
+        _computeFactorToDerive = function (currentUnit, unitToConvert) {
             var
                 factor;
 
-            if (unitToConvert === undefined) {
-                // SIGNIFICA QUE LA CONVERSION BUSCADA NO ES CONOCIDA Y SE DEBE SELECCIONAR UNA POR DEFECTO BASADA EN LA ACTUAL
+            // Crear array del valor de unidad donde la primer parte corresponde a la unidad,
+            // mientras la segunda parte corresponde al tipo de medida (pk-pk, 0-pk, RMS).
+            currentUnit = currentUnit.split(" ");
+            switch (currentUnit[0]) {
+                case "mm":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mm/s" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "mm/s":
+                            factor = 1.0;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                case "um":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mm/s" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "mm/s":
+                            factor = 1 / 1000.0;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                case "mm/s":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mg" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "g":
+                            factor = 1 / 9806.7;
+                            break;
+                        case "mg":
+                            factor = 1 / 9.8067;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                default:
+                    factor = 1.0;
+                    console.log("Unidad de conversión desconocida.");
             }
-            currentUnit = currentUnit.toLowerCase();
-            unitToConvert = unitToConvert.toLowerCase();
-            // GENERAR EL ALGORITMO QUE DETERMINA EL FACTOR QUE SE DEBE APLICAR PARA LA CONVERSION DE UNIDADES
-            factor = 1.0;
-            return (value / (2 * Math.PI * frequency)) * factor;
+            // Aplica un factor adicional en caso de que las unidades de origen y destino no sean iguales
+            if (currentUnit[1] !== unitToConvert[1]) {
+                if (currentUnit[1] === "0-pk" && unitToConvert[1] === "rms") {
+                    factor *= 0.707;
+                } else if (currentUnit[1] === "rms" && unitToConvert[1] === "0-pk") {
+                    factor /= 0.707;
+                }
+            }
+            return factor;
         };
 
         _getCurrentYUnits = function () {
@@ -1731,8 +1848,6 @@ FullSpectrumGraph = (function () {
                 subVariables,
                 // Punto de medicion de referencia en el par (x, y)
                 measurementPoint,
-                // Sentido de giro (Nomenclatura usada en libros y documentos, abreviacion de RotationDirection)
-                rotn,
                 // Labels
                 labels,
                 // Sensor de referencia angular
@@ -1901,9 +2016,9 @@ FullSpectrumGraph = (function () {
                     new ej.Query().where("Id", "equal", measurementPoint.AngularReferenceId, false))[0];
                 if (!angularReference) {
                     popUp("info", "No se a configurado un sensor de referencia angular para " + _assetData.Name);
-                    rotn = "CW";
+                    _rotn = "CW";
                 } else {
-                    rotn = (angularReference.RotationDirection == 1) ? "CW" : "CCW";
+                    _rotn = (angularReference.RotationDirection == 1) ? "CW" : "CCW";
                     _angularSubvariable = clone(ej.DataManager(angularReference.SubVariables).executeLocal(
                         new ej.Query().where("MeasureType", "equal", 9, false))[0]);
                 }
@@ -1962,7 +2077,8 @@ FullSpectrumGraph = (function () {
                     subVariableIdList: subVariableIdList,
                     asset: _assetData.Name,
                     seriesName: [],
-                    measurementPointList: [_measurementPoints.x.Name.replace(/\s/g, ""), _measurementPoints.y.Name.replace(/\s/g, "")],
+                    measurementPointList: [_measurementPoints.x.Name.replace(/\s|\W|[#$%^&*()]/g, ""),
+                        _measurementPoints.y.Name.replace(/\s|\W|[#$%^&*()]/g, "")],
                     pause: (timeMode === 0) ? true : false,
                     settingsMenu: settingsMenu,
                     onSettingsMenuItemClick: _onSettingsMenuItemClick,
@@ -1979,6 +2095,47 @@ FullSpectrumGraph = (function () {
                         _movableGrid = !_movableGrid;
                         grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                         $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
+                    },
+                    onMaximize: function () {
+                        launchFullScreen(_container.id);
+                        var headerHeigth = (_contentHeader.clientHeight + 4) * 100 / _container.clientHeight;
+                        _contentBody.style.height = (100 - headerHeigth) + "%";
+                        if (_angularSubvariable && _angularSubvariable.Value !== null) {
+                            var velocity = _angularSubvariable.Value;
+                        } else {
+                            velocity = 0;
+                        }
+                        setTimeout(function () {
+                            $("#Reverse" + _widgetId).css("width", _contentBody.style.width);
+                            $("#Reverse" + _widgetId).css("top", $("#" + _contentBody.id + " > div > div > div.dygraph-xlabel").parent().css("top"));
+                            $("#Forward" + _widgetId).css("width", _contentBody.style.width);
+                            $("#Forward" + _widgetId).css("top", $("#" + _contentBody.id + " > div > div > div.dygraph-xlabel").parent().css("top"));
+                            _cursor.resizeCanvas();
+                            if (_cursorType === 1) {
+                                _cursor.updateNormalCursor(_xCoordinateUnit, _getCurrentYUnits(), velocity);
+                            } else if (_cursorType === 2) {
+                                _cursor.updateHarmonicPositions(_xCoordinateUnit);
+                            } else if (_cursorType === 3) {
+                                _cursor.updateSidebandPositions(_xCoordinateUnit);
+                            }
+                        }, 500);
+                    },
+                    onMinimize: function () {
+                        cancelFullscreen();
+                        setTimeout(function () {
+                            $("#Reverse" + _widgetId).css("width", _contentBody.style.width);
+                            $("#Reverse" + _widgetId).css("top", $("#" + _contentBody.id + " > div > div > div.dygraph-xlabel").parent().css("top"));
+                            $("#Forward" + _widgetId).css("width", _contentBody.style.width);
+                            $("#Forward" + _widgetId).css("top", $("#" + _contentBody.id + " > div > div > div.dygraph-xlabel").parent().css("top"));
+                            _cursor.resizeCanvas();
+                            if (_cursorType === 1) {
+                                _cursor.updateNormalCursor(_xCoordinateUnit, _getCurrentYUnits(), velocity);
+                            } else if (_cursorType === 2) {
+                                _cursor.updateHarmonicPositions(_xCoordinateUnit);
+                            } else if (_cursorType === 3) {
+                                _cursor.updateSidebandPositions(_xCoordinateUnit);
+                            }
+                        }, 300);
                     }
                 });
 
@@ -1988,16 +2145,18 @@ FullSpectrumGraph = (function () {
                 // Se suscribe a la notificacion de llegada de nuevos datos.
                 _subscribeToNewData(timeStamp, subVariableIdList);
                 // Se suscribe a la notificacion de aplicacion de filtro dinamico para la forma de onda
-                _subscribeToApplyFilter();
+                _subscribeToDynamicFilter();
                 // Se suscribe a la notificacion de aplicacion de resize para el chart Dygraph
                 _subscribeToResizeChart();
                 // Se suscribe a la notificacion escala en Y por mayor valor.
                 _subscribeToScaleChart();
                 // Construir y mostrar grafica.
-                _buildGraph(labels, rotn);
+                _buildGraph(labels);
             } else {
                 popUp("info", "El punto de medición no tiene asociado ningún par.");
             }
+           
+
         };
 
         _createSpectrumTypeMenu = function (settingsMenu, settingsSubmenu) {
@@ -2147,9 +2306,9 @@ FullSpectrumGraph = (function () {
                 // Eliminar suscripcion de notificacion de llegada de datos por medio del player
                 _playerSubscription.remove();
             }
-            if (_applyFilterSubscription) {
+            if (_dynamicFilterSubscription) {
                 // Eliminar suscripcion de notificaciones para aplicar filtro dinámico a la forma de onda
-                _applyFilterSubscription.remove();
+                _dynamicFilterSubscription.remove();
             }
             if (_resizeChartSubscription) {
                 // Eliminar suscripcion de notificaciones para aplicar resize al chart Dygraph
@@ -2199,49 +2358,46 @@ FullSpectrumGraph = (function () {
             _redrawGraph();
         };
 
-        _manualScaleYManagement = function (target, menuItem, labelText, widgetId) {
-            $(".treeViewFilter").append("<div id='ejdManualScaleYFullSpectrum' class='hidden'>" +
-                    "<div class='container-fluid cf'>" +
-                        "<div class='row'>" +
-                            "<label id='lblScaleYFullSpectrum'></label>" +
-                            "<input type='text' id='txtScaleYFullSpectrum'>" +
-                        "</div>" +
-                        "<br />" +
-                        "<div class='row'>" +
-                            "<button id='btnAcceptScaleYFullSpectrum'> Aceptar</button>" +
-                            "<button id='btnCancelScaleYFullSpectrum'> Cancelar</button>" +
-                        "</div>" +
-                    "</div>" +
-                "</div>");
+        document.body.addEventListener("keydown", function (e) {
+            if (_mouseover && _lastMousemoveEvt.isTrusted) {
+                _chart = _chart;
+                if (e.keyCode == 37) {
+                    _cursor.applyKeyEvent(_cursorType, 1, e);
+                } else if (e.keyCode == 39) {
+                    _cursor.applyKeyEvent(_cursorType, 2, e);
+                }
+                if (_cursorType === 0 && (e.keyCode === 37 || e.keyCode === 39)) {
+                    _serieSynchronizer.YReflectionKey(e, _chart);
+                }
+            }
+        });
 
+        _manualScaleYManagement = function (target, menuItem, labelText, widgetId) {
             var
-                // Obtenemos el valor máximo de la escala en "Y" del gráfico.
-                maxScaleY = _chart.yAxisRange().max(),
-                children,
+                maxScaleY,
+                modalDiv,
                 acceleration,
                 velocity,
-                widgetId,
-                scaleY,
-                i;
+                scaleY;
             
+            // Obtenemos el valor maximo de la escala en "Y" del grafico
+            maxScaleY = _chart.yAxisRange().max();
+            // Creamos el contenido de la modal a presentar al usuario
+            modalDiv = "<div id=\"ejdManualScaleYFullSpectrum\" class=\"hidden\"><div class=\"container-fluid cf\"><div class=\"row\">" +
+                "<label id=\"lblScaleYFullSpectrum\"></label><input type=\"text\" id=\"txtScaleYFullSpectrum\"></div><br />" +
+                "<div class=\"row\"><button id=\"btnAcceptScaleYFullSpectrum\"> Aceptar</button>" +
+                "<button id=\"btnCancelScaleYFullSpectrum\"> Cancelar</button></div></div></div>";
+            $(".treeViewFilter").append(modalDiv);
             scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(widgetId, "WidgetId"));
-            widgetId = widgetId;
             acceleration = $("li>a[data-value=accelerationSpectrum" + widgetId + "]>i").hasClass('fa-check-square');
             velocity = $("li>a[data-value=velocitySpectrum" + widgetId + "]>i").hasClass('fa-check-square');
-
-            //children = target.parent().parent().children();
-            //for (i = 0; i < children.length; i += 1) {
-            //    children.eq(i).children().children().eq(0).addClass("fa-square-o").removeClass("fa-check-square");
-            //}
-            //target.children().eq(0).addClass("fa-check-square").removeClass("fa-square-o");
-            
             $("#lblScaleYFullSpectrum").text(labelText);
             $("#lblScaleYFullSpectrum").data("widgetId", widgetId);
 
+            // JHC: Se debe limitar el ingresar un numero mayor al -input text-
             $("#txtScaleYFullSpectrum").ejNumericTextbox({
                 width: "90%",
                 value: maxScaleY,
-                //value: (scaleY.length == 0) ? yScaleValue : scaleY[0].Manual,
                 minValue: 0.05,
                 decimalPlaces: 2,
             });
@@ -2254,32 +2410,28 @@ FullSpectrumGraph = (function () {
                 showRoundedCorner: true,
                 prefixIcon: "e-icon e-checkmark",
                 click: function (args) {
-                    //var widgetId = $("#lblScaleYFullSpectrum").data("widgetId");
                     _yScaleValue = $("#txtScaleYFullSpectrum").ejNumericTextbox("getValue");
-                    
-                    //var acceleration = $("li>a[data-value=accelerationSpectrum" + widgetId + "]>i").hasClass('fa-check-square');
-                    //var velocity = $("li>a[data-value=velocitySpectrum" + widgetId + "]>i").hasClass('fa-check-square');
-
-                    //var scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(widgetId, "WidgetId"));
-                    if (scaleY.length == 0) {
+                    if (scaleY.length === 0) {
                         _scaleY.push({
                             Velocity: velocity ? _yScaleValue : null,
                             Acceleration: acceleration ? _yScaleValue : null,
+                            Proximity: (!velocity && !acceleration) ? _yScaleValue : null,
                             WidgetId: widgetId
                         });
                     } else {
-                        if (velocity)
+                        if (velocity) {
                             scaleY[0].Velocity = _yScaleValue;
-
-                        if (acceleration)
+                        } else if (acceleration) {
                             scaleY[0].Acceleration = _yScaleValue;
+                        } else {
+                            scaleY[0].Proximity = _yScaleValue;
+                        }
                     }
-
                     _autoscale = false;
                     _redrawGraph();
                     _yScaleValue = null;
-                    $("li>a[data-value=autoScaleY" + widgetId + "]>i").removeClass('fa-check-square').addClass("fa-square-o");
-                    $("li>a[data-value=manualScaleY" + widgetId + "]>i").addClass('fa-check-square').removeClass("fa-square-o");
+                    $("li>a[data-value=autoScaleY" + widgetId + "]>i").removeClass("fa-check-square").addClass("fa-square-o");
+                    $("li>a[data-value=manualScaleY" + widgetId + "]>i").addClass("fa-check-square").removeClass("fa-square-o");
                     $("#ejdManualScaleYFullSpectrum").addClass("hidden");
                     $("#ejdManualScaleYFullSpectrum").ejDialog("close");
                 },
@@ -2305,40 +2457,37 @@ FullSpectrumGraph = (function () {
                 allowDraggable: true,
                 enableAnimation: true,
                 width: "15%", height: "25%",
-                //maxWidth: "20%", maxHeight: "28%",
                 enableResize: true,
                 showHeader: true,
                 enableModal: true,
                 showRoundedCorner: true,
                 animation: { show: { effect: "slide", duration: 500 }, hide: { effect: "fade", duration: 500 } },
                 open: function (args) {
-                    //var widgetId = $("#lblScaleY").data("widgetId"),
-                    var value = _largestY * 1.1;
-                    //var scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(widgetId, "WidgetId"));
-                    //ej.DataManager(jsonTree).executeLocal(ej.Query().where(ej.Predicate("WidgetId", "equal", widgetId, true).and("EntityType", "equal", 2, true)))
+                    var
+                        value;
+
+                    value = _largestY;
                     if (scaleY.length == 1) {
                         if (acceleration) {
-                            value = (scaleY[0].Acceleration == null) ? value : scaleY[0].Acceleration;
+                            value = (scaleY[0].Acceleration === null) ? value : scaleY[0].Acceleration;
                         }
                         if (velocity) {
-                            value = (scaleY[0].Velocity == null) ? value : scaleY[0].Velocity;
+                            value = (scaleY[0].Velocity === null) ? value : scaleY[0].Velocity;
                         }
-                        value *= 1.1;
                     }
-
                     $("#txtScaleYFullSpectrum").ejNumericTextbox({ value: value });
                 },
                 close: function (args) {
                     //$("#btnAcceptScaleYFullSpectrum").off("click"); // Necesario desasociar el evento
                     //$("#btnCancelScaleYFullSpectrum").off("click"); // Necesario desasociar el evento
-                    $("#ejdManualScaleYFullSpectrum").addClass('hidden');
+                    $("#ejdManualScaleYFullSpectrum").addClass("hidden");
                     $("#txtScaleYFullSpectrum").ejNumericTextbox("destroy");
                     $("#btnAcceptScaleYFullSpectrum").ejButton("destroy");
                     $("#btnCancelScaleYFullSpectrum").ejButton("destroy");
                 }
             });
 
-            $("#ejdManualScaleYFullSpectrum").removeClass('hidden');
+            $("#ejdManualScaleYFullSpectrum").removeClass("hidden");
             $("#ejdManualScaleYFullSpectrum").ejDialog("open");
         };
         

@@ -23,9 +23,12 @@ HistoricalTimeMode = (function () {
             _getNumericHistoricalData,
             _getStreamHistoricalData,
             _saveNumericLocal,
+            _steps,
             _saveStreamLocal,
-            _getNumericInterval,
-            _getStreamInterval;
+            _getNumericIntervalLocal,
+            _getNumericIntervalRemote,
+            _getStreamIntervalLocal,
+            _getStreamIntervalRemote;
 
         _streamParser = new StreamParser();
 
@@ -64,10 +67,10 @@ HistoricalTimeMode = (function () {
         this.GetNumericHistoricalData = function (mdVarIdList, subVarIdList, assetNodeId, principalAssetId, startDate, endDate, widgetId) {
             var
                 historicalData,
-                i, j,
+                i,
                 factor,
                 iterations,
-                interval;
+                notLocalTimeStamp;
 
             historicalData = _initializeHistoricalData(mdVarIdList, widgetId, 1);
             $.ajax({
@@ -79,17 +82,19 @@ HistoricalTimeMode = (function () {
                     endDate: endDate
                 },
                 success: function (timeStampList) {
+                    timeStampList = JSON.parse(timeStampList);
                     if (timeStampList.length > 0) {
                         for (i = 0; i < timeStampList.length; i += 1) {
                             timeStampList[i] = new Date(timeStampList[i] + "+00:00").getTime();
                         }
                         historicalData[widgetId].TimeStampArray = clone(timeStampList);
                         // AQUI CON UN ALGORITMO DIVIDO LA BUSQUEDA DE INFORMACION SI EL RANGO ES DEMASIADO GRANDE
-                        factor = Math.floor(25000 / mdVarIdList.length);
-                        factor = (25000 % mdVarIdList.length === 0) ? factor : factor + 1;
+                        factor = Math.floor(5000 / mdVarIdList.length);
+                        factor = (5000 % mdVarIdList.length === 0) ? factor : factor + 1;
                         iterations = Math.floor(timeStampList.length / factor) + 1;
                         i = 0;
-                        _getNumericInterval(i, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
+                        notLocalTimeStamp = [];
+                        _getNumericIntervalLocal(i, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
                     } else {
                         PublisherSubscriber.publish("/historicTrend/refresh", historicalData);
                     }
@@ -100,18 +105,20 @@ HistoricalTimeMode = (function () {
             });
         };
 
-        _getNumericInterval = function (position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId) {
+        _getNumericIntervalLocal = function (position, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId) {
             var
                 timeStampRange,
                 group,
                 notStored,
-                startDate,
-                endDate,
-                limit,
                 i, j;
 
             if (position + 1 > iterations) {
                 // Significa que se cumplieron todas las iteraciones
+                if (notLocalTimeStamp.length > 0) {
+                    iterations = Math.floor(notLocalTimeStamp.length / factor) + 1;
+                    i = 0;
+                    _getNumericIntervalRemote(i, factor, iterations, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
+                }
                 return;
             } else if (position + 1 === iterations) {
                 timeStampRange = timeStampList.slice(position * factor, timeStampList.length);
@@ -131,23 +138,39 @@ HistoricalTimeMode = (function () {
                 PublisherSubscriber.publish("/historicTrend/refresh", historicalData);
                 // Consultar datos faltantes
                 if (notStored.length > 0) {
-                    timeStampRange = [];
                     for (i = 0; i < notStored.length; i += 1) {
-                        timeStampRange[i] = new Date(notStored[i]).toISOString();
+                        notLocalTimeStamp.push(new Date(notStored[i]).toISOString());
                     }
-                    startDate = timeStampRange[0];
-                    endDate = timeStampRange[timeStampRange.length - 1];
-                    limit = timeStampRange.length;
-                    _getNumericHistoricalData(mdVarIdList, startDate, endDate, limit, historicalData, widgetId, subVarIdList, assetNodeId);
-                    sleep(500).then(function () {
-                        position += 1;
-                        _getNumericInterval(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
-                    });
-                } else {
-                    position += 1;
-                    _getNumericInterval(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
                 }
+                position += 1;
+                _getNumericIntervalLocal(position, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
             });
+        };
+
+        _getNumericIntervalRemote = function (position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId) {
+            var
+                timeStampRange,
+                startDate,
+                endDate,
+                limit;
+
+            if (position + 1 > iterations) {
+                // Significa que se cumplieron todas las iteraciones
+                return;
+            } else if (position + 1 === iterations) {
+                timeStampRange = timeStampList.slice(position * factor, timeStampList.length);
+            } else {
+                timeStampRange = timeStampList.slice(position * factor, (position + 1) * factor);
+            }
+            // Consultar datos faltantes
+            startDate = timeStampRange[0];
+            endDate = timeStampRange[timeStampRange.length - 1];
+            limit = timeStampRange.length;
+            _getNumericHistoricalData(mdVarIdList, startDate, endDate, limit, historicalData, widgetId, subVarIdList, assetNodeId);
+            setTimeout(function () {
+                position += 1;
+                _getNumericIntervalRemote(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
+            }, 500);
         };
 
         _getNumericHistoricalData = function (mdVarIdList, startDate, endDate, limit, historicalData, widgetId, subVarIdList, assetNodeId) {
@@ -222,23 +245,145 @@ HistoricalTimeMode = (function () {
                 }
             }
 
-            aidbManager.AddNumericItemList(dataArray, assetNodeId);
-            historicalData[widgetId].Data = tmpArray;
-            PublisherSubscriber.publish("/historicTrend/refresh", historicalData);
+            if (dataArray.length > 0) {
+                aidbManager.AddNumericItemList(dataArray, assetNodeId, function onComplete() {
+                    historicalData[widgetId].Data = tmpArray;
+                    PublisherSubscriber.publish("/historicTrend/refresh", historicalData);
+                });
+            }
         };
 
-        this.GetSingleDynamicHistoricalData = function (mdVariableIdList, assetNodeId, subVariableIdList, timeStamp, widgetId) {
+        _steps = function (response, streamParser, streamProcessData, subVarIdList, assetNodeId, timeStamp, widgetId) {
             var
-                response,
+                deferred,
                 dataArray,
-                dataItem,
+                mdVariableStep,
+                i, j, k,
                 currentSubVariable,
+                subVariableStep,
+                dataItem,
                 stream,
-                refPositions,
-                i, j;
+                dataByTimeStamp,
+                timeStampStep;
 
-            aidbManager.GetStreamBySubVariableIdAndTimeStampList(subVariableIdList, [parseInt(timeStamp)], assetNodeId, function (data) {
-                if (data.length === subVariableIdList.length) {
+            deferred = $.Deferred();
+            dataArray = [];
+            i = 0;
+            mdVariableStep = function () {
+                if (i < response.length) {
+                    currentSubVariable = response[i].HistoricalBySubVariable;
+                    j = 0;
+                    subVariableStep = function () {
+                        if (j < currentSubVariable.length) {
+                            dataByTimeStamp = currentSubVariable[j].SubVariableDataList;
+                            k = 0;
+                            timeStampStep = function () {
+                                if (k < dataByTimeStamp.length) {
+                                    dataItem = {};
+                                    dataItem.RawTimeStamp = new Date(dataByTimeStamp[k].TimeStamp + "+00:00");
+                                    dataItem.TimeStamp = formatDate(dataItem.RawTimeStamp);
+                                    if (dataByTimeStamp[k].StatusId !== "") {
+                                        dataItem.StatusColor = ej.DataManager(arrayObjectStatus).executeLocal(
+                                            new ej.Query().where("Id", "equal", dataByTimeStamp[k].StatusId))[0].Color;
+                                    } else {
+                                        dataItem.StatusColor = "#999999";
+                                    }
+                                    // En caso de que los datos obtenidos sean nulos, no los procesamos
+                                    if (dataByTimeStamp[k].Value === null) {
+                                        k += 1;
+                                        timeStampStep();
+                                    }
+                                    streamParser.GetWaveForm(dataByTimeStamp[k].Value, function onComplete(data) {
+                                        var
+                                            subVariableId,
+                                            idx;
+
+                                        subVariableId = currentSubVariable[j].SubVariableId;
+                                        dataItem.IsChangeOfRpm = dataByTimeStamp[k].IsChangeOfRpm;
+                                        dataItem.IsEvent = dataByTimeStamp[k].IsEvent;
+                                        dataItem.IsNormal = dataByTimeStamp[k].IsNormal;
+                                        dataItem = streamProcessData(dataItem, streamParser, data, subVariableId, assetNodeId);
+                                        idx = subVarIdList.indexOf(subVariableId);
+                                        if (idx > -1) {
+                                            if (timeStamp !== undefined) {
+                                                dataArray[subVariableId] = [];
+                                                dataArray[subVariableId][timeStamp] = dataItem;
+                                                dataArray[subVariableId].WidgetId = widgetId;
+                                            } else {
+                                                dataArray.push({
+                                                    subVariableId: subVariableId,
+                                                    timeStamp: dataItem.RawTimeStamp.getTime(),
+                                                    value: dataItem.RawValue,
+                                                    sampleTime: dataItem.SampleTime,
+                                                    referencePositions: dataItem.KeyphasorPositions,
+                                                    statusColor: dataItem.StatusColor,
+                                                    isChangeOfRpm: dataItem.IsChangeOfRpm,
+                                                    isEvent: dataItem.IsEvent,
+                                                    isNormal: dataItem.IsNormal
+                                                });
+                                            }
+                                        }
+                                        k += 1;
+                                        timeStampStep();
+                                    });
+                                } else {
+                                    j += 1;
+                                    subVariableStep();
+                                }
+                            };
+                            timeStampStep();
+                        } else {
+                            i += 1;
+                            mdVariableStep();
+                        }
+                    };
+                    subVariableStep();
+                } else {
+                    deferred.resolve(dataArray);
+                }
+            };
+            mdVariableStep();
+            return deferred.promise();
+        };
+
+        _saveStreamLocal = function (dataItem, streamParser, data, subVariableId, assetNodeId) {
+            var
+                stream;
+
+            stream = streamParser.ParseWaveForm(data);
+            dataItem.KeyphasorPositions = stream.keyphasor;
+            if (stream.keyphasor.length > 0) {
+                dataItem.KeyphasorPositionsOnTime = GetKeyphasorOnTime(stream.keyphasor, stream.sampleTime, stream.signalLength);
+            } else {
+                dataItem.KeyphasorPositionsOnTime = [];
+            }
+            dataItem.SampleTime = stream.sampleTime;
+            dataItem.Value = GetXYDataOnTime(stream.waveform, stream.sampleTime);
+            dataItem.RawValue = stream.waveform;
+            dataItem.SampleRate = stream.signalLength / stream.sampleTime;
+            aidbManager.AddStreamItem({
+                subVariableId: subVariableId,
+                timeStamp: dataItem.RawTimeStamp.getTime(),
+                value: dataItem.RawValue,
+                sampleTime: dataItem.SampleTime,
+                referencePositions: dataItem.KeyphasorPositions,
+                statusColor: dataItem.StatusColor,
+                isChangeOfRpm: dataItem.IsChangeOfRpm,
+                isEvent: dataItem.IsEvent,
+                isNormal: dataItem.IsNormal
+            }, assetNodeId);
+            return dataItem;
+        };
+
+        this.GetSingleDynamicHistoricalData = function (mdVarIdList, assetNodeId, subVarIdList, timeStamp, widgetId) {
+            var
+                dataArray,
+                refPositions,
+                response,
+                i;
+
+            aidbManager.GetStreamBySubVariableIdAndTimeStampList(subVarIdList, [parseInt(timeStamp)], assetNodeId, function (data) {
+                if (data.length === subVarIdList.length) {
                     dataArray = [];
                     for (i = 0; i < data.length; i += 1) {
                         dataArray[data[i].subVariableId] = [];
@@ -263,71 +408,27 @@ HistoricalTimeMode = (function () {
                         url: "/Home/GetSingleDynamicHistoricalData",
                         method: "POST",
                         data: {
-                            mdVariableIdList: mdVariableIdList,
+                            mdVariableIdList: mdVarIdList,
                             timeStamp: new Date(parseInt(timeStamp)).toISOString()
                         },
                         success: function (resp) {
                             response = JSON.parse(resp);
-                            dataArray = [];
-                            for (i = 0; i < response.length; i += 1) {
-                                currentSubVariable = response[i].HistoricalBySubVariable;
-                                for (j = 0; j < currentSubVariable.length; j += 1) {
-                                    dataItem = {};
-                                    dataItem.RawTimeStamp = new Date(currentSubVariable[j].SubVariableDataList[0].TimeStamp + "+00:00");
-                                    dataItem.TimeStamp = formatDate(dataItem.RawTimeStamp);
-                                    if (currentSubVariable[j].SubVariableDataList[0].StatusId !== "") {
-                                        dataItem.StatusColor = ej.DataManager(arrayObjectStatus).executeLocal(
-                                            new ej.Query().where("Id", "equal", currentSubVariable[j].SubVariableDataList[0].StatusId))[0].Color;
-                                    } else {
-                                        dataItem.StatusColor = "#999999";
+                            _steps(response, _streamParser, _saveStreamLocal, subVarIdList, assetNodeId, timeStamp, widgetId).then(function (result) {
+                                for (i = 0; i < subVarIdList.length; i += 1) {
+                                    if (!result.hasOwnProperty(subVarIdList[i])) {
+                                        // Almacenar los datos no encontrados en la base de datos remota
+                                        result[subVarIdList[i]] = [];
+                                        result[subVarIdList[i]][timeStamp] = {};
+                                        result[subVarIdList[i]].WidgetId = widgetId;
+                                        aidbManager.AddStreamItem({
+                                            subVariableId: subVarIdList[i],
+                                            timeStamp: timeStamp,
+                                            value: null
+                                        }, assetNodeId);
                                     }
-                                    // En caso de que la informacion no se encuentre correctamente almacenada
-                                    if (currentSubVariable[j].SubVariableDataList[0].Value === null) {
-                                        continue;
-                                    }
-                                    stream = _streamParser.GetWaveForm(currentSubVariable[j].SubVariableDataList[0].Value);
-                                    dataItem.KeyphasorPositions = stream.keyphasor;
-                                    if (stream.keyphasor.length > 0) {
-                                        dataItem.KeyphasorPositionsOnTime = GetKeyphasorOnTime(stream.keyphasor, stream.sampleTime, stream.signalLength);
-                                    } else {
-                                        dataItem.KeyphasorPositionsOnTime = [];
-                                    }
-
-                                    dataItem.Value = GetXYDataOnTime(stream.waveform, stream.sampleTime);
-                                    dataItem.RawValue = stream.waveform;
-                                    dataItem.SampleRate = stream.signalLength / stream.sampleTime;
-                                    aidbManager.AddStreamItem({
-                                        subVariableId: currentSubVariable[j].SubVariableId,
-                                        timeStamp: dataItem.RawTimeStamp.getTime(),
-                                        value: dataItem.RawValue,
-                                        sampleTime: stream.sampleTime,
-                                        referencePositions: stream.keyphasor,
-                                        statusColor: dataItem.StatusColor,
-                                        isChangeOfRpm: currentSubVariable[j].SubVariableDataList[0].IsChangeOfRpm,
-                                        isEvent: currentSubVariable[j].SubVariableDataList[0].IsEvent,
-                                        isNormal: currentSubVariable[j].SubVariableDataList[0].IsNormal
-                                    }, assetNodeId);
-
-                                    dataArray[currentSubVariable[j].SubVariableId] = [];
-                                    dataArray[currentSubVariable[j].SubVariableId][timeStamp] = dataItem;
-                                    dataArray[currentSubVariable[j].SubVariableId].WidgetId = widgetId;
                                 }
-                            }
-
-                            for (i = 0; i < subVariableIdList.length; i += 1) {
-                                if (!dataArray.hasOwnProperty(subVariableIdList[i])) {
-                                    dataArray[subVariableIdList[i]] = [];
-                                    dataArray[subVariableIdList[i]][timeStamp] = {};
-                                    dataArray[subVariableIdList[i]].WidgetId = widgetId;
-                                    aidbManager.AddStreamItem({
-                                        subVariableId: subVariableIdList[i],
-                                        timeStamp: timeStamp,
-                                        value: null
-                                    }, assetNodeId);
-                                }
-                            }
-
-                            PublisherSubscriber.publish("/historic/refresh", dataArray);
+                                PublisherSubscriber.publish("/historic/refresh", result);
+                            });
                         },
                         error: function (jqXHR, textStatus) {
                             console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
@@ -342,19 +443,21 @@ HistoricalTimeMode = (function () {
                 historicalData,
                 factor,
                 iterations,
-                index;
+                index,
+                notLocalTimeStamp;
 
             historicalData = _initializeHistoricalData(mdVarIdList, widgetId, 3);
             historicalData[widgetId].TimeStampArray = timeStampList;
             // Dividir la busqueda de informacion si el rango es demasiado grande
-            factor = Math.floor(500 / mdVarIdList.length);
-            factor = (500 % mdVarIdList.length === 0) ? factor : factor + 1;
+            factor = Math.floor(1000 / mdVarIdList.length);
+            factor = (1000 % mdVarIdList.length === 0) ? factor : factor + 1;
             iterations = Math.floor(timeStampList.length / factor) + 1;
             index = 0;
-            _getStreamInterval(index, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
+            notLocalTimeStamp = [];
+            _getStreamIntervalLocal(index, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
         };
 
-        _getStreamInterval = function (position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId) {
+        _getStreamIntervalLocal = function (position, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId) {
             var
                 timeStampRange,
                 pubData,
@@ -364,6 +467,11 @@ HistoricalTimeMode = (function () {
 
             if (position + 1 > iterations) {
                 // Significa que se cumplieron todas las iteraciones
+                if (notLocalTimeStamp.length > 0) {
+                    iterations = Math.floor(notLocalTimeStamp.length / factor) + 1;
+                    i = 0;
+                    _getStreamIntervalRemote(i, factor, iterations, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
+                }
                 return;
             } else if (position + 1 === iterations) {
                 timeStampRange = timeStampList.slice(position * factor, timeStampList.length);
@@ -389,21 +497,33 @@ HistoricalTimeMode = (function () {
                 }
                 // Consultar datos faltantes
                 if (notStored.length > 0) {
-                    timeStampRange = [];
-                    historicalData[widgetId].TimeStampArray = notStored;
                     for (i = 0; i < notStored.length; i += 1) {
-                        timeStampRange[i] = new Date(notStored[i]).toISOString();
+                        notLocalTimeStamp.push(new Date(notStored[i]).toISOString());
                     }
-                    _getStreamHistoricalData(mdVarIdList, timeStampRange, assetNodeId, historicalData, widgetId, subVarIdList);
-                    sleep(500).then(function () {
-                        position += 1;
-                        _getStreamInterval(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
-                    });
-                } else {
-                    position += 1;
-                    _getStreamInterval(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
                 }
+                position += 1;
+                _getStreamIntervalLocal(position, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
             });
+        };
+
+        _getStreamIntervalRemote = function (position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId) {
+            var
+                timeStampRange;
+
+            if (position + 1 > iterations) {
+                // Significa que se cumplieron todas las iteraciones
+                return;
+            } else if (position + 1 === iterations) {
+                timeStampRange = timeStampList.slice(position * factor, timeStampList.length);
+            } else {
+                timeStampRange = timeStampList.slice(position * factor, (position + 1) * factor);
+            }
+            // Consultar datos faltantes
+            _getStreamHistoricalData(mdVarIdList, timeStampRange, assetNodeId, historicalData, widgetId, subVarIdList);
+            setTimeout(function () {
+                position += 1;
+                _getStreamIntervalRemote(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, widgetId);
+            }, 1000);
         };
 
         _getStreamHistoricalData = function (mdVarIdList, timeStampRange, assetNodeId, historicalData, widgetId, subVarIdList) {
@@ -419,74 +539,16 @@ HistoricalTimeMode = (function () {
                 },
                 success: function (resp) {
                     response = JSON.parse(resp);
-                    //_saveStreamLocal(response, historicalData, widgetId, subVarIdList, assetNodeId, _streamParser);
-                    Concurrent.Thread.create(_saveStreamLocal, response, historicalData, widgetId, subVarIdList, assetNodeId, _streamParser);
+                    _steps(response, _streamParser, _saveStreamLocal, subVarIdList, assetNodeId, undefined, widgetId).then(function (result) {
+                        // Publicamos la informacion
+                        historicalData[widgetId].Data = result;
+                        PublisherSubscriber.publish("/historicTrend/refresh", historicalData);
+                    });
                 },
                 error: function (jqXHR, textStatus) {
                     console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
                 }
             });
-        };
-
-        _saveStreamLocal = function (response, historicalData, widgetId, subVarIdList, assetNodeId, streamParser) {
-            var
-                i, j, k,
-                idx,
-                tmpArray,
-                currentSubVariable,
-                dataByTimeStamp,
-                statusColor,
-                stream;
-
-            tmpArray = [];
-            for (i = 0; i < response.length; i += 1) {
-                currentSubVariable = response[i].HistoricalBySubVariable;
-                for (j = 0; j < currentSubVariable.length; j += 1) {
-                    dataByTimeStamp = currentSubVariable[j].SubVariableDataList;
-                    for (k = 0; k < dataByTimeStamp.length; k += 1) {
-                        if (currentSubVariable[j].SubVariableDataList[0].StatusId !== "") {
-                            statusColor = ej.DataManager(arrayObjectStatus).executeLocal(
-                                new ej.Query().where("Id", "equal", currentSubVariable[j].SubVariableDataList[0].StatusId))[0].Color;
-                        } else {
-                            statusColor = "#999999";
-                        }
-                        // En caso de que la informacion no se encuentre correctamente almacenada
-                        if (currentSubVariable[j].SubVariableDataList[0].Value === null) {
-                            continue;
-                        }
-                        stream = streamParser.GetWaveForm(dataByTimeStamp[k].Value);
-                        idx = subVarIdList.indexOf(currentSubVariable[j].SubVariableId);
-                        if (idx > -1) {
-                            tmpArray.push({
-                                subVariableId: currentSubVariable[j].SubVariableId,
-                                timeStamp: new Date(dataByTimeStamp[k].TimeStamp + "+00:00").getTime(),
-                                value: stream.waveform,
-                                sampleTime: stream.sampleTime,
-                                referencePositions: stream.keyphasor,
-                                statusColor: statusColor,
-                                isChangeOfRpm: dataByTimeStamp[k].IsChangeOfRpm,
-                                isEvent: dataByTimeStamp[k].IsEvent,
-                                isNormal: dataByTimeStamp[k].IsNormal
-                            });
-                        }
-                        aidbManager.AddStreamItem({
-                            subVariableId: currentSubVariable[j].SubVariableId,
-                            timeStamp: new Date(dataByTimeStamp[k].TimeStamp + "+00:00").getTime(),
-                            value: stream.waveform,
-                            sampleTime: stream.sampleTime,
-                            referencePositions: stream.keyphasor,
-                            statusColor: statusColor,
-                            isChangeOfRpm: dataByTimeStamp[k].IsChangeOfRpm,
-                            isEvent: dataByTimeStamp[k].IsEvent,
-                            isNormal: dataByTimeStamp[k].IsNormal
-                        }, assetNodeId);
-                    }
-                }
-            }
-
-            // Publicamos la informacion
-            historicalData[widgetId].Data = tmpArray;
-            PublisherSubscriber.publish("/historicTrend/refresh", historicalData);
         };
     };
 

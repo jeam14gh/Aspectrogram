@@ -4,14 +4,14 @@
 <!--Menú de opciones para los puntos de medición-->
 <div id="measurementPointMenuContainer" style="display:none;">
     <ul id="measurementPointMenu">
-        <li id="realTimeMenuItem">
-            <a href="#">Tiempo real</a>
+        <li id="realTimeMenuItem" class="menuItem">
+            <a href="#" >Tiempo real</a>
             <ul>
-                <li id="waveformMenuItem"><a href="#">Forma de onda</a></li>
-                <li id="spectrumMenuItem"><a href="#">Espectro de amplitud</a></li>
-                <li id="orbitSpectrumMenuItem"><a href="#">Espectro de &oacute;rbita</a></li>
-                <li id="orbitMenuItem"><a href="#">&Oacute;rbita</a></li>
-                <li id="sclMenuItem"><a href="#">Posici&oacute;n del eje</a></li>
+                <li id="waveformMenuItem" class="menuItem"><a href="#">Forma de onda</a></li>
+                <li id="spectrumMenuItem" class="menuItem"><a href="#">Espectro de amplitud</a></li>
+                <li id="orbitSpectrumMenuItem" class="menuItem"><a href="#">Espectro de &oacute;rbita</a></li>
+                <li id="orbitMenuItem" class="menuItem"><a href="#">&Oacute;rbita</a></li>
+                <li id="sclMenuItem" class="menuItem"><a href="#">Posici&oacute;n del eje</a></li>
             </ul>
         </li>
         @if (claimsIdentity != null)
@@ -20,11 +20,15 @@
             var roles = (tmp != null) ? tmp.Value.Split(',').ToList() : null;
             if (roles != null)
             {
-                if (roles.Any(s => s == "Admin"))
+                if (roles.Any(s => s == "Admin" || s == "SAdmin"))
                 {
-                    <li>
-                        <a href="#">Administrar</a>
+                    <li id="liAdminMP" class="menuItem">
+                        <a href="#" >Administrar</a>
                         <ul>
+                            @if (roles.Any(s => s == "SAdmin"))
+                            {
+                                <li id="testDataGraphically"><a href="#">Test</a></li>
+                            }
                             <li id="editMeasurementPointMenuItem"><a href="#">Editar punto de medici&oacute;n</a></li>
                             <li id="deleteMeasurementPointMenuItem"><a href="#">Eliminar punto(s) de medici&oacute;n</a></li>
                             <li id="copyMeasurementPointMenuItem"><a href="#">Copiar</a></li>

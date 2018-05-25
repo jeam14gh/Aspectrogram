@@ -1,0 +1,299 @@
+﻿    html, body {
+        overflow: hidden;
+        width   : 100%;
+        height  : 100%;
+    }
+
+    .ed3dCont {
+        position: absolute;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: whitesmoke;        
+        background-size: 25px;
+    }
+
+    .ed3dPiecesToolbar{
+        width: 40px;
+        height: 90%;
+        left: 0px;
+        background-color: rgba(70, 70, 70, 0.0);
+        color: whitesmoke;
+        position: absolute;
+        top: 72px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 9px;
+
+    }
+    .ed3dImgToolbar{
+        width: 30px;
+        height: 30px;
+        padding: 5px 5px 5px 5px;
+        margin: 0px 0px 0px 0px;
+        display: block;
+        position:relative;
+    }
+    .ed3dDivToolbar{
+        width: auto;
+        height: auto;
+        padding: 5px 5px 5px 5px;
+        border-style: solid;
+        border-width: 1px;
+    }
+    .ed3dDivToolbar:hover{
+        background-color:slategray;
+    }
+    .ed3dTxtToolbar{
+        transform: rotate(-90deg);
+        padding: 5px 0px 5px 5px;
+        height: auto;
+        display: block;
+        position:relative;
+        width: 50px;
+        height:60px;
+    }
+    .ed3dTooltip{
+        position: absolute;
+        top: 70px;
+        left: 100px;
+        color: white;
+        background-color: black;
+        opacity: 0.9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 10px;
+        border-style: solid;
+        border-width: 1px;
+        padding: 2px 4px 2px 4px;
+        border-color: slategray;
+        z-index:2000;
+
+    }
+
+    .ed3dMainMenu{
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 35px;
+    }
+
+    .ed3dMainMenuTier1 {         
+        font-size: 12px;
+        height: 35px;
+
+    }
+    .ed3dMainMenuTier2 {      
+        top: 33px;
+        font-size: 10px;
+        min-height: 35px;
+        overflow: hidden;
+    }
+    .ed3dSubContMainMenuTier2 {      
+        position: relative;
+        display: inline;
+    }
+    .ed3dSubContMainMenu{
+        display: inline;
+        position: relative;
+        padding: 0px 20px 20px 20px; /*top right bottom left*/
+        top: 0px;
+        cursor: pointer;
+    }
+    .ed3dSubContMainMenu:hover {
+        background-color: rgba(70, 70, 70, 0.9);
+        color: rgb(186, 240, 248);
+    }
+    .ed3dButtonMainMenu{
+        display: inline;
+        position: relative;
+        padding: 5px 5px 5px 5px; /*top right bottom left*/
+        cursor: pointer;
+    }
+    .imged3dMainMenu{        
+        background-size: 20px;
+        background-repeat: no-repeat;
+        display: inline;
+        position: relative;
+        width: 20px;
+        height: 20px;
+        padding: 0px 0px 0px 0px; /*top right bottom left*/
+        margin: 5px 2px 5px 2px !important;
+        left: 5px;
+    }
+    .imged3dMainMenu:hover{        
+        background-color: rgba(120, 120, 120, 0.9);
+    }
+    .inputTxted3dMainMenu{        
+        width: 40px;
+        height: 14px;
+        top: 0px;
+        position: relative;
+        display: inline;
+        color:black;
+        font-size: 11px;
+        margin: 2px 5px 20px 5px;
+        right: 5px;
+    }
+    .txted3dMainMenu{      
+        width: 40px;
+        height: 15px;
+        position: relative;
+        display: inline;
+        padding-right: 5px;
+        padding-left: 10px;
+        top: 10px;
+    }
+    .nameInputTransEd3d{
+        display: inline;
+        position: relative;
+        top: 5px;
+        left: 6px;
+    }
+    .inColor3dMainMenu{
+        display: inline;
+        position: relative;
+        padding: 0px 0px 0px 0px;
+        width: 15px;
+        height: 18px;
+        top: 0px;
+        margin: 0px 8px;
+    }
+    .cB3dMainMenu{
+        display: inline;
+        position: relative;
+        top: 5px;
+        left: 10px;
+        cursor: pointer;
+    }
+    .cB3dMainMenu:hover {
+        background-color: rgba(120, 120, 120, 0.9);
+    }
+    .chooseNumAxisEd3d{
+        display: inline;
+        position: relative;
+        top: 5px;
+        margin: 0px 2px 0px 5px;
+        padding: 2px 5px 2px 5px;
+        border-width: 1px;
+        border-style: solid;
+        cursor: pointer;
+
+    }
+    .chooseNumAxisEd3d:hover {
+        background-color: rgba(120, 120, 120, 0.9);
+    }
+    .imgRepEd3d{
+        background-size: 20px;
+        background-repeat: no-repeat;
+        display: inline;
+        position: relative;
+        width: 20px;
+        height: 20px;
+    }
+    .classContTreeEd3d{
+        width: 150px;
+        height: 90%;
+        background-color: rgba(70, 70, 70, 0.0);
+        color: whitesmoke;
+        position: absolute;
+        top: 72px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 10px;
+        padding: 5px 5px 0px 5px;
+    }
+    .classContTreePiecesEd3d{
+        width:180px;
+        top: 72px;
+        height: 90%;
+        position: absolute;
+        padding: 2px 2px 2px 2px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 10px;
+        color: whitesmoke;
+        cursor: default;
+        overflow-y: hidden;
+        left: 35px;
+    }
+    .classContSensorsEd3d{
+        width:200px;
+        position: absolute;
+        top: 500px;
+        padding: 2px 2px 2px 2px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 10px;
+        color: whitesmoke;
+        cursor: default;
+        overflow: scroll;
+    }
+    .classdivContFLPiecesEd3d{
+        position: relative;
+         font-size: 12px;
+         border-bottom: solid;
+         border-width: 2px;
+    }
+    .classdivContSLPiecesEd3d{
+        position: relative;
+         font-size: 11px;
+         padding-left: 4px;
+         margin-left: 4px;
+         
+         border-bottom: solid;
+         border-width: 1px;
+    }
+    .classdivContTLPiecesEd3d{
+        position: relative;
+         font-size: 10px;
+         padding-left: 8px;
+         margin-left: 8px;
+         
+         border-bottom: solid;
+         border-width: 1px;
+    }
+
+    .e-treeview .e-text{
+        color: whitesmoke;
+        font-size: 11px;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .edPathAsset:hover{
+         background-color: rgb(232, 236, 255);
+         
+
+    }
+
+    .edPathAsset{
+         cursor:pointer;
+         background-color: #f8f8f8;
+         border: solid;
+         border-width: 1px;
+         border-color: rgb(255, 255, 255);
+         font-size:11px;
+    }
+    /*
+    .edi3dCont:hover {
+        background-color: rgba(70, 70, 70, 0.9);
+        color: rgb(140, 240, 250);
+    }*/
+
+    
+    .e-tooltip-wrap .e-tipContainer .e-tipcontent {
+        padding: 5px 0px;
+    }
+    .new {
+        text-align: center;
+    }
+    
+    .main {
+        border: 1px solid rgba(120, 120, 120, 0.9);
+        width: 150px;
+        padding: 5px;
+        height: 120px;
+        margin-top: 0px;
+        margin-left: 0px;
+    }
+    .ctrImg {
+        width: 135px;
+        height: 110px;
+    }
+    .category {
+        margin-left: 10px;
+    }
+   

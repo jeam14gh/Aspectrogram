@@ -4,9 +4,9 @@
  * @author Jorge Calderon
  */
 
-/* globals Dygraph, clone, windowing, cursorType, ImageExport, createTableToExcel, tableToExcel, GetHalfSpectrum, enableFilter, ej, jsonTree,
-   stopFrequency, Cursors, globalsReport, PublisherSubscriber, isEmpty, aidbManager, HistoricalTimeMode, formatDate, popUp, mainCache,
-   GetXYDataOnTime, GetKeyphasorOnTime, parseAng, arrayColumn, DygraphOps, chartScaleY, selectedMeasurementPoint, selectedAsset, AspectrogramWidget*/
+/* globals Dygraph, clone, windowing, cursorType, ImageExport, createTableToExcel, tableToExcel, enableFilter, ej, FourierTransform, GetBSIFactor,
+   stopFrequency, Cursors, globalsReport, PublisherSubscriber, isEmpty, xCoordinateUnits, aidbManager, HistoricalTimeMode, formatDate, popUp, mainCache,
+   parseAng, arrayColumn, DygraphOps, chartScaleY, selectedMeasurementPoint, selectedAsset, AspectrogramWidget, HammingWindow, HanningWindow, spectrumTypes*/
 
 var SpectrumGraph = {};
 
@@ -63,6 +63,8 @@ SpectrumGraph = (function () {
             _autoscale,
             // Valor maximo en Y de todos los graficos del mismo tipo de sensor abiertos
             _largestY,
+            // Valor maximo en la escala manual Y
+            _scaleY,
             // Tipo de ventaneo con que se grafica el espectro
             _windowing,
             // Ultima grafica donde se efectuo clic
@@ -92,7 +94,7 @@ SpectrumGraph = (function () {
             // Referencia a la suscripcion que sincroniza el chart con los datos enviados por el reproductor
             _playerSubscription,
             // Referencia a la suscripcion para aplicar filtro dinamico
-            _applyFilterSubscription,
+            _dynamicFilterSubscription,
             // Metodo privado que realiza el control de los modelos de interaccion de eventos sobre la grafica
             _customInteractionModel,
             // Referencia a la suscripcion para aplicar resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
@@ -121,12 +123,16 @@ SpectrumGraph = (function () {
             _createWindowingMenu,
             // Metodo privado que genera el menu de los diferentes ventaneos aplicables al grafico
             _createScaleYMenu,
-            // Método privado que gestiona manualmente la escala en Y del gráfico.
+            // Metodo privado que gestiona manualmente la escala en Y del grafico
             _manualScaleYManagement,
-            // Método privado que gestiona la escala en Y del gráfico automaticamente
+            // Metodo privado que gestiona la escala en Y del grafico automaticamente
             _autoScaleYManagement,
-            // Valor de escala en Y del gráfico de manera manual
+            // Valor de escala en Y del grafico de manera manual
             _yScaleValue,
+            // Metodo privado que calcula el factor necesario para realizar la derivacion (basado en las unidades actual/destino)
+            _computeFactorToDerive,
+            // Metodo privado que calcula el factor necesario para realizar la integracion (basado en las unidades actual/destino)
+            _computeFactorToIntegrate,
             // Metodo privado que gestiona los cambios de tipo de cursor por accion de usuario
             _cursorTypeManagement,
             // Metodo complementario a los modelos de interaccion para encontrar el punto sobre la grafica mas proximo
@@ -135,16 +141,12 @@ SpectrumGraph = (function () {
             _getAccelerationSpectrum,
             // Obtiene las unidades del valor en amplitud mostrado en la grafica, dependiendo del tipo de sensor y el tipo de espectro seleccionado
             _getCurrentYUnits,
-            // Metodo privado que aplica el metodo de derivacion por frecuencia
-            _getDerivativeValue,
             // Metodo privado que obtiene los valores correspondientes al espectro de desplazamiento segun el tipo de sensor y las unidades configuradas
             _getDisplacementSpectrum,
             // Metodo privado que calcula el espectro (Half Spectrum) a mostrar
             _getHalfSpectrum,
             // Metodo privado para calcular los armonicos en los limites del grafico
             _getHarmonicLimits,
-            // Metodo privado que aplica el metodo de integracion por frecuencia
-            _getIntegratedValue,
             // Metodo privado que obtiene los valores correspondientes al espectro de velocidad segun el tipo de sensor y las unidades configuradas
             _getVelocitySpectrum,
             // Metodo privado para calcular el porcentaje de ajuste
@@ -158,7 +160,7 @@ SpectrumGraph = (function () {
             // Metodo privado que gestiona los cambios de tipo de espectro por accion de usuario
             _spectrumTypeManagement,
             // Metodo privado que realiza la suscripcion al publisher para aplicar filtro dinamico
-            _subscribeToApplyFilter,
+            _subscribeToDynamicFilter,
             // Metodo privado que realiza la suscripcion a los nuevos datos
             _subscribeToNewData,
             // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
@@ -223,7 +225,6 @@ SpectrumGraph = (function () {
                 target,
                 menuItem,
                 imgExport,
-                i,
                 contId,
                 name,
                 labels;
@@ -328,6 +329,9 @@ SpectrumGraph = (function () {
                     _xCoordinateUnit = clone(xCoordinateUnits.Hertz);
                     break;
             }
+            _chart.updateOptions({
+                "xlabel": "Frecuencia [" + _xCoordinateUnit.Text + "]"
+            });
             _redrawGraph();
         };
 
@@ -355,7 +359,7 @@ SpectrumGraph = (function () {
                     break;
                 case "normalCursor" + _widgetId:
                     _cursorType = clone(cursorType.Normal);
-                    _cursor.normalCursor((velocityValue / 60) * _xCoordinateUnit.Factor);
+                    _cursor.normalCursor((velocityValue / 60) * _xCoordinateUnit.Factor, _xCoordinateUnit);
                     break;
                 case "harmonicCursor" + _widgetId:
                     _cursorType = clone(cursorType.Harmonic);
@@ -413,51 +417,34 @@ SpectrumGraph = (function () {
         };
 
         _manualScaleYManagement = function (target, menuItem, labelText, widgetId) {
-            $(".treeViewFilter").append("<div id='ejdManualScaleYSpectrum' class='hidden'>" +
-                    "<div class='container-fluid cf'>" +
-                        "<div class='row'>" +
-                            "<label id='lblScaleY'></label>" +
-                            "<input type='text' id='txtScaleYSpectrum'>" +
-                        "</div>" +
-                        "<br />" +
-                        "<div class='row'>" +
-                            "<button id='btnAcceptScaleYSpectrum'> Aceptar</button>" +
-                            "<button id='btnCancelScaleYSpectrum'> Cancelar</button>" +
-                        "</div>" +
-                    "</div>" +
-                "</div>");
-
             var
-                // Obtenemos el valor máximo de la escala en "Y" del gráfico.
-                maxScaleY = _chart.yAxisRange().max(),
-                //yScaleValue = $("div[data-id=" + widgetId + "] div.dygraph-axis-label-y:last").text(),
-                children,
+                maxScaleY,
+                modalDiv,
                 acceleration,
                 velocity,
-                widgetId,
-                scaleY,
-                i;
+                scaleY;
 
+            // Obtenemos el valor maximo de la escala en "Y" del grafico
+            maxScaleY = _chart.yAxisRange().max();
+            // Creamos el contenido de la modal a presentar al usuario
+            modalDiv = "<div id=\"ejdManualScaleYSpectrum\" class=\"hidden\">" +
+                "<div class=\"container-fluid cf\"><div class=\"row\">" +
+                "<label id=\"lblScaleY\"></label><input type=\"text\" id=\"txtScaleYSpectrum\">" +
+                "</div><br /><div class=\"row\">" +
+                "<button id=\"btnAcceptScaleYSpectrum\"> Aceptar</button>" +
+                "<button id=\"btnCancelScaleYSpectrum\"> Cancelar</button>" +
+                "</div></div></div>";
+            $(".treeViewFilter").append(modalDiv);
             scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(widgetId, "WidgetId"));
-            widgetId = widgetId;
-            acceleration = $("li>a[data-value=accelerationSpectrum" + widgetId + "]>i").hasClass('fa-check-square');
-            velocity = $("li>a[data-value=velocitySpectrum" + widgetId + "]>i").hasClass('fa-check-square');
-
-            //children = target.parent().parent().children();
-            //for (i = 0; i < children.length; i += 1) {
-            //    children.eq(i).children().children().eq(0).addClass("fa-square-o").removeClass("fa-check-square");
-            //}
-            //target.children().eq(0).addClass("fa-check-square").removeClass("fa-square-o");
-
-            //_autoscale = false;
-
+            acceleration = $("li>a[data-value=accelerationSpectrum" + widgetId + "]>i").hasClass("fa-check-square");
+            velocity = $("li>a[data-value=velocitySpectrum" + widgetId + "]>i").hasClass("fa-check-square");
             $("#lblScaleY").text(labelText);
             $("#lblScaleY").data("widgetId", widgetId);
 
+            // JHC: Se debe limitar el ingresar un numero mayor al -input text-
             $("#txtScaleYSpectrum").ejNumericTextbox({
                 width: "90%",
                 value: maxScaleY,
-                //value: yScaleValue,
                 minValue: 0.05,
                 decimalPlaces: 2,
             });
@@ -470,32 +457,28 @@ SpectrumGraph = (function () {
                 showRoundedCorner: true,
                 prefixIcon: "e-icon e-checkmark",
                 click: function (args) {
-                    //var widgetId = $("#lblScaleY").data("widgetId");
                     _yScaleValue = $("#txtScaleYSpectrum").ejNumericTextbox("getValue");
-
-                    //var acceleration = $("li>a[data-value=accelerationSpectrum" + widgetId + "]>i").hasClass('fa-check-square');
-                    //var velocity = $("li>a[data-value=velocitySpectrum" + widgetId + "]>i").hasClass('fa-check-square');
-
-                    //var scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(widgetId, "WidgetId"));
-                    if (scaleY.length == 0) {
+                    if (scaleY.length === 0) {
                         _scaleY.push({
                             Velocity: velocity ? _yScaleValue : null,
                             Acceleration: acceleration ? _yScaleValue : null,
+                            Proximity: (!velocity && !acceleration) ? _yScaleValue : null,
                             WidgetId: widgetId
                         });
                     } else {
-                        if (velocity)
+                        if (velocity) {
                             scaleY[0].Velocity = _yScaleValue;
-
-                        if (acceleration)
+                        } else if (acceleration) {
                             scaleY[0].Acceleration = _yScaleValue;
+                        } else {
+                            scaleY[0].Proximity = _yScaleValue;
+                        }
                     }
-
                     _autoscale = false;
                     _redrawGraph();
                     _yScaleValue = null;
-                    $("li>a[data-value=autoScaleY" + widgetId + "]>i").removeClass('fa-check-square').addClass("fa-square-o");
-                    $("li>a[data-value=manualScaleY" + widgetId + "]>i").addClass('fa-check-square').removeClass("fa-square-o");
+                    $("li>a[data-value=autoScaleY" + widgetId + "]>i").removeClass("fa-check-square").addClass("fa-square-o");
+                    $("li>a[data-value=manualScaleY" + widgetId + "]>i").addClass("fa-check-square").removeClass("fa-square-o");
                     $("#ejdManualScaleYSpectrum").addClass("hidden");
                     $("#ejdManualScaleYSpectrum").ejDialog("close");
                 },
@@ -521,46 +504,41 @@ SpectrumGraph = (function () {
                 allowDraggable: true,
                 enableAnimation: true,
                 width: "15%", height: "25%",
-                //maxWidth: "20%", maxHeight: "28%",
                 enableResize: true,
                 showHeader: true,
                 enableModal: true,
                 showRoundedCorner: true,
                 animation: { show: { effect: "slide", duration: 500 }, hide: { effect: "fade", duration: 500 } },
                 open: function (args) {
-                    //var widgetId = $("#lblScaleY").data("widgetId"),
-                    var value = _largestY * 1.1;
-                    //var scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(widgetId, "WidgetId"));
-                    //ej.DataManager(jsonTree).executeLocal(ej.Query().where(ej.Predicate("WidgetId", "equal", widgetId, true).and("EntityType", "equal", 2, true)))
+                    var
+                        value;
+
+                    value = _largestY;
                     if (scaleY.length == 1) {
                         if (acceleration) {
-                            value = (scaleY[0].Acceleration == null) ? value : scaleY[0].Acceleration;
+                            value = (scaleY[0].Acceleration === null) ? value : scaleY[0].Acceleration;
                         }
                         if (velocity) {
-                            value = (scaleY[0].Velocity == null) ? value : scaleY[0].Velocity;
+                            value = (scaleY[0].Velocity === null) ? value : scaleY[0].Velocity;
                         }
-                        value *= 1.1;
                     }
-
                     $("#txtScaleYSpectrum").ejNumericTextbox({ value: value });
                 },
                 close: function (args) {
                     //$("#btnAcceptScaleYSpectrum").off("click"); // Necesario desasociar el evento
                     //$("#btnCancelScaleYSpectrum").off("click"); // Necesario desasociar el evento
-                    $("#ejdManualScaleYSpectrum").addClass('hidden');
+                    $("#ejdManualScaleYSpectrum").addClass("hidden");
                     $("#txtScaleYSpectrum").ejNumericTextbox("destroy");
                     $("#btnAcceptScaleYSpectrum").ejButton("destroy");
                     $("#btnCancelScaleYSpectrum").ejButton("destroy");
                 },
             });
-
-            $("#ejdManualScaleYSpectrum").removeClass('hidden');
+            $("#ejdManualScaleYSpectrum").removeClass("hidden");
             $("#ejdManualScaleYSpectrum").ejDialog("open");
         };
 
         _configureCursor = function () {
             var
-                widgetHeight,
                 configParameters,
                 configContainer,
                 i,
@@ -672,8 +650,6 @@ SpectrumGraph = (function () {
             var
                 // Porcentaje de altura del contenendor superior a la grafica
                 headerHeigth,
-                // Texto a mostrar de forma dinamica
-                txt,
                 // Valor de velocidad
                 velocity;
 
@@ -686,7 +662,7 @@ SpectrumGraph = (function () {
                     colors: ["#006ACB"],
                     digitsAfterDecimal: 4,
                     legend: "never",
-                    xlabel: "Frecuencia [" + _xCoordinateUnit.Text + "]",
+                    xlabel: "Frecuencia [" + ((_xCoordinateUnit.Text === "X") ? "Orden" : _xCoordinateUnit.Text) + "]",
                     ylabel: "Amplitud [" + _subvariables.overall.Units + "]",
                     avoidMinZero: true,
                     xRangePad: 1,
@@ -701,11 +677,11 @@ SpectrumGraph = (function () {
                         canvas.strokeStyle = "black";
                         canvas.strokeRect(area.x, area.y, area.w, area.h);
                         left = g.toDomCoords(0, -20);
-                        right = g.toDomCoords(enableFilter ? stopFrequency : 0, +20);
+                        right = g.toDomCoords(enableFilter ? stopFrequency * _xCoordinateUnit.Factor : 0, +20);
                         left = left[0];
                         right = right[0];
                         canvas.fillStyle = "rgba(255, 255, 102, 1.0)";
-                        canvas.fillRect(left, area.y, right - left, area.h);
+                        canvas.fillRect(left, area.y + 1, right - left, area.h);
                     },
                     highlightCallback: function (e, x, pts, row) {
                         _lastMousemoveEvt = e;
@@ -733,12 +709,12 @@ SpectrumGraph = (function () {
                             g.canvas_.style.zIndex = 1000;
                         }
                         // xlabel + ylabel
-                        $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1050);
-                        $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1050);
+                        $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1025);
+                        $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1025);
                         // Recorrer todos los axis-labels
                         axisLabelDivs = $("#" + _contentBody.id + " .dygraph-axis-label");
                         for (i = 0; i < axisLabelDivs.length; i += 1) {
-                            axisLabelDivs.eq(i).parent().css("z-index", 1050);
+                            axisLabelDivs.eq(i).parent().css("z-index", 1025);
                         }
                     },
                     interactionModel: _customInteractionModel,
@@ -754,7 +730,7 @@ SpectrumGraph = (function () {
                                     if (_xCoordinateUnit.Value === xCoordinateUnits.Order.Value) {
                                         dataArray = [];
                                         ticks = _getHarmonicLimits(min, max);
-                                        if (ticks.totalPoints === 0) {
+                                        if (ticks.totalPoints === 0) { 
                                             return dataArray;
                                         }
                                         if (ticks.totalPoints <= 8) {
@@ -800,16 +776,6 @@ SpectrumGraph = (function () {
                 "id": _container.id,
                 "obj": _chart,
                 "src": ""
-            });
-
-            document.body.addEventListener("keydown", function (e) {
-                if (_mouseover) {
-                    if (e.keyCode == 37) {
-                        _updateSelection("keyboardEvent", 1, e);
-                    } else if (e.keyCode == 39) {
-                        _updateSelection("keyboardEvent", 2, e);
-                    }
-                }
             });
         };
 
@@ -900,13 +866,11 @@ SpectrumGraph = (function () {
                 canvasx = _chart.selPoints_[0].canvasx;
                 ctx.save();
                 for (i = 0; i < _chart.selPoints_.length; i += 1) {
-                    if (type == "mouseEvent") {
-                        point = _chart.selPoints_[i];
-                    } else if (type == "keyboardEvent" && _cursorType == 0) {
-                        if (selectedKey == 1) {
+                    if (type === "keyboardEvent" && _cursorType === 0) {
+                        if (selectedKey === 1) {
                             point = _chart.layout_.points[i][_chart.lastRow_ - 1];
                             _chart.lastRow_ = _chart.lastRow_ - 1;
-                        } else if (selectedKey == 2) {
+                        } else if (selectedKey === 2) {
                             point = _chart.layout_.points[i][_chart.lastRow_ + 1];
                             _chart.lastRow_ = _chart.lastRow_ + 1;
                         }
@@ -916,7 +880,10 @@ SpectrumGraph = (function () {
                             canvasx = point.canvasx;
                             _upgradeLabels(_chart.selPoints_);
                         }
-                    }
+                        _chart.selPoints_[i] = point;
+                    } else if (type == "mouseEvent") {
+                        point = _chart.selPoints_[i];
+                    } 
 
                     if (point) {
                         if (!Dygraph.isOK(point.canvasy)) {
@@ -933,17 +900,18 @@ SpectrumGraph = (function () {
                         callback.call(_chart, _chart, point.name, ctx, point.canvasx, point.canvasy, colorSerie, circleSize, point.idx);
                     }
                 }
-                if (type == "keyboardEvent" && _cursorType == 0) {
+                if (type === "keyboardEvent" && _cursorType === 0) {
                     _chart.cascadeEvents_("select", {
                         selectedRow: _chart.lastRow_,
                         selectedX: _chart.lastx_,
                         selectedPoints: _chart.selPoints_
                     });
+                } else {
+                    ctx.restore();
+                    _chart.previousVerticalX_ = canvasx;
                 }
-                ctx.restore();
-                _chart.previousVerticalX_ = canvasx;
             }
-            if (type == "keyboardEvent") {
+            if (type === "keyboardEvent" && _cursorType !== 0) {
                 _cursor.applyKeyEvent(_cursorType, selectedKey, e);
             }
 
@@ -951,8 +919,12 @@ SpectrumGraph = (function () {
 
         _redrawGraph = function () {
             var
-                // Texto dinamico a desplegar
-                txt,
+                // Indica si la grafica esta en modo auto
+                auto,
+                // Indica si es un espectro de aceleracion
+                accelerationSprectum,
+                // Indica si es un espectro de velocidad 
+                velocitySprectum,
                 // Datos a graficar
                 xyData,
                 // Valor de velocidad
@@ -961,25 +933,21 @@ SpectrumGraph = (function () {
                 nxBase,
                 // Valor maximo de amplitud
                 maximumY,
+                //
+                scaleY,
                 // Fila de la seleccion actual
                 row,
                 // Posicion inicial de la ventana a mostar del grafico sobre el eje X
                 xIni,
                 // Posicion final de la ventana a mostar del grafico sobre el eje X
                 xEnd,
-                // Indica si la gráfica está en modo auto
-                auto,
-                // Indica si el gráfico está en escala manual
-                manual,
-                // Indica si es un espectro de aceleración
-                accelerationSprectum,
-                // Indica si es un espectro de velocidad 
-                velocitySprectum;
+                // Texto dinamico a desplegar
+                txt;
 
-            auto = $("li>a[data-value= autoScaleY" + _widgetId + "]>i").hasClass('fa-check-square');
-            manual = $("li>a[data-value= manualScaleY" + _widgetId + "]>i").hasClass('fa-check-square');
-            accelerationSprectum = $("li>a[data-value=accelerationSpectrum" + _widgetId + "]>i").hasClass('fa-check-square');
-            velocitySprectum = $("li>a[data-value=velocitySpectrum" + _widgetId + "]>i").hasClass('fa-check-square');
+            auto = $("li>a[data-value= autoScaleY" + _widgetId + "]>i").hasClass("fa-check-square");
+            // Determinamos si el tipo de espectro (aceleracion, velocidad... en caso de no ser ninguno, el por defecto)
+            accelerationSprectum = $("li>a[data-value=accelerationSpectrum" + _widgetId + "]>i").hasClass("fa-check-square");
+            velocitySprectum = $("li>a[data-value=velocitySpectrum" + _widgetId + "]>i").hasClass("fa-check-square");
             // Aplicar la operacion necesaria segun el tipo de espectro seleccionado
             xyData = _applyDerivative();
             _nxArray = [];
@@ -998,42 +966,24 @@ SpectrumGraph = (function () {
             if (xyData.length > 0) {
                 maximumY = arrayColumn(xyData, 1).max();
             }
-
             // Redefinimos los valores maximo y minimo de la grafica basado en todas las graficas abiertas
             if (_largestY === 0) {
                 _largestY = maximumY;
             }
-
-            //auto = $("li>a[data-value= autoScaleY" + _widgetId + "]>i").hasClass('fa-check-square');
-            // Gestiona la escala en Y manual o auto de la gráfica
+            // Gestiona la escala en Y manual o auto de la grafica
             if (_yScaleValue && !_autoscale) {
                 _largestY = _yScaleValue;
             } else {
-                if (auto && _autoscale) {
-                    _largestY = maximumY;
-                } else {
-                    var scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(_widgetId, "WidgetId"));
-                    if (scaleY.length == 1) {
-                        //accelerationSprectum = $("li>a[data-value=accelerationSpectrum" + _widgetId + "]>i").hasClass('fa-check-square');
-                        //velocitySprectum = $("li>a[data-value=velocitySpectrum" + _widgetId + "]>i").hasClass('fa-check-square');
-
-                        if (velocitySprectum && (scaleY[0].Velocity != null)) {
+                if (_scaleY !== undefined) {
+                    scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(_widgetId, "WidgetId"));
+                    if (scaleY.length === 1) {
+                        if (velocitySprectum && (scaleY[0].Velocity !== null)) {
                             _largestY = scaleY[0].Velocity;
-                        }
-                        else if (accelerationSprectum && (scaleY[0].Acceleration != null)) {
+                        } else if (accelerationSprectum && (scaleY[0].Acceleration !== null)) {
                             _largestY = scaleY[0].Acceleration;
+                        } else {
+                            _largestY = scaleY[0].Proximity;
                         }
-                        else {
-                            if (manual) {
-                                $("li>a[data-value=manualScaleY" + _widgetId + "]>i").removeClass('fa-check-square').addClass("fa-square-o");
-                                $("li>a[data-value=autoScaleY" + _widgetId + "]>i").addClass('fa-check-square').removeClass("fa-square-o");
-                                _autoscale = true;
-                            }
-                            _largestY = maximumY;
-                        }
-                    }
-                    else {
-                        _largestY = maximumY;
                     }
                 }
             }
@@ -1044,15 +994,16 @@ SpectrumGraph = (function () {
                 xIni = xyData[_chart.boundaryIds_[0][0]][0];
                 xEnd = xyData[_chart.boundaryIds_[0][1]][0];
             }
-
             _chart.updateOptions({
                 "file": xyData,
                 "ylabel": _chart.user_attrs_.ylabel,
-                "valueRange": [0, _largestY * 1.1],
+                "xlabel": "Frecuencia [" + ((_xCoordinateUnit.Text === "X") ? "Orden" : _xCoordinateUnit.Text) + "]",
+                "valueRange": [0, _largestY * (_autoscale ? 1.1 : 1)],
                 "dateWindow": [xIni, xEnd]
             });
             // Texto a mostrar
             txt = _measurementPoint.Name + "&nbsp;&nbsp;Ang:&nbsp;";
+            maximumY = _autoscale ? maximumY : 0;
             switch (_selectedSpectrumType.Value) {
                 case spectrumTypes.Displacement.Value:
                     txt += parseAng(_measurementPoint.SensorAngle) + "&deg;" + ", " + _subvariables.overall.Name + ": ";
@@ -1092,7 +1043,7 @@ SpectrumGraph = (function () {
             }
             // Concatenar la estampa de tiempo actual de la grafica
             txt += _currentTimeStamp;
-            $("#" + _measurementPoint.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+            $("#point" + _measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
             // Inicializamos caso no exista el valor lastx_
             if (typeof _chart.lastx_ === "undefined") {
                 _chart.lastx_ = 0;
@@ -1250,7 +1201,7 @@ SpectrumGraph = (function () {
                     velocity = Math.round((_angularSubvariable.Value / 60 + 0.00001) * 100) / 100;
                 }
                 g.updateOptions({
-                    "valueRange": [0, _largestY * 1.1],
+                    "valueRange": [0, _largestY * (_autoscale ? 1.1 : 1)],
                     "dateWindow": [0, g.file_.length * _xCoordinateUnit.Factor]
                 });
                 if (_cursorType === 1) {
@@ -1394,14 +1345,13 @@ SpectrumGraph = (function () {
         };
 
         _zoom = function (g, zoomInPercentage, xBias, yBias) {
-            xBias = xBias || 0.5;
-            yBias = yBias || 0.5;
-
             var
                 yAxes,
                 newYAxes,
                 i;
 
+            xBias = xBias || 0.5;
+            yBias = yBias || 0.5;
             yAxes = g.yAxisRanges();
             newYAxes = [];
             for (i = 0; i < yAxes.length; i += 1) {
@@ -1441,7 +1391,7 @@ SpectrumGraph = (function () {
                 case 0: // Tiempo Real
                     _newDataSubscription = PublisherSubscriber.subscribe("/realtime/refresh", subVariableIdList, function (data) {
                         waveform = data[_subvariables.waveform.Id];
-                        if (isEmpty(waveform)) {
+                        if (isEmpty(waveform) || isEmpty(waveform.RawValue)) {
                             console.error("No se encontró datos de forma de onda.");
                             return;
                         }
@@ -1560,15 +1510,15 @@ SpectrumGraph = (function () {
                 xyData;
 
             if (!_pause) {
-                //if (_currentTimeStamp !== waveform.TimeStamp) {
-                // Estampa de tiempo actual de graficacion
-                _currentTimeStamp = waveform.TimeStamp;
-                // Informacion del grafico
-                xyData = _getHalfSpectrum(waveform);
-                // Mantener en memoria el valor del ultimo espectro mostrado
-                _currentData = clone(xyData);
-                _redrawGraph();
-                //}
+                if (_currentTimeStamp !== waveform.TimeStamp) {
+                    // Estampa de tiempo actual de graficacion
+                    _currentTimeStamp = waveform.TimeStamp;
+                    // Informacion del grafico
+                    xyData = _getHalfSpectrum(waveform);
+                    // Mantener en memoria el valor del ultimo espectro mostrado
+                    _currentData = clone(xyData);
+                    _redrawGraph();
+                }
             }
         };
 
@@ -1579,6 +1529,7 @@ SpectrumGraph = (function () {
                 imag,
                 data,
                 windowFactor,
+                i,
                 bSi,
                 resp;
 
@@ -1614,9 +1565,9 @@ SpectrumGraph = (function () {
             return resp;
         };
 
-        _subscribeToApplyFilter = function () {
-            _applyFilterSubscription = PublisherSubscriber.subscribe("/applyfilter", null, function () {
-                // DIBUJAR LA SOMBRA
+        _subscribeToDynamicFilter = function () {
+            _dynamicFilterSubscription = PublisherSubscriber.subscribe("/applyfilter", null, function () {
+                _redrawGraph();
             });
         };
 
@@ -1656,7 +1607,7 @@ SpectrumGraph = (function () {
             sensorCode = _measurementPoint.SensorTypeCode;
             if (sensorCode === 1) {
                 _scaleChartDisplacement = PublisherSubscriber.subscribe("/scale/" + _graphType + "/displacement", [sensorCode], function (data) {
-                    if (data[sensorCode] && _selectedSpectrumType === spectrumTypes.Acceleration) {
+                    if (data[sensorCode] && _selectedSpectrumType.Value === spectrumTypes.Displacement.Value) {
                         if (_autoscale) {
                             minMaxArray = data[sensorCode];
                             if (_largestY !== minMaxArray[1]) {
@@ -1670,7 +1621,7 @@ SpectrumGraph = (function () {
                 });
             } else {
                 _scaleChartDisplacement = PublisherSubscriber.subscribe("/scale/" + _graphType + "/displacement", [sensorCode], function (data) {
-                    if (data[sensorCode] && _selectedSpectrumType === spectrumTypes.Acceleration) {
+                    if (data[sensorCode] && _selectedSpectrumType.Value === spectrumTypes.Displacement.Value) {
                         if (_autoscale) {
                             minMaxArray = data[sensorCode];
                             if (_largestY !== minMaxArray[1]) {
@@ -1683,7 +1634,7 @@ SpectrumGraph = (function () {
                     }
                 });
                 _scaleChartVelocity = PublisherSubscriber.subscribe("/scale/" + _graphType + "/velocity", [sensorCode], function (data) {
-                    if (data[sensorCode] && _selectedSpectrumType === spectrumTypes.Velocity) {
+                    if (data[sensorCode] && _selectedSpectrumType.Value === spectrumTypes.Velocity.Value) {
                         if (_autoscale) {
                             minMaxArray = data[sensorCode];
                             if (_largestY !== minMaxArray[1]) {
@@ -1696,7 +1647,7 @@ SpectrumGraph = (function () {
                     }
                 });
                 _scaleChartAcceleration = PublisherSubscriber.subscribe("/scale/" + _graphType + "/acceleration", [sensorCode], function (data) {
-                    if (data[sensorCode] && _selectedSpectrumType === spectrumTypes.Acceleration) {
+                    if (data[sensorCode] && _selectedSpectrumType.Value === spectrumTypes.Acceleration.Value) {
                         if (_autoscale) {
                             minMaxArray = data[sensorCode];
                             if (_largestY !== minMaxArray[1]) {
@@ -1747,21 +1698,26 @@ SpectrumGraph = (function () {
         _getDisplacementSpectrum = function (xyData, yLabel) {
             var
                 currentUnit,
-                unitToConvert;
+                unitToConvert,
+                factor,
+                i,
+                yVal;
 
-            if (_measurementPoint.SensorTypeCode === 3 && _measurementPoint.Integrate) {
-                // VELOCIMETRO MOSTRANDO UNIDADES DE DESPLAZAMIENTO (DERIVAR)
+            if (_measurementPoint.SensorTypeCode === 3 && !_measurementPoint.Integrate) {
+                // Velocimetro no-integrado mostrando unidades de desplazamiento (Integrar)
                 currentUnit = _subvariables.overall.Units;
                 unitToConvert = _subvariables.original.Units;
-                // GENERAR ESPECTRO DE DESPLAZAMIENTO
+                // Calcular el factor de conversion necesario para la integracion
+                factor = _computeFactorToIntegrate(currentUnit.toLowerCase(), unitToConvert.toLowerCase());
+                // Generar espectro de desplazamiento
                 for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getDerivativeValue(_currentData[i][1], _currentData[i][0], currentUnit, unitToConvert)]);
+                    yVal = (_currentData[i][1] / (2 * Math.PI * _currentData[i][0])) * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal]);
                 }
-            } else if (_measurementPoint.SensorTypeCode === 1) {
-                // PROXIMIDAD MOSTRANDO UNIDADES DE DESPLAZAMIENTO
+            } else if ((_measurementPoint.SensorTypeCode === 1) || (_measurementPoint.SensorTypeCode === 3 && _measurementPoint.Integrate)) {
+                // Proximidad mostrando unidades de desplazamiento o velocimetro integrado mostrando unidades de desplazamiento
                 currentUnit = _subvariables.overall.Units;
-                // GENERAR ESPECTRO DE DESPLAZAMIENTO
+                // Generar espectro de desplazamiento
                 for (i = 0; i < _currentData.length; i += 1) {
                     xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1]]);
                 }
@@ -1774,39 +1730,45 @@ SpectrumGraph = (function () {
         _getVelocitySpectrum = function (xyData, yLabel) {
             var
                 currentUnit,
-                unitToConvert;
+                unitToConvert,
+                factor,
+                i,
+                yVal;
 
             if (_measurementPoint.SensorTypeCode === 2 && _measurementPoint.Integrate) {
-                // ACELEROMETRO MOSTRANDO UNIDADES DE VELOCIDAD
+                // Acelerometro integrado mostrando unidades de velocidad
                 currentUnit = _subvariables.overall.Units;
-                unitToConvert = _subvariables.original.Units;
-                // EL VALOR DE FORMA DE ONDA ES INTEGRADO POR LO CUAL NO REQUIERE OPERACIONES ADICIONALES
+                // Debido a que el sensor es integrado, los valores de forma de onda son de velocidad
+                for (i = 0; i < _currentData.length; i += 1) {
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1]]);
+                }
+            } else if (_measurementPoint.SensorTypeCode === 3 && !_measurementPoint.Integrate) {
+                // Velocimetro no-integrado mostrando unidades de velocidad
+                currentUnit = _subvariables.overall.Units;
+                // Debido a que el sensor no es integrado, los valores de forma de onda son de velocidad
                 for (i = 0; i < _currentData.length; i += 1) {
                     xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1]]);
                 }
             } else if (_measurementPoint.SensorTypeCode === 2 && !_measurementPoint.Integrate) {
-                // ACELEROMETRO NO INTEGRADO MOSTRANDO UNIDADES DE VELOCIDAD (INTEGRAR)
+                // Acelerometro no-integrado mostrando unidades de velocidad (Integrar)
                 currentUnit = _subvariables.overall.Units;
-                // GENERAR ESPECTRO DE VELOCIDAD
+                // Calcular el factor de conversion necesario para la integracion
+                factor = _computeFactorToIntegrate(currentUnit.toLowerCase(), unitToConvert);
+                // Generar espectro de velocidad
                 for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getIntegratedValue(_currentData[i][1], _currentData[i][0], currentUnit, unitToConvert)]);
-                }
-            } else if (_measurementPoint.SensorTypeCode === 3 && !_measurementPoint.Integrate) {
-                // VELOCIMETRO MOSTRANDO UNIDADES POR DEFECTO
-                currentUnit = _subvariables.overall.Units;
-                // DEBIDO A QUE EL SENSOR NO ES INTEGRADO, LOS VALORES DE FORMA DE ONDA SON DE VELOCIDAD
-                for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1]]);
+                    yVal = (_currentData[i][1] / (2 * Math.PI * _currentData[i][0])) * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal]);
                 }
             } else if (_measurementPoint.SensorTypeCode === 3 && _measurementPoint.Integrate) {
-                // VELOCIMETRO MOSTRANDO UNIDADES ORIGINALES
-                currentUnit = _subvariables.original.Units;
-                unitToConvert = _subvariables.overall.Units;
-                // GENERAR ESPECTRO DE VELOCIDAD (INTEGRAR)
+                // Velocimetro integrado mostrando unidades de velocidad (Derivar)
+                currentUnit = _subvariables.overall.Units;
+                unitToConvert = _subvariables.original.Units;
+                // Calcular el factor de conversion necesario para la derivacion
+                factor = _computeFactorToDerive(currentUnit.toLowerCase(), unitToConvert);
+                // Generar espectro de velocidad (Derivar)
                 for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getIntegratedValue(_currentData[i][1], _currentData[i][0], currentUnit, unitToConvert)]);
+                    yVal = 2 * Math.PI * _currentData[i][1] * _currentData[i][0] * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal]);
                 }
             }
             yLabel += " [" + currentUnit + "]";
@@ -1817,31 +1779,38 @@ SpectrumGraph = (function () {
         _getAccelerationSpectrum = function (xyData, yLabel) {
             var
                 currentUnit,
-                unitToConvert;
+                unitToConvert,
+                factor,
+                i,
+                yVal;
 
-            if (_measurementPoint.SensorTypeCode === 2 && _measurementPoint.Integrate) {
-                // ACELEROMETRO MOSTRANDO UNIDADES ORIGINALES
-                currentUnit = _subvariables.original.Units;
-                unitToConvert = _subvariables.overall.Units;
-                // A DIFERENCIA DE LAS UNIDADES, EL VALOR DE FORMA DE ONDA ES INTEGRADO, SE REQUIERE DERIVAR
-                for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getDerivativeValue(_currentData[i][1], _currentData[i][0], currentUnit, unitToConvert)]);
-                }
-            } else if (_measurementPoint.SensorTypeCode === 2 && !_measurementPoint.Integrate) {
-                // ACELEROMETRO MOSTRANDO UNIDADES UNICAS O POR DEFECTO
+            if (_measurementPoint.SensorTypeCode === 2 && !_measurementPoint.Integrate) {
+                // Acelerometro no-integrado mostrando unidades de aceleracion
                 currentUnit = _subvariables.overall.Units;
-                // DEBIDO A QUE EL SENSOR NO ES INTEGRADO, LOS VALORES DE FORMA DE ONDA SON DE ACELERACION
+                // Debido a que el sensor no es integrado, los valores de forma de onda son de aceleracion
                 for (i = 0; i < _currentData.length; i += 1) {
                     xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, _currentData[i][1]]);
                 }
-            } else if (_measurementPoint.SensorTypeCode === 3 && !_measurementPoint.Integrate) {
-                // VELOCIMETRO MOSTRANDO UNIDADES DE ACELERACION
+            } else if (_measurementPoint.SensorTypeCode === 2 && _measurementPoint.Integrate) {
+                // Acelerometro integrado mostrando unidades de aceleracion (Derivar)
                 currentUnit = _subvariables.overall.Units;
-                // LOS VALORES DE FORMA DE ONDA REQUIEREN DERIVAR
+                unitToConvert = _subvariables.original.Units;
+                // Calcular el factor de conversion necesario para la derivacion
+                factor = _computeFactorToDerive(currentUnit.toLowerCase(), unitToConvert);
+                // Generar espectro de aceleracion (Derivar)
                 for (i = 0; i < _currentData.length; i += 1) {
-                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor,
-                        _getDerivativeValue(_currentData[i][1], _currentData[i][0], currentUnit, unitToConvert)]);
+                    yVal = 2 * Math.PI * _currentData[i][1] * _currentData[i][0] * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal]);
+                }
+            } else if (_measurementPoint.SensorTypeCode === 3 && !_measurementPoint.Integrate) {
+                // Velocimetro no-integrado mostrando unidades de aceleracion (Derivar)
+                currentUnit = _subvariables.overall.Units;
+                // Calcular el factor de conversion necesario para la derivacion
+                factor = _computeFactorToDerive(currentUnit.toLowerCase(), unitToConvert);
+                // Generar espectro de aceleracion (Derivar)
+                for (i = 0; i < _currentData.length; i += 1) {
+                    yVal = 2 * Math.PI * _currentData[i][1] * _currentData[i][0] * factor;
+                    xyData.push([_currentData[i][0] * _xCoordinateUnit.Factor, yVal]);
                 }
             }
             yLabel += " [" + currentUnit + "]";
@@ -1849,32 +1818,147 @@ SpectrumGraph = (function () {
             return xyData;
         };
 
-        _getDerivativeValue = function (value, frequency, currentUnit, unitToConvert) {
+        // Algoritmo que determina el factor que se debe aplicar para la derivacion
+        _computeFactorToIntegrate = function (currentUnit, unitToConvert) {
             var
                 factor;
 
-            if (unitToConvert === undefined) {
-                // SIGNIFICA QUE LA CONVERSION BUSCADA NO ES CONOCIDA Y SE DEBE SELECCIONAR UNA POR DEFECTO BASADA EN LA ACTUAL
+            // Crear array del valor de unidad donde la primer parte corresponde a la unidad,
+            // mientras la segunda parte corresponde al tipo de medida (pk-pk, 0-pk, RMS).
+            currentUnit = currentUnit.split(" ");
+            switch (currentUnit[0]) {
+                case "g":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "m/s" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "m/s":
+                            factor = 9.8067;
+                            break;
+                        case "mm/s":
+                            factor = 9806.7;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                case "mg":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mm/s" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "mm/s":
+                            factor = 9.8067;
+                            break;
+                        case "m/s":
+                            factor = 9.8067 / 1000;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                case "mm/s":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mm" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "mm":
+                            factor = 1.0;
+                            break;
+                        case "um":
+                            factor = 1000;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                default:
+                    factor = 1.0;
+                    console.log("Unidad de conversión desconocida.");
             }
-            currentUnit = currentUnit.toLowerCase();
-            unitToConvert = unitToConvert.toLowerCase();
-            // GENERAR EL ALGORITMO QUE DETERMINA EL FACTOR QUE SE DEBE APLICAR PARA LA CONVERSION DE UNIDADES
-            factor = 1.0;
-            return value * 2 * Math.PI * frequency * factor;
+            // Aplica un factor adicional en caso de que las unidades de origen y destino no sean iguales
+            if (currentUnit[1] !== unitToConvert[1]) {
+                if (currentUnit[1] === "0-pk" && unitToConvert[1] === "rms") {
+                    factor *= 0.707;
+                } else if (currentUnit[1] === "rms" && unitToConvert[1] === "0-pk") {
+                    factor /= 0.707;
+                }
+            }
+            return factor;
         };
 
-        _getIntegratedValue = function (value, frequency, currentUnit, unitToConvert) {
+        _computeFactorToDerive = function (currentUnit, unitToConvert) {
             var
                 factor;
 
-            if (unitToConvert === undefined) {
-                // SIGNIFICA QUE LA CONVERSION BUSCADA NO ES CONOCIDA Y SE DEBE SELECCIONAR UNA POR DEFECTO BASADA EN LA ACTUAL
+            // Crear array del valor de unidad donde la primer parte corresponde a la unidad,
+            // mientras la segunda parte corresponde al tipo de medida (pk-pk, 0-pk, RMS).
+            currentUnit = currentUnit.split(" ");
+            switch (currentUnit[0]) {
+                case "mm":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mm/s" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "mm/s":
+                            factor = 1.0;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                case "um":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mm/s" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "mm/s":
+                            factor = 1 / 1000.0;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                case "mm/s":
+                    if (unitToConvert === undefined) {
+                        // Seleccionar la unidad a a convertir por defecto
+                        unitToConvert = "mg" + " " + currentUnit[1];
+                    }
+                    unitToConvert = unitToConvert.toLowerCase().split(" ");
+                    switch (unitToConvert[0]) {
+                        case "g":
+                            factor = 1 / 9806.7;
+                            break;
+                        case "mg":
+                            factor = 1 / 9.8067;
+                            break;
+                        default:
+                            console.log("Unidad a convertir no definida");
+                    }
+                    break;
+                default:
+                    factor = 1.0;
+                    console.log("Unidad de conversión desconocida.");
             }
-            currentUnit = currentUnit.toLowerCase();
-            unitToConvert = unitToConvert.toLowerCase();
-            // GENERAR EL ALGORITMO QUE DETERMINA EL FACTOR QUE SE DEBE APLICAR PARA LA CONVERSION DE UNIDADES
-            factor = 1.0;
-            return (value / (2 * Math.PI * frequency)) * factor;
+            // Aplica un factor adicional en caso de que las unidades de origen y destino no sean iguales
+            if (currentUnit[1] !== unitToConvert[1]) {
+                if (currentUnit[1] === "0-pk" && unitToConvert[1] === "rms") {
+                    factor *= 0.707;
+                } else if (currentUnit[1] === "rms" && unitToConvert[1] === "0-pk") {
+                    factor /= 0.707;
+                }
+            }
+            return factor;
         };
 
         _getCurrentYUnits = function () {
@@ -1887,7 +1971,7 @@ SpectrumGraph = (function () {
                     break;
                 case spectrumTypes.Velocity.Value:
                     if (_measurementPoint.SensorTypeCode === 3 && _measurementPoint.Integrate) {
-                        // VELOCIMETRO MOSTRANDO UNIDADES ORIGINALES
+                        // Velocimetro mostrando unidades originales
                         unit = _subvariables.original.Units;
                     } else {
                         unit = _subvariables.overall.Units;
@@ -1895,7 +1979,7 @@ SpectrumGraph = (function () {
                     break;
                 case spectrumTypes.Acceleration.Value:
                     if (_measurementPoint.SensorTypeCode === 2 && _measurementPoint.Integrate) {
-                        // ACELEROMETRO MOSTRANDO UNIDADES ORIGINALES
+                        // Acelerometro mostrando unidades originales
                         unit = _subvariables.original.Units;
                     } else {
                         unit = _subvariables.overall.Units;
@@ -2083,7 +2167,7 @@ SpectrumGraph = (function () {
                 subVariableIdList: subVariableIdList,
                 asset: _assetData.Name,
                 seriesName: _seriesName,
-                measurementPointList: [_measurementPoint.Name.replace(/\s/g, "")],
+                measurementPointList: [_measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "")],
                 pause: (timeMode === 0) ? true : false,
                 settingsMenu: settingsMenu,
                 onSettingsMenuItemClick: _onSettingsMenuItemClick,
@@ -2100,6 +2184,12 @@ SpectrumGraph = (function () {
                     _movableGrid = !_movableGrid;
                     grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                     $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
             });
 
@@ -2109,7 +2199,7 @@ SpectrumGraph = (function () {
             // Se suscribe a la notificacion de llegada de nuevos datos.
             _subscribeToNewData(timeStamp, subVariableIdList);
             // Se suscribe a la notificacion de aplicacion de filtro dinamico para la forma de onda
-            _subscribeToApplyFilter();
+            _subscribeToDynamicFilter();
             // Se suscribe a la notificacion de aplicacion de resize para el chart Dygraph
             _subscribeToResizeChart();
             // Se suscribe a la notificacion escala en Y por mayor valor.
@@ -2122,7 +2212,7 @@ SpectrumGraph = (function () {
             settingsSubmenu = [];
             if ((_measurementPoint.Integrate && _measurementPoint.SensorTypeCode === 2) ||
                 !_measurementPoint.Integrate && _measurementPoint.SensorTypeCode === 3) {
-                // ACELEROMETRO INTEGRADO O VELOCIMETRO SIN INTEGRAR
+                // Acelerometro integrado o velocimetro sin integrar
                 settingsSubmenu.push(AspectrogramWidget.createSettingsMenuElement(
                     "item",
                     "<i class=\"fa fa-check-square\" aria-hidden=\"true\"></i> Espectro Velocidad",
@@ -2136,7 +2226,7 @@ SpectrumGraph = (function () {
                 settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("submenu", "Tipo Espectro", "spectrumType" + _widgetId, settingsSubmenu));
                 _selectedSpectrumType = clone(spectrumTypes.Velocity);
             } else if ((!_measurementPoint.Integrate && _measurementPoint.SensorTypeCode === 2)) {
-                // ACELEROMETRO SIN INTEGRAR
+                // Acelerometro sin integrar
                 settingsSubmenu.push(AspectrogramWidget.createSettingsMenuElement(
                     "item",
                     "<i class=\"fa fa-check-square\" aria-hidden=\"true\"></i> Espectro Aceleración",
@@ -2150,7 +2240,7 @@ SpectrumGraph = (function () {
                 settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("submenu", "Tipo Espectro", "spectrumType" + _widgetId, settingsSubmenu));
                 _selectedSpectrumType = clone(spectrumTypes.Acceleration);
             } else if ((!_measurementPoint.Integrate && _measurementPoint.SensorTypeCode === 3)) {
-                // VELOCIMETRO INTEGRADO
+                // Velocimetro integrado
                 settingsSubmenu.push(AspectrogramWidget.createSettingsMenuElement(
                     "item",
                     "<i class=\"fa fa-check-square\" aria-hidden=\"true\"></i> Espectro Desplazamiento",
@@ -2241,8 +2331,8 @@ SpectrumGraph = (function () {
             if (_xCoordinateUnit.Value === xCoordinateUnits.Order.Value) {
                 txt += ", Frecuencia: ";
                 if ((_angularSubvariable && _angularSubvariable.Value !== null)) {
-                    txt += parseFloat(pts[0].xval.toFixed(2) / (_angularSubvariable.Value / 60)).toFixed(2) + " " + _xCoordinateUnit.Text;
-                    txt += ", " + _angularSubvariable.Value.toFixed(0) + " RPM";
+                    txt += (_angularSubvariable.Value === 0) ? "--" : parseFloat(pts[0].xval.toFixed(2) / (_angularSubvariable.Value / 60)).toFixed(2);
+                    txt += " " + _xCoordinateUnit.Text + ", " + _angularSubvariable.Value.toFixed(0) + " RPM";
                 } else {
                     txt += "--";
                 }
@@ -2269,6 +2359,17 @@ SpectrumGraph = (function () {
             ));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("submenu", "Escala en Y", "windowing" + _widgetId, settingsSubmenu));
         };
+
+        document.body.addEventListener("keydown", function (e) {
+            if (_mouseover && _lastMousemoveEvt.isTrusted) {
+                _chart = _chart;
+                if (e.keyCode == 37) {
+                    _updateSelection("keyboardEvent", 1, e);
+                } else if (e.keyCode == 39) {
+                    _updateSelection("keyboardEvent", 2, e);
+                }
+            }
+        });
 
         this.Close = function () {
             var
@@ -2303,9 +2404,9 @@ SpectrumGraph = (function () {
                 // Eliminar suscripcion de notificacion de llegada de datos por medio del player
                 _playerSubscription.remove();
             }
-            if (_applyFilterSubscription) {
+            if (_dynamicFilterSubscription) {
                 // Eliminar suscripcion de notificaciones para aplicar filtro dinámico a la forma de onda
-                _applyFilterSubscription.remove();
+                _dynamicFilterSubscription.remove();
             }
             if (_resizeChartSubscription) {
                 // Eliminar suscripcion de notificaciones para aplicar resize al chart Dygraph

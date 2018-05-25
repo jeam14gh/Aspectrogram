@@ -66,7 +66,7 @@ Cursors = (function () {
          * Cursor normal
          * @param {Double} xIni Posicion inicial del cursor
          */
-        this.normalCursor = function (xIni) {
+        this.normalCursor = function (xIni, xCoordinateUnit) {
             var
                 containerDiv,
                 lineDiv,
@@ -134,7 +134,7 @@ Cursors = (function () {
                 domX: _dygraph.toDomXCoord(xIni),
                 row: row
             };
-            _this.updateNormalCursor();
+            _this.updateNormalCursor(xCoordinateUnit);
             $([_normalCursor.lineDiv, _normalCursor.infoDiv]).appendTo(_dygraph.graphDiv);
         };
 
@@ -326,7 +326,7 @@ Cursors = (function () {
 
             if (_gArray.length > 0) {
                 for (i = 0; i < _gArray.length; i += 1) {
-                    if (_gArray[i].selPoints_ !== pts) {
+                    if (_gArray[i].selPoints_ !== pts && pts[0] !== undefined) {
                         _gArray[i].setSelection(pts[0].idx);
                     }
                     points = _gArray[i].selPoints_;
@@ -369,17 +369,18 @@ Cursors = (function () {
                 ctx.strokeStyle = "#610B21";
                 ctx.beginPath();
 
-                canvasx = Math.floor(pts[0].canvasx) + 0.5 - _dygraph.plotter_.area.x;
-                ctx.moveTo(canvasx, 0);
-                ctx.lineTo(canvasx, height);
-                for (i = 0; i < pts.length; i += 1) {
-                    canvasy = Math.floor(pts[i].canvasy) + 0.5;
-                    ctx.moveTo(canvasx, canvasy);
-                    ctx.arc(canvasx, canvasy, 2, 0, 2 * Math.PI, false);
+                if (pts.length > 0) {
+                    canvasx = Math.floor(pts[0].canvasx) + 0.5 - _dygraph.plotter_.area.x;
+                    ctx.moveTo(canvasx, 0);
+                    ctx.lineTo(canvasx, height);
+                    for (i = 0; i < pts.length; i += 1) {
+                        canvasy = Math.floor(pts[i].canvasy) + 0.5;
+                        ctx.moveTo(canvasx, canvasy);
+                        ctx.arc(canvasx, canvasy, 2, 0, 2 * Math.PI, false);
+                    }
+                    ctx.stroke();
+                    ctx.closePath();
                 }
-
-                ctx.stroke();
-                ctx.closePath();
             }
         };
 
@@ -682,58 +683,64 @@ Cursors = (function () {
                 left,
                 right;
 
-            _this.clearCursor();
-            if (ui) {
-                _pointerArray[0].row = _dygraph.findClosestRow(ui.position.left);
-            } else {
-                if (key == 1) {
-                    _pointerArray[0].row -= 1;
-                } else if (key == 2) {
-                    _pointerArray[0].row += 1;
-                }                
-            }
+            if (ui.offset.left / ui.position.left < 5.8) {
+                _this.clearCursor();
 
-            /*
-            if (_dygraph.file_[_pointerArray[0].row - 1] && (_dygraph.file_[_pointerArray[0].row - 1][1] > _dygraph.file_[_pointerArray[0].row][1])) {
-                _pointerArray[0].row += 1;
-            } else if (_dygraph.file_[_pointerArray[0].row + 1] && (_dygraph.file_[_pointerArray[0].row + 1][1] > _dygraph.file_[_pointerArray[0].row][1])) {
-                _pointerArray[0].row -= 1;
-            }*/
-            _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
-            _pointerArray[0].domX = _dygraph.toDomXCoord(_pointerArray[0].xval);
-            left = _dygraph.boundaryIds_[0][0] + 1;
-            right = _dygraph.boundaryIds_[0][1] - 1;
-            if (_pointerArray[0].row < left) {
-                _pointerArray[0].row = left;
-                _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
+                console.log(ui);
+                console.log(ui.position.left);
+
+                if (ui) {
+                    _pointerArray[0].row = _dygraph.findClosestRow(ui.position.left);
+                } else {
+                    if (key == 1) {
+                        _pointerArray[0].row -= 1;
+                    } else if (key == 2) {
+                        _pointerArray[0].row += 1;
+                    }
+                    _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
+                    _pointerArray[0].domX = _dygraph.toDomXCoord(_pointerArray[0].xval);
+                }
+
+                left = _dygraph.boundaryIds_[0][0] + 2;
+                right = _dygraph.boundaryIds_[0][1] - 2;
+
+
+
+                if (_pointerArray[0].row < left) {
+                    _pointerArray[0].row = left;
+                    _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
+                    _pointerArray[0].domX = _dygraph.toDomXCoord(_pointerArray[0].xval);
+                    $(_pointerArray[0].lineDiv).css({
+                        "left": _dygraph.toDomXCoord(_pointerArray[0].xval) + "px",
+                        "height": "2px"
+                    });
+                    e.preventDefault();
+                    return false;
+                }
+
+                if (_pointerArray[0].row > right) {
+                    _pointerArray[0].row = right;
+                    _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
+                    _pointerArray[0].domX = _dygraph.toDomXCoord(_pointerArray[0].xval);
+                    $(_pointerArray[0].lineDiv).css({
+                        "left": _dygraph.toDomXCoord(_pointerArray[0].xval) + "px",
+                        "height": "2px"
+                    });
+
+                    e.preventDefault();
+                    return false;
+                }
+
                 $(_pointerArray[0].lineDiv).css({
-                    "left": _dygraph.toDomXCoord(_pointerArray[0].xval) + "px",
+                    "left": (_pointerArray[0].domX - 4) + "px",
                     "height": "2px"
                 });
-                e.preventDefault();
-                return false;
+                if (ui) {
+                    ui.position.left = _pointerArray[0].domX - 4;
+                }
+                _drawHarmonicMarker(_pointerArray[0].row);
             }
-
-            if (_pointerArray[0].row > right) {
-                _pointerArray[0].row = right;
-                _pointerArray[0].xval = _dygraph.file_[_pointerArray[0].row][0];
-                $(_pointerArray[0].lineDiv).css({
-                    "left": _dygraph.toDomXCoord(_pointerArray[0].xval) + "px",
-                    "height": "2px"
-                });
-
-                e.preventDefault();
-                return false;
-            }
-
-            $(_pointerArray[0].lineDiv).css({
-                "left": (_pointerArray[0].domX - 4) + "px",
-                "height": "2px"
-            });
-            if (ui) {
-                ui.position.left = _pointerArray[0].domX - 4;
-            }
-            _drawHarmonicMarker(_pointerArray[0].row);
+            
         };
 
         _drawHarmonicMarker = function (row) {
@@ -780,7 +787,7 @@ Cursors = (function () {
                     ctx.fill();
                     ctx.closePath();
                     ctx.beginPath();
-                    ctx.font = "12px FontAwesome";
+                    ctx.font = "12px Segoe UI";
                     ctx.fillText((idx + 1) + "x", leftPt.canvasx - _dygraph.plotter_.area.x - 6, leftPt.canvasy - _dygraph.plotter_.area.y - 5);
                     ctx.closePath();
                 }
@@ -860,6 +867,10 @@ Cursors = (function () {
                 $([_pointerArray[(i + 1) % 2].lineDiv]).hide();
             } else {
                 $([_pointerArray[(i + 1) % 2].lineDiv]).show();
+                $(_pointerArray[1].lineDiv).css({
+                    "left": (_pointerArray[(i + 1) % 2].domX - 4) + "px",
+                    "height": "2px"
+                });
             }
             // Si el cursor que genera el evento Drag, se encuentra por fuera de los limites de la grafica
             // Es necesario prevenir la propagacion del evento ubicandolo sobre el limite inferior o superior segun el caso
@@ -885,17 +896,11 @@ Cursors = (function () {
                 return false;
             } else {
                 $([_pointerArray[i % 2].lineDiv]).show();
+                $(_pointerArray[0].lineDiv).css({
+                    "left": (_pointerArray[i % 2].domX - 4) + "px",
+                    "height": "2px"
+                });
             }
-            // Centrar el puntero principal
-            $(_pointerArray[0].lineDiv).css({
-                "left": (_pointerArray[0].domX - 4) + "px",
-                "height": "2px"
-            });
-            // Centrar el puntero secundario
-            $(_pointerArray[1].lineDiv).css({
-                "left": (_pointerArray[1].domX - 4) + "px",
-                "height": "2px"
-            });
             if (ui) {
                 // Necesario para que la linea que se dibuja sobre el marcador actual, coincida con el centro del puntero
                 ui.position.left = _pointerArray[i].domX - 4;

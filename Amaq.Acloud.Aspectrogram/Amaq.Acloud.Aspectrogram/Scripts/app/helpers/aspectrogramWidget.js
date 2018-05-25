@@ -7,6 +7,8 @@
         this.moveButton = null;
         this.pauseButton = null;
         this.settingsButton = null;
+        this.maximizeButton = null;
+        this.minimizeButton = null;
         this.reloadButton = null;
         this.widget = null;
 
@@ -267,7 +269,7 @@
                 mainCreated = true;
             }
             else {
-                settingsMenuHTML = $("<li style=\"width:100%;\" class=\"dropdown-submenu pull-left\"></li>");
+                settingsMenuHTML = $("<li style=\"width:100%;\" class=\"small dropdown-submenu pull-left\"></li>");
                 settingsMenuHTML.append("<a role=\"menuitem\" tabindex=\"-1\" href=\"#\">" + text + "</a>");
                 settingsMenuObject = $("<ul class=\"dropdown-menu aw-menu aw-scrollable-menu\"></ul>");
                 settingsMenuHTML = settingsMenuHTML.append(settingsMenuObject);
@@ -315,12 +317,21 @@
 
         moveButtonRightPos = 0;
 
-        self.closeButton = $("<a>", { "class": "btn aw-button" });
-        self.closeButton.append($("<i>", { "class": "fa fa-close fa-1x" }));
+        self.closeButton = $("<a>", { "class": "btn aw-button aw-close" });
+        self.closeButton.append($("<i>", { "class": 'fa ' + AcloudIcons.Close.name + ' fa-1x' }));
         $(self.widget).append(self.closeButton);
 
+        self.maximizeButton = $("<a>", { "class": "btn aw-button aw-maximize" });
+        self.maximizeButton.append($("<i>", { "class": 'fa ' + AcloudIcons.Maximize.name + ' fa-1x' }));
+        $(self.widget).append(self.maximizeButton);
+
+        self.minimizeButton = $("<a>", { "class": "btn aw-button aw-minimize" });
+        self.minimizeButton.append($("<i>", { "class": AcloudIcons.Minimize.name }));
+        $(self.widget).append(self.minimizeButton);
+        self.minimizeButton.hide();
+
         self.moveButton = $("<a>", { "class": "btn aw-button aw-move" });
-        self.moveButton.append($("<i>", { "class": "fa fa-lock fa-1x" }));
+        self.moveButton.append($("<i>", { "class": 'fa ' + AcloudIcons.Move.name + ' fa-1x' }));
         $(self.widget).append(self.moveButton);
 
         // Si se especificaron opciones de menú en el constructor de AspectrogramWidget
@@ -332,7 +343,7 @@
 
             // Crear botón de menú de opciones y agregarlo al AspectrogramWidget
             self.settingsButton = $("<a>", { "class": "btn aw-button aw-settings dropdown-toggle", "id": "btn_" + self.options.widgetId, "role": "button", "data-toggle": "dropdown", "data-target": "#menu_" + +self.options.widgetId });
-            self.settingsButton.append($("<i>", { "class": "fa fa-gear fa-1x" }));
+            self.settingsButton.append($("<i>", { "class": 'fa ' + AcloudIcons.Settings.name + ' fa-1x' }));
             $(self.widget).append(self.settingsButton);
         }
        
@@ -340,19 +351,21 @@
         if (self.options.pause) {
             if (self.settingsButton) {
                 self.settingsButton.css("right", "50px");
-                menu.css("right", "75px");
+                if (menu) {
+                    menu.css("right", "75px");
+                }
             }
 
             moveButtonRightPos += 25;
             self.pauseButton = $("<a>", { "class": "btn aw-button aw-pause" });
-            self.pauseButton.append($("<i>", { "class": "fa fa-pause fa-1x" }));
+            self.pauseButton.append($("<i>", { "class": 'fa ' +  AcloudIcons.Pause.name + ' fa-1x' }));
             $(self.widget).append(self.pauseButton);
         }
 
         // Mostrar el boton de recargar, solo si se configuro de esta forma en el widget
         if (self.options.reload) {
             self.reloadButton = $("<a>", { "class": "btn aw-button aw-reload" });
-            self.reloadButton.append($("<i>", { "class": "fa fa-refresh fa-1x" }));
+            self.reloadButton.append($("<i>", { "class": 'fa ' + AcloudIcons.Reload.name + ' fa-1x' }));
             $(self.widget).append(self.reloadButton);
         }
 
@@ -361,19 +374,30 @@
             self.reloadButton.css("right", moveButtonRightPos + "px");
         }
 
+        if (self.maximizeButton) {
+            moveButtonRightPos += 25;
+            self.maximizeButton.css("right", moveButtonRightPos + "px");
+        }
+
         if (self.moveButton) {
             moveButtonRightPos += 25;
             self.moveButton.css("right", moveButtonRightPos + "px");
         }
 
         header = self.options.content.childNodes[0];
-        tMode = (self.options.timeMode == 0) ? "Tiempo Real" : "Histórico";
-        $(header).append("<span class=\"aw-title\">" + tMode + ", " + self.options.title + " : " + self.options.asset + "</span>");
+        if (self.options.timeMode == 0) {
+            tMode = "Tiempo Real";
+        } else if (self.options.timeMode == 1) {
+            tMode = "Histórico";
+        } else {
+            tMode = "";
+        }
+        $(header).append("<span class=\"aw-title\">" + (tMode == "" ? "" : tMode + ", ") + self.options.title + " : " + self.options.asset + "</span>");
         $(header).append("<span class=\"aw-title\" id=\"{0}\"></span>".JsFormat("textAfterTitle" + self.options.widgetId));
         pointList = self.options.measurementPointList;
         for (i = 0; i < pointList.length; i += 1) {
             // Crea un DIV para cada uno de los puntos de medicion involucrados donde se mostrara el valor de directa y el angulo del sensor
-            $(header).append("<div id=\"" + pointList[i] + self.options.widgetId + "\" class=\"lineBreaking\"><span>&nbsp;</span></div>");
+            $(header).append("<div id=\"point" + pointList[i] + self.options.widgetId + "\" class=\"lineBreaking\"><span>&nbsp;</span></div>");
         }
         for (i = 0; i < self.options.seriesName.length; i += 1) {
             $(header).append("<div id=\"" + self.options.seriesName[i] + self.options.widgetId + "\" class=\"aw-serieName\"><span>&nbsp;</span></div>");
@@ -487,6 +511,20 @@
                     // Desencadenar evento onReload, el cual es pasado como un callback en el constructor de AspectrogramWidget
                     this.options.onReload();
                 }
+            }).bind(this));
+        }
+
+        if (this.maximizeButton) {
+            this.maximizeButton.bind("click", (function () {
+                this.options.onMaximize();
+                //launchFullScreen(this.options.content.id);
+            }).bind(this));
+        }
+
+        if (this.minimizeButton) {
+            this.minimizeButton.bind("click", (function () {
+                this.options.onMinimize();
+                //cancelFullscreen();
             }).bind(this));
         }
     }

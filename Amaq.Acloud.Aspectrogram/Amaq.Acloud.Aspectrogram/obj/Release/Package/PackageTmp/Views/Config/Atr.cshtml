@@ -1,0 +1,468 @@
+﻿@model List<Amaq.Acloud.Aspectrogram.Entities.Atr>
+@{
+    ViewBag.Title = "Configuración";
+}
+
+<div style="overflow-y:scroll;">
+    <!--Inicio contenedor del detalle A-transmiter-->
+    <div id="aspectrogramMainContent" class="container-fluid fullHeight cf">
+        <div class="row">
+            <div id="GridAtr"></div>
+            <div id="GridModule"></div>
+        </div>
+    </div>
+    <!--Fin del detalle-->
+</div>
+
+@section scripts {
+    @Scripts.Render("~/Scripts/helpers/managementIndexedDB.js")
+}
+
+@section applicationScripts {
+    <script id="Cancelar" type="text/x-jsrender">
+        <a class="e-cancel e-toolbaricons e-icon e-gcancel" />
+    </script>
+
+    <script id="Guardar" type="text/x-jsrender">
+        <a class="e-saveitem e-toolbaricons e-icon e-save" />
+    </script>
+
+    <script id="Eliminar" type="text/x-jsrender">
+        <a class="e-deleteitem e-toolbaricons e-icon e-delete" />
+    </script>
+
+    @*Template para los childGrid's de canales Asdaq*@
+    <script id="cgDevices" type="text/x-jsrender">
+        <div id="{{:Serial}}">
+            <div id="detailGridDevice"></div>
+        </div>
+    </script>
+
+    <script type="text/javascript">
+        // Lista de canales
+        var aiChannelsGridCurrent = null;
+        // Id del Atr seleccionado
+        var idAtr=null;
+        // Caché de los modulos de un Atr
+        var _modulesCache=[];
+        // Función para el setTimeout de reconfiguración
+        var timeOutHandler=null;
+        // Lista de Atr
+        var atr= @Html.Raw(Json.Encode(Model));
+        // Indice para reconcocer la posicion del Array "_states"
+        var _index= -1;
+        // Estados que indican si el setTimeOut terminó para cada reinicio de cada asdaq
+        var _states =[];
+        //var dataAiChannels = null;
+        var _modules = null;
+
+        var index1, index2, index3;
+        index1 = index2 = index3 = 0;
+
+        $(document).ready(function () {
+
+            //Tipos de módulo
+            var moduleTypeEnum = {
+                Siesmic: 1,
+                TemperatureRtd: 2,
+                TemperatureTc: 3,
+                properties: {
+                    1: {alias: "Sismico", value: 1},
+                    2: {alias: "Temperatura RTD", value: 2},
+                    3: {alias: "Temperatura TC", value: 3}
+                }
+            };
+
+            $(function () {
+                $("#GridAtr").ejGrid({
+                    dataSource: atr,
+                    locale: "es-ES",
+                    isResponsive: true,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 5 },
+                    editSettings: { allowEditing: true, editMode: "normal" },
+                    enableAutoSaveOnSelectionChange: false,
+                    toolbarSettings: {
+                        showToolbar: true,
+                        toolbarItems:["search","edit","update","cancel"]
+                    },
+                    columns: [
+                                { field: "Alias", headerText: "Nombre", textAlign : "center", headerTextAlign: "center" },
+                                { field: "Description", headerText: "Descripción", textAlign : "center", headerTextAlign: "center" },
+                                { field: "Serial", headerText: "Serial", isPrimaryKey: true, textAlign : "center", headerTextAlign: "center", allowEditing: false },
+                                { field: "Host", headerText: "Host", headerTextAlign: "center", textAlign : "center", allowEditing: false },
+                                {
+                                    field: "Reconfigure", headerText: " ",
+                                    commands:
+                                    [
+                                        {
+                                            type: "details",
+                                            buttonOptions: {
+                                                htmlAttributes: { id: "btnReconfigure" },
+                                                width: "35%",
+                                                text: "reconfigurar",
+                                                showRoundedCorner: true,
+                                                size: "normal",
+                                                click: "_onClickReconfigure"
+                                            },
+                                        }
+                                    ],
+                                    isUnbound: true,
+                                    textAlign: ej.TextAlign.Center,
+                                }
+                    ],
+                    showStackedHeader: true,
+                    stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "A-Transmiters", column: "Alias,Description,Serial,Host,Reconfigure" }] }],
+                    rowSelected: function (args) {
+                        // Se obtiene los modulos del Atr seleccionado
+                        _modules = args.data.Modules;
+
+                        //Descripción del ModuleType
+                        if (_modules) {
+                            for (var i = 0; i < _modules.length; i++) {
+                                _modules[i].AliasModuleType = moduleTypeEnum.properties[_modules[i].ModuleType].alias;
+                            }
+                        }
+
+                        idAtr = args.data.Id;
+
+                        //var gridObj = $("#GridModule").ejGrid("instance");
+                        //Se muestran 5 modulos por pagina.
+                        //gridObj.dataSource(ej.DataManager(_modules.slice(0, 5)));
+                        var exist = ej.DataManager(_modulesCache).executeLocal(ej.Query().where("Id", "equal", idAtr, false));
+                        if (exist.length == 0) {
+                            _modulesCache.push({
+                                Id: args.data.Id,
+                                Modules :JSON.parse(JSON.stringify(_modules)),
+                            });
+                        }
+
+                        if ($("#GridModule")[0].className != "")
+                            $("#GridModule").ejGrid("destroy");
+
+                        CreateGridModules(_modules);
+                        var _mdVariableId= localStorage.getItem("mdVariableId");
+                    },
+                    actionComplete: function (args) {
+                        if(args.requestType == "paging"){
+                            this.selectRows(0);
+                        }
+                    }
+                });
+
+                //Actualiza los cambios de un Atr
+                $("#GridAtr a.e-saveitem").click(function (args) {
+                    var gridObj = $("#GridAtr").ejGrid("instance");
+                    var dataAtr = gridObj.model.selectedRecords[0];
+                    dataAtr=JSON.stringify(dataAtr);
+                    dataAtr=JSON.parse(dataAtr);
+                    dataAtr.Modules=[];
+                    $.ajax({
+                        url: "UpdateAtr",
+                        method: "POST",
+                        data:  dataAtr,
+                        success: function (response) {
+                            popUp("success","Datos guardados correctamente.");
+                        },
+                        error: function (jqXHR, textStatus) {
+                            popUp("error","A ocurrido un error. Intente nuevamente");
+                        }
+                    });
+                });
+            });
+        });
+
+        function CreateGridModules(modules) {
+            $("#GridModule").ejGrid({
+                dataSource: modules,
+                detailsTemplate: "#cgDevices",
+                locale: "es-ES",
+                editSettings: { allowEditing: true, editMode: "normal" },
+                toolbarSettings: {
+                    showToolbar: true,
+                    toolbarItems:["edit"],
+                    customToolbarItems:[ { templateID:"#Cancelar" } , { templateID:"#Guardar" } ]
+                },
+                isResponsive: true,
+                allowPaging: false,
+                allowSorting: true,
+                columns: [
+                              { field: "Alias", headerText: "Alias", width: 80, textAlign : "center", headerTextAlign: "center", allowEditing: false },
+                              { field: "Description", headerText: "Descripción", width: 80, textAlign : "center", headerTextAlign: "center" },
+                              { field: "Serial", headerText: "Serial", width: 50, isPrimaryKey: true, textAlign : "center", headerTextAlign: "center", allowEditing: false },
+                              { field: "Slot", headerText: "Slot", width: 40, textAlign : "center", headerTextAlign: "center", allowEditing: false },
+                              { field: "AliasModuleType", headerText: "Tipo Módulo", width: 100, textAlign : "center", headerTextAlign: "center", allowEditing: false },
+                              { field: "GlobalFrequency", headerText: "Frecuencia Globales RT", width: 100, textAlign : "center", headerTextAlign: "center", editType: ej.Grid.EditingType.Numeric },
+                              { field: "StreamFrequency", headerText: "Frecuencia Señales RT", width: 100, textAlign : "center", headerTextAlign: "center", editType: ej.Grid.EditingType.Numeric },
+                              { field: "SampleRate", headerText: "Frecuencia Muestreo", width: 100, headerTextAlign: "center", textAlign : "center", editType: ej.Grid.EditingType.Numeric },
+                              { field: "SamplesToRead", headerText: "Número de Muestras", width: 100, textAlign : "center", headerTextAlign: "center", editType: ej.Grid.EditingType.Numeric },
+                ],
+                //enableAutoSaveOnSelectionChange:false,
+                toolbarClick: "onToolBarClick_Modules",
+                showStackedHeader: true,
+                stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Módulos", column: "Alias,Description,Serial,Slot,AliasModuleType,GlobalFrequency,StreamFrequency,SampleRate,SamplesToRead" }] }],
+                detailsDataBound: function (args){
+                    var dataAiChannels = args.data["AiChannels"]; //args.model.parentDetails.parentRowData.AiChannels;
+
+                    for (var i = 0; i < dataAiChannels.length; i++) {
+                        // Carga el punto de medición si está relacionado a un canal, de lo contrario pone un placeholder.
+                        if (!dataAiChannels[i].MdVariableId)
+                            dataAiChannels[i].MdVariableTag= "[Arrastre aquí...]";
+                    }
+
+                    args.detailsElement.find("#detailGridDevice").ejGrid({
+                        allowRowDragAndDrop: true,
+                        rowDropSettings: { dropTargetID: "#measurementPoints" },
+                        dataSource: dataAiChannels,
+                        locale: "es-ES",
+                        queryString: "xxx",
+                        editSettings: { allowEditing: true, editMode: "normal" },
+                        toolbarSettings: {
+                            showToolbar: true,
+                            toolbarItems:["edit","cancel"],
+                            customToolbarItems:[ { templateID:"#Eliminar" } ]
+                            //toolbarItems: [ej.Grid.ToolBarItems.Edit, ej.Grid.ToolBarItems.Update, ej.Grid.ToolBarItems.Cancel]
+                        },
+                        toolbarClick: "onToolBarClick_AiChannels",
+                        //allowPaging: true,
+                        isResponsive: true,
+                        pageSettings:{ pageSize: 32 },
+                        columns: [
+                          { field: "Disassociate", headerText: "", headerTextAlign: "center", textAlign : "center", width: "3%", editType: "booleanedit",},
+                          { field: "MdVariableId", headerText: 'MdVar Id', textAlign : "center", headerTextAlign: "center", allowEditing: true , visible: false,isPrimaryKey: true },
+                          //{ field: "MeasurementPoint", headerText: 'Punto de Medición', headerTextAlign: "center", allowEditing: false },
+                          { field: "MdVariableTag", headerText: 'Punto de Medición', textAlign : "center", headerTextAlign: "center", allowEditing: false },
+                          { field: "Name", headerText: 'Nombre', textAlign : "center", headerTextAlign: "center", allowEditing: false, isPrimaryKey: true },
+                          { field: "ByPassed", headerText: 'ByPassed', width: "10%", textAlign : "center", headerTextAlign: "center", editType: "booleanedit" },
+                          { field: "Enabled", headerText: 'Habilitado', width: "10%", textAlign : "center", headerTextAlign: "center", editType: "booleanedit" },
+                        ],
+                        showStackedHeader: true,
+                        stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Canales", column: "MdVariableTag,Name,ByPassed,Enabled" }] }],
+                        queryCellInfo: function (args) {
+                            // Habilita todos los checkbox de las columnas "Habilitado, ByPassed y des-relacionar puntos de medición" en los canales Atr
+                            if (args.cell.cellIndex == 0 || args.cell.cellIndex == 4 || args.cell.cellIndex == 5) {
+                                $(args.cell.children[0]).removeAttr('disabled');
+                            }
+                        },
+                        recordClick: function (args) {
+                            // Estado del checkbox (1er columna, ByPassed ó Habilitado) de un canal Atr
+                            var isChecked = $(args.cell).find(":checkbox").is(":checked");
+                            var name = args.data.Name;
+
+                            if (args.cellIndex == 0) { // Checkbox des-relacionar canal
+                                // Actualiza la propiedad Disassociate dependiendo del estado del checkbox
+                                ej.DataManager(args.model.dataSource).update("Name", { Name: name, Disassociate: isChecked }, args.model.dataSource);
+                            }
+                            else if (args.cellIndex == 4) { // Checkbox ByPassed
+                                // Actualiza la propiedad "ByPassed" dependiendo del estado del checkbox
+                                ej.DataManager(args.model.dataSource).update("Name", { Name: name, ByPassed: isChecked }, args.model.dataSource);
+                            }
+                            else if (args.cellIndex == 5) { // Checkbox Habilitado
+                                // Actualiza la propiedad "Enabled" dependiendo del estado del checkbox
+                                ej.DataManager(args.model.dataSource).update("Name", { Name: name, Enabled: isChecked }, args.model.dataSource);
+                            }
+                        }
+                    });
+                },
+                //childGrid: {
+                //    load: function (args) {
+                //        dataAiChannels = args.model.parentDetails.parentRowData.AiChannels;
+
+                //        for (var i = 0; i < dataAiChannels.length; i++) {
+                //            // Carga el punto de medición si está relacionado a un canal, de lo contrario pone un placeholder.
+                //            if (!dataAiChannels[i].MdVariableId)
+                //                dataAiChannels[i].MdVariableTag= "[Arrastre aquí...]";
+                //        }
+                //        // Se cargan los Aichannels
+                //        args.model.dataSource= dataAiChannels;
+                //    },
+                //    allowRowDragAndDrop: true,
+                //    rowDropSettings: { dropTargetID: "#measurementPoints" },
+                //    dataSource: dataAiChannels,
+                //    locale: "es-ES",
+                //    queryString: "xxx",
+                //    editSettings: { allowEditing: true, editMode: "normal" },
+                //    toolbarSettings: {
+                //        showToolbar: true,
+                //        toolbarItems:["edit","cancel"],
+                //        customToolbarItems:[ { templateID:"#Eliminar" } ]
+                //        //toolbarItems: [ej.Grid.ToolBarItems.Edit, ej.Grid.ToolBarItems.Update, ej.Grid.ToolBarItems.Cancel]
+                //    },
+                //    toolbarClick: "onToolBarClick_AiChannels",
+                //    //allowPaging: true,
+                //    isResponsive: true,
+                //    pageSettings:{ pageSize: 32 },
+                //    columns: [
+                //      { field: "Disassociate", headerText: "", headerTextAlign: "center", textAlign : "center", width: "3%", editType: "booleanedit",},
+                //      { field: "MdVariableId", headerText: 'MdVar Id', textAlign : "center", headerTextAlign: "center", allowEditing: true , visible: false,isPrimaryKey: true },
+                //      //{ field: "MeasurementPoint", headerText: 'Punto de Medición', headerTextAlign: "center", allowEditing: false },
+                //      { field: "MdVariableTag", headerText: 'Punto de Medición', textAlign : "center", headerTextAlign: "center", allowEditing: false },
+                //      { field: "Name", headerText: 'Nombre', textAlign : "center", headerTextAlign: "center", allowEditing: false, isPrimaryKey: true },
+                //      { field: "ByPassed", headerText: 'ByPassed', width: "10%", textAlign : "center", headerTextAlign: "center", editType: "booleanedit" },
+                //      { field: "Enabled", headerText: 'Habilitado', width: "10%", textAlign : "center", headerTextAlign: "center", editType: "booleanedit" },
+                //    ],
+                //    showStackedHeader: true,
+                //    stackedHeaderRows: [{ stackedHeaderColumns: [{ headerText: "Canales", column: "MdVariableTag,Name,ByPassed,Enabled" }] }],
+                //    queryCellInfo: function (args) {
+                //        // Habilita todos los checkbox de las columnas "Habilitado, ByPassed y des-relacionar puntos de medición" en los canales Atr
+                //        if (args.cell.cellIndex == 0 || args.cell.cellIndex == 4 || args.cell.cellIndex == 5) {
+                //            $(args.cell.children[0]).removeAttr('disabled');
+                //        }
+                //    },
+                //    recordClick: function (args) {
+                //        var name = args.data.Name;
+                //        if (args.cellIndex == 0) { // Checkbox des-relacionar canal
+                //            // Actualiza la propiedad Disassociate dependiendo del estado del checkbox
+                //            ej.DataManager(args.model.dataSource).update("Name", { Name: name, Disassociate: args.cell.context.checked }, args.model.dataSource);
+                //        }
+                //        else if (args.cellIndex == 4) { // Checkbox ByPassed
+                //            // Actualiza la propiedad "ByPassed" dependiendo del estado del checkbox
+                //            ej.DataManager(args.model.dataSource).update("Name", { Name: name, ByPassed: args.cell.context.checked }, args.model.dataSource);
+                //        }
+                //        else if (args.cellIndex == 5) { // Checkbox Habilitado
+                //            // Actualiza la propiedad "Enabled" dependiendo del estado del checkbox
+                //            ej.DataManager(args.model.dataSource).update("Name", { Name: name, Enabled: args.cell.context.checked }, args.model.dataSource);
+                //        }
+                //    }
+                //}
+            });
+        }
+
+        function onToolBarClick_Modules(args) {
+            switch(args.itemName){
+                case "Cancelar":
+                    // Actualiza los datos en su estado original
+                    var modules = ej.DataManager(_modulesCache).executeLocal(ej.Query().where("Id", "equal", idAtr, false))[0].Modules;
+                    $("#GridModule").ejGrid("dataSource", modules);
+                    break;
+                case "Guardar":
+                    var dataModule = $("#GridModule").ejGrid("getCurrentViewData");
+                    $.ajax({
+                        url: "UpdateModule",
+                        method: "POST",
+                        data:  { atrId: idAtr, modules: dataModule},
+                        success: function (response) {
+                            popUp("success","Datos guardados correctamente.");
+                            //_modulesCache= $.extend(true,[],dataModule);
+                            ej.DataManager(_modulesCache).update("Id", { Id: idAtr, Modules: dataModule }, _modulesCache);
+                        },
+                        error: function (jqXHR, textStatus) {
+                            popUp("error","A ocurrido un error. Intente nuevamente");
+                        },
+                    });
+                    break;
+            }
+        }
+
+        function onToolBarClick_AiChannels(args) {
+            switch(args.itemName){
+                case "Eliminar":
+                    var _modules = $("#GridModule").data("ejGrid").model.dataSource;
+                    var serial = $(this.element.parent()).attr('id'); //args.gridModel.parentDetails.parentRowData.Serial;
+
+                    for (var m = 0; m < _modules.length; m++) {
+                        if (_modules[m].Serial != serial) {
+                            for (var ch = 0; ch < _modules[m].AiChannels.length; ch++) {
+                                _modules[m].AiChannels.Disassociate= false;
+                            }
+                        }
+                    }
+
+                    $.ajax({
+                        url: "DeleteRelationshipMdVariableWithAiChannelsAtr",
+                        method: "POST",
+                        data:  { atrId: idAtr, modules: _modules},
+                        success: function (response) {
+
+                            for (var m = 0; m < _modules.length; m++) {
+                                for (var i = 0; i < _modules[m].AiChannels.length; i++) {
+                                    if (_modules[m].AiChannels[i].Disassociate) {
+                                        _modules[m].AiChannels[i].MdVariableId= null;
+                                        _modules[m].AiChannels[i].MdVariableTag= "[Arrastre aquí...]";
+                                        _modules[m].AiChannels[i].Disassociate = false;
+                                    }
+                                }
+                            }
+
+                            $("#GridModule").ejGrid("dataSource", _modules);
+                            //$("#GridModule").ejGrid("refreshContent");
+                            popUp("success","Canal(es) desasociado(s) correctamente.");
+                        },
+                        error: function (jqXHR, textStatus) {
+                            popUp("error","A ocurrido un error. Intente nuevamente");
+                        },
+                    });
+                    break;
+            }
+        }
+
+        //Función para cronometrar un tiempo limite de 40 seg para reiniciar un Atr
+        function ReconfigurationTimeout(index) {
+            window["timeOut" + index] = setTimeout(function(){
+                _states[index] = false;
+            }, 40000);
+        };
+
+        //Boton que reinicia un Atransmitter
+        function _onClickReconfigure(){
+            var _thisControl = $(this)[0];
+            var gridObj = $("#GridAtr").ejGrid("instance");
+            var dataAtr = gridObj.model.selectedRecords[0];
+            var _atr= { Id : dataAtr.Id, Reconfigure : true };
+            _index++;
+            _states[_index] = true;
+
+            $.ajax({
+                url:"ReconfigureAtr",
+                method:"POST",
+                data: _atr,
+                success:function (response) {
+                    ReconfigurationTimeout(_index);
+                    poll(dataAtr.Alias, _thisControl, _index, idAtr);
+                },
+                error: function (jqXHR, textStatus) {
+                    popUp("error","Error general.");
+                },
+            });
+
+        }
+
+        function poll(alias, control, index, atrId){
+            $.ajax({
+                url:"ShouldReconfigure",
+                method:"GET",
+                data:{ atrId: atrId },
+                beforeSend: function () {
+                    control._events[0][0][0].innerHTML="<i class='fa fa-spinner fa-pulse fa-2x'></i>";
+                },
+                success:function (response) {
+                    var restarted = !response;
+
+                    if(!_states[index]) {
+                        control._events[0][0][0].innerHTML = "reconfigurar";
+                        popUp("error","El dispositivo "+ alias + " no responde!");
+                        _states[index] = true;
+                        return false;
+                    }
+
+                    if(!restarted){
+                        setTimeout(function () {
+                            poll(alias, control, index, atrId);
+                        },2000);
+                    }
+                    else{
+                        control._events[0][0][0].innerHTML = "reconfigurar";
+                        clearTimeout(window["timeOut" + index]);
+                        popUp("success","Se reinició correctamente el Atransmitter "+ alias);
+                    }
+                },
+                error: function (jqXHR, textStatus) {
+                    popUp("error","Error general.");
+                },
+            });
+        };
+
+    </script>
+}
+
+

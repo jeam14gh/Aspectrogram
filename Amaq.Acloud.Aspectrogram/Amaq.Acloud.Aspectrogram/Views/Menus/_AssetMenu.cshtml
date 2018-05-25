@@ -4,25 +4,25 @@
 <!--Menú de opciones para los activos-->
 <div id="assetMenuContainer" style="display:none;">
     <ul id="assetMenu">
-        <li>
+        <li id="liRTAsset" class="menuItem">
             <a href="#">Tiempo real</a>
             <ul>
-                <li id="liveTrendMenuItem"><a href="#">Tendencia</a></li>
-                <li id="barGraphMenuItem"><a href="#">Gr&aacute;fico de barras</a></li>
-                <li id="viewer3dMenuItem"><a href="#">Visor 3D</a></li>
+                <li id="liveTrendMenuItem" class="menuItem"><a href="#">Tendencia</a></li>
+                <li id="barGraphMenuItem" class="menuItem"><a href="#">Gr&aacute;fico de barras</a></li>
+                <li id="viewer3dMenuItem" class="menuItem"><a href="#">Visor 3D</a></li>
             </ul>
         </li>
 
-        <li id="historicalTrendMenuItem"><a href="#">Tendencia hist&oacute;rica</a></li>
+        <li id="historicalTrendMenuItem" class="menuItem"><a href="#">Tendencia hist&oacute;rica</a></li>
         @if (claimsIdentity != null)
         {
             var tmp = claimsIdentity.FindFirst("roles");
             var roles = (tmp != null) ? tmp.Value.Split(',').ToList() : null;
             if (roles != null)
             {
-                if (roles.Any(s => s == "Admin"))
+                if (roles.Any(s => s == "Admin" || s == "SAdmin"))
                 {
-                    <li id="liAdmin">
+                    <li id="liAdminAsset" class="menuItem">
                         <a href="#">Administrar</a>
                         <ul>
                             <li>
@@ -32,13 +32,13 @@
                                     <li id="newMeasurementPointMenuItem"><a href="#">Nuevo punto de medici&oacute;n</a></li>
                                 </ul>
                             </li>
-                            <li id="editAssetMenuItem"><a href="#">Editar activo</a></li>
-                            <li id="deleteAssetMenuItem"><a href="#">Eliminar activo</a></li>
-                            <li id="copyAssetMenuItem"><a href="#">Copiar</a></li>
-                            <li id="pairsXYMenuItem"><a href="#">Pares XY</a></li>
-                            <li id="pasteMenuItem"><a href="#">Pegar</a></li>
-                            <li id="summaryViewPointsMenuItem" isAdmin="true"><a href="#">Vista resumen</a></li>
-                            <li id="editor3dMenuItem"><a href="#">Editor 3D</a></li>
+                            <li id="editAssetMenuItem" class="menu-Item menuItem"><a href="#">Editar activo</a></li>
+                            <li id="deleteAssetMenuItem" class="menu-Item menuItem"><a href="#">Eliminar activo</a></li>
+                            <li id="copyAssetMenuItem" class="menu-Item menuItem"><a href="#">Copiar</a></li>
+                            <li id="pairsXYMenuItem" class="menu-Item menuItem"><a href="#">Pares XY</a></li>
+                            <li id="pasteMenuItem" class="menu-Item menuItem"><a href="#">Pegar</a></li>
+                            <li id="summaryViewPointsMenuItem"  class="menu-Item menuItem" isAdmin="true"><a href="#">Vista resumen</a></li>
+                            <li id="editor3dMenuItem" class="menu-Item menuItem"><a href="#">Editor 3D</a></li>
                         </ul>
                     </li>
                 } else {

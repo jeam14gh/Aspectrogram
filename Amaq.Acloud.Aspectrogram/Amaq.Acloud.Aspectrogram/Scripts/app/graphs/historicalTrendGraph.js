@@ -5,8 +5,8 @@
  */
 
 /* globals CustomContextMenu, ImageExport, selectedAsset, createTableToExcel, tableToExcel, ej, sleep, eventPlayerObj, clone,
-   HistoricalTimeMode, Dygraph, formatDate, globalsReport, PublisherSubscriber, aidbManager, Concurrent, popUp, mainCache,
-   distinctMeasures, jsonTree, AspectrogramWidget, subVariableList, mdVariableList, Cursors*/
+   HistoricalTimeMode, Dygraph, formatDate, globalsReport, PublisherSubscriber, Concurrent, popUp, mainCache,
+   distinctMeasures, jsonTree, AspectrogramWidget, Cursors, minMaxArray, arrayColumn*/
 
 var HistoricalTrendGraph = {};
 
@@ -49,6 +49,7 @@ HistoricalTrendGraph = (function () {
             _seriesColors,
             // Objeto con las etiquetas de cada punto de medicion como indice, contiene informacion como Id y Unidades a mostrar
             _dict,
+            // Mantiene los datos a graficar
             _buffer,
             // (0=Hoy, 1=Ultima semana, 2=Ultimo mes, 3=Ultimo año, 4=Personalizado)
             _presetDateRangeIndex,
@@ -64,52 +65,78 @@ HistoricalTrendGraph = (function () {
             _filteredSubVariables,
             // Bandera que define si el click que se realizo fue sobre un punto especifico de la serie
             _pointClick,
-            // Almacena la referencia de la subscripcion a los datos
-            _newDataSubscription,
-            // Referencia a la suscripcion que sincroniza el chart con la estampa de tiempo del reproductor
-            _playerSubscription,
-            // Metodo privado que construye el chart caso no exista
-            _buildGraph,
-            // Metodo privado que realiza la suscripcion a los datos segun el modo definido
-            _subscribeToNewData,
-            // Metodo privado que se ejecuta por accion del poll al cual fue suscrito el chart
-            _refresh,
-            // Callback de evento click sobre algun item del menu de opciones
-            _onSettingsMenuItemClick,
-            // Metodo privado para la creacion del div que contiene los tags de las series
-            _appendLegendDiv,
-            // Metodo privado que gestiona la funcionalidad de mostrar/ocultar el eje y2, que corresponde al eje de Velocidad
-            _showHideY2Axis,
-            _addSensorAndMeasuresPanel,
+            // Grupo de medidas segun el tipo de sensor
             _selectedMeasureBySensor,
             // Listado de puntos de medicion correspondientes al activo seleccionado
             _measurementPoints,
             // Mantiene la lista de subVariables de cada uno de los measurement point del asset seleccionado al momento de abrir la grafica
-            _subVariables = [],
+            _subVariables,
+            // Listado de labels
             _labels,
             // Opciones iniciales para cada serie, principalmente se usa para indicar en cual de los dos ejes "y" se gráfica cada serie
             _seriesOptions,
-            // Gestiona el efecto gráfico de cargando...
-            _loading,
-            // Muestra la gráfica de tendencia luega de que la carga se ha completado
-            _loadComplete,
-            // Referencia a la suscripcion para aplicar resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
-            _resizeChartSubscription,
-            // Referencia a la suscripcion para responder a la opcion de recarga del reproductor
-            _playerReloadSubcription,
-            // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
-            _subscribeToResizeChart,
+            // Referencia al cursor
             _cursor,
+            // Bandera que indica si el cursor esta bloqueado o siguiendo el movimiento del mouse
             _cursorLock,
+            // Listado de estampas de tiempo que corresponde a un listado de cambios de velocidad
             _historicalChangeOfRpmList,
+            // Informacion del activo al que estan relacionados los puntos de medicion
             _assetData,
+            // Id del activo principal
             _principalAssetId,
             // Array con la informacion de las diferentes estampas de tiempo en el historico
             _fullTimeStampArray,
             // Texto para el eje Y
             _ylabel,
+            // Almacena la referencia de la subscripcion a los datos
+            _newDataSubscription,
+            // Referencia a la suscripcion que sincroniza el chart con la estampa de tiempo del reproductor
+            _playerSubscription,
+            // Referencia a la suscripcion para responder a la opcion de recarga del reproductor
+            _playerReloadSubcription,
+            // Referencia a la suscripcion para aplicar resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
+            _resizeChartSubscription,
+            // Metodo privado que gestiona los grupos de medidas por sensor
+            _addSensorAndMeasuresPanel,
+            // Metodo privado para la creacion del div que contiene los tags de las series
+            _appendLegendDiv,
+            // Metodo privado que construye el chart caso no exista
+            _buildGraph,
+            // Metodo privado que realiza el control de los modelos de interaccion de eventos sobre la grafica
+            _customInteractionModel,
+            // Metodo privado que permite realizar las opciones de filtrado en el grafico
+            _filterOptions,
+            // Metodo complementario a los modelos de interaccion para encontrar el punto sobre la grafica mas proximo
+            _findClosestPoint,
+            // Metodo privado que obtiene la informacion de los puntos seleccionados en el conjunto de graficas
+            _getSelectedPoints,
+            // Metodo privado que permite la interaccion a traves del clic sobre el DIV de la leyenda
+            _legendDivInteraction,
+            // Muestra la grafica de tendencia luega de que la carga se ha completado
+            _loadComplete,
+            // Metodo privado que gestiona el efecto de cargando...
+            _loading,
+            // Metodo privado que determina si el clic realizo, esta siendo usado para zoom o solo corresponde a la operacion de clic
+            _maybeTreatMouseOpAsClick,
+            // Callback de evento click sobre algun item del menu de opciones
+            _onSettingsMenuItemClick,
+            // Metodo privado que obtiene las coordenadas en X del evento
+            _pageX,
+            // Metodo privado que obtiene las coordenadas en Y del evento
+            _pageY,
+            // Metodo privado que se ejecuta por accion del poll al cual fue suscrito el chart
+            _refresh,
+            // Metodo privado que gestiona la visibilidad de los puntos de medicion en la grafica
             _showHideMeasurementPoints,
-            _filterOptions;
+            // Metodo privado que gestiona la funcionalidad de mostrar/ocultar el eje y2, que corresponde al eje de Velocidad
+            _showHideY2Axis,
+            // Metodo privado que realiza la suscripcion a los datos segun el modo definido
+            _subscribeToNewData,
+            // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
+            _subscribeToResizeChart,
+            // Metodo complementario a los modelos de interaccion para seleccionar el punto mas proximo sobre la grafica
+            _updateSelection;
 
         /*
          * Definimos el modo, la auto-referencia y demas valores por defecto.
@@ -118,6 +145,7 @@ HistoricalTrendGraph = (function () {
         _this = this;
         _graphType = "historicaltrend";
         _subVariableIdList = [];
+        _subVariables = [];
         _widgetId = Math.floor(Math.random() * 100000);
         _pointClick = false;
         _ctxMenu = new CustomContextMenu();
@@ -164,6 +192,8 @@ HistoricalTrendGraph = (function () {
          */
         _appendLegendDiv = function () {
             var
+                // Contador
+                i,
                 // Div que contiene la informacion de la serie
                 legendDiv,
                 // Porcentaje de altura del DIV que contiene el titulo
@@ -182,6 +212,10 @@ HistoricalTrendGraph = (function () {
             $(_contentBody).css("display", "inline-block");
             $(_contentBody).parent().append(legendDiv);
             $(_contentBody).parent()[0].style.overflow = "hidden";
+            for (i = 0; i < _labels.length; i += 1) {
+                $(legendDiv).append("<div id=\"" + _labels[i].replace(/\s|[#$%^&*().]/g, "") + _widgetId + "\"></div>");
+            }
+            _legendDivInteraction();
         };
 
         /*
@@ -189,7 +223,6 @@ HistoricalTrendGraph = (function () {
          *@param {Object} evt Argumentos del evento
          */
         _onSettingsMenuItemClick = function (evt) {
-            evt.preventDefault();
             var
                 target,
                 menuItem,
@@ -202,6 +235,7 @@ HistoricalTrendGraph = (function () {
                 timeStampArray,
                 mdVariableIdList;
 
+            evt.preventDefault();
             target = $(evt.currentTarget);
             menuItem = target.attr("data-value");
             navHeight = $(".navbar-collapse").height() + 10;
@@ -333,7 +367,8 @@ HistoricalTrendGraph = (function () {
             $("#trendSeriesVisibilityAreaDialog #btnSave").click(function (e) {
                 var
                     visibleCheckList,
-                    seriesOptions;
+                    seriesOptions,
+                    callback;
 
                 e.preventDefault();
                 seriesOptions = {};
@@ -348,6 +383,12 @@ HistoricalTrendGraph = (function () {
                 }
                 for (i = 0; i < _filteredMeasurementPoints.length; i += 1) {
                     _chart.setVisibility(i, _filteredMeasurementPoints[i].Visible);
+                    $("#" + _labels[i].replace(/\s|[#$%^&*().]/g, "") + _widgetId).css("font-weight", "");
+                    if (_filteredMeasurementPoints[i].Visible) {
+                        $("#" + _labels[i].replace(/\s|[#$%^&*().]/g, "") + _widgetId).show();
+                    } else {
+                        $("#" + _labels[i].replace(/\s|[#$%^&*().]/g, "") + _widgetId).hide();
+                    }
                     if (_filteredMeasurementPoints[i].IsAngularReference) {
                         _y2AxisVisible = _filteredMeasurementPoints[i].Visible;
                     }
@@ -360,6 +401,8 @@ HistoricalTrendGraph = (function () {
                 _chart.updateOptions({
                     series: seriesOptions
                 });
+                callback = _chart.getFunctionOption("highlightCallback");
+                callback.call(_chart, undefined, _chart.lastx_, _chart.selPoints_, _chart.row, undefined, true);
                 _showHideY2Axis();
                 $("#trendSeriesVisibility").ejDialog("close");
             });
@@ -396,15 +439,10 @@ HistoricalTrendGraph = (function () {
                 enableModal: true,
                 close: function () {
                     $("#historicalTrendFilterAreaDialog #measureTypesContainer").empty();
-                    //$("#presetDateRange").ejDropDownList("destroy");
+                    $("#presetDateRange").ejDropDownList("destroy");
                     $("#historicalTrendFilterAreaDialog #btnFilter").off("click");
                     $("#historicalTrendFilterAreaDialog #btnCancel").off("click");
-                    $("#historicalTrendFilterAreaDialog").css("display", "none");
-                    //$("#historicalTrendFilter").ejDialog("destroy");
-                    //if (_presetDateRangeIndex != 0)
-                    //    _presetDateRangeIndex = 0; 
-                    //$('#presetDateRange').ejDropDownList("selectItemByValue", "1");
-
+                    $("#historicalTrendFilterAreaDialog").css("display", "none");                    
                 },
                 content: "#historicalTrendFilterAreaDialog",
                 tooltip: {
@@ -420,27 +458,12 @@ HistoricalTrendGraph = (function () {
                 { id: "4", text: "Último año" },
                 { id: "5", text: "Personalizado" }
             ];
-            //_presetDateRangeIndex = 2;
-            //var exist= $('#presetDateRange').hasClass("e-dropdownlist");
-            var exist= $('#historicalTrendFilter').hasClass("e-dialog");
-            //$('#presetDateRange').clone().attr("id", "presetDateRange2");
-
-
             $("#presetDateRange").ejDropDownList({
                 dataSource: presetDateRanges,
                 selectedIndex: _presetDateRangeIndex,
-                //selectedIndex: exist ? 0 :_presetDateRangeIndex,
                 width: "90%",
                 watermarkText: "Seleccione un rango",
                 fields: { id: "id", text: "text", value: "id" },
-                //fields: { text: "text", value: "id" },
-                //enablePersistence: true,
-                create: function (args) 
-                {
-                    args;
-                    //_presetDateRangeIndex = 0;
-                    /*Do your changes */                        
-                },
                 change: function (args) {
                     var
                         startDate,
@@ -487,10 +510,6 @@ HistoricalTrendGraph = (function () {
                     }
                 }
             });
-
-            //$('#presetDateRange').ejDropDownList("selectItemByValue", "0");
-            //$('#presetDateRange').data("ejDropDownList").option({ selectedIndex: _presetDateRangeIndex });
-
             // Selector de fecha inicial
             $("#startDate").ejDatePicker({
                 enabled: (_presetDateRangeIndex === 4),
@@ -636,15 +655,6 @@ HistoricalTrendGraph = (function () {
          */
         _buildGraph = function (dict, initialData) {
             var
-                rpmPositions,
-                customInteractionModel,
-                timeStampArray,
-                currentPoint,
-                pairPoint,
-                offsetX,
-                offsetY,
-                colorA,
-                colorB,
                 i,
                 anyDifferent,
                 current,
@@ -689,9 +699,445 @@ HistoricalTrendGraph = (function () {
             _ctxMenu.CreateMenuByTimeStamp($(_contentBody).parent());
             _ctxMenu.CreateMenuByRange($(_contentBody).parent());
             _appendLegendDiv();
-            customInteractionModel = Dygraph.defaultInteractionModel;
-            customInteractionModel.contextmenu = function (e, g, ctx) {
+            headerHeigth = (_contentHeader.clientHeight + 4) * 100 / _container.clientHeight;
+            _contentBody.style.height = (100 - headerHeigth) + "%";
+            _chart = new Dygraph(
+              _contentBody,
+              initialData,
+              {
+                  colors: _seriesColors,
+                  legend: "never",
+                  xlabel: "Estampa de tiempo",
+                  ylabel: _ylabel,
+                  y2label: "Velocidad [Rpm]",
+                  labels: _labels,
+                  series: _seriesOptions,
+                  labelsDivWidth: 0,
+                  axisLabelFontSize: 10,
+                  labelsSeparateLines: true,
+                  digitsAfterDecimal: 2, // Para las variables que manejamos, es suficiente con 2 decimales
+                  hideOverlayOnMouseOut: false,
+                  highlightSeriesOpts: {
+                      strokeWidth: 2,
+                      strokeBorderWidth: 1,
+                      highlightCircleSize: 3
+                  },
+                  highlightCallback: function (e, x, pts, row, serieName, customFlag) {
+                      var
+                          needRestoreLock,
+                          color,
+                          fontWeight,
+                          value,
+                          txt;
+
+                      needRestoreLock = false;
+                      // Permitir mover el cursor usando el teclado, mientras se encuentre bloqueado para el hover del mouse
+                      if (customFlag !== undefined && _cursorLock) {
+                          _cursorLock = !_cursorLock;
+                          needRestoreLock = true;
+                      }
+                      if (_cursorLock || pts.length === 0) {
+                          // Actualizar las opciones de highlightSeriesOpts
+                          _chart.highlightSet_ = _chart.currentHighlight_;
+                          _chart.updateOptions({
+                              "highlightSeriesOpts": undefined
+                          });
+                          return;
+                      }
+                      _chart.updateOptions({
+                          "highlightSeriesOpts": {
+                              strokeWidth: 2,
+                              strokeBorderWidth: 1,
+                              highlightCircleSize: 3
+                          }
+                      });
+                      _cursor.followCursor(pts);
+                      txt = ((pts[0].x === 0 && Number.isNaN(pts[0].y)) ? "-- " : formatDate(new Date(pts[0].xval))) + ":";
+                      $("#" + _labels[0].replace(/\s|[#$%^&*().]/g, "") + _widgetId).html(txt);
+                      for (i = 0; i < pts.length; i += 1) {
+                          if (Number.isNaN(pts[i].yval)) {
+                              continue;
+                          }
+                          color = _chart.plotter_.colors[pts[i].name];
+                          fontWeight = "";
+                          if (pts[i].name === _chart.highlightSet_) {
+                              fontWeight = "font-weight:bold;";
+                          }
+                          // Determinamos la presicion de los datos por tipo de medida
+                          if (_dict[pts[i].name].MeasureType === 9) {
+                              // Un valor de RPM no debe tener decimales
+                              value = pts[i].yval.toFixed(0);
+                          } else {
+                              // Para las variables que manejamos, es suficiente con 2 decimales
+                              value = pts[i].yval.toFixed(2);
+                          }
+                          value += " " + _dict[pts[i].name].Units;
+                          txt = "<span style=\"color:" + color + ";" + fontWeight + "\">" + pts[i].name + "</span>: ";
+                          txt += "<span style=\"" + fontWeight + "\">" + value + "</span>";
+                          $("#" + pts[i].name.replace(/\s|[#$%^&*().]/g, "") + _widgetId).html(txt);
+                      }
+                      // Restaurar el bloqueo para el hover del mouse
+                      if (needRestoreLock) {
+                          _cursorLock = !_cursorLock;
+                      }
+                  },
+                  drawCallback: function (g, is_initial) {
+                      var
+                            // DIVs contenedores de los labels en los ejes X e Y de la grafica
+                            axisLabelDivs,
+                            // Contador
+                            i;
+
+                      if (is_initial) {
+                          if (_cursor) {
+                              _cursor.clearCursor();
+                          }
+                          _cursor = new Cursors(g);
+                          g.canvas_.style.zIndex = 1000;
+                      }
+                      // xlabel + ylabel
+                      $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1025);
+                      $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1025);
+                      $("#" + _contentBody.id + " .dygraph-y2label").eq(0).parent().parent().css("z-index", 1025);
+                      // Recorrer todos los axis-labels
+                      axisLabelDivs = $("#" + _contentBody.id + " .dygraph-axis-label");
+                      for (i = 0; i < axisLabelDivs.length; i += 1) {
+                          axisLabelDivs.eq(i).parent().css("z-index", 1025);
+                      }
+                      // Canvas Back + Front del selector de rango
+                      $("#" + _contentBody.id + " canvas.dygraph-rangesel-bgcanvas").eq(0).css("z-index", 1020);
+                      $("#" + _contentBody.id + " canvas.dygraph-rangesel-fgcanvas").eq(0).css("z-index", 1020);
+                      // Recorrer las imagenes del selector de rango
+                      axisLabelDivs = $("#" + _contentBody.id + " .dygraph-rangesel-zoomhandle");
+                      for (i = 0; i < axisLabelDivs.length; i += 1) {
+                          axisLabelDivs.eq(i).css("z-index", 1020);
+                      }
+                      if (_chart !== undefined) {
+                          _getSelectedPoints(clone(_chart.selectedRow_), [_chart]);
+                          _cursor.followCursor(_chart.selPoints_);
+                      }
+                  },
+                  zoomCallback: function (minDate, maxDate, yRange) {
+                      _showHideY2Axis();
+                  },
+                  pointClickCallback: function (e, p) {
+                      var
+                          currentPoint,
+                          pairPoint,
+                          colorA,
+                          colorB,
+                          time,
+                          offsetX,
+                          offsetY;
+
+                      e.preventDefault();
+                      $(".customContextMenu").css("display", "none");
+                      _pointClick = true;
+                      currentPoint = ej.DataManager(_filteredMeasurementPoints).executeLocal(
+                          new ej.Query().where("Name", "equal", p.name, false))[0];
+                      if (currentPoint) {
+                          pairPoint = ej.DataManager(_filteredMeasurementPoints).executeLocal(
+                              new ej.Query().where("Id", "equal", currentPoint.AssociatedMeasurementPointId, false))[0];
+                          colorA = _chart.plotter_.colors[currentPoint.Name];
+                          colorB = (pairPoint) ? _chart.plotter_.colors[pairPoint.Name] : "";
+                          time = new Date(p.xval).toISOString();
+                          offsetX = (e.offsetY + _contentBody.offsetTop);
+                          offsetY = (e.offsetX + _contentBody.offsetLeft);
+                          _ctxMenu.OpenMenuByTimeStamp(offsetX, offsetY, currentPoint.Id, time, colorA, colorB);
+                          _chart.currentHighlight_ = clone(currentPoint.Name);
+                          $("#" + _chart.highlightSet_ + _widgetId + ">span").css("font-weight", "");
+                          _chart.highlightSet_ = clone(currentPoint.Name);
+                          $("#" + _chart.highlightSet_ + _widgetId + ">span").css("font-weight", "bold");
+                          _chart.updateOptions({
+                              "highlightSeriesOpts": {
+                                  strokeWidth: 2,
+                                  strokeBorderWidth: 1,
+                                  highlightCircleSize: 3
+                              }
+                          });
+                      }
+                      return false;
+                  },
+                  underlayCallback: function (canvas, area, g) {
+                      canvas.strokeStyle = "black";
+                      canvas.strokeRect(area.x, area.y, area.w, area.h);
+                  },
+                  drawHighlightPointCallback: function (g, serie, ctx, cx, cy, color, pointSize) {
+                      if (_cursorLock) {
+                          // Necesario para que no se dibuje el circulo de seleccion cuando el cursor se encuentre bloqueado
+                          pointSize = 0;
+                      }
+                      Dygraph.Circles.DEFAULT(g, serie, ctx, cx, cy, color, pointSize);
+                  },
+                  plotter: function (e) {
+                      var
+                          smoothing;
+
+                      smoothing = 0.0;
+                      Dygraph.Plugins.Plotter.prototype.smoothPlotter(e, smoothing);
+                  },
+                  showRangeSelector: true,
+                  interactionModel: _customInteractionModel,
+                  xRangePad: 2,
+                  axes: {
+                      x: {
+                          axisLabelWidth: 100,
+                          axisLabelFormatter: function (d, gran, opts) {
+                              return Dygraph.dateAxisLabelFormatter(new Date(d.getTime()), gran, opts);
+                          }
+                      },
+                      y: {
+                          axisLabelWidth: 40
+                      },
+                      y2: {
+                          digitsAfterDecimal: 0,
+                          includeZero: true,
+                          drawAxesAtZero: true,
+                          independentTicks: true,
+                          axisLabelWidth: 40
+                      }
+                  }
+              }
+            );
+            _showHideY2Axis();
+            $(".grid-stack-item").on("resizestop", function () {
+                headerHeigth = (_contentHeader.clientHeight + 4) * 100 / _container.clientHeight;
+                _contentBody.style.height = (100 - headerHeigth) + "%";
+                setTimeout(function () {
+                    _chart.resize();
+                    _cursor.resizeCanvas();
+                    _getSelectedPoints(clone(_chart.selectedRow_), [_chart]);
+                    _cursor.followCursor(_chart.selPoints_);
+                }, 200);
+            });
+            globalsReport.elemDygraph.push({
+                "id": _container.id,
+                "obj": _chart,
+                "src": ""
+            });
+        };
+
+        /*
+         * Permite encontrar el punto mas proximo del evento hover generado por el mouse
+         */
+        _findClosestPoint = function (domX, domY, layout) {
+            var
+                minDist,
+                setIdx,
+                pts, i,
+                dist, dx, dy,
+                closestPoint,
+                closestSeries,
+                closestRow;
+
+            minDist = Infinity;
+            for (setIdx = layout.points.length - 1; setIdx >= 0; --setIdx) {
+                pts = layout.points[setIdx];
+                for (i = 0; i < pts.length; ++i) {
+                    if (!Dygraph.isValidPoint(pts[i])) {
+                        continue;
+                    }
+                    dx = pts[i].canvasx - domX;
+                    dy = pts[i].canvasy - domY;
+                    dist = dx * dx + dy * dy;
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestPoint = pts[i];
+                        closestSeries = setIdx;
+                        closestRow = pts[i].idx;
+                    }
+                }
+            }
+            return {
+                row: closestRow,
+                seriesName: layout.setNames[closestSeries],
+                point: closestPoint
+            };
+        };
+
+        /*
+         * Metodo usado para actualizar el punto seleccionado
+         * Invacodo por la funcion _findClosestPoint
+         */
+        _updateSelection = function (chartArray) {
+            var
+                i, j,
+                ctx,
+                maxCircleSize,
+                labels,
+                currentRatio,
+                canvasx,
+                point,
+                colorSerie,
+                circleSize,
+                callback;
+
+            for (i = 0; i < chartArray.length; i += 1) {
+                chartArray[i].cascadeEvents_("select", {
+                    selectedRow: chartArray[i].lastRow_,
+                    selectedX: chartArray[i].lastx_,
+                    selectedPoints: chartArray[i].selPoints_
+                });
+
+                // Contexto de canvas
+                ctx = chartArray[i].canvas_ctx_;
+                if (chartArray[i].previousVerticalX_ >= 0) {
+                    // Determinar el radio maximo del circulo resaltado
+                    maxCircleSize = 0;
+                    labels = chartArray[i].attr_("labels");
+                    for (j = 1; j < labels.length; j += 1) {
+                        currentRatio = chartArray[i].getNumericOption("highlightCircleSize", labels[j]);
+                        if (currentRatio > maxCircleSize) {
+                            maxCircleSize = currentRatio;
+                        }
+                    }
+                    ctx.clearRect(0, 0, chartArray[i].width_, chartArray[i].height_);
+                }
+
+                if (chartArray[i].isUsingExcanvas_ && chartArray[i].currentZoomRectArgs_) {
+                    Dygraph.prototype.drawZoomRect_.apply(chartArray[i], chartArray[i].currentZoomRectArgs_);
+                }
+
+                if (chartArray[i].selPoints_.length > 0) {
+                    // Dibuja circulos de colores sobre el centro de cada punto seleccionado
+                    canvasx = chartArray[i].selPoints_[0].canvasx;
+                    ctx.save();
+                    for (j = 0; j < chartArray[i].selPoints_.length; j += 1) {
+                        point = chartArray[i].selPoints_[j];
+                        if (point) {
+                            if (!Dygraph.isOK(point.canvasy)) {
+                                continue;
+                            }
+                            circleSize = chartArray[i].getNumericOption("highlightCircleSize", point.name);
+                            callback = chartArray[i].getFunctionOption("drawHighlightPointCallback", point.name);
+                            if (!callback) {
+                                callback = Dygraph.Circles.DEFAULT;
+                            }
+                            colorSerie = chartArray[i].colorsMap_[point.name];
+                            ctx.lineWidth = chartArray[i].getNumericOption("strokeWidth", point.name);
+                            ctx.strokeStyle = colorSerie;
+                            ctx.fillStyle = colorSerie;
+                            callback.call(chartArray[i], chartArray[i], point.name, ctx, point.canvasx, point.canvasy, colorSerie, circleSize, point.idx);
+                        }
+                    }
+                    ctx.restore();
+                    chartArray[i].previousVerticalX_ = canvasx;
+                }
+            }
+        };
+
+        _getSelectedPoints = function (row, chartArray) {
+            var
+                i,
+                setIdx,
+                points,
+                setRow,
+                point,
+                pointIdx;
+
+            for (i = 0; i < chartArray.length; i += 1) {
+                chartArray[i].lastRow_ = row;
+                chartArray[i].selPoints_ = [];
+                for (setIdx = 0; setIdx < chartArray[i].layout_.points.length; setIdx += 1) {
+                    points = chartArray[i].layout_.points[setIdx];
+                    setRow = row - chartArray[i].getLeftBoundary_(setIdx);
+                    if (!points[setRow]) {
+                        // Indica que la fila buscada no esta en la grafica (por ejemplo, zoom rectangular no igual para ambos lados)
+                        continue;
+                    }
+                    if (setRow < points.length && points[setRow].idx === row) {
+                        point = points[setRow];
+                        if (point.yval !== null && !Number.isNaN(point.yval)) {
+                            chartArray[i].selPoints_.push(point);
+                        }
+                    } else {
+                        for (pointIdx = 0; pointIdx < points.length; pointIdx += 1) {
+                            point = points[pointIdx];
+                            if (point.idx === row) {
+                                if (point.yval !== null && !Number.isNaN(point.yval)) {
+                                    chartArray[i].selPoints_.push(point);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (chartArray[i].selPoints_.length) {
+                    chartArray[i].lastx_ = chartArray[i].selPoints_[0].xval;
+                } else {
+                    chartArray[i].lastx_ = -1;
+                }
+            }
+        };
+
+        _customInteractionModel = {
+            mousedown: function (e, g, ctx) {
+                // Evita que el clic derecho inicialice el zoom
+                if (e.button && e.button === 2) {
+                    return;
+                }
+                ctx.initializeMouseDown(e, g, ctx);
+                if (e.altKey || e.shiftKey || e.ctrlKey) {
+                    Dygraph.startPan(e, g, ctx);
+                } else {
+                    Dygraph.startZoom(e, g, ctx);
+                }
+            },
+            mousemove: function (e, g, ctx) {
+                var
+                    closestPoint,
+                    selectionChanged,
+                    callback;
+
+                if (ctx.isZooming) {
+                    Dygraph.moveZoom(e, g, ctx);
+                } else if (ctx.isPanning) {
+                    Dygraph.movePan(e, g, ctx);
+                } else {
+                    if (_cursorLock) {
+                        closestPoint = { row: clone(_chart.selectedRow_) };
+                    } else {
+                        closestPoint = _findClosestPoint(g.eventToDomCoords(e)[0], g.eventToDomCoords(e)[1], g.layout_);
+                    }
+                    selectionChanged = (closestPoint.row !== g.lastRow_);
+                    _getSelectedPoints(closestPoint.row, [_chart]);
+                    if (selectionChanged) {
+                        _updateSelection([_chart]);
+                    }
+                    _chart.selectedRow_ = clone(g.lastRow_);
+                    callback = _chart.getFunctionOption("highlightCallback");
+                    if (callback && selectionChanged) {
+                        callback.call(_chart, e, _chart.lastx_, _chart.selPoints_, g.lastRow_);
+                    }
+                }
+            },
+            mouseup: function (e, g, ctx) {
+                if (ctx.isZooming) {
+                    ctx.justClick = false;
+                    _maybeTreatMouseOpAsClick(e, g, ctx);
+                    if (ctx.regionWidth <= 10 && ctx.regionHeight <= 10) {
+                        ctx.justClick = true;
+                    }
+                    Dygraph.endZoom(e, g, ctx);
+                } else if (ctx.isPanning) {
+                    Dygraph.endPan(e, g, ctx);
+                }
+            },
+            contextmenu: function (e, g, ctx) {
+                var
+                    currentPoint,
+                    pairPoint,
+                    rpmPositions,
+                    timeStampArray,
+                    i,
+                    colorA,
+                    colorB,
+                    offsetX,
+                    offsetY;
+
                 e.preventDefault();
+                _cursorLock = true;
+                _chart.currentHighlight_ = g.highlightSet_;
                 currentPoint = ej.DataManager(_filteredMeasurementPoints).executeLocal(
                     new ej.Query().where("Name", "equal", g.highlightSet_, false))[0];
                 if (currentPoint) {
@@ -713,171 +1159,101 @@ HistoricalTrendGraph = (function () {
                     _ctxMenu.OpenMenuByRange(offsetY, offsetX, currentPoint.Id, colorA, colorB, timeStampArray, rpmPositions);
                 }
                 return false;
-            };
-            customInteractionModel.click = function (e, g, ctx) {
-                if (!_pointClick) {
-                    $(".customContextMenu").css("display", "none");
-                    _cursorLock = false;
-                } else {
+            },
+            click: function (e, g, ctx) {
+                e.preventDefault();
+                if (_pointClick) {
+                    _pointClick = false;
                     _cursorLock = true;
+                    return false;
                 }
-                _pointClick = false;
-            };
-            headerHeigth = (_contentHeader.clientHeight + 4) * 100 / _container.clientHeight;
-            _contentBody.style.height = (100 - headerHeigth) + "%";
-            _chart = new Dygraph(
-              _contentBody,
-              initialData,
-              {
-                  colors: _seriesColors,
-                  legend: "always",
-                  xlabel: "Estampa de tiempo",
-                  ylabel: _ylabel,
-                  y2label: "Velocidad [Rpm]",
-                  labels: _labels,
-                  series: _seriesOptions,
-                  labelsDiv: document.getElementById("t" + _widgetId),
-                  axisLabelFontSize: 10,
-                  labelsSeparateLines: true,
-                  digitsAfterDecimal: 2, // Para las variables que manejamos, es suficiente con 2 decimales
-                  hideOverlayOnMouseOut: false,
-                  highlightSeriesOpts: {
-                      strokeWidth: 2,
-                      strokeBorderWidth: 1,
-                      highlightCircleSize: 3
-                  },
-                  highlightCallback: function (e, x, pts, row) {
-                      if (!_cursorLock) {
-                          _cursor.followCursor(pts);
-                      }
-                  },
-                  drawCallback: function (g, is_initial) {
-                      var
-                            // DIVs contenedores de los labels en los ejes X e Y de la grafica
-                            axisLabelDivs,
-                            // Contador
-                            i;
+                if (ctx.justClick) {
+                    _cursorLock = !_cursorLock;
+                    _chart.currentHighlight_ = clone(_chart.highlightSet_);
+                }
+                $(".customContextMenu").css("display", "none");
+                return false;
+            },
+            dblclick: function (event, g, context) {
+                var
+                    boundariesX;
 
-                      if (is_initial) {
-                          if (_cursor) {
-                              _cursor.clearCursor();
-                          }
-                          _cursor = new Cursors(g);
-                          g.canvas_.style.zIndex = 1000;
-                      }
-                      // xlabel + ylabel
-                      $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1050);
-                      $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1050);
-                      $("#" + _contentBody.id + " .dygraph-y2label").eq(0).parent().parent().css("z-index", 1050);
-                      // Recorrer todos los axis-labels
-                      axisLabelDivs = $("#" + _contentBody.id + " .dygraph-axis-label");
-                      for (i = 0; i < axisLabelDivs.length; i += 1) {
-                          axisLabelDivs.eq(i).parent().css("z-index", 1050);
-                      }
-                      // Canvas Back + Front del selector de rango
-                      $("#" + _contentBody.id + " canvas.dygraph-rangesel-bgcanvas").eq(0).css("z-index", 1020);
-                      $("#" + _contentBody.id + " canvas.dygraph-rangesel-fgcanvas").eq(0).css("z-index", 1020);
-                      // Recorrer las imagenes del selector de rango
-                      axisLabelDivs = $("#" + _contentBody.id + " .dygraph-rangesel-zoomhandle");
-                      for (i = 0; i < axisLabelDivs.length; i += 1) {
-                          axisLabelDivs.eq(i).css("z-index", 1020);
-                      }
+                if (context.cancelNextDblclick) {
+                    context.cancelNextDblclick = false;
+                    return;
+                }
+                if (event.altKey || event.shiftKey || event.ctrlKey) {
+                    return;
+                }
+                boundariesX = minMaxArray(arrayColumn(g.file_, 0));
+                _cursor.clearCursor();
+                g.updateOptions({
+                    "dateWindow": [boundariesX.min.getTime(), boundariesX.max.getTime()],
+                    "valueRange": g.axes_[0].extremeRange,
+                    "axes": { y2: { "valueRange": g.axes_[1].extremeRange } }
+                });
+                _cursorLock = false;
+            }
+        };
 
-                  },
-                  zoomCallback: function (minDate, maxDate, yRange) {
-                      _showHideY2Axis();
-                  },
-                  pointClickCallback: function (e, p) {
-                      var
-                          time;
+        _pageX = function (evt) {
+            if (evt.pageX) {
+                return (!evt.pageX || evt.pageX < 0) ? 0 : evt.pageX;
+            } else {
+                return evt.clientX + (document.scrollLeft || document.body.scrollLeft) - (document.clientLeft || 0);
+            }
+        };
 
-                      e.preventDefault();
-                      $(".customContextMenu").css("display", "none");
-                      _pointClick = true;
-                      currentPoint = ej.DataManager(_filteredMeasurementPoints).executeLocal(
-                          new ej.Query().where("Name", "equal", p.name, false))[0];
-                      if (currentPoint) {
-                          pairPoint = ej.DataManager(_filteredMeasurementPoints).executeLocal(
-                              new ej.Query().where("Id", "equal", currentPoint.AssociatedMeasurementPointId, false))[0];
-                          colorA = _chart.plotter_.colors[currentPoint.Name];
-                          colorB = (pairPoint) ? _chart.plotter_.colors[pairPoint.Name] : "";
-                          time = new Date(p.xval).toISOString();
-                          offsetX = (e.offsetY + _contentBody.offsetTop);
-                          offsetY = (e.offsetX + _contentBody.offsetLeft);
-                          _ctxMenu.OpenMenuByTimeStamp(offsetX, offsetY, currentPoint.Id, time, colorA, colorB);
-                      }
-                      return false;
-                  },
-                  underlayCallback: function (canvas, area, g) {
-                      canvas.strokeStyle = "black";
-                      canvas.strokeRect(area.x, area.y, area.w, area.h);
-                  },
-                  drawHighlightPointCallback: function (g, serie, ctx, cx, cy, color, p) {
-                      if (!_cursorLock) {
-                          Dygraph.Circles.DEFAULT(g, serie, ctx, cx, cy, color, p);
-                      }
-                  },
-                  plotter: function (e) {
-                      var
-                          smoothing;
+        _pageY = function (evt) {
+            if (evt.pageY) {
+                return (!evt.pageY || evt.pageY < 0) ? 0 : evt.pageY;
+            } else {
+                return evt.clientY + (document.scrollTop || document.body.scrollTop) - (document.clientTop || 0);
+            }
+        };
 
-                      smoothing = 0.0;
-                      Dygraph.Plugins.Plotter.prototype.smoothPlotter(e, smoothing);
-                  },
-                  showRangeSelector: true,
-                  interactionModel: customInteractionModel,
-                  xRangePad: 2,
-                  valueFormatter: function (val, opts, seriesName, d, row, col) {
-                      var
-                          formattedValue;
+        _maybeTreatMouseOpAsClick = function (e, g, ctx) {
+            var
+                regionWidth,
+                regionHeight;
 
-                      if (seriesName === "Estampa de tiempo") {
-                          return formatDate(new Date(val));
-                      } else {
-                          // Si es un valor de RPM
-                          if (_dict[seriesName].MeasureType === 9) {
-                              // Un valor de RPM no debe tener decimales
-                              formattedValue = val.toFixed(0);
-                          } else {
-                              // Para las variables que manejamos, es suficiente con 2 decimales
-                              formattedValue = val.toFixed(2);
-                          }
-                          return formattedValue + " " + _dict[seriesName].Units;
-                      }
-                  },
-                  axes: {
-                      x: {
-                          axisLabelWidth: 100,
-                          axisLabelFormatter: function (d, gran, opts) {
-                              return Dygraph.dateAxisLabelFormatter(new Date(d.getTime()), gran, opts);
-                          }
-                      },
-                      y: {
-                          axisLabelWidth: 40
-                      },
-                      y2: {
-                          digitsAfterDecimal: 1,
-                          includeZero: true,
-                          drawAxesAtZero: true,
-                          independentTicks: true,
-                          axisLabelWidth: 40
-                      }
-                  }
-              }
-            );
-            _showHideY2Axis();
-            $(".grid-stack-item").on("resizestop", function () {
-                headerHeigth = (_contentHeader.clientHeight + 4) * 100 / _container.clientHeight;
-                _contentBody.style.height = (100 - headerHeigth) + "%";
-                setTimeout(function () {
-                    _chart.resize();
-                }, 100);
-            });
-            globalsReport.elemDygraph.push({
-                "id": _container.id,
-                "obj": _chart,
-                "src": ""
-            });
+            ctx.dragEndX = _pageX(e) - ctx.px;
+            ctx.dragEndY = _pageY(e) - ctx.py;
+            if (Math.abs(ctx.dragStartX - ctx.dragEndX) > Math.abs(ctx.dragStartY - ctx.dragEndY)) {
+                ctx.dragEndY = (ctx.dragEndY > ctx.dragStartY) ? Math.abs(ctx.dragStartX - ctx.dragEndX) : -Math.abs(ctx.dragStartX - ctx.dragEndX);
+                ctx.dragEndY = ctx.dragStartY + ctx.dragEndY;
+            } else {
+                ctx.dragEndX = (ctx.dragEndX > ctx.dragStartX) ? Math.abs(ctx.dragStartY - ctx.dragEndY) : -Math.abs(ctx.dragStartY - ctx.dragEndY);
+                ctx.dragEndX = ctx.dragStartX + ctx.dragEndX;
+            }
+            regionWidth = Math.abs(ctx.dragEndX - ctx.dragStartX);
+            regionHeight = Math.abs(ctx.dragEndY - ctx.dragStartY);
+            ctx.regionWidth = regionWidth;
+            ctx.regionHeight = regionHeight;
+        };
+
+        _legendDivInteraction = function () {
+            var
+                i;
+
+            for (i = 1; i < _labels.length; i += 1) {
+                $("#" + _labels[i].replace(/\s|[#$%^&*().]/g, "") + _widgetId).click(function (e) {
+                    e.preventDefault();
+                    $("#" + _chart.highlightSet_ + _widgetId + ">span").css("font-weight", "");
+                    _chart.setSelection(clone(_chart.selectedRow_), e.currentTarget.id.replace(_widgetId, ""));
+                    _chart.currentHighlight_ = e.currentTarget.id.replace(_widgetId, "");
+                    _chart.highlightSet_ = e.currentTarget.id.replace(_widgetId, "");
+                    _chart.updateOptions({
+                        "highlightSeriesOpts": {
+                            strokeWidth: 2,
+                            strokeBorderWidth: 1,
+                            highlightCircleSize: 3
+                        }
+                    });
+                    $("#" + e.currentTarget.id.replace(_widgetId, "") + _widgetId + ">span").css("font-weight", "bold");
+                    return false;
+                });
+            }
         };
 
         _subscribeToNewData = function () {
@@ -915,18 +1291,17 @@ HistoricalTrendGraph = (function () {
                     for (j = 0; j < items.length; j += 1) {
                         if (j === 0) {
                             tmp = [];
+                            _historicalChangeOfRpmList.push(items[j].isChangeOfRpm);
                         }
                         k = _subVariableIdList.indexOf(items[j].subVariableId);
                         tmp[0] = new Date(group[i].key);
                         tmp[k + 1] = items[j].value;
                         k = notStored.indexOf(items[j].subVariableId);
                         notStored.splice(k, 1);
-                        _historicalChangeOfRpmList.push(items[j].isChangeOfRpm);
                     }
                     for (j = 0; j < notStored.length; j += 1) {
                         k = _subVariableIdList.indexOf(notStored[j]);
                         tmp[k + 1] = null;
-                        _historicalChangeOfRpmList.push(false);
                     }
                     _buffer.push(tmp);
                 }
@@ -943,8 +1318,13 @@ HistoricalTrendGraph = (function () {
                 }
             });
             _playerSubscription = PublisherSubscriber.subscribe("/player/timeStamp", [_widgetId], function (data) {
+                var
+                    row;
+
+                row = _chart.findClosestRow(_chart.toDomXCoord(data[_widgetId]));
                 // Primer paso es encontrar la columna que corresponde al valor del timeStamp
-                _chart.setSelection(_chart.findClosestRow(_chart.toDomXCoord(data[_widgetId])));
+                _chart.setSelection(row);
+                _chart.selectedRow_ = row;
                 _cursorLock = true;
                 _cursor.followCursor(_chart.selPoints_);
             });
@@ -958,7 +1338,7 @@ HistoricalTrendGraph = (function () {
                     if ((_chart.boundaryIds_[0][1] - _chart.boundaryIds_[0][0]) > 0) {
                         for (i = _chart.boundaryIds_[0][0]; i <= _chart.boundaryIds_[0][1]; i += 1) {
                             if ((i > _chart.boundaryIds_[0][0]) && (_chart.file_[i][0] > _chart.file_[i - 1][0])) {
-                                timeStampArray.push(_chart.file_[i][0].toISOString());
+                                timeStampArray.push(_chart.file_[i][0].getTime());
                             }
                         }
                     }
@@ -988,17 +1368,27 @@ HistoricalTrendGraph = (function () {
             }
             _chart.is_initial_draw_ = true;
             Concurrent.Thread.create(function (buffer, labels, seriesOptions, chart, ylabel) {
+                var
+                    callback;
+
                 chart.updateOptions({
                     "file": buffer,
                     "labels": labels,
                     "series": seriesOptions,
                     "ylabel": ylabel
                 });
+                callback = chart.getFunctionOption("highlightCallback");
+                callback.call(chart, undefined, chart.lastx_, chart.selPoints_, chart.row, undefined, true);
             }, _buffer, _labels, _seriesOptions, _chart, _ylabel);
 
             refCount = 0;
             for (i = 0; i < _filteredMeasurementPoints.length; i += 1) {
                 _chart.setVisibility(i, _filteredMeasurementPoints[i].Visible);
+                if (_filteredMeasurementPoints[i].Visible) {
+                    $("#" + _labels[i].replace(/\s|[#$%^&*().]/g, "") + _widgetId).show();
+                } else {
+                    $("#" + _labels[i].replace(/\s|[#$%^&*().]/g, "") + _widgetId).hide();
+                }
                 if (_filteredMeasurementPoints[i].IsAngularReference) {
                     refCount += 1;
                 }
@@ -1042,6 +1432,9 @@ HistoricalTrendGraph = (function () {
             panelBody = $("<div class=\"panel-body\" style=\"padding-top:0 !important;padding-bottom:0 !important;\"></div>");
 
             if (measures.length > 0) {
+
+                measures = measures.filter(measure => measure.MeasureType != 6);
+
                 radioGroupName = "sensor_" + measures[0].SensorTypeCode;
                 for (i = 0; i < _selectedMeasureBySensor.length; i += 1) {
                     if (_selectedMeasureBySensor[i].sensorTypeCode === measures[0].SensorTypeCode) {
@@ -1145,6 +1538,9 @@ HistoricalTrendGraph = (function () {
             $("#" + "historicalTrendGraph" + _widgetId + " .trendLoadingIndicator").hide();
             $(_contentBody).show();
             $("#t" + _widgetId).show();
+            setTimeout(function () {
+                _chart.resize();
+            }, 200);
         };
 
         this.Show = function () {
@@ -1293,6 +1689,12 @@ HistoricalTrendGraph = (function () {
                     _buffer = [];
                     new HistoricalTimeMode().GetNumericHistoricalData(
                         mdVariableIdList, _subVariableIdList, _assetData.NodeId, _principalAssetId, _startDate.toISOString(), _endDate.toISOString(), _widgetId);
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
             });
 

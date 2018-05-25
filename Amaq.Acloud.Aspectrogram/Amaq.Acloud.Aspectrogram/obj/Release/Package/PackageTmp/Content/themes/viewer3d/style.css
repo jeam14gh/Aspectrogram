@@ -1,0 +1,97 @@
+﻿    .menuViewer3d {
+        background-color: rgba(20, 20, 20, 0.6);
+        position: absolute;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: whitesmoke;        
+        background-size: 25px;
+        font-size: 12px;
+        opacity: 0.8;
+        overflow-y: hidden;
+    }
+  
+    .groupMenuViewer3d{
+        position: relative;
+        display: block;
+        border-color: rgba(80, 80, 80, 0.7);
+        color: whitesmoke; 
+        border-width: 1px;
+        border-style: solid;
+        margin: 2px 2px 2px 2px;
+        padding: 2px 1px 2px 1px; /*top right bottom left*/
+    }
+    .btnMenuViewer3d:hover{
+        background-color: rgba(80, 80, 80, 0.7);
+        cursor: pointer;
+    }
+
+    .indicatorsViewer3d {
+        top: 0px;
+        left: 5px;
+        padding: 2px 8px 2px 8px;
+        margin: 2px 2px 2px 2px;
+        border-radius: 2px;
+        font-size: 9px;
+        font-weight: lighter;
+        cursor: default;
+        opacity: 0.7;
+        overflow-y: hidden;
+
+    }
+
+    .contentCBIndViewer3d{
+        cursor: pointer;
+        display: none;
+        z-index: 1;
+        background-color: rgba(120, 120, 120, 1);
+        border-width: 1px;
+        border-style: solid;
+        border-radius: 0px;
+        padding: 2px 8px 2px 8px;
+        opacity: 1 !important
+    }
+    .indAxisQtyViewer3d{
+        cursor: default;
+        font-size: 8px;
+        font-weight: lighter;
+        border-width: 2px;
+        border-style: solid;
+        padding: 2px 8px 2px 8px;
+        color: aliceblue;
+        border-color: rgba(80, 80, 80, 0.7);
+        margin: 1px 0px 1px 0px;
+        overflow-y: hidden;
+    }
+    .indVarNameViewer3d{
+        padding: 5px 4px 0px 4px;
+        color: aliceblue;
+        text-decoration:none;
+        overflow-y: hidden;
+    }
+    .indSubVarListViewer3d{
+        padding: 1px 1px 1px 1px;
+        color: aliceblue;
+        text-decoration:none;
+        font-size: 8px;
+        display: block;
+        border-color: rgba(80, 80, 80, 0.7);
+        overflow-y: hidden;
+    }
+    .class-ind-led-Viewer3d{
+        display: inline-block;
+        border-radius: 10px;
+        border-style: solid;
+        border-width: 2px;
+        border-color: rgba(255, 255, 255, 1);
+        width: 15px;
+        height: 15px;
+        margin: 0px 5px 0px 0px;
+        display: inline-block;
+    }
+    .class-ind-pointName-Viewer3d{
+        display:block;
+        margin: 1px 2px 0px 2px;
+    }
+    .class-ind-valueSubVar-Viewer3d{
+        display: block;
+        margin: 1px 2px 0px 2px;
+    }

@@ -188,7 +188,7 @@
             {
                 AllowRefresh = true,
                 IsPersistent = isPersistent,
-                ExpiresUtc = DateTime.UtcNow.AddDays(1)
+                ExpiresUtc = DateTime.UtcNow.AddDays(7)
             }, identity);
         }
 

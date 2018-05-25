@@ -19,12 +19,11 @@ StreamParser = (function () {
             // Referencia a la clase de lectura de datos binarios.
             _binaryReader,
             // Objeto de respuesta al decodificar el Stream
-            _response,
-            _parseWaveForm;
+            _response;
 
         this.pkgSeconds = 0;
 
-        _parseWaveForm = function () {
+        this.ParseWaveForm = function (newByteArray) {
             var
                 resp,
                 data,
@@ -50,6 +49,12 @@ StreamParser = (function () {
                 kp,
                 zc;
 
+            // Reiniciar la posicion de lectura al inicio del buffer
+            _binaryReader.seek(0);
+            if (newByteArray !== undefined) {
+                // Remplazar el buffer actual por el buffer aplicada la decompresion LZMA
+                _binaryReader._buffer = clone(newByteArray);
+            }
             resp = {};
             bytes = [];
             zeroCrossPositionsLength = 0;
@@ -61,12 +66,12 @@ StreamParser = (function () {
             }
             _binaryReader.readDouble();                               // Estampa de tiempo. (Portabilidad)
             _binaryReader.readByte();                                 // Cantidad de valores globales.
-            scaleFactor = _binaryReader.readDouble();                 // Factor de escala de la señal.
-            avg = _binaryReader.readDouble();                         // Promedio de la señal.
-            minimum = _binaryReader.readDouble();                     // Valor mínimo de la señal. Solo aplica si la señal está escalada
-            signalLength = _binaryReader.readInt32();                 // Longitud de la señal.
-            _binaryReader.readByte();                                 // Dimension del array de señales.
-            sampleTime = _binaryReader.readDouble();                  // Tiempo total de la señal.
+            scaleFactor = _binaryReader.readDouble();                 // Factor de escala de la forma de onda.
+            avg = _binaryReader.readDouble();                         // Promedio de la forma de onda.
+            minimum = _binaryReader.readDouble();                     // Valor minimo de la forma de onda. Solo aplica si la forma de onda esta escalada
+            signalLength = _binaryReader.readInt32();                 // Longitud de la forma de onda.
+            _binaryReader.readByte();                                 // Dimension del array de la forma de onda.
+            sampleTime = _binaryReader.readDouble();                  // Tiempo total de la forma de onda.
             keyphasorPositionsLength = _binaryReader.readUInt32();    // Longitud del vector de posiciones de keyphasor.
             if (streamType == 3) {
                 // Longitud del vector de posiciones de cruces por cero en flujo magnetico.
@@ -111,9 +116,34 @@ StreamParser = (function () {
             return resp;
         };
 
-        this.GetWaveForm = function (value) {
-            _binaryReader = new BinaryReader(atob(value));
-            return _parseWaveForm();
+        this.GetWaveForm = function (base64String, onComplete) {
+            var
+                // Propiedades definidas en la compresion LZMA
+                pb, lp, lc,
+                // Valor entero en el stream en los bytes de 0-1
+                prop,
+                // Valor entero en el stream en los bytes de 1-4
+                dictionary;
+
+            _binaryReader = new BinaryReader(base64String);
+            // PosStateBits
+            pb = 2;
+            // LitPosBits
+            lp = 0;
+            // LitContextBits
+            lc = 3;
+            // Leer primer byte del array como un entero sin signo de 8 bits
+            prop = _binaryReader.readUInt8();
+            // Leer los siguientes 4 bytes como un entero con signo de 32 bits
+            dictionary = _binaryReader.readInt32();
+            if ((prop === ((pb * 5 + lp) * 9 + lc)) && (dictionary === (1 << 20))) {
+                // Aplicar la decompresion LZMA
+                my_lzma.decompress(_binaryReader._buffer, function onDecompressComplete(result) {
+                    onComplete(result);
+                });
+            } else {
+                onComplete(undefined);
+            }
         };
 
         this.GetOverallPackage = function (value, eventId) {

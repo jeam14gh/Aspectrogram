@@ -1,0 +1,63 @@
+﻿
+@{
+    ViewBag.Title = "Report";
+    Layout = "~/Views/Shared/_LayoutReport.cshtml";
+}
+
+@Scripts.Render("~/Scripts/jquery-ui-1.11.4.min.js")
+@Scripts.Render("~/Scripts/printThis.js")
+@Scripts.Render("~/Scripts/app/amaq3d/report/eventsReport.js")
+@Scripts.Render("~/Scripts/app/amaq3d/report/appReport.js")
+@Scripts.Render("~/Scripts/app/amaq3d/report/manageReport.js")
+@Scripts.Render("~/Scripts/app/amaq3d/report/uiReport.js")
+
+<div id="contGeneralReport">
+    <div id="reportImgMin">
+        <center> <h5><u>GRÁFICAS A-SPECTROGRAM</u> </h5></center>
+        <div class="divImgMiniReport">
+        </div>
+    </div>
+
+    <div id="reportContent">
+
+        <!--
+          <div  class="pageReport">
+            <div class="headerPage">
+                <div class="infoContentRep">
+                    <div class="infoContentRep-1">A-SPECTROGRAM</div>
+                    <div class="infoContentRep-2">Carlos Tabárez</div>
+                    <div class="infoContentRep-3">28/09/2016</div>
+                </div>
+                    <img src="~/Content/images/ISAGEN_.png" class="logoCompanyRep"/>
+            </div>
+            <div class="contentPage" draggable="true" >
+                <div id="elfirst" class="contImgTxtRep dropImgRep" ></div>
+                <div id="elsecond" class="contImgTxtRep dropImgRep"></div>
+                <div id="elthird"class="contImgTxtRep dropImgRep"></div>
+            </div>
+            <div id="iCRFooter-1" class="iCRfooter"><center>Página 1</center></div>
+        </div>                            
+            -->
+
+    </div>
+</div>
+
+<script>
+
+    if (typeof localStorage["infoReport"] !== "undefined") {
+        var infoReport = JSON.parse(localStorage["infoReport"]);
+    }
+
+
+    var events = new EventsReport();
+
+    var manageReport = new ManageReport();
+    manageReport.loadMinImagesFromDashboard();
+
+    var uiReport = new UiReport();
+    uiReport.createUIReport();
+
+
+
+     
+</script>
