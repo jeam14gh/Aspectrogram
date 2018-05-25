@@ -1,0 +1,2689 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Amaq.Acloud.Aspectrogram.Entities</name>
+    </assembly>
+    <members>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Account">
+            <summary>
+            Informacion del producto (ASDAQ).
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Account.PhysicalAddress">
+            <summary>
+            Direccion fisica MAC.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Account.Password">
+            <summary>
+            Clave generada aleatoriamente.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Account.CompanyId">
+            <summary>
+            Id de la empresa donde se instala el producto.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Account.Category">
+            <summary>
+            Tipo de producto, esto es ASDAQ, ATRANSMITER, etc.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Aconditioner">
+            <summary>
+            Representa un dispositivo Aconditioner desarrollado por A-MAQ
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Aconditioner.AconditionerTypeId">
+            <summary>
+            Id de un tipo Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Aconditioner.Serial">
+            <summary>
+            Serial de un dispositivo Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Aconditioner.Name">
+            <summary>
+            Nombre del Aconditioner de un Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Aconditioner.Description">
+            <summary>
+            Descripción del Aconditioner de un Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Aconditioner.AconChannels">
+            <summary>
+            Lista de canales Aconditioner de un Asdaq
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.AconditionerType">
+            <summary>
+            Representa el detalle de un tipo de dispositivo Aconditioner desarrollado por A-MAQ
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AconditionerType.Name">
+            <summary>
+            Nombre de un dispositivo Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AconditionerType.Reference">
+            <summary>
+            Referencia de un dispositivo Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AconditionerType.Description">
+            <summary>
+            Description de un dispositivo Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AconditionerType.Channels">
+            <summary>
+            Lista de canales nominales de un Aconditioner
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase">
+            <summary>
+            Representa la clase base de un canal análogo de entrada
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.Name">
+            <summary>
+            Corresponde al nombre físico del canal usado por National Instruments
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.ByPassed">
+            <summary>
+            Si es true, indica que el sistema va a adquirir por dicho canal pero no lo va incluir en la lógica de negocio.
+            Un canal en estado bypass permite que se pueda verificar si el canal está bueno
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.Enabled">
+            <summary>
+            Si es false, indica que el sistema no va a hacer nada con el canal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.MdVariableId">
+            <summary>
+            Relación uno a uno con MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.AconditionerFactor">
+            <summary>
+            Factor de preamplificación del A-CONDITIONER, si el canal no está conectado a un A-CONDITIONER el valor por defecto debe ser 1
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.MdVariableTag">
+            <summary>
+            Tag de MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.AssetId">
+            <summary>
+            AssetId que representa el parentId de la MdVariableId
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.Disassociate">
+            <summary>
+            Si es verdadero, indica que el punto de medición asociado al canal debe desligarse de éste
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.SerialAcon">
+            <summary>
+            Serial único de un Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.AconChannel">
+            <summary>
+            Número del canal de un Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.ExcitationIEPE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AiChannelBase.SensorTypeCode">
+            <summary>
+            Código del tipo de sensor de un punto de medición
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.NiAiChannel">
+            <summary>
+            Representa un canal análogo de entrada de un dispositivo NI
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiAiChannel.AiMeasureMethod">
+            <summary>
+             Configuración necesaria para la llamada dinámica a un método AiChannel de National Instruments
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.NiCompactDaq">
+            <summary>
+            Representa un Chasis CompactDaq de National Instruments
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiCompactDaq.Name">
+            <summary>
+            Corresponde al DeviceID que expone NI como identificador del dispositivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiCompactDaq.CSeriesModules">
+            <summary>
+            Módulos de la C Series instalados en el chasis
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.NiDevice">
+            <summary>
+            Representa un dispositivo NI como una entidad con propiedades necesarias para el sistema A-SPECTROGRAM
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.Name">
+            <summary>
+            Corresponde al DeviceID que expone NI como identificador del dispositivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.ProductCategory">
+            <summary>
+            Indica si el dispositivo es M Series, X Series, UsbDaq, CompactDaq, CSeriesModule, etc...
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.IsMasterNiDevice">
+            <summary>
+            Indica si el NiDevice es el maestro en la estrategia de sincronización de dispositivos M Series(PCI)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.MasterNiDeviceName">
+            <summary>
+            Id del NiDevice maestro en la estrategia de sincronización de dispositivo s M Series(PCI)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.SampleRate">
+            <summary>
+            Frecuencia de muestreo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.SamplesToRead">
+            <summary>
+            Número de muestras a leer por canal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.TerminalConfiguration">
+            <summary>
+            Configuración de terminal differential, nrse, rse, pseudodifferential según el NiDevice
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.CompatibleTerminalConfigurations">
+            <summary>
+            Lista filtrada de configuraciones de terminal compatibles con el NiDevice
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.AiChannels">
+            <summary>
+            Canales análogos de entrada del dispositivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.DoChannels">
+            <summary>
+            Canales digitales de salida(Relés) del dispositivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.CompatibleMeasures">
+            <summary>
+            Medidas National Instruments compatibles con el dispositivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.TaskIndex">
+            <summary>
+            Indice o consecutivo de la tarea de national instruments desde la cual se van a adquirir señales para los canales 
+            de un C Series Module de un chasis CompactDaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.AICurrentExcitationValue">
+            <summary>
+            Máxima corriente de excitación en Amperios (A) para sensores IEPE
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.ProductType">
+            <summary>
+            Indica el nombre del producto de NI (NI9323, NI9234...)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.FrecuencyRange">
+            <summary>
+            Rango de frecuencia en Hz
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.NumberOfLines">
+            <summary>
+            Número de líneas para el espectro
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.SamplingTime">
+            <summary>
+            Tiempo de muestro 
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.NiDevice.FrecuencyDelta">
+            <summary>
+            Delta de frecuencia
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Asdaq">
+            <summary>
+            Representa un sistema Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.Alias">
+            <summary>
+            Nombre con el cual se conoce a un Asdaq de manera nemotécnica
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.Reconfigure">
+            <summary>
+            Si es true, indica que el Asdaq debe consultar nuevamente su configuración en el Acloud
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.MailAccountConfiguration">
+            <summary>
+            Configuración de una cuenta de correo electrónico, necesaria en caso de que se requiera el envío de correos electrónicos
+            por eventos disparados
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.NiDevices">
+            <summary>
+            Dispositivos NI registrados en el Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.NiCompactDaqs">
+            <summary>
+            Chasis CompactDaq NI registrados en el Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.RealTimeRequests">
+            <summary>
+            Lista de id de subVariable y estampa de tiempo que representan solicitudes de subVariables en tiempo real desde los navegadores (Clientes)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.SubVariableChangeRequests">
+            <summary>
+            Lista de id de subVariables a las cuales se les ha realizado cambios considerables para que el asdaq los tome dinamicamente.
+            Por ejemplo dos cambios muy importantes son ajuste de medida y bandas
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.AssetChangeRequests">
+            <summary>
+            Lista de id de assets a los cuales se les ha realizado cambios considerables para que el asdaq los tome dinamicamente.
+            Por ejemplo cambios en la configuración de los eventos y cambios de NormalInterval para histórico
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.RelatedMeasurementPoints">
+            <summary>
+            Measurement points asociados al Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.RelatedPrincipalAssets">
+            <summary>
+            Assets principales asociados al Asdaq. Son los que poseen la configuración de eventos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Asdaq.Aconditioners">
+            <summary>
+            Lista de dispositivos Aconditioners con relación a un Asdaq 
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Channel">
+            <summary>
+            Representa un canal con relación a un Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Channel.Number">
+            <summary>
+            Numero de un canal asociado a un Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Channel.Gain">
+            <summary>
+            Ganancia de un canal con relación a un Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Channel.Displacement">
+            <summary>
+            Desplazamiento de un canal con relacion a un Asdaq
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.AssetExtension">
+            <summary>
+            Extensión de la entidad Asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.AsdaqId">
+            <summary>
+            Id del Asdaq asociado a un asset gestionado con el sistema Asdaq / Aspectrogram
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.AxesProperties">
+            <summary>
+            Propiedades de los ejes de la maquina
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.NominalVelocity">
+            <summary>
+            Velocidad Nominal del activo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.NormalInterval">
+            <summary>
+            Intervalo de tiempo en minutos que indica cada cuanto tiempo se suben datos históricos de las subVariables de los measurementPoints del asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.ConditionStatusEventsConfig">
+            <summary>
+            Lista de configuración de eventos por estado de condición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.RpmEventConfig">
+            <summary>
+            Configuración de almacenamiento datos por transitorios de velocidad (Cambios de velocidad)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.ScheduledEvents">
+            <summary>
+            Lista de eventos programados por el usuario para grabarse en fechas y horas especificas.
+            Esta lista es depurada a medida que el sistema Asdaq va disparando la grabación de los eventos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.IsPrincipal">
+            <summary>
+            Valor lógico que indica si el asset es el asset principal en una jerarquía de assets
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.PrincipalAssetId">
+            <summary>
+            Id del asset principal en la jerarquía de assets, es decir el id del primer asset de la jerarquía
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.TripMultiply">
+            <summary>
+            Opción de multiplicación para los umbrales de estado de condición en etapas transientes de un activo de tipo maquinaria rotativa(Arranque/Parada).
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.TransientStatusTimeout">
+            <summary>
+            Cuando el activo deje de cambiar su velocidad, cuanto tiempo en segundos se va a seguir asumiendo que el activo está en estado transitorio o transiente.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.LastChangeOfRpm">
+            <summary>
+            Estampa de tiempo del último cambio de rpm detectado
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.LastNormalInterval">
+            <summary>
+            Estampa de tiempo de la última vez que se detectó evento por intervalo normal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.SecondsBetweenAcquisitions">
+            <summary>
+            Intervalo en segundos entre adquisiciones de señales para la unidad de adquisición asociada al asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.BufferCapacity">
+            <summary>
+            Cantidad máxima de registros de tiempo antes que debe mantener el activo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.CanDetectRpmEvent">
+            <summary>
+            Valor lógico que indica si el asset cumple los requisitos para la detección de eventos por cambios de rpm
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.LastDeltaRpmTriggered">
+            <summary>
+            Último delta de Rpm detectado
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.IsRotating">
+            <summary>
+            Valor lógico que indica si el asset está girando o no
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.AtrId">
+            <summary>
+            Id del Atr asociado a un asset gestionado con el sistema Atr / Aspectrogram
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.HistoricalDataUploadLimit">
+            <summary>
+            Cantidad limite de registros de datos históricos que se suben al servidor principal por cada transacción
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AssetExtension.HistoricalDataStreamUploadLimit">
+            <summary>
+            Cantidad limite de registros de datos dinámicos históricos que se suben al servidor principal por cada transacción
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.AtrAiChannel">
+            <summary>
+            Representa un canal análogo de entrada de un dispositivo Atransmiter
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.AtrModule">
+            <summary>
+            Representa un módulo de un dispositivo Atransmiter
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.Alias">
+            <summary>
+            Nombre con el cual se conoce a un AtrModule de manera nemotécnica
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.Description">
+            <summary>
+            Descripción del dispositivo Atransmitter
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.Serial">
+            <summary>
+            Serial único del dispositivo Atransmitter
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.Slot">
+            <summary>
+            Indicador de la posición del módulo en el bus de comunicación
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.ModuleType">
+            <summary>
+            Tipo de módulo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.GlobalFrequency">
+            <summary>
+            Frecuencia en segundos de la subida de datos globales en tiempo real
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.StreamFrequency">
+            <summary>
+            Frecuencia en segundos de la subida de señales en tiempo real
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.SampleRate">
+            <summary>
+            Frecuencia de muestreo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.SamplesToRead">
+            <summary>
+            Número de muestras a leer por canal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.AtrModule.AiChannels">
+            <summary>
+            Canales análogos de entrada del dispositivo
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Atr">
+            <summary>
+            Representa un sistema Atransmiter
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Atr.Alias">
+            <summary>
+            Nombre con el cual se conoce a un Atransmitter de manera nemotécnica
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Atr.Description">
+            <summary>
+            Descripción del dispositivo Atransmitter
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Atr.Serial">
+            <summary>
+            Serial único del dispositivo Atransmitter
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Atr.Host">
+            <summary>
+            Dirección Ip o nombre del host
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Atr.Reconfigure">
+            <summary>
+            Si es true, indica que el dispositivo Atransmiter debe consultar nuevamente su configuración en el Acloud
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Atr.Modules">
+            <summary>
+            Módulos instalados fisicamente
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Atr.RealTimeRequests">
+            <summary>
+            Lista de id de subVariable y estampa de tiempo que representan solicitudes de subVariables en tiempo real desde los navegadores (Clientes)
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto">
+            <summary>
+            Representa un sistema Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto.Id">
+            <summary>
+            Id del Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto.Alias">
+            <summary>
+            Nombre con el cual se conoce a un Asdaq de manera nemotécnica
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto.Reconfigure">
+            <summary>
+            Si es true, indica que el Asdaq debe consultar nuevamente su configuración en el Acloud
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto.NiDevices">
+            <summary>
+            Dispositivos NI registrados en el Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto.RelatedMeasurementPoints">
+            <summary>
+            Measurement points asociados al Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto.MailAccountConfiguration">
+            <summary>
+            Configuración de una cuenta de correo electrónico, necesaria en caso de que se requiera el envío de correos electrónicos
+            por eventos disparados
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AsdaqConfigDto.Aconditioners">
+            <summary>
+            Lista de dispositivos Aconditioners con relación a un Asdaq 
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto">
+            <summary>
+            Representa un Chasis CompactDaq de National Instruments
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.Name">
+            <summary>
+            Corresponde al DeviceID que expone NI como identificador del dispositivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.ProductCategory">
+            <summary>
+            Indica si el dispositivo es M Series, X Series, UsbDaq, CompactDaq, CSeriesModule, etc...
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.SampleRate">
+            <summary>
+            Frecuencia de muestreo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.SamplesToRead">
+            <summary>
+            Número de muestras a leer por canal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.TerminalConfiguration">
+            <summary>
+            Configuración de terminal differential, nrse, rse, pseudodifferential según el NiDevice
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.CompatibleTerminalConfigurations">
+            <summary>
+            Lista filtrada de configuraciones de terminal compatibles con el NiDevice
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.AiChannels">
+            <summary>
+            Canales análogos de entrada del dispositivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.CompatibleMeasures">
+            <summary>
+            Medidas National Instruments compatibles con el dispositivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.AICurrentExcitationValue">
+            <summary>
+            Máxima corriente de excitación en Amperios (A) para sensores IEPE
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.ProductType">
+            <summary>
+            Indica el nombre del producto de NI (NI9323, NI9234...)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.FrecuencyRange">
+            <summary>
+            Rango de frecuencia en Hz
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.NumberOfLines">
+            <summary>
+            Número de líneas para el espectro
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.SamplingTime">
+            <summary>
+            Tiempo de muestro 
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NiDeviceDto.FrecuencyDelta">
+            <summary>
+            Delta de frecuencia
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto">
+            <summary>
+            Representa la información de id de asset y asdaqId para un asset específico
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.AssetId">
+            <summary>
+            Id de asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.AsdaqId">
+            <summary>
+            Id de asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.IsPrincipal">
+            <summary>
+            Indica si el activo es principal en la jerarquia de activos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.NodeId">
+            <summary>
+            Id del Nodo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.PrincipalAssetId">
+            <summary>
+            Id del activo principal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.RpmEventConfig">
+            <summary>
+            Representa la configuración de grabación de evento por transitorios de rpm (Cambios de velocidad)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.ConditionStatusEventsConfig">
+            <summary>
+            Representa la configuración de grabación de evento para un estado de condición específico
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.NormalInterval">
+            <summary>
+            Intervalo de tiempo en minutos que indica cada cuanto tiempo se suben datos históricos de las subVariables de los measurementPoints del asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.AtrId">
+            <summary>
+            Id de Atr
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.TripMultiply">
+            <summary>
+            Opciones de multiplicación para los umbrales de estado de condición en etapas transientes de una máquina(Arranque/Parada).
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.TransientStatusTimeout">
+            <summary>
+            Cuando el activo deje de cambiar su velocidad, cuanto tiempo en segundos se va a seguir asumiendo que el activo está en estado transitorio o transiente.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.Description">
+            <summary>
+            Descripción del activo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.NominalVelocity">
+            <summary>
+            Velocidad nominal de la máquina
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.#ctor">
+            <summary>
+            Incializa una nueva instancia de AssetIdAndAsdaqIdDto
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetIdAndAsdaqIdDto.#ctor(System.String,System.String,System.Boolean,System.String,System.String,Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig},System.Double,System.String,Amaq.Acloud.Aspectrogram.Entities.Enums.TripMultiply,System.Double,System.String,System.Double)">
+            <summary>
+            Incializa una nueva instancia de AssetIdAndAsdaqIdDto
+            </summary>
+            <param name="assetId">Id de asset</param>
+            <param name="asdaqId">Id de asdaq</param>
+            <param name="isPrincipal">Idica si el activo es principal</param>
+            <param name="nodeId">Id del nodo en el arbol</param>
+            <param name="principalAssetId">Id del activo principal</param>
+            <param name="rpmEventConfig">Cambios de velocidad</param>
+            <param name="conditionStatusEventsConfig">Estado de condición específico</param>
+            <param name="normalInterval">Intervalo normal</param>
+            <param name="atrId">Id de atr</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto">
+            <summary>
+            Entidad asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto.Id">
+            <summary>
+            Id del asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto.Name">
+            <summary>
+            Nombre del asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto.Description">
+            <summary>
+            Descripción del asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto.NormalInterval">
+            <summary>
+            Intervalo de tiempo en minutos que indica cada cuanto tiempo se suben datos históricos de las subVariables de los measurementPoints del asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto.TripMultiply">
+            <summary>
+            Opciones de multiplicación para los umbrales de estado de condición en etapas transientes de una máquina(Arranque/Parada).
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.AssetToUpdateDto.TransientStatusTimeout">
+            <summary>
+            Cuando el activo deje de cambiar su velocidad, cuanto tiempo en segundos se va a seguir asumiendo que el activo está en estado transitorio o transiente.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.ChangeRequestsDto">
+            <summary>
+            Representa un conjunto de solicitudes de cambio de información de subVariables y assets que un Asdaq Service debe
+            tomar dinamicamente
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.ChangeRequestsDto.SubVariableChangeRequests">
+            <summary>
+            Solicitudes de cambio de información de subVariables
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.ChangeRequestsDto.AssetChangeRequests">
+            <summary>
+            Solicitudes de cambio de información de assets
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.ChangeRequestsDto.#ctor(System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ChangeRequest},System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ChangeRequest})">
+            <summary>
+            Inicializa una nueva instancia de ChangeRequests
+            </summary>
+            <param name="subVariableChangeRequests"></param>
+            <param name="assetChangeRequests"></param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.FullCredentialDto">
+            <summary>
+            Credenciales de acceso y parametros necesarios para solicitar al servicio Web Api el bearer token de autenticacion.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.FullCredentialDto.UserName">
+            <summary>
+            Nombre de usuario en el sistema.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.FullCredentialDto.Password">
+            <summary>
+            Password del usuario en el sistema.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.FullCredentialDto.GrantType">
+            <summary>
+            Tipo de concesion para la autenticacion.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.FullCredentialDto.DbName">
+            <summary>
+            Nombre de la base de datos a la cual tiene acceso el usuario.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.FullCredentialDto.RememberMe">
+            <summary>
+            Bandera para determinar si se almacena informacion del usuario en una cookie del navegador.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.FullCredentialDto.ReturnUrl">
+            <summary>
+            URL a retornar al usuario una vez concluida la autenticacion de forma exitosa.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.LastSavedEventDto">
+            <summary>
+            Representa la información necesaria para especificar la estampa de tiempo del último evento generado
+            para determinado estado de condición de un activo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.LastSavedEventDto.AssetId">
+            <summary>
+            Id del activo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.LastSavedEventDto.StatusId">
+            <summary>
+            Id del estado de condición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.LastSavedEventDto.LastSavedEvent">
+            <summary>
+            Estampa de tiempo del último evento generado
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.LastSavedEventDto.#ctor(System.String,System.String,System.Nullable{System.DateTime})">
+            <summary>
+            Incializa una nueva instancia de LastSavedEventDto
+            </summary>
+            <param name="assetId">Id del activo</param>
+            <param name="statusId">Id del estado de condición</param>
+            <param name="lastSavedEvent">Estampa de tiempo del último evento generado</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableNodeStatusDto">
+            <summary>
+            Representa un objeto con el estado de un nodo tipo MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableNodeStatusDto.NodeId">
+            <summary>
+            Id del nodo MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableNodeStatusDto.StatusId">
+            <summary>
+            Id del estado
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto">
+            <summary>
+            Calcula y actualiza los parametros M y B de un punto de medición que está relacionado con un canal Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto.MdVariableId">
+            <summary>
+            Id del punto de medición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto.Gain">
+            <summary>
+            Ganancia de un canal Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto.Displacement">
+            <summary>
+            Desplazameniento de un canal Aconditioner
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto.Recalculate">
+            <summary>
+            Indica si los parametros M y B de un punto de medición deben ser Recalculados (Pasar de M' a M y B' a B o viceversa)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto.Serial">
+            <summary>
+            Serial del Aconditioner relacionado a un Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MdVariableUpdateMBDto.Channel">
+            <summary>
+            Número del canal Aconditioner
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasureDto">
+            <summary>
+            Representa una medida de un measurement point, ya sea un valor global o una señal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasureDto.SubVariableId">
+            <summary>
+            Id de SubVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasureDto.TimeStamp">
+            <summary>
+            Estampa de tiempo de la medida
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasureDto.Value">
+            <summary>
+            Valor de la medida que puede ser un número, un objeto Amaq Stream, etc..
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasureDto.Units">
+            <summary>
+            Unidades en las que la SubVariable es medida.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasureDto.#ctor(System.String,System.DateTime,System.Object,System.String)">
+            <summary>
+            Inicializa una nueva instancia de MeasureDto
+            </summary>
+            <param name="subVariableId"></param>
+            <param name="timeStamp"></param>
+            <param name="value"></param>
+            <param name="units"></param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasurementPointDto">
+            <summary>
+            Representa un punto de medición con una lista de medidas(Valores globales y/o señal)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasurementPointDto.MdVariableId">
+            <summary>
+            Id de MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasurementPointDto.XYPair">
+            <summary>
+            Relacion del par de MdVariables caso exista dicha relacion.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasurementPointDto.Measures">
+            <summary>
+            Lista de medidas asociadas al punto de medición
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasurementPointDto.#ctor(System.String,Amaq.Acloud.Aspectrogram.Entities.XYMeasurementPointPair,System.Collections.Generic.List{Amaq.Acloud.Aspectrogram.Entities.Dtos.MeasureDto})">
+            <summary>
+            Inicializa una nueva instancia de MeasurementPointDto
+            </summary>
+            <param name="mdVariableId"></param>
+            <param name="measures"></param>
+            <param name="xyPair"></param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto">
+            <summary>
+            Representa la información necesaria para registrar un paquete de evento en el servidor
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto.RecordedEventId">
+            <summary>
+            Id de RecordedEvent
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto.EventStatus">
+            <summary>
+            Estado del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto.EndOfEvent">
+            <summary>
+            Valor lógico que indica si el paquete actual representa el final del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto.PackageIndex">
+            <summary>
+            Indice o consecutivo del paquete de evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto.PackageDuration">
+            <summary>
+            Duración en minutos del paquete de evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto.OverallsPart">
+            <summary>
+            Flujo de bytes de los datos globales del paquete
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewEventPackageDto.WaveformsPart">
+            <summary>
+            Flujo de bytes de las formas de onda del paquete
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.SingleEventPackageDto">
+            <summary>
+            Utilidad para recuperar de forma individual un parte del paquete almacenado (overall + waveform)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.SingleEventPackageDto.OverallPart">
+            <summary>
+            Flujo de bytes de los datos globales del paquete
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.SingleEventPackageDto.WaveformPart">
+            <summary>
+            Flujo de bytes de las formas de onda del paquete
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto">
+            <summary>
+            Representa la información necesaria para registrar en el servidor un nuevo evento grabado 
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto.AssetId">
+            <summary>
+            Id de asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto.StatusId">
+            <summary>
+            Id de estado de condición. Solo aplica para los eventos por cambio de estado de condición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto.TimeStamp">
+            <summary>
+            Estampa de tiempo del comienzo del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto.EventType">
+            <summary>
+            Tipo de evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto.Step">
+            <summary>
+            Espaciamiento en segundos entre cada dato del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto.EventStatus">
+            <summary>
+            Estado del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NewRecordedEventDto.AssetInfoJsonBytes">
+            <summary>
+            Flujo de bytes del archivo assetInfo.json
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAndMdVariableDto">
+            <summary>
+            Entidades Node y MdVariable 
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAndMdVariableDto.MdVariableDto">
+            <summary>
+            Entidad MdVariable
+            </summary>        
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAndMdVariableDto.NodeDto">
+            <summary>
+            Entidad Node
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAssetMdVarAndSubVarDto">
+            <summary>
+            Entidad donde hay un listado de nodos, activos, puntos de medicion y subvariables
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAssetMdVarAndSubVarDto.Nodes">
+            <summary>
+            Lista de nodos  
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAssetMdVarAndSubVarDto.Assets">
+            <summary>
+            Lista de activos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAssetMdVarAndSubVarDto.MdVariables">
+            <summary>
+            Lista de puntos de medicion 
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeAssetMdVarAndSubVarDto.SubVariables">
+            <summary>
+            Lista de subvariables
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToDeleteDto">
+            <summary>
+            Representa un nodo que se va a eliminar en el sistema
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToDeleteDto.Id">
+            <summary>
+            Id del nodo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToDeleteDto.EntityType">
+            <summary>
+            Tipo de entidad del nodo
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto">
+            <summary>
+            Entidad node
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto.Id">
+            <summary>
+            Id del node
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto.Name">
+            <summary>
+            Nombre del node
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto.Description">
+            <summary>
+            Descripción del node
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto.EntityType">
+            <summary>
+            Tipo de nodo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.NodeToUpdateDto.EntityId">
+            <summary>
+            Id del tipo de entidad
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto">
+            <summary>
+            Representa un item de datos tiempo real
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto.SubVariableId">
+            <summary>
+            Id de la SubVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto.ValueType">
+            <summary>
+            Tipo de valor que indica como tratar la propiedad Value
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto.Value">
+            <summary>
+            Valor que puede ser un número, un objeto Amaq Stream, etc..
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto.TimeStamp">
+            <summary>
+            Estampa de tiempo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto.StatusId">
+            <summary>
+            Id del estado de condición de la subVariable
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto.#ctor">
+            <summary>
+            Constructor por defecto.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeDataItemDto.#ctor(System.String,System.Object,System.DateTime,System.String,Amaq.Acloud.Entities.Enums.ValueType)">
+            <summary>
+            Inicializa una nueva instancia de RealTimeDataItemDto
+            </summary>
+            <param name="subVariableId">Id de subVariable</param>
+            <param name="valueType">Tipo de valor</param>
+            <param name="value">Valor</param>
+            <param name="timeStamp">Estampa de tiempo</param>
+            <param name="statusId">Id de estado</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto">
+            <summary>
+            Representa la lista de subVariables tiempo real solicitadas para un asdaq específico
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto.AsdaqId">
+            <summary>
+            Id de asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto.SubVariableIdList">
+            <summary>
+            Lista de id de subVariables
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto.#ctor">
+            <summary>
+            Inicializa una nueva instancia de RealTimeRequestsByAsdaq
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAsdaqDto.#ctor(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Inicializa una nueva instancia de RealTimeRequestsByAsdaq
+            </summary>
+            <param name="asdaqId"></param>
+            <param name="subVariableIdList"></param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAtrDto">
+            <summary>
+            Representa la lista de subVariables tiempo real solicitadas para un atr específico
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAtrDto.AtrId">
+            <summary>
+            Id de atr
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAtrDto.SubVariableIdList">
+            <summary>
+            Lista de id de subvariables
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAtrDto.#ctor">
+            <summary>
+            Inicializa una nueva instancia de RealTimeRequestsByAtr
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.RealTimeRequestsByAtrDto.#ctor(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Inicializa una nueva instancia de RealTimeRequestsByAtr
+            </summary>
+            <param name="atrId"></param>
+            <param name="subVariableIdList"></param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.SubVariableToClone">
+            <summary>
+            Representa una SubVariable que se va a clonar en el sistema
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.SubVariableToClone.ParentId">
+            <summary>
+            Padre de la SubVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.SubVariableToClone.MdVariableId">
+            <summary>
+            Id de la MdVariable que a la vez es el parentId de la SubVariable
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.UpdateAngularReferenceIdDto">
+            <summary>
+            Actualiza la propiedad AngularReferenceId de un punto de medición o activo (RpmEventConfig) cuando existe un copiar - pegar 
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.UpdateAngularReferenceIdDto.IdOld">
+            <summary>
+            Id antiguo de un punto de medición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.UpdateAngularReferenceIdDto.SensorTypeCode">
+            <summary>
+            Tipo de sensor de un punto de medición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.UpdateAngularReferenceIdDto.IdNew">
+            <summary>
+            Id nuevo de un punto de medición o activo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.UpdateAngularReferenceIdDto.AngularReferenceIdOld">
+            <summary>
+            AngularReferenceId antiguo de un punto de medición o activo (RpmEventConfig)
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.UpdateAngularReferenceIdDto.#ctor">
+            <summary>
+            Incializa una nueva instancia de UpdateAngularReferenceIdDto sin parametros
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.UpdateAngularReferenceIdDto.#ctor(System.String,System.Int32,System.String,System.String)">
+            <summary>
+            Incializa una nueva instancia de UpdateAngularReferenceIdDto para puntos de medición
+            </summary>
+            <param name="idOld">Id antiguo de un punto de medición</param>
+            <param name="sensorTypeCode"> Tipo de sensor de un punto de medición</param>
+            <param name="idNew">Id nuevo de un punto de medición</param>
+            <param name="angularReferenceIdOld">AngularReferenceId antiguo de un punto de medición</param>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.Dtos.UpdateAngularReferenceIdDto.#ctor(System.String,System.String)">
+            <summary>
+            Incializa una nueva instancia de UpdateAngularReferenceIdDto para activos
+            </summary>
+            <param name="idNew">Id nuevo de un activo</param>
+            <param name="angularReferenceIdOld">AngularReferenceId antiguo del objeto RpmEventConfig de un activo</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.UserPreferences">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.UserPreferences.UserConfiguration">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.UserPreferences.User">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.AtrModuleType">
+            <summary>
+            Tipo de módulo Atransmitter
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.AtrModuleType.Siesmic">
+            <summary>
+            Sísmico
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.AtrModuleType.TemperatureRtd">
+            <summary>
+            Rtd
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.AtrModuleType.TemperatureTc">
+            <summary>
+            Termopar
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.ClearanceStartingPoint">
+            <summary>
+            Cuando se visualize el trazado de la posicion del eje se toma como punto de partida,
+            los puntos sobre el clearance Abajo, Centro, Arriba, Izquierda y Derecha
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.ClearanceStartingPoint.Bottom">
+            <summary>
+            Referencia de arranque en la parte inferior del clearance (por defecto para maquinas horizontales)
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.ClearanceStartingPoint.Center">
+            <summary>
+            Referencia de arranque en la parte central del clearance
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.ClearanceStartingPoint.Top">
+            <summary>
+            Referencia de arranque en la parte superior del clearance
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.ClearanceStartingPoint.Left">
+            <summary>
+            Referencia de arranque en la parte izquierda del clearance
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.ClearanceStartingPoint.Right">
+            <summary>
+            Referencia de arranque en la parte derecha del clearance
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.DynamicActionOnEvent">
+            <summary>
+            Acciones dinámicas que se pueden realizar sobre la configuración de eventos de estado de condición o cambio de velocidad
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.DynamicActionOnEvent.None">
+            <summary>
+            Ninguna
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.DynamicActionOnEvent.Update">
+            <summary>
+            Actualizar configuración del evento
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.DynamicActionOnEvent.Delete">
+            <summary>
+            Eliminar la configuración del evento
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.EventStatus">
+            <summary>
+            Estado de un evento
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.EventStatus.Recording">
+            <summary>
+            El evento actualmente se está grabando
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.EventStatus.Uploading">
+            <summary>
+            El evento está grabado completamente pero está siendo transferido desde el asdaq hacia el servidor
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.EventStatus.Unread">
+            <summary>
+            El evento está grabado completamente pero no ha sido leido por un usuario
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.EventStatus.Read">
+            <summary>
+            El evento está grabado completamente y ha sido leido por un usuario
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.EventType">
+            <summary>
+            Tipos de evento que puede grabar el sistema Asdaq
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.EventType.Scheduled">
+            <summary>
+            Evento programado por el usuario
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.EventType.Rpm">
+            <summary>
+            Evento por arranque o parada basado en medidas de velocidad
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.EventType.ConditionStatus">
+            <summary>
+            Evento por cambio de estado de condición
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.MaterialType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MaterialType.Cobre">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MaterialType.Nickel">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MaterialType.Platino">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasuresSystem">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasuresSystem.Metric">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasuresSystem.Imperial">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasuresSystem.Both">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType">
+            <summary>
+            Tipos de medida derivados de una señal
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.Peak">
+            <summary>
+            Valor pico(pk)
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.PeakToPeak">
+            <summary>
+            Valor pico pico(pkpk)
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.Rms">
+            <summary>
+            Valor RMS
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.Amplitude1x">
+            <summary>
+            Valor de amplitud 1x
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.Phase">
+            <summary>
+            Valor de fase
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.Phase1x">
+            <summary>
+            Valor de fase 1x
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.Gap">
+            <summary>
+            Valor GAP en voltios
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.Average">
+            <summary>
+            Valor promedio
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.Rpm">
+            <summary>
+            Valor de velocidad en Rpm. Solo aplica para los puntos de medición de referencia angular
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.AxialPosition">
+            <summary>
+            Valor de desplazamiento axial para análisis Thrust Bearing
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.MagneticFluxAmplitude">
+            <summary>
+            Amplitud de flujo magnetico
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasureType.MagneticFluxPhase">
+            <summary>
+            Fase de flujo magnetico
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.RotationDirection">
+            <summary>
+            Sentido de rotacion nominal del eje
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.RotationDirection.CW">
+            <summary>
+            Manecillas del reloj
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.RotationDirection.CCW">
+            <summary>
+            Contramanecillas del reloj
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.AmaqDataType">
+            <summary>
+            Tipo de dato de los valores del array de señal
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.SensorOrientation">
+            <summary>
+            Las diferentes orientaciones que puede tener un sensor instalado
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.SensorOrientation.X">
+            <summary>
+            Radial en X
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.SensorOrientation.Y">
+            <summary>
+            Radial en Y
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.SensorOrientation.Axial">
+            <summary>
+            Axial
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.SensorOrientation.Radial">
+            <summary>
+            Radial
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.StreamType">
+            <summary>
+            Tipo de información almacenada en el Amaq Stream
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.TripMultiply">
+            <summary>
+            Opciones de multiplicación para los umbrales de estado de condición en etapas transientes de una máquina(Arranque/Parada).
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TripMultiply.None">
+            <summary>
+            Ninguno
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TripMultiply.TwoX">
+            <summary>
+            2X
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TripMultiply.ThreeX">
+            <summary>
+            3X
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.CPS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.Hz">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.CPM">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.RPM">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent">
+            <summary>
+            Representa un evento grabado de condición u otro tipo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.AssetId">
+            <summary>
+            Id de asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.StatusId">
+            <summary>
+            Id de estado de condición. Solo aplica para los eventos por cambio de estado de condición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.TimeStamp">
+            <summary>
+            Estampa de tiempo del comienzo del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.EventType">
+            <summary>
+            Tipo de evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.Duration">
+            <summary>
+            Duración total del evento en minutos. Desde la interfaz de usuario se le debe dar manejo para mostrar en diferentes unidades de tiempo
+            o formato
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.Status">
+            <summary>
+            Estado del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.Step">
+            <summary>
+            Espaciamiento en segundos entre cada dato del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.AssetInfoJsonFileId">
+            <summary>
+            Id del archivo assetInfo.json en GridFS
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.PackageFileIdList">
+            <summary>
+            Lista de ids de los paquetes del evento en GridFS
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent.AssetInfoJson">
+            <summary>
+            Propiedad usada exclusivamente para obtener la informacion del evento en la misma consulta
+            de los valores generales de duracion, tipo de evento, etc.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension">
+            <summary>
+            Extensión de la entidad MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.AiMeasureMethod">
+            <summary>
+             Configuración necesaria para la llamada dinámica a un método AiChannel de National Instruments
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.Sensibility">
+            <summary>
+            Valor de sensibilidad del sensor asociado al punto de medición, siempre está en milivoltios/unidad
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.SensorTypeCode">
+            <summary>
+            Código del tipo de sensor
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.SensorAngle">
+            <summary>
+            Angulo (degrees) segun fue posicionado el sensor
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.IsAngularReference">
+            <summary>
+            Valor lógico que indica si el punto de medición es o no una marca de paso
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.AngularReferenceConfig">
+            <summary>
+            Configuracion de parametros de referencia angular o marca de paso
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.Integrate">
+            <summary>
+            Valor lógico que indica si la forma de onda se debe integrar con la regla trapezoidal.
+            Esta opción solo aplica para acelerómetros y velocímetros
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.AngularReferenceId">
+            <summary>
+            Id de la MdVariable que actúa como sensor de referencia angular para el punto de medición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.RotationDirection">
+            <summary>
+            Sentido de giro del eje.
+            Esta propiedad se debe configurar unicamente para el sensor de referencia angular,
+            esto debido a que una maquina puede tener varios ejes.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.SamplesToDb">
+            <summary>
+            Valor numerico que indica cuantas muestras de las muestras adquiridas se van a almacenar en la base de datos. El valor debe ser un número menor o igual
+            que SamplesToRead, si el valor es menor, entonces la resolución de la señal disminuye
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.Units">
+            <summary>
+            Unidad en la que se expresa el valor de la MdVariable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.SamplesAcquiredFullId">
+            <summary>
+            CAT: COMENTAR
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.SamplesAcquiredDeviceId">
+            <summary>
+            Nombre del dispositivo National Instruments donde se van a buscar las muestras adquiridas para la MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.SamplesAcquiredIndex">
+            <summary>
+            Indice para buscar las muestras adquiridas para la MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.SamplesAcquired">
+            <summary>
+            Últimas muestras adquiridas
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.IntegratedWaveform">
+            <summary>
+            Forma de onda integrada. Solo aplica si el sensor en acelerómetro y velocímetro
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.SubVariables">
+            <summary>
+            Lista de subVariables asociados al punto de medicion
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.AssociatedMeasurementPointId">
+            <summary>
+            Id del punto de medicion asociado (Par)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.Clearance">
+            <summary>
+            Clearence del punto de medicion
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.GapReference">
+            <summary>
+            Referencia de Gap
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.CompAmp1X">
+            <summary>
+            Referencia de Amplitud 1X (Compensacion). Aplica solo para MeasureType = Amplitude1X
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.CompPhase1X">
+            <summary>
+            Referencia de Fase 1X (Compensacion). Aplica solo para MeasureType = Phase1X
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.ClearanceStartingPosition">
+            <summary>
+            Posicion inicial de graficacion del clearance
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.Orientation">
+            <summary>
+            Orientacion del punto de medicion
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.PrincipalAssetId">
+            <summary>
+            Id del asset principal padre
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.AngularPositions">
+            <summary>
+            Posición del primer flanco de referencia angular
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.Step">
+            <summary>
+            Cantidad de señales entre el primer flanco y el último flanco, necesario para los cálculos de
+            Rpm, Amplitud 1x y fase 1x.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.RtdParams">
+            <summary>
+            Representa los parámetros de un sensor RTD
+            </summary>        
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.CurrentParams">
+            <summary>
+            Representa los parámetros de un sensor de corriente
+            </summary>        
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.VoltageParams">
+            <summary>
+            Representa los parámetros de un sensor de voltaje
+            </summary>        
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.MagneticFlowParams">
+            <summary>
+            Representa los parámetros de un sensor de flujo magnético
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.OrderPosition">
+            <summary>
+            Posición del punto de medición con relación al listBox
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.SensorType">
+            <summary>
+            Representa un tipo de sensor, el cual influye en el tratamiento de la señal adquirida
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SensorType.Code">
+            <summary>
+            Código del tipo de sensor, normalmente debe ser un consecutivo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SensorType.Name">
+            <summary>
+            Nombre con el cual se identifica al tipo de sensor
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SensorType.Description">
+            <summary>
+            Descripción detallada del tipo de sensor
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.StatusExtension">
+            <summary>
+            Extensión de la entidad Status
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension">
+            <summary>
+            Extensión de la entidad SubVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.MeasureType">
+            <summary>
+            Tipo de medida derivado de una señal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.FromIntegratedWaveform">
+            <summary>
+            Valor lógico que indica si una medida se va a derivar o no de la forma de onda integrada. Solo aplica para
+            subVariables con ValueType.Numeric y mdVariable padre con propiedad Integrate = true.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.GapCalibrationValue">
+            <summary>
+            Valor de calibración del GAP. Aplica solo si MeasureType = Gap
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.InitialAxialPosition">
+            <summary>
+            Valor de desplazamiento inicial en Voltios. Aplica solo si MeasureType = AxialPosition
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.ReferenceCompesation">
+            <summary>
+            Valor de referencia para la compensacion. Aplica solo si MeasureType = Amplitude1x y Phase1x
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.BandsOrderBySeverityDesc">
+            <summary>
+            Lista de threshold cada uno con la propiedad Severity para facilitar los cálculos de estados en Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.StatusSeverity">
+            <summary>
+            Severidad del estado actual de la subVariable para facilitar los cálculos de estados en Asdaq
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.LastValueByDeadBand">
+            <summary>
+            Último valor que superó la banda muerta
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.SubVariableExtension.AngularReferencePositions">
+            <summary>
+            Vector de posiciones de referencia angular. Solo aplica si el punto de medición es referencia angular
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AiMeasureMethod">
+            <summary>
+            Representa la configuración necesaria para la llamada dinámica a un método AiChannel de National Instruments
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AiMeasureMethod.AiMethodId">
+            <summary>
+            Relación uno a uno con AiChannelMethod
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AiMeasureMethod.Name">
+            <summary>
+            Nombre del método
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AiMeasureMethod.ParameterTypes">
+            <summary>
+            El tipo de cada parámetro, necesario para convertir el valor de dicho parámetro a su tipo original
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AiMeasureMethod.ParameterValues">
+            <summary>
+            Valores de cada parámetro del método
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AiMeasureMethod.M">
+            <summary>
+            Parámetro m de la ecuación y = mx + b
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AiMeasureMethod.B">
+            <summary>
+            Parámetro b de la ecuación y = mx + b
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AiMeasureMethod.AiCoupling">
+            <summary>
+            Acople DC ó AC dependiendo de si la tarjeta de adquisición o módulo de cDAQ tiene característica de acople
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AngularReferenceConfig">
+            <summary>
+            Representa la configuración para una MdVariable con la propiedad IsAngularReference con valor true
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AngularReferenceConfig.MinimumNoiseInVolts">
+            <summary>
+            Ruido en voltios a partir del cual se detectan flancos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AngularReferenceConfig.TresholdPercentage">
+            <summary>
+            Primer umbral del Schmitt Trigger
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AngularReferenceConfig.HysteresisTresholdPercentage">
+            <summary>
+            Umbral de histeresis del Schmitt Trigger
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AxesProperties">
+            <summary>
+            Diferentes propiedades que pueden estar relacionadas a un eje
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AxesProperties.AngularReferenceId">
+            <summary>
+            Id de la referencia angular asociada al eje
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AxesProperties.MaximumVelocity">
+            <summary>
+            Velocidad maxima que puede ser alcanzada mecanicamente segun el fabricante
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.BandWithSeverity">
+            <summary>
+            Representa un Threshold con Severity como propiedad adicional para facilitar el cálculo de estados de condición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.BandWithSeverity.Severity">
+            <summary>
+            Severidad
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.BandWithSeverity.LastTriggering">
+            <summary>
+            Estampa de tiempo de la última superación del umbral(Threshold)
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ChangeRequest">
+            <summary>
+            Representa una solicitud de cambio de información de subVariable o asset que un Asdaq Service debe
+            tomar dinamicamente
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ChangeRequest.EntityId">
+            <summary>
+            Id de la entidad
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ChangeRequest.#ctor(System.String)">
+            <summary>
+            Inicializa una nueva instancia de ChangeRequest
+            </summary>
+            <param name="entityId"></param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.CurrentParams">
+            <summary>
+            Representa los parametros de un sensor de corriente
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.CurrentParams.Imax">
+            <summary>
+            Corriente máxima
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.CurrentParams.Imin">
+            <summary>
+            Corriente mínima
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.CurrentParams.Xmax">
+            <summary>
+            Valor máximo en las unidades del sensor
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.CurrentParams.Xmin">
+            <summary>
+            Valor mínimo en las unidades del sensor
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig">
+            <summary>
+            Representa la configuración de grabación de evento para un estado de condición específico
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.StatusId">
+            <summary>
+            Id del estado
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.Enabled">
+            <summary>
+            Activar o desactivar la grabación de este tipo de evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.Interval">
+            <summary>
+            Intervalo de tiempo en minutos que indica cada cuanto se graba un evento de este tipo
+            en caso de que se repita el estado muy frecuentemente
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.MinutesBefore">
+            <summary>
+            Máxima cantidad de minutos antes de ocurrir el evento que se van a guardar
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.MinutesAfter">
+            <summary>
+            Máxima cantidad de minutos despues de ocurrir el evento que se van a guardar
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.NotifyList">
+            <summary>
+            Lista de usuarios notificados por el disparo de este evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.LastSavedEvent">
+            <summary>
+            Estampa de tiempo del último evento grabado
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.DynamicActionOnEvent">
+            <summary>
+            Accion dinámica sobre la configuración del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.ConfigChanges">
+            <summary>
+            Cambios en la configuración del evento que deben aplicarse. Solo aplica si DynamicActoinOnEvent es igual a Update
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.MailLayout">
+            <summary>
+            Plantilla del correo en la configuración de eventos por estados de condición de un activo principal
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.#ctor">
+            <summary>
+            Cosntructor vacio por defecto
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ConditionStatusEventConfig.#ctor(System.String,System.Boolean,System.Double,System.Double,System.Double)">
+            <summary>
+            Inicializa una nueva instancia de EventConfiguration
+            </summary>
+            <param name="statusId">Id de estado</param>
+            <param name="enabled">Activar o desactivar la grabación de este tipo de evento</param>
+            <param name="interval">Intervalo de tiempo en minutos que indica cada cuanto se graba un evento de este tipo 
+            en caso de que se repita el estado muy frecuentemente</param>
+            <param name="minutesBefore">Máxima cantidad de minutos antes de ocurrir el evento que se van a guardar</param>
+            <param name="minutesAfter">Máxima cantidad de minutos despues de ocurrir el evento que se van a guardar</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig">
+            <summary>
+            Representa la configuración de grabación de evento por transitorios de rpm (Cambios de velocidad)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.AngularReferenceId">
+            <summary>
+            Id de la MdVariable que actúa como referencia angular
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.Enabled">
+            <summary>
+            Activar o desactivar la grabación de este tipo de evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.DeltaRpm">
+            <summary>
+            Delta de Rpm, que al superarse o igualarse dispara la grabación detallada
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.LowRpm">
+            <summary>
+            Determina el valor mínimo de Rpm de arranque donde se considera que el asset está en estado transitorio
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.UpperRpm">
+            <summary>
+            Determina el valor máximo de Rpm de arranque donde se considera que el asset está en estado transitorio
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.MinutesBefore">
+            <summary>
+            Máxima cantidad de minutos antes, que se van a grabar luego de dispararse la eventualidad
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.MinutesAfter">
+            <summary>
+            Máxima cantidad de minutos despues, que se van a grabar luego de dispararse la eventualidad
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.NotifyList">
+            <summary>
+            Lista de usuarios notificados por el disparo de este evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.LastEvent">
+            <summary>
+            Estampa de tiempo del último cambio de velocidad detectado por el  sistema
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.DynamicActionOnEvent">
+            <summary>
+            Accion dinámica sobre la configuración del evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.ConfigChanges">
+            <summary>
+            Cambios en la configuración del evento que deben aplicarse. Solo aplica si DynamicActoinOnEvent es igual a Update
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.#ctor">
+            <summary>
+            Constructor RpmEventConfig por defecto
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RpmEventConfig.#ctor(System.String,System.Boolean,System.Double,System.Double,System.Double)">
+            <summary>
+            Inicializa una nueva instancia de EventConfiguration
+            </summary>
+            <param name="angularReferenceId">Id de la MdVariable que actúa como referencia angular</param>
+            <param name="enabled">Activar o desactivar la grabación de este tipo de evento</param>
+            <param name="rpmDelta">Delta de Rpm, que al superarse o igualarse dispara la grabación detallada</param>
+            <param name="minutesBefore">Máxima cantidad de minutos antes, que se van a grabar luego de dispararse la eventualidad</param>
+            <param name="minutesAfter">Máxima cantidad de minutos despues, que se van a grabar luego de dispararse la eventualidad</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ScheduledEvent">
+            <summary>
+            Representa un evento programado por el usuario para ser grabado en una fecha y hora específica
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ScheduledEvent.StartingTimeStamp">
+            <summary>
+            Fecha y hora en la cual se va a comezar a grabar el evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.ScheduledEvent.Duration">
+            <summary>
+            Duración total en minutos que se va a grabar. El valor por defecto es 0, el cual indica que el evento solo se 
+            detendrá por acción de usuario que indica detener la grabación del evento
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AssetInfo">
+            <summary>
+            Representa la información de un asset necesaria para mostrar al usuario cuando se listan o reproducen eventos grabados
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AssetInfo.Name">
+            <summary>
+            Nombre del asset
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.AssetInfo.MeasurementPoints">
+            <summary>
+            Lista de puntos de medición
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MeasurementPointInfo">
+            <summary>
+            Representa la información de un punto de medición necesaria para mostrar al usuario cuando se reproducen eventos grabados
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MeasurementPointInfo.Name">
+            <summary>
+            Nombre del measurementPoint
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MeasurementPointInfo.SubVariables">
+            <summary>
+            Lista de subVariables
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo">
+            <summary>
+            Representa la información de una subVariable necesaria para mostrar al usuario cuando se reproducen eventos grabados
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.Name">
+            <summary>
+            Nombre de la subVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.MeasureType">
+            <summary>
+            Tipo de medida derivado de una señal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.ValueType">
+            <summary>
+            Tipo de valor de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.DataType">
+            <summary>
+            Tipo de dato de la propiedad Value, ya sea de su valor directo o en caso de ser un array DataType indica el tipo de dato de los elementos del array
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.IsDefaultValue">
+            <summary>
+            Indica si la subVariable está establecida como el valor por defecto que se mostrará de la MdVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.Bands">
+            <summary>
+            Listado de zonas, cada una con 1 o 2 umbrales(LowerThreshold y UpperThreshold)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.Maximum">
+            <summary>
+            Valor máximo para la subVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.Minimum">
+            <summary>
+            Valor mínimo para la subVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SubVariableInfo.Units">
+            <summary>
+            Unidad en la que se expresa el valor de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.EventPackageFilesId">
+            <summary>
+            Representa los id de los dos archivos que conforman un paquete de evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.EventPackageFilesId.OverallsPartId">
+            <summary>
+            Id en GridFS del archivo que contiene los datos globales del paquete de evento
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.EventPackageFilesId.WaveformsPartId">
+            <summary>
+            Id en GridFS del archivo que contiene las formas de onda del paquete de evento
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.HistoricalConfigurationByStatus">
+            <summary>
+            Representa la configuración de almacenamiento de datos históricos por estado de condición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.HistoricalConfigurationByStatus.StatusId">
+            <summary>
+            Id del estado
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.HistoricalConfigurationByStatus.Enabled">
+            <summary>
+            Activar o desactivar
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.HistoricalConfigurationByStatus.Interval">
+            <summary>
+            Intervalo de tiempo en minutos que indica cada cuanto se suben datos históricos para el mismo estado de condición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.HistoricalConfigurationByStatus.LastSavedHistorical">
+            <summary>
+            Estampa de tiempo de los últimos datos históricos guardados debido el estado de condición
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.HistoricalConfigurationByStatus.#ctor(System.String,System.Boolean,System.Double)">
+            <summary>
+            Inicializa una nueva instancia de HistoricalConfigurationByStatus
+            </summary>
+            <param name="statusId">Id de estado</param>
+            <param name="enabled">Activar o desactivar la grabación de este tipo de evento</param>
+            <param name="interval">Intervalo de tiempo en minutos que indica cada cuanto se suben datos históricos para el mismo estado de condición</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MagneticFlowParams">
+            <summary>
+            Representa los parámetros de un sensor de flujo magnético 
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MagneticFlowParams.PolesCount">
+            <summary>
+            Cantidad de polos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MagneticFlowParams.Pole1Angle">
+            <summary>
+            Ángulo del polo 1 respecto de la muesca de referencia angular
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MagneticFlowParams.PolarGraphRange">
+            <summary>
+            Rango de la gráfica polar en Teslas (Es un solo valor debido a que el rango es simétrico)
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailAccountConfiguration">
+            <summary>
+            Representa la configuración de una cuenta de correo electrónico. Por el momento solo se requieren los
+            parámetros SMTP, ya que estas cuentas son solo para envío y no para recepción.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailAccountConfiguration.SmtpServer">
+            <summary>
+            Servidor SMTP
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailAccountConfiguration.SmtpPort">
+            <summary>
+            Puerto SMTP
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailAccountConfiguration.UserName">
+            <summary>
+            Nombre de usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailAccountConfiguration.Password">
+            <summary>
+            Clave de acceso
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailAccountConfiguration.UseSsl">
+            <summary>
+            Valor lógico que indica si se utiliza o no un canal cifrado SSL para la gestión de correos electrónicos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailAccountConfiguration.FromAddress">
+            <summary>
+            Direccion de correo electronico remitente.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailLayout">
+            <summary>
+            Plantilla del correo en la configuración de eventos por estados de condición de un activo principal
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailLayout.Subject">
+            <summary>
+            Asunto del correo   
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.MailLayout.Message">
+            <summary>
+            Mensaje del correo
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.NotificationReceiver">
+            <summary>
+            Representa la configuración de notificaciones de un usuario para un evento de activo en particular
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.NotificationReceiver.UserId">
+            <summary>
+            Id del usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.NotificationReceiver.SendMail">
+            <summary>
+            Valor lógico que indica si se envían o no correos electrónicos de notificación de evento al usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.NotificationReceiver.SendSms">
+            <summary>
+            Valor lógico que indica si se envían o no mensajes SMS de notificación de evento al usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.NotificationReceiver.Email">
+            <summary>
+            Correo electrónico donde se envían las notificaciones
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.NotificationReceiver.Cellphone">
+            <summary>
+            Número de celular donde se envían las notificaciones
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RealTimeRequest">
+            <summary>
+            Representa una solicitud de datos tiempo real de una subVariable específica
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RealTimeRequest.SubVariableId">
+            <summary>
+            Id de la subVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RealTimeRequest.TimeStamp">
+            <summary>
+            Estampa de tiempo de la última solicitud
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RealTimeRequest.#ctor(System.String,System.DateTime)">
+            <summary>
+            Inicializa una nueva instancia de RealTimeRequest
+            </summary>
+            <param name="subVariableId">Id de la subVariable</param>
+            <param name="timeStamp">Estampa de tiempo de la última solicitud</param>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RTDParams">
+            <summary>
+            Representa los parametros de un sensor RTD
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RTDParams.MaterialType">
+            <summary>
+            Tipo de material del sensor
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RTDParams.Ro">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RTDParams.Coefficient">
+            <summary>
+            Coeficiente de temperatura
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.RTDParams.Iex">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SclOptions">
+            <summary>
+            Diferentes opciones exclusivas para la visualizacion de la posicion del eje
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SclOptions.XClearance">
+            <summary>
+            Valor de clearance en X
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SclOptions.YClearance">
+            <summary>
+            Valor de clearance en Y
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SclOptions.XGapReference">
+            <summary>
+            Referencia de Gap con el que se galga el sensor en X o la que configure el usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SclOptions.YGapReference">
+            <summary>
+            Referencia de Gap con el que se galga el sensor en Y o la que configure el usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.SclOptions.StartingPoint">
+            <summary>
+            Posicion inicial de graficacion del clearance
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.VoltageParams">
+            <summary>
+            Representa los parametros de un sensor de voltaje
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.VoltageParams.Vmax">
+            <summary>
+            Voltaje máximo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.VoltageParams.Vmin">
+            <summary>
+            Voltaje mínimo
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.VoltageParams.Xmax">
+            <summary>
+            Valor máximo en las unidades del sensor
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.ValueObjects.VoltageParams.Xmin">
+            <summary>
+            Valor mínimo en las unidades del sensor
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.XYMeasurementPointPair">
+            <summary>
+            Representa la relación de un par de puntos de medición XY, necesario para algunos gráficos de análisis
+            como Orbital, SCL, etc...
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.XYMeasurementPointPair.AssetId">
+            <summary>
+            Id del Asset al que pertenece el punto de medicion
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.XYMeasurementPointPair.XMdVariableId">
+            <summary>
+            Id MdVariable en X
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.XYMeasurementPointPair.YMdVariableId">
+            <summary>
+            Id MdVariable en Y
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.XYMeasurementPointPair.SclOptions">
+            <summary>
+            Diferentes opciones para la graficacion de la posicion del eje (shaft centerline)
+            </summary>
+        </member>
+        <member name="T:BearingFaultFrequency">
+            <summary>
+            Frecuencia de falla del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.Mark">
+            <summary>
+            Marca del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.Reference">
+            <summary>
+            Referencia del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.NumberOfBalls">
+            <summary>
+            Número de bolas del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.FundamentalTrainFrequency">
+            <summary>
+            FC, Frecuencia fundamental del tren
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.BallSpinFrequency">
+            <summary>
+            FB, Frecuencia de giro de la bola
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.FrequencyOuter">
+            <summary>
+            FO, Frecuencia del exterior del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.FrequencyInner">
+            <summary>
+            FI, Frecuencia del interior del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.PitchDiameter">
+            <summary>
+            Diámetro de paso del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.BallsDiameter">
+            <summary>
+            Diámetro de las bolas del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.ContactAngle">
+            <summary>
+            Tetha del rodamiento
+            </summary>
+        </member>
+    </members>
+</doc>
