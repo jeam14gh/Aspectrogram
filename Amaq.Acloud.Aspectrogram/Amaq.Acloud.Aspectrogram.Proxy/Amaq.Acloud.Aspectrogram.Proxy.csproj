@@ -62,6 +62,7 @@
     <Compile Include="AsdaqProxy.cs" />
     <Compile Include="AssetExtensionProxy.cs" />
     <Compile Include="AtrProxy.cs" />
+    <Compile Include="BearingFaultFrequencyProxy.cs" />
     <Compile Include="MdVariableExtensionProxy.cs" />
     <Compile Include="NodeExtensionProxy.cs" />
     <Compile Include="Properties.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="SensorTypeProxy.cs" />
     <Compile Include="StatusExtensionProxy.cs" />
     <Compile Include="SubVariableExtensionProxy.cs" />
+    <Compile Include="UserConfigurationExtensionProxy.cs" />
     <Compile Include="XYMeasurementPointPairProxy.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -88,10 +88,11 @@ ListboxControl = (function () {
                     value: "Name",
                     text: "Name"
                 },
+                cssClass: "listboxPoints",
                 dataSource: ej.DataManager(data).executeLocal(ej.Query().sortBy("OrderPosition", ej.sortOrder.Ascending, false)),
                 template: "<div style='height:26px;margin:2px' id=\"${NodeId}\">" +
                                 "<div style='display:inline;margin: 5px 0px;position:absolute' id=\"${NodeId}\" >" +
-                                    "<span class=\"fa fa-circle icon-large\" style=\"background-color:transparent;color:black;padding:2px;\"></span> ${Name}" +
+                                    "<span class=\"fa fa-circle\" style=\"background-color:transparent;color:black;padding:2px;\"></span> ${Name}" +
                                 "</div>" +
                                 "<div class='upDown hidden' style='width:10%;display:inline; float:right; padding: 0px 5px'><i id='upPoint' class='fa fa-chevron-up'></i><br><i id='downPoint' class='fa fa-chevron-down'></i></div>" +
                             "</div>",
@@ -117,11 +118,13 @@ ListboxControl = (function () {
                         var aiChannelsGridCurrent = $("#" + childGridCurrent + " > #detailGridDevice").data("ejGrid");
 
                         if (typeof aiChannelsGridCurrent != "undefined") {
-                            var _index = $(args.dropTarget[0]).parent()[0].rowIndex; // Index del punto arrastrado
-                            var ds = aiChannelsGridCurrent.model.dataSource;
-                            var aiChannel = aiChannelsGridCurrent.model.currentViewData[_index];
-                            var state = true;
-                            var isAtr = false;
+                            var _index = $(args.dropTarget[0]).parent()[0].rowIndex, // Index del punto arrastrado
+                                ds = aiChannelsGridCurrent.model.dataSource,
+                                aiChannel = aiChannelsGridCurrent.model.currentViewData[_index],
+                                state = true,
+                                pathName = "", // Ruta de donde se encuentra relacionado el punto de medición 
+                                isAtr = false;
+
                             if (!aiChannel.MdVariableId) {
 
                                 // Atransmitter: Se valida que la MdVariable no esté asociada con otro AiChannel
@@ -131,6 +134,7 @@ ListboxControl = (function () {
                                         for (var m = 0; m < atr[a].Modules.length; m++) {
                                             for (var c = 0; c < atr[a].Modules[m].AiChannels.length; c++) {
                                                 if (atr[a].Modules[m].AiChannels[c].MdVariableId == mdVariableItemDrop) {
+                                                    pathName = atr[a].Alias + " - " + atr[a].Modules[m].Alias;
                                                     state = false;
                                                 }
                                             }
@@ -146,6 +150,7 @@ ListboxControl = (function () {
                                             for (var m = 0; m < asdaq[i].NiDevices.length; m++) {
                                                 for (var a = 0; a < asdaq[i].NiDevices[m].AiChannels.length; a++) {
                                                     if (asdaq[i].NiDevices[m].AiChannels[a].MdVariableId == mdVariableItemDrop) {
+                                                        pathName = asdaq[i].Alias + " - " + asdaq[i].NiDevices[m].Name;
                                                         state = false;
                                                     }
                                                 }
@@ -199,7 +204,7 @@ ListboxControl = (function () {
 
                                 // Mensaje de alerta
                                 if (!state) {
-                                    popUp("error", "El punto de medición ya tiene un canal relacionado.");
+                                    popUp("error", "El punto de medición ya está relacionado en " + pathName);
                                 }
                             }
                         }

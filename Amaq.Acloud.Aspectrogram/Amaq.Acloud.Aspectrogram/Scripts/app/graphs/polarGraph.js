@@ -41,6 +41,8 @@ PolarGraph = (function () {
             _side,
             // Rangos maximos y minimos del grafico, tanto en el eje X como en el eje Y
             _graphRange,
+            // Bandera que indica si el cursor esta bloqueado o siguiendo el movimiento del mouse
+            _cursorLock,
             // Mantiene el ultimo evento mousemove que se realizo sobre la grafica
             _lastMousemoveEvt,
             // Valor booleano que indica si el usuario tiene el mouse sobre la grafica
@@ -63,6 +65,8 @@ PolarGraph = (function () {
             _rotn,
             // Array de los diferentes valores de amplitud, fase, velocidad y valor global en la grafica
             _polarData,
+            // Array que permite gestionar la visualizacion de las diferentes series en la grafica
+            _seriesVisibility,
             // Tipo de anotacion/label seleccionada para mostrar (Ninguna, Velocidad, Tiempo)
             _selectedTag,
             // Almacena la referencia de la subscripcion de nuevos datos
@@ -81,6 +85,8 @@ PolarGraph = (function () {
             _createTags,
             // Metodo privado que realiza el control de los modelos de interaccion de eventos sobre la grafica
             _customInteractionModel,
+            // Metodo privado que dibuja la ubicacion del sensor de referencia angular
+            _drawAngularSensor,
             // Metodo privado que dibuja el rotulo de la grafica
             _drawTickets,
             // Metodo privado que realiza el zoom cuadrado necesario para mantener la proporcion del grafico
@@ -91,6 +97,8 @@ PolarGraph = (function () {
             _getHistoricalData,
             // Metodo privado que obtiene los valores de la posicion del eje a graficar
             _getCartesianCoordiantes,
+            // Metodo privado como manejador de eventos de KeyDown
+            _keyDownEventHandler,
             // Metodo privado que determina si el clic realizo, esta siendo usado para zoom o solo corresponde a la operacion de clic
             _maybeTreatMouseOpAsClick,
             // Metodo privado que gestiona el evento click sobre los items del menu de opciones
@@ -107,6 +115,8 @@ PolarGraph = (function () {
             _setMargins,
             // Metodo privado que gestiona la creacion de un nuevo punto de referencia en el grafico
             _setReferencePoint,
+            // Metodo para seleccionar/deseleccioanr las series que se quieran ver en el Bode
+            _showHideSeries,
             // Metodo privado que realiza la suscripcion a los nuevos datos
             _subscribeToNewData,
             // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
@@ -223,6 +233,9 @@ PolarGraph = (function () {
             target = $(evt.currentTarget);
             menuItem = target.attr("data-value");
             switch (menuItem) {
+                case "showSeries" + _widgetId:
+                    _showHideSeries();
+                    break;
                 case TagTypes.None.Text + _widgetId:
                 case TagTypes.Velocity.Text + _widgetId:
                 case TagTypes.TimeStamp.Text + _widgetId:
@@ -236,9 +249,6 @@ PolarGraph = (function () {
                     labels = ["Amplitud, Fase"];
                     name = "Histórico, Polar" + _assetData.Name;
                     contId = "tableToExcelPolarGraph" + _widgetId;
-                    //for (i = 0; i < _chart.user_attrs_.labels.length; i += 1) {
-                    //    labels.push(_chart.user_attrs_.labels[i]);
-                    //}
                     createTableToExcel(_container, contId, name, labels, _chart.file_, false);
                     tableToExcel("tableToExcelPolarGraph" + _widgetId, name);
                     break;
@@ -282,27 +292,38 @@ PolarGraph = (function () {
             var
                 // Texto a mostrar de forma dinamica
                 txt,
-                // Configuracion de las series en el grafico
-                series,
                 // Contador
                 i;
 
             _createContextMenu();
             _setMargins();
-            series = [];
-            series[labels[1]] = {
-                plotter: function (e) {
-                    Dygraph.Plugins.Plotter.prototype.drawRotationDirection(e, _side, _rotn);
-                    Dygraph.Plugins.Plotter.prototype.smoothPlotter(e, 0.35);
-                    _drawTickets();
-                    _createTags();
+            _seriesName.push("1XComp");
+            _seriesVisibility = [];
+            for (i = 0; i < _seriesName.length; i += 1) {
+                switch (_seriesName[i]) {
+                    case "1X":
+                        _seriesVisibility[0] = {
+                            Id: 0,
+                            Name: _seriesName[i],
+                            Visible: true
+                        };
+                        break;
+                    case "1XComp":
+                        _seriesVisibility[1] = {
+                            Id: 1,
+                            Name: _seriesName[i],
+                            Visible: false
+                        };
+                        break;
+                    default:
+                        console.log("Serie desconocida.");
                 }
-            };
+            }
             _chart = new Dygraph(
                 _contentBody,
-                [[0, 0]],
+                [[0, 0, 0]],
                 {
-                    colors: ["#006ACB", "#F70D1A"],
+                    colors: ["#006ACB", "#002547"],
                     digitsAfterDecimal: 4,
                     legend: "never",
                     avoidMinZero: true,
@@ -310,30 +331,51 @@ PolarGraph = (function () {
                     labels: labels,
                     axisLabelFontSize: 10,
                     hideOverlayOnMouseOut: false,
-                    //underlayCallback: function (canvas, area, g) {
-                    //    canvas.strokeStyle = "black";
-                    //    canvas.strokeRect(area.x, area.y, area.w, area.h);
-                    //},
-                    highlightCallback: function (e, x, pts, row) {
+                    highlightCallback: function (e, x, pts, row, customFlag) {
+                        var
+                            needRestoreLock,
+                            ampReference,
+                            phaseReference,
+                            phaseCompensated;
+
+                        needRestoreLock = false;
+                        // Permitir mover el cursor usando el teclado, mientras se encuentre bloqueado para el hover del mouse
+                        if (customFlag !== undefined && _cursorLock) {
+                            _cursorLock = !_cursorLock;
+                            needRestoreLock = true;
+                        }
+                        if (_cursorLock || pts.length === 0) {
+                            _mouseover = true;
+                            return;
+                        }
                         for (i = 0; i < pts.length; i += 1) {
-                            if (pts[i].name === labels[1] && !Number.isNaN(pts[i].yval)) {
-                                if (!_polarData || !_polarData[pts[i].idx]) {
-                                    return;
-                                }
-                                //txt = "<b style=\"color:" + _measurementPoint.Color + ";\">" + _measurementPoint.Name + "</b>";
-                                //txt += "&nbsp;Ang:&nbsp;" + parseAng(_measurementPoint.SensorAngle) + "&deg; ";
-                                //if (_xReference > 0 && _yReference > 0) {
-                                //    txt += "(Comp) ";
-                                //    // Mostrar feedback del vector de compensacion
-                                //}
-                                //txt += _seriesName[0] + ": " + _polarData[pts[i].idx].amplitude.toFixed(2) + " " + _subvariables.overall.Units;
-                                //txt += " &ang;" + _polarData[pts[i].idx].phase.toFixed(2) + "&deg;&nbsp;";
-                                //$("#" + _measurementPoint.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
-                                txt = _seriesName[0] + ": " + _polarData[pts[i].idx].amplitude.toFixed(2) + " " + _subvariables.overall.Units;
-                                txt += " &ang;" + _polarData[pts[i].idx].phase.toFixed(2) + "&deg;&nbsp;";
-                                txt += _polarData[pts[i].idx].velocity.toFixed(0) + " RPM, " + _polarData[pts[i].idx].timeStamp;
-                                $("#" + _seriesName[0].replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                            if (!_polarData || !_polarData[pts[i].idx]) {
+                                return;
                             }
+                            if (!Number.isNaN(pts[i].yval) && (pts[i].name === labels[1] || pts[i].name === labels[2])) {
+                                if (_seriesVisibility[0].Visible) {
+                                    txt = "<span style=\"color:#006ACB;font-weight:bold;\">" + _seriesVisibility[0].Name + "</span>: ";
+                                    txt += _polarData[pts[i].idx].amplitude.toFixed(2) + " " + _subvariables.overall.Units;
+                                    txt += " &ang;" + _polarData[pts[i].idx].phase.toFixed(2) + "&deg;";
+                                } else {
+                                    ampReference = Math.sqrt(_xReference * _xReference + _yReference * _yReference);
+                                    phaseReference = Math.atan2(_yReference, _xReference);
+                                    phaseReference = (phaseReference < 0) ? phaseReference + 360 : phaseReference;
+                                    txt = "<span style=\"color:#002547;font-weight:bold;\">" + _seriesVisibility[1].Name + "</span>: ";
+                                    txt += (_polarData[pts[i].idx].amplitude - ampReference).toFixed(2);
+                                    phaseCompensated = _polarData[pts[i].idx].phase - phaseReference;
+                                    phaseCompensated = (phaseCompensated < 0) ? phaseCompensated + 360 : phaseCompensated;
+                                    txt += " " + _subvariables.overall.Units + " &ang;" + phaseCompensated.toFixed(2) + "&deg;";
+                                    txt += "&nbsp;(<span style=\"font-weight:bold;\">" + ampReference.toFixed(2);
+                                    txt += " &ang;" + phaseReference.toFixed(2) + "&deg;</span>)";
+                                }
+                                txt += ",&nbsp;" + _polarData[pts[i].idx].velocity.toFixed(0) + " RPM, " + _polarData[pts[i].idx].timeStamp;
+                                $("#" + _seriesName[0] + _widgetId + ">span").html(txt);
+                            }
+                        }
+                        // Restaurar el bloqueo para el hover del mouse
+                        if (needRestoreLock) {
+                            _cursorLock = !_cursorLock;
                         }
                         _lastMousemoveEvt = e;
                         _mouseover = true;
@@ -350,13 +392,23 @@ PolarGraph = (function () {
                             g.canvas_.style.zIndex = 1000;
                         }
                         // xlabel + ylabel
-                        $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1050);
-                        $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1050);
+                        $("#" + _contentBody.id + " .dygraph-xlabel").eq(0).parent().css("z-index", 1025);
+                        $("#" + _contentBody.id + " .dygraph-ylabel").eq(0).parent().parent().css("z-index", 1025);
                         // Recorrer todos los axis-labels
                         axisLabelDivs = $("#" + _contentBody.id + " .dygraph-axis-label");
                         for (i = 0; i < axisLabelDivs.length; i += 1) {
-                            axisLabelDivs.eq(i).parent().css("z-index", 1050);
+                            axisLabelDivs.eq(i).parent().css("z-index", 1025);
                         }
+                        if (_chart !== undefined) {
+                            _chart.setSelection(clone(_chart.selectedRow_));
+                        }
+                    },
+                    drawHighlightPointCallback: function (g, serie, ctx, cx, cy, color, pointSize) {
+                        if (_cursorLock) {
+                            //// Necesario para que no se dibuje el circulo de seleccion cuando el cursor se encuentre bloqueado
+                            //pointSize = 0;
+                        }
+                        Dygraph.Circles.DEFAULT(g, serie, ctx, cx, cy, color, pointSize);
                     },
                     interactionModel: _customInteractionModel,
                     axes: {
@@ -371,18 +423,26 @@ PolarGraph = (function () {
                             pixelsPerLabel: 0,
                         }
                     },
-                    visibility: [true],
-                    series: series
+                    plotter: function (e) {
+                        Dygraph.Plugins.Plotter.prototype.drawRotationDirection(e, _side, _rotn);
+                        Dygraph.Plugins.Plotter.prototype.smoothPlotter(e, 0.35);
+                        _drawTickets();
+                        _drawAngularSensor();
+                        _createTags();
+                    },
+                    visibility: [true, false]
                 }
             );
             $(".grid-stack-item").on("resizestop", function () {
                 setTimeout(function () {
                     _setMargins();
                     _chart.resize();
+                    _chart.setSelection(clone(_chart.selectedRow_));
                 }, 100);
             });
             _chart.ready(function () {
                 _getHistoricalData(timeStampArray);
+                document.body.addEventListener("keydown", _keyDownEventHandler);
             });
         };
 
@@ -393,6 +453,7 @@ PolarGraph = (function () {
                 dialogSize,
                 dialogPosition,
                 configContainer,
+                sAngle,
                 amplitude,
                 phase;
 
@@ -457,8 +518,13 @@ PolarGraph = (function () {
                 evt.preventDefault();
                 amplitude = Number(Number($("#amplitude" + _widgetId).val()).toFixed(2));
                 phase = Number(Number($("#phase" + _widgetId).val()).toFixed(2));
-                _xReference = amplitude * Math.cos(phase * Math.PI / 180);
-                _yReference = amplitude * Math.sin(phase * Math.PI / 180);
+                sAngle = ((_rotn === "CW") ? _measurementPoint.SensorAngle + 90 : -_measurementPoint.SensorAngle + 90);
+                _xReference = amplitude * Math.cos((phase + sAngle) * Math.PI / 180);
+                _yReference = amplitude * Math.sin((phase + sAngle) * Math.PI / 180);
+                if (!_seriesVisibility[1].Visible) {
+                    _seriesVisibility[0].Visible = false;
+                    _seriesVisibility[1].Visible = true;
+                }
                 _refresh();
                 $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
             });
@@ -507,12 +573,6 @@ PolarGraph = (function () {
          * Invacodo por la funcion _findClosestPoint
          */
         _updateSelection = function () {
-            _chart.cascadeEvents_("select", {
-                selectedRow: _chart.lastRow_,
-                selectedX: _chart.lastx_,
-                selectedPoints: _chart.selPoints_
-            });
-
             // Limpiar la vertical dibujada previamente, caso exista una
             var
                 ctx, i,
@@ -524,6 +584,12 @@ PolarGraph = (function () {
                 colorSerie,
                 circleSize,
                 callback;
+
+            _chart.cascadeEvents_("select", {
+                selectedRow: _chart.lastRow_,
+                selectedX: _chart.lastx_,
+                selectedPoints: _chart.selPoints_
+            });
 
             // Contexto de canvas
             ctx = _chart.canvas_ctx_;
@@ -587,8 +653,6 @@ PolarGraph = (function () {
                 var
                     // Bandera que define si se cambia o no la seleccion del punto
                     selChanged,
-                    // Cordenadas X,Y del evento
-                    xyCoords,
                     // Fila mas proxima al evento de seleccion
                     row,
                     // Contadores
@@ -616,8 +680,11 @@ PolarGraph = (function () {
                     Dygraph.movePan(e, g, ctx);
                 } else {
                     selChanged = false;
-                    xyCoords = g.eventToDomCoords(e);
-                    row = _findClosestPoint(xyCoords[0], xyCoords[1], g.layout_).row;
+                    if (_cursorLock) {
+                        row = clone(_chart.selectedRow_);
+                    } else {
+                        row = _findClosestPoint(g.eventToDomCoords(e)[0], g.eventToDomCoords(e)[1], g.layout_).row;
+                    }
                     if (row !== _chart.lastRow_) {
                         selChanged = true;
                     }
@@ -653,6 +720,7 @@ PolarGraph = (function () {
                     if (selChanged) {
                         _updateSelection();
                     }
+                    _chart.selectedRow_ = clone(g.lastRow_);
                     callback = _chart.getFunctionOption("highlightCallback");
                     if (callback && selChanged) {
                         callback.call(_chart, e,
@@ -673,6 +741,7 @@ PolarGraph = (function () {
                 if (ctx.isZooming) {
                     _clearZoomSquare();
                     ctx.isZooming = false;
+                    ctx.justClick = false;
                     _maybeTreatMouseOpAsClick(e, g, ctx);
                     if (ctx.regionWidth >= 10 && ctx.regionHeight >= 10) {
                         xStart = g.toDataXCoord(ctx.dragStartX);
@@ -684,6 +753,8 @@ PolarGraph = (function () {
                             "valueRange": [Math.min(yStart, yEnd), Math.max(yStart, yEnd)]
                         });
                         ctx.cancelNextDblclick = true;
+                    } else {
+                        ctx.justClick = true;
                     }
                     ctx.dragStartX = null;
                     ctx.dragStartY = null;
@@ -693,14 +764,19 @@ PolarGraph = (function () {
             },
             contextmenu: function (e, g, ctx) {
                 e.preventDefault();
-                _chart.selectedRow_ = g.lastRow_;
+                _cursorLock = true;
                 $(_contextMenuContainer).css("top", (e.offsetY + _contentBody.offsetTop));
                 $(_contextMenuContainer).css("left", (e.offsetX + _contentBody.offsetLeft));
                 $(_contextMenuContainer).css("display", "block");
                 return false;
             },
             click: function (e, g, ctx) {
+                e.preventDefault();
+                if (ctx.justClick) {
+                    _cursorLock = !_cursorLock;
+                }
                 $(_contextMenuContainer).css("display", "none");
+                return false;
             },
             dblclick: function (e, g, ctx) {
                 if (ctx.cancelNextDblclick) {
@@ -714,6 +790,7 @@ PolarGraph = (function () {
                     "valueRange": [_graphRange.yMin, _graphRange.yMax],
                     "dateWindow": [_graphRange.xMin, _graphRange.xMax]
                 });
+                _cursorLock = false;
             }
         };
 
@@ -837,21 +914,56 @@ PolarGraph = (function () {
                 // Texto a mostrar de forma dinamica
                 txt;
 
-            xyData = _getCartesianCoordiantes();
             txt = "<b style=\"color:" + _measurementPoint.Color + ";\">" + _measurementPoint.Name + "</b>&nbsp;";
             txt += "Ang:&nbsp;" + parseAng(_measurementPoint.SensorAngle) + "&deg;" + ", ";
             txt += "(" + _polarData[0].timeStamp + " - " + _polarData[_polarData.length - 1].timeStamp + ")";
-            $("#" + _measurementPoint.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+            $("#point" + _measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
+            xyData = _getCartesianCoordiantes();
             _chart.updateOptions({
                 "file": xyData,
                 "valueRange": [_graphRange.yMin, _graphRange.yMax],
-                "dateWindow": [_graphRange.xMin, _graphRange.xMax]
+                "dateWindow": [_graphRange.xMin, _graphRange.xMax],
+                "visibility": [_seriesVisibility[0].Visible, _seriesVisibility[1].Visible]
             });
             if (_mouseover) {
                 _chart.mouseMove_(_lastMousemoveEvt);
             } else {
                 DygraphOps.dispatchMouseMove(_chart, 0, 0);
             }
+        };
+
+        _drawAngularSensor = function () {
+            var
+                // Variable que contiene el contexto 2D del canvas
+                ctx,
+                a, b,
+                theta,
+                cx,
+                cy;
+
+            if (!_chart) {
+                return;
+            }
+            ctx = _chart.hidden_ctx_;
+            a = 10;
+            b = 6;
+            theta = ((_rotn === "CW") ? Number(_angularSubvariable.SensorAngle) + 90 : -Number(_angularSubvariable.SensorAngle) + 90) * Math.PI / 180;
+            //theta = (90 - Number(_angularSubvariable.SensorAngle)) * Math.PI / 180;
+            cx = _chart.toDomXCoord((_chart.maxRadiusSize_) * Math.cos(theta));
+            cy = _chart.toDomYCoord((_chart.maxRadiusSize_) * Math.sin(theta));
+            // Guardar el contexto canvas para restaurarlo facilmente despues de las transformaciones
+            ctx.save();
+            // Mover (trasladar) el origen, al centro de donde vamos a dibujar el rectangulo
+            ctx.translate(cx, cy);
+            // Cualquier transformacion aplicada de aqui en adelante sera relativa al origen (a,b)
+            ctx.rotate(-theta);
+            // La diferencia radica en que las coordenadas son relativas al origen
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.fillRect(-(a / 2), -(b / 2), a, b);
+            ctx.closePath();
+            // Restaurar el contexto canvas para que los posteriores trazos no se transformen
+            ctx.restore();
         };
 
         _drawTickets = function () {
@@ -1016,6 +1128,8 @@ PolarGraph = (function () {
                 maxRadius,
                 // Contador
                 i,
+                // Angulo inicial
+                sAngle,
                 // Valor de la coordenada en X
                 x,
                 // Valor de la coordenada en Y
@@ -1028,9 +1142,16 @@ PolarGraph = (function () {
                     maxRadius = _polarData[i].amplitude;
                 }
                 // SE DEBE TENER EN CUENTA LA COMPENSACION AQUI
-                x = _polarData[i].amplitude * Math.cos(_polarData[i].phase * Math.PI / 180) - _xReference;
-                y = _polarData[i].amplitude * Math.sin(_polarData[i].phase * Math.PI / 180) - _yReference;
-                xyData.push([x, y]);
+                sAngle = ((_rotn === "CW") ? _measurementPoint.SensorAngle + 90 : -_measurementPoint.SensorAngle + 90);
+                x = _polarData[i].amplitude * Math.cos((_polarData[i].phase + sAngle) * Math.PI / 180);
+                y = _polarData[i].amplitude * Math.sin((_polarData[i].phase + sAngle) * Math.PI / 180);
+                if (_seriesVisibility[0].Visible) {
+                    xyData.push([x, y, null]);
+                } else if (_seriesVisibility[1].Visible) {
+                    x -= _xReference;
+                    y -= _yReference;
+                    xyData.push([x, null, y]);
+                }
             }
             // Configuramos el valor maximo en coordenadas polares (radio maximo)
             _chart.maxRadiusSize_ = maxRadius * 1.06;
@@ -1158,6 +1279,113 @@ PolarGraph = (function () {
                 }
         };
 
+        /*
+        * Mostrar u ocultar las diferentes series de la grafica
+        */
+        _showHideSeries = function () {
+            var
+                widgetWidth,
+                widgetPosition,
+                dialogSize,
+                dialogPosition,
+                configContainer;
+
+            widgetWidth = $("#" + _container.id).width();
+            widgetPosition = $("#" + _container.id).parents(".grid-stack-item").first().position();
+            dialogSize = { width: 350, height: 150 };
+            dialogPosition = { top: widgetPosition.top + 10, left: (widgetPosition.left + (widgetWidth / 2) - (dialogSize.width / 2)) };
+            configContainer = $("#graphConfigAreaDialog").clone();
+            configContainer.css("display", "block");
+            configContainer[0].id = _widgetId + "polarConfig";
+            $("#awContainer").append(configContainer);
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div>div").append("<div class=\"col-md-12\"><ul id=\"seriesCheckList" +
+                _widgetId + "\"></ul></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form").append("<div class=\"form-group zeroMarginBottom\"><div class=\"row\"></div></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div").append("<div style=\"text-align: center;\"></div>");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div>div:nth-child(1)").append("\n<a id=\"btnSaveVisibility" +
+              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnSaveVisibility" + _widgetId).append("<i class=\"fa fa-save\"></i> Guardar");
+            $("#" + configContainer[0].id + ">div.graphConfigArea>div>form>div:nth-child(2)>div>div:nth-child(1)").append("\n<a id=\"btnCancelVisibility" +
+              _widgetId + "\" class=\"btn btn-sm btn-primary\" href=\"#\">");
+            $("#btnCancelVisibility" + _widgetId).append("<i class=\"fa fa-close\"></i> Cancelar");
+            $("#seriesCheckList" + _widgetId).ejListBox({
+                dataSource: _seriesVisibility,
+                fields: { id: "Id", text: "Name", value: "Id", checkBy: "Visible" },
+                height: "auto",
+                showCheckbox: true,
+                checkChange: function (args) {
+                    var
+                        idxList,
+                        i;
+
+                    idxList = [];
+                    if (args.data.Id === 0) {
+                        _seriesVisibility[0].Visible = args.isChecked;
+                        _seriesVisibility[1].Visible = !args.isChecked;
+                    } else if (args.data.Id === 1) {
+                        _seriesVisibility[1].Visible = args.isChecked;
+                        _seriesVisibility[0].Visible = !args.isChecked;
+                    }
+                    for (i = 0; i < _seriesVisibility.length; i += 1) {
+                        if (_seriesVisibility[i].Visible) {
+                            $("#seriesCheckList" + _widgetId).ejListBox("checkItemByIndex", i);
+                            $("#seriesCheckList" + _widgetId).ejListBox("getItemByIndex", i).data.Visible = true;
+                        } else {
+                            $("#seriesCheckList" + _widgetId).ejListBox("uncheckItemByIndex", i);
+                            $("#seriesCheckList" + _widgetId).ejListBox("getItemByIndex", i).data.Visible = false;
+                        }
+                    }
+                }
+            });
+            $("#" + configContainer[0].id + " > div.graphConfigArea").ejDialog({
+                enableResize: false,
+                width: "auto",
+                height: "auto",
+                zIndex: 2000,
+                close: function () {
+                    // Destruir objeto Listbox Syncfusion
+                    $("#seriesCheckList" + _widgetId).ejListBox("destroy");
+                    // Desasociar el evento clic
+                    $("#btnCancelVisibility" + _widgetId).off("click");
+                    $("#btnSaveVisibility" + _widgetId).off("click");
+                    $("#" + configContainer[0].id).remove();
+                },
+                content: "#" + configContainer[0].id,
+                tooltip: {
+                    close: "Cerrar"
+                },
+                actionButtons: ["close"],
+                position: {
+                    X: dialogPosition.left,
+                    Y: dialogPosition.top
+                }
+            });
+            // Abrir el dialogo
+            $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("open");
+            // Boton cancelar
+            $("#btnCancelVisibility" + _widgetId).click(function (e) {
+                e.preventDefault();
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
+            });
+            // Botono aceptar
+            $("#btnSaveVisibility" + _widgetId).click(function (e) {
+                var
+                    visibleCheckList;
+
+                e.preventDefault();
+                for (i = 0; i < _seriesVisibility.length; i += 1) {
+                    _seriesVisibility[i].Visible = false;
+                }
+                visibleCheckList = $("#seriesCheckList" + _widgetId).ejListBox("getCheckedItems");
+                for (i = 0; i < visibleCheckList.length; i += 1) {
+                    _seriesVisibility[visibleCheckList[i].index].Visible = true;
+                }
+                _refresh();
+                $("#" + configContainer[0].id + " div.graphConfigArea").ejDialog("close");
+            });
+        };
+
         _subscribeToResizeChart = function () {
             _resizeChartSubscription = PublisherSubscriber.subscribe("/resizechart", null, function () {
                 var
@@ -1184,6 +1412,43 @@ PolarGraph = (function () {
                     _chart.resize();
                 }, 50);
             });
+        };
+
+        _keyDownEventHandler = function (e) {
+            var
+                chart,
+                i,
+                callback;
+
+            if (e.keyCode === 37 || e.keyCode === 39) {
+                if (_mouseover && _lastMousemoveEvt.isTrusted) {
+                    // Necesario para evitar la propagacion del evento keydown en otros graficos
+                    // (Principalmente ocurre con tiempo real).
+                    chart = [_chart];
+                    chart = chart[0];
+                    if (e.keyCode === 37) {
+                        chart.selectedRow_ -= 1;
+                    } else if (e.keyCode === 39) {
+                        chart.selectedRow_ += 1;
+                    }
+                    // Validacion de valores fuera de rango
+                    if (chart.selectedRow_ < 0) {
+                        chart.selectedRow_ = 0;
+                    }
+                    if (chart.selectedRow_ >= chart.file_.length) {
+                        chart.selectedRow_ = chart.file_.length - 1;
+                    }
+                    chart.lastRow_ = clone(chart.selectedRow_);
+                    chart.row = chart.lastRow_;
+                    chart.lastx_ = chart.file_[chart.row][0];
+                    for (i = 0; i < chart.selPoints_.length; i += 1) {
+                        chart.selPoints_[i] = chart.layout_.points[i][chart.row];
+                    }
+                    _updateSelection();
+                    callback = chart.getFunctionOption("highlightCallback");
+                    callback.call(chart, e, chart.lastx_, chart.selPoints_, chart.row, true);
+                }
+            }
         };
 
         this.Show = function (measurementPointId, currentColor, timeStampArray, rpmPositions) {
@@ -1224,6 +1489,7 @@ PolarGraph = (function () {
             // SubVariable que corresponde al punto de referencia angular
             if (_angularSubvariable) {
                 subVariableIdList.push(_angularSubvariable.Id);
+                _angularSubvariable.SensorAngle = angularReference.SensorAngle;
             }
             // Total subvariables para el punto de medicion
             subVariables = _measurementPoint.SubVariables;
@@ -1270,10 +1536,10 @@ PolarGraph = (function () {
             }
             _seriesName = ["1X"];
             _measurementPoint.Color = currentColor;
-
             // Agregamos los items al menu de opciones para la grafica
             settingsMenu = [];
             _createTagMenu(settingsMenu, settingsSubmenu);
+            settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Series", "showSeries" + _widgetId));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Exportar imagen", "saveImage" + _widgetId));
             settingsMenu.push(AspectrogramWidget.createSettingsMenuElement("item", "Exportar a Excel", "exportToExcel" + _widgetId));
 
@@ -1295,7 +1561,7 @@ PolarGraph = (function () {
                 subVariableIdList: subVariableIdList,
                 asset: _assetData.Name,
                 seriesName: _seriesName,
-                measurementPointList: [_measurementPoint.Name.replace(/\s/g, "")],
+                measurementPointList: [_measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "")],
                 pause: false,
                 settingsMenu: settingsMenu,
                 onSettingsMenuItemClick: _onSettingsMenuItemClick,
@@ -1309,11 +1575,17 @@ PolarGraph = (function () {
                     _movableGrid = !_movableGrid;
                     grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                     $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
 
             });
 
-            labels = ["Amplitud", "Fase"];
+            labels = ["X", "Y1", "Y2"];
             // Abrir AspectrogramWidget.
             _aWidget.open();
             // Se suscribe a la notificacion de aplicacion de resize para el chart Dygraph
@@ -1347,6 +1619,8 @@ PolarGraph = (function () {
             var
                 el;
 
+            // Remover el evento manejador de KeyDown
+            document.body.removeEventListener("keydown", _keyDownEventHandler);
             if (_resizeChartSubscription) {
                 // Eliminar suscripcion de notificaciones para aplicar resize al chart Dygraph
                 _resizeChartSubscription.remove();

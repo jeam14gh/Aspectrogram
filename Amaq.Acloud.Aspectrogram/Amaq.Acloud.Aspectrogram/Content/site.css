@@ -2,16 +2,25 @@
     height: 100% !important;
 }
 
+
+.e-text {
+    font-family: varela !important;
+}
+
+.e-js {
+    font-family: varela !important;
+}
+
 .container-fluid, .container {
     height: 100% !important;
     padding-right: 0px;
     padding-left: 0px;
 }
 
-.container-fluid>.navbar-collapse, .container-fluid>.navbar-header, .container>.navbar-collapse, .container>.navbar-header {
-    margin-right: 20px;
-    margin-left: 30px;
-}
+    .container-fluid > .navbar-collapse, .container-fluid > .navbar-header, .container > .navbar-collapse, .container > .navbar-header {
+        margin-right: 20px;
+        margin-left: 30px;
+    }
 
 .container {
     max-width: 98% !important;
@@ -158,7 +167,7 @@ body {
     margin-left: 10px;
     position: fixed;
     top: 52px;
-    z-index: 999;
+    z-index: 1029; /*9990;*/
     padding-right: 5px;
     height: 55px;
 }
@@ -266,10 +275,10 @@ h4 {
     margin-top: 10px !important;
 }
 
-.vertical-x-labels > div > div .dygraph-axis-label-x {
-    -webkit-transform: rotate(-90deg);
-    -moz-transform: rotate(-90deg);
-}
+    .vertical-x-labels > div > div .dygraph-axis-label-x {
+        -webkit-transform: rotate(-90deg);
+        -moz-transform: rotate(-90deg);
+    }
 
 .lineBreaking {
     white-space: nowrap;
@@ -335,9 +344,9 @@ body {
     display: inline-block;
 }
 
-.custom-panel-filter:nth-child(even) {
-    margin-left: 15px;
-}
+    .custom-panel-filter:nth-child(even) {
+        margin-left: 15px;
+    }
 
 /*Textarea en plantilla de correo*/
 #txtMessage {
@@ -371,22 +380,22 @@ fieldset {
     border: 1px solid #000 !important;
 }
 
-fieldset > legend {
-    width: auto !important;
-    border-bottom: 0px !important;
-    margin-bottom: 0px !important;
-    font-size: 15px !important;
-    font-weight: bold !important;
-}
+    fieldset > legend {
+        width: auto !important;
+        border-bottom: 0px !important;
+        margin-bottom: 0px !important;
+        font-size: 15px !important;
+        font-weight: bold !important;
+    }
 
-.validateField{
+.validateField {
     border-color: red !important;
     border-width: 2px !important;
     border-style: solid !important;
 }
 
 /*Alto del header de columnas del grid de NiDevices*/
-#GridNiDevices table thead>tr:nth-child(2){
+#GridNiDevices table thead > tr:nth-child(2) {
     height: 35px;
 }
 
@@ -400,6 +409,256 @@ fieldset > legend {
     padding-left: 15px !important;
 }
 
-.grid-stack>.grid-stack-item>.grid-stack-item-content {
+.grid-stack > .grid-stack-item > .grid-stack-item-content {
     z-index: auto !important;
+}
+
+table input:disabled {
+    background-color: transparent;
+    border: none;
+    text-align: center;
+}
+
+.user-profile {
+    content: url("../Content/images/ICOUSUARIO.png");
+}
+
+li.dropdown::before {
+    height: 50px !important;
+}
+
+#logoutForm {
+    height: 50px;
+}
+.menuItem{
+    background-repeat: no-repeat !important;
+    background-size: 16px;
+    background-position: left;
+    background-position-x: 4px;
+}
+.menuItem.e-list.e-mhover>a{
+    background-repeat: no-repeat !important;
+    background-size: 16px !important;
+    background-position: left !important;
+    background-position-x: 4px !important; 
+}
+
+#waveformMenuItem {
+    background-image: url("../Content/images/Senal.png") !important;
+}
+#waveformMenuItem.e-list.e-mhover > a {
+   background-image: url("../Content/images/Senal.png") !important;
+}
+
+#spectrumMenuItem {
+    background-image: url("../Content/images/Espectro.png");
+}
+#spectrumMenuItem.e-list.e-mhover > a {
+   background-image: url("../Content/images/Espectro.png") !important;
+}
+
+#orbitSpectrumMenuItem {
+    background-image: url("../Content/images/EspectrodeOrbita2.png");
+}
+#orbitSpectrumMenuItem.e-list.e-mhover > a {
+   background-image: url("../Content/images/EspectrodeOrbita2.png") !important;
+}
+
+#orbitMenuItem {
+    background-image: url("../Content/images/Orbita.png");
+}
+#orbitMenuItem.e-list.e-mhover > a {
+   background-image: url("../Content/images/Orbita.png") !important;
+}
+
+#sclMenuItem{
+    background-image: url("../Content/images/CENTERLINE.png");
+}
+#sclMenuItem.e-list.e-mhover > a {
+   background-image: url("../Content/images/CENTERLINE.png") !important;
+}
+
+#liRTAsset,
+#realTimeMenuItem{
+    background-image: url("../Content/images/TiempoReal.png");
+}
+#realTimeMenuItem.e-list.e-mhover > a {
+   background-image: url("../Content/images/TiempoReal.png") !important;
+}
+#liRTAsset.e-list.e-mhover > a {
+   background-image: url("../Content/images/TiempoReal.png") !important;
+}
+
+#liAdminAsset,
+#liAdminMP{
+    background-image: url("../Content/images/Administrar.png");
+}
+#liAdminMP.e-list.e-mhover > a {
+   background-image: url("../Content/images/Administrar.png") !important;
+}
+#liAdminAsset.e-list.e-mhover > a {
+   background-image: url("../Content/images/Administrar.png") !important;
+}
+
+
+#historicalTrendMenuItem{
+     background-image: url("../Content/images/Tendencia historica.png");
+}
+#historicalTrendMenuItem.e-list.e-mhover>a{
+    background-image: url("../Content/images/Tendencia historica.png") !important;
+}
+
+#liveTrendMenuItem{
+    background-image: url("../Content/images/Tendencia.png");
+}
+#liveTrendMenuItem.e-list.e-mhover>a{
+    background-image: url("../Content/images/Tendencia.png") !important;
+}
+
+#barGraphMenuItem{
+    background-image: url("../Content/images/Barras.png");
+}
+    #barGraphMenuItem.e-list.e-mhover > a {
+        background-image: url("../Content/images/Barras.png") !important;
+    }
+#viewer3dMenuItem{
+    background-image: url("../Content/images/3D.png");
+}
+#viewer3dMenuItem.e-list.e-mhover>a{
+    background-image: url("../Content/images/3D.png") !important;
+}
+
+
+.menuItem:hover{
+    background-repeat: no-repeat !important;
+    background-size: 16px !important;
+    background-position: left !important;
+    background-position-x: 4px !important;
+}
+
+.e-list.e-mhover.e-menulink {
+    background-image: url("../Content/images/Orbita.png");
+    background-repeat: no-repeat !important;
+}
+
+/*Sobre-escribimos el border del contenedor de los puntos de medición*/
+.listboxPoints {
+    border: none !important;
+    border-top: 1px solid !important;
+}
+
+.user-profile::before{
+   content: url("../Content/images/ICOUSUARIO.png");
+   margin-top: 6px;
+   margin-left: 2px;
+   margin-right:2px;
+   margin-bottom: 2px;
+   width: 35px;
+    height: 35px;
+}
+.user-profile:hover{
+    content: url("../Content/images/ICOUSUARIO.png");
+    width: 37px;
+    height: 37px;
+}
+
+.mainMenu{
+    padding: 0px !important;
+}
+
+.navbar-nav>li>a{
+    padding: 10px 10px 10px 10px;
+}
+
+.e-dialog > .e-header {
+    background: #337ab7 !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-bottom: 0px !important;
+}
+
+.e-dialog > .e-titlebar {
+    text-align: center !important;
+}
+
+.e-dialog-icon:before {
+    color: white !important;
+}
+
+.lbl-primary {
+    color: #337ab7;
+}
+
+.iconAlarm {
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat !important;
+    /*background: trans /*#ececec; /*url(../Content/images/alarms.png);*/
+    /*background-size: 100px 80px;*/
+}
+
+.gridFull {
+    width: 100% !important;
+}
+
+.sidebar {
+    position: absolute;
+    top: 0px;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    display: block;
+    padding: 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: #f5f5f5;
+    border-right: 1px solid #eee;
+    height: 100% !important;
+}
+
+#dialogUserPreferences {
+    padding: 0 !important;
+}
+
+.pad {
+    padding: 5% 5% !important;
+}
+
+#divBtnPreferences {
+    bottom: 5%;
+    position: absolute;
+    padding-left: 15%;
+}
+
+#dialogUserPreferences span.e-box, span.e-select {
+    border: none !important;
+    border-color: transparent !important;
+}
+
+#dialogUserPreferences span.e-select {
+    border: none !important;
+    border-color: transparent !important;
+    background: transparent !important;
+}
+
+#dialogUserPreferences .table > tbody > tr > td {
+    border-top: none !important;
+    border-bottom: 1px solid #ddd !important;
+}
+
+.addBorder{
+    border: 5px solid lightskyblue; /*#87cefa*/
+}
+
+.liActive{
+    background-color: #B5ACAA !important;
+}
+
+.liActive > a{
+    color: black !important;
+    font-weight: bold !important;
+}
+
+.validate-field{
+    border: 2px solid red;
 }

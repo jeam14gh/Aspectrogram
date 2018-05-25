@@ -31,8 +31,8 @@ E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogra
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Acloud.Entities.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Acloud.Proxy.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Newtonsoft.Json.dll
-E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\MongoDB.Bson.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Libraries.MongoRepository.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\MongoDB.Bson.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\System.Net.Http.Formatting.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Acloud.CrossCutting.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\MongoDB.Driver.dll
@@ -46,8 +46,8 @@ E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogra
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Libraries.MongoRepository.pdb
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Libraries.MongoRepository.xml
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\System.Net.Http.Formatting.xml
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Acloud.CrossCutting.pdb
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Acloud.CrossCutting.xml
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\obj\Debug\Amaq.Acloud.Aspectrogram.Proxy.csprojResolveAssemblyReference.cache
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\obj\Debug\Amaq.Acloud.Aspectrogram.Proxy.dll
 E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\obj\Debug\Amaq.Acloud.Aspectrogram.Proxy.pdb
-E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Proxy\bin\Debug\Amaq.Acloud.CrossCutting.pdb

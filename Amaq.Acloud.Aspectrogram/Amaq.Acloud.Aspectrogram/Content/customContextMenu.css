@@ -51,6 +51,8 @@ h1 {
 /******* MENU *******/ 
 
 .customContextMenu {
+    
+    font-family: Varela !important;
     display: none;
     width: 165px;
     background: #171717;
@@ -109,22 +111,29 @@ h1 {
 .customContextMenu ul li {
     background-position: 3px 6px;
     background-repeat: no-repeat;
+    font-family: Varela;
+    font-size: 11px;
+    background-size: 18px;
 }
 
 .customContextMenu ul li.menuWaveform {
-    background-image: url(images/waveform.png);
+    background-image: url(images/Senal.png);
 }
 
 .customContextMenu ul li.menuSpectrum {
-    background-image: url(images/spectrum.png);
+    background-image: url(images/Espectro.png);
 }
 
 .customContextMenu ul li.menuFullSpectrum {
-    background-image: url(images/fullspectrum.png);
+    background-image: url(images/EspectrodeOrbita2.png);
 }
 
 .customContextMenu ul li.menuOrbit {
-    background-image: url(images/orbit.png);
+    background-image: url(images/Orbita.png);
+}
+
+.customContextMenu ul li.menuBarChart {
+    background-image: url(images/Barras.png);
 }
 
 .customContextMenu ul li.saveAsPng {
@@ -132,11 +141,29 @@ h1 {
 }
 
 .customContextMenu ul li.menuViewer3D {
-    background-image: url(images/viewer3d.png);
+    background-image: url(images/3D_GRANDE.png);
 }
 
 .customContextMenu ul li.menuReferencePoint {
     background-image: url(images/axes.png);
 }
 
+.customContextMenu ul li.shaftPositionMenu {
+    background-image: url(images/CENTERLINE.png);
+}
+.customContextMenu ul li.bodePlotMenu {
+    background-image: url(images/Bode.png);
+}
+.customContextMenu ul li.polarPlotMenu {
+    background-image: url(images/Polar.png);
+}
+.customContextMenu ul li.amplitudePhasePlotMenu {
+    background-image: url(images/AmpFase1X.png);
+}
+.customContextMenu ul li.cascadePlotMenu {
+    background-image: url(images/Cascada.png);
+}
+.customContextMenu ul li.fSCascadePlotMenu {
+    background-image: url(images/CascadaOrbita.png);
+}
 /******* /MENU *******/  

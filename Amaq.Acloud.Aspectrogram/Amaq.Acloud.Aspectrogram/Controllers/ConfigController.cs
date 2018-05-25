@@ -76,10 +76,12 @@
         /// </summary>        
         [HttpPost]
         public async Task<JsonResult> UpdateDevice(string asdaqId, List<NiDeviceDto> devices, List<MdVariableUpdateMBDto> mdVariablesDto)
+        //public async Task<List<MdVariableExtension>> UpdateDevice(string asdaqId, List<NiDeviceDto> devices, List<MdVariableUpdateMBDto> mdVariablesDto)
         {
-            new MdVariableExtensionProxy(Properties.AppUserState).CalculateMandB(mdVariablesDto);
-            new AsdaqProxy(Properties.AppUserState).UpdateDevice(asdaqId, devices);
-            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
+            var points = new MdVariableExtensionProxy(Properties.AppUserState).CalculateMandB(mdVariablesDto);
+            var data = new AsdaqProxy(Properties.AppUserState).UpdateDevice(asdaqId, devices);
+            return await Task.FromResult<JsonResult>(Json(data, JsonRequestBehavior.AllowGet));
+            //return await Task.FromResult<List<MdVariableExtension>>(points);
         }
 
         /// <summary>
@@ -119,9 +121,9 @@
         [HttpPost]
         public async Task<JsonResult> DeleteRelationshipMdVariableWithAiChannelsAsdaq(string asdaqId, NiDeviceDto device, List<MdVariableUpdateMBDto> mdVariablesDto)
         {
-            new MdVariableExtensionProxy(Properties.AppUserState).CalculateMandB(mdVariablesDto);
+            var points = new MdVariableExtensionProxy(Properties.AppUserState).CalculateMandB(mdVariablesDto);
             new AsdaqProxy(Properties.AppUserState).DeleteRelationshipMdVariableWithAiChannels(asdaqId, device);
-            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
+            return await Task.FromResult(Json(points, JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -169,8 +171,8 @@
         [HttpPost]
         public async Task<JsonResult> UpdateAconditionerByAsdaq(string asdaqId, List<Aconditioner> aconditioners, List<MdVariableUpdateMBDto> mdVariablesToUpdate)
         {
-            new AsdaqProxy(Properties.AppUserState).UpdateAconditionerByAsdaq(asdaqId, aconditioners, mdVariablesToUpdate);
-            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
+            var points = new AsdaqProxy(Properties.AppUserState).UpdateAconditionerByAsdaq(asdaqId, aconditioners, mdVariablesToUpdate);
+            return await Task.FromResult(Json(points, JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -179,8 +181,8 @@
         [HttpPost]
         public async Task<JsonResult> DeleteAconditionerBySerial(string asdaqId, string serial, List<NiDeviceDto> niDevices)
         {
-            new AsdaqProxy(Properties.AppUserState).DeleteAconditionerBySerial(asdaqId, serial, niDevices);
-            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
+            var points = new AsdaqProxy(Properties.AppUserState).DeleteAconditionerBySerial(asdaqId, serial, niDevices);
+            return await Task.FromResult(Json(points, JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>

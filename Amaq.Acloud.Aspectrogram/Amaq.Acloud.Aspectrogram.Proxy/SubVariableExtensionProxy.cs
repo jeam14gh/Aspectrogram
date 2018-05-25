@@ -106,12 +106,12 @@
         /// <summary>
         /// Actualiza una lista de SubVariables
         /// </summary>
-        public void UpdateMany2(List<SubVariableExtension> subVariables)
+        public List<SubVariableExtension> UpdateMany2(List<SubVariableExtension> subVariables)
         {
             string postBody = JsonConvert.SerializeObject(subVariables);
             StringContent content = new StringContent(postBody, Encoding.UTF8, "application/json");
             string path = string.Format("{0}{1}", CONTROLLER_NAME, MethodBase.GetCurrentMethod().Name);
-            HttpPost<string>(path, Url, _userState, content);
+            return HttpPost<List<SubVariableExtension>>(path, Url, _userState, content);
         }
 
         public string SetCompesation(string mdVariableId, double amplitude, double phase)

@@ -378,6 +378,17 @@
             var _getMdVar = new MdVariableExtensionBl(CoreDbUrl).GetById(nodeAndMdVariableDto.MdVariableDto.Id);
             _getMdVar.Id = null;
             _getMdVar.NodeId = _node.Id;
+            // Calculamos la M y B ya que puede que el punto copiado ya esté calculado por la relación con un canal asdaq.
+            _getMdVar.AiMeasureMethod = new MdVariableExtensionBl(CoreDbUrl).CalculateMB(_getMdVar);
+
+            if (_getMdVar.AiMeasureMethod != null)
+            {
+                _getMdVar.AiMeasureMethod.AiMethodId = null;
+                _getMdVar.AiMeasureMethod.Name = null;
+                _getMdVar.AiMeasureMethod.ParameterTypes = null;
+                _getMdVar.AiMeasureMethod.ParameterValues = null;
+                _getMdVar.AiMeasureMethod.AiCoupling = null;
+            }
 
             // Si el parentId del punto copiado es diferente, el AngularReferenceId es null
             if (_getMdVar.ParentId != nodeAndMdVariableDto.MdVariableDto.ParentId)

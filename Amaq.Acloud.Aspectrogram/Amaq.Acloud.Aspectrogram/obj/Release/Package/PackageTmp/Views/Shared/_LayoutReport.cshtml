@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - A-SPECTROGRAM</title>
+
+    @Styles.Render("~/Content/jquery")
+    @Styles.Render("~/Content/themes/report/style.css")
+
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/bootstrap")
+
+</head>
+<body>
+    <div>
+        @RenderBody()
+    </div>
+
+    @RenderSection("scripts", required: false)
+
+    <!--Scripts de la aplicacion-->
+    @RenderSection("applicationScripts", required: false)
+</body>
+</html>

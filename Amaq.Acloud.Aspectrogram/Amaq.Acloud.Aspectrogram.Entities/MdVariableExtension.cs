@@ -199,29 +199,8 @@
         /// </summary>
         [IgnoreProperty]
         [BsonIgnore]
-        public int FirstFlank { get; set; }
-
-        /// <summary>
-        /// Posición del último flanco de referencia angular
-        /// </summary>
-        [IgnoreProperty]
-        [BsonIgnore]
-        public int LastFlank { get; set; }
-
-        /// <summary>
-        /// Cantidad de flancos de referencia angular encontrados
-        /// </summary>
-        [IgnoreProperty]
-        [BsonIgnore]
-        public int NumberOfFlanks { get; set; }
-
-        /// <summary>
-        /// Contador de repeticiones de Rpm
-        /// </summary>
-        [IgnoreProperty]
-        [BsonIgnore]
-        public int Counter { get; set; }
-
+        public uint[] AngularPositions { get; set; }
+        
         /// <summary>
         /// Cantidad de señales entre el primer flanco y el último flanco, necesario para los cálculos de
         /// Rpm, Amplitud 1x y fase 1x.
@@ -229,7 +208,7 @@
         [IgnoreProperty]
         [BsonIgnore]
         public int Step { get; set; }
-
+        
         #endregion
 
         /// <summary>

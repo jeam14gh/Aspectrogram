@@ -1344,6 +1344,21 @@
             <param name="idNew">Id nuevo de un activo</param>
             <param name="angularReferenceIdOld">AngularReferenceId antiguo del objeto RpmEventConfig de un activo</param>
         </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Dtos.UserPreferences">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.UserPreferences.UserConfiguration">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.Dtos.UserPreferences.User">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.AtrModuleType">
             <summary>
             Tipo de módulo Atransmitter
@@ -1476,6 +1491,26 @@
             </summary>
         </member>
         <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MaterialType.Platino">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasuresSystem">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasuresSystem.Metric">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasuresSystem.Imperial">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.MeasuresSystem.Both">
             <summary>
             
             </summary>
@@ -1613,6 +1648,31 @@
         <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TripMultiply.ThreeX">
             <summary>
             3X
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.CPS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.Hz">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.CPM">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.RPM">
+            <summary>
+            
             </summary>
         </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent">
@@ -1806,24 +1866,9 @@
             Id del asset principal padre
             </summary>
         </member>
-        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.FirstFlank">
+        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.AngularPositions">
             <summary>
             Posición del primer flanco de referencia angular
-            </summary>
-        </member>
-        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.LastFlank">
-            <summary>
-            Posición del último flanco de referencia angular
-            </summary>
-        </member>
-        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.NumberOfFlanks">
-            <summary>
-            Cantidad de flancos de referencia angular encontrados
-            </summary>
-        </member>
-        <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.Counter">
-            <summary>
-            Contador de repeticiones de Rpm
             </summary>
         </member>
         <member name="P:Amaq.Acloud.Aspectrogram.Entities.MdVariableExtension.Step">
@@ -2583,6 +2628,61 @@
         <member name="P:Amaq.Acloud.Aspectrogram.Entities.XYMeasurementPointPair.SclOptions">
             <summary>
             Diferentes opciones para la graficacion de la posicion del eje (shaft centerline)
+            </summary>
+        </member>
+        <member name="T:BearingFaultFrequency">
+            <summary>
+            Frecuencia de falla del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.Mark">
+            <summary>
+            Marca del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.Reference">
+            <summary>
+            Referencia del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.NumberOfBalls">
+            <summary>
+            Número de bolas del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.FundamentalTrainFrequency">
+            <summary>
+            FC, Frecuencia fundamental del tren
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.BallSpinFrequency">
+            <summary>
+            FB, Frecuencia de giro de la bola
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.FrequencyOuter">
+            <summary>
+            FO, Frecuencia del exterior del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.FrequencyInner">
+            <summary>
+            FI, Frecuencia del interior del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.PitchDiameter">
+            <summary>
+            Diámetro de paso del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.BallsDiameter">
+            <summary>
+            Diámetro de las bolas del rodamiento
+            </summary>
+        </member>
+        <member name="P:BearingFaultFrequency.ContactAngle">
+            <summary>
+            Tetha del rodamiento
             </summary>
         </member>
     </members>

@@ -259,12 +259,12 @@ BarChartGraph = (function () {
                     } else if (timeMode == 1) {
                         name = "Histórico,  Gráfico de barras: " + _assetData.Name;
                     }
-                    contId = "tableToExcelWaveformGraph" + _widgetId;
+                    contId = "tableToExcelBarChartGraph" + _widgetId;
                     for (i = 0; i < _chart.user_attrs_.labels.length; i += 1) {
                         labels.push(_chart.user_attrs_.labels[i]);
                     }
                     createTableToExcel(_container, contId, name, labels, _chart.file_, true);
-                    tableToExcel("tableToExcelWaveformGraph" + _widgetId, name);
+                    tableToExcel("tableToExcelBarChartGraph" + _widgetId, name);
                     break;
                 default:
                     console.log("Opción de menú no implementada.");
@@ -787,6 +787,12 @@ BarChartGraph = (function () {
                     _movableGrid = !_movableGrid;
                     grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                     $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
             });
             // Abrir AspectrogramWidget

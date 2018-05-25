@@ -1,0 +1,146 @@
+﻿
+/******* /GENERAL RESET *******/
+ul {
+    list-style: none;
+    list-style-type: none;
+    list-style-position: outside;
+}
+
+a {
+    cursor: pointer;
+    color: #296ba5;
+    text-decoration: none;
+    outline: none !important;
+}
+
+.clearfix {
+	overflow: hidden;
+}
+
+.fleft {
+	float: left;
+}
+
+.fright {
+	float: right;
+}
+
+.italic {
+	font-style: italic;
+}
+/******* /GENERAL RESET *******/
+
+/******* CONTENT *******/
+.wrapper {
+	width: 800px;
+	margin: 0pt auto;
+	padding-top: 50px;
+}
+
+h1 {
+	color: #fff;
+	font-size: 18px;
+	line-height: 3em;
+}
+
+.section {
+	margin-bottom: 25px;
+}
+/******* /CONTENT *******/
+
+/******* MENU *******/ 
+
+.customContextMenu {
+    display: none;
+    width: 165px;
+    background: #171717;
+    border: 1px solid #3e3e3e;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    position: absolute;
+    z-index: 99999 !important;
+}
+
+.customContextMenu ul {
+    font-family: Tahoma, Arial, Helvetica, sans-serif;
+    color: #6d6d6d;
+    background: #fff;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    margin: 0px !important;
+    padding: 3px !important;
+}
+
+.customContextMenu ul li {
+    line-height: 1.5em;
+    padding: 5px 5px 5px 25px;
+    font-size: 11px;
+    border-bottom: 1px solid #fff;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+.customContextMenu ul li:hover {
+    background-color: #fff8cc;
+    border-bottom: 1px solid #ffe222;
+    color: #000;
+    cursor: pointer;
+}
+
+.customContextMenu ul li a {
+    color: #6d6d6d;
+    display: block;
+}
+
+.customContextMenu ul li.disabled {
+    color: #bbbbbb;
+    cursor: default;
+    background-image: none !important;
+}
+
+.customContextMenu ul li.disabled:hover {
+    background: #fff;
+    border-bottom: 1px solid #fff;
+}
+
+.customContextMenu ul li {
+    background-position: 3px 6px;
+    background-repeat: no-repeat;
+}
+
+.customContextMenu ul li.menuWaveform {
+    background-image: url(images/waveform.png);
+}
+
+.customContextMenu ul li.menuSpectrum {
+    background-image: url(images/spectrum.png);
+}
+
+.customContextMenu ul li.menuFullSpectrum {
+    background-image: url(images/fullspectrum.png);
+}
+
+.customContextMenu ul li.menuOrbit {
+    background-image: url(images/orbit.png);
+}
+
+.customContextMenu ul li.menuBarChart {
+    background-image: url(images/barChart.png);
+}
+
+.customContextMenu ul li.saveAsPng {
+    background-image: url(images/save.png)
+}
+
+.customContextMenu ul li.menuViewer3D {
+    background-image: url(images/viewer3d.png);
+}
+
+.customContextMenu ul li.menuReferencePoint {
+    background-image: url(images/axes.png);
+}
+
+/******* /MENU *******/  

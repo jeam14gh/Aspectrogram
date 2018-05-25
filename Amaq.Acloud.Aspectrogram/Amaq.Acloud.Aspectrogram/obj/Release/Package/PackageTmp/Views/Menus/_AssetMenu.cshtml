@@ -1,0 +1,50 @@
+﻿@{
+    var claimsIdentity = User.Identity as System.Security.Claims.ClaimsIdentity;
+}
+<!--Menú de opciones para los activos-->
+<div id="assetMenuContainer" style="display:none;">
+    <ul id="assetMenu">
+        <li>
+            <a href="#">Tiempo real</a>
+            <ul>
+                <li id="liveTrendMenuItem"><a href="#">Tendencia</a></li>
+                <li id="barGraphMenuItem"><a href="#">Gr&aacute;fico de barras</a></li>
+                <li id="viewer3dMenuItem"><a href="#">Visor 3D</a></li>
+            </ul>
+        </li>
+
+        <li id="historicalTrendMenuItem"><a href="#">Tendencia hist&oacute;rica</a></li>
+        @if (claimsIdentity != null)
+        {
+            var tmp = claimsIdentity.FindFirst("roles");
+            var roles = (tmp != null) ? tmp.Value.Split(',').ToList() : null;
+            if (roles != null)
+            {
+                if (roles.Any(s => s == "Admin" || s == "SAdmin"))
+                {
+                    <li id="liAdmin">
+                        <a href="#">Administrar</a>
+                        <ul>
+                            <li>
+                                <a href="#">Agregar</a>
+                                <ul>
+                                    <li id="newAssetMenuItem"><a href="#">Nuevo activo</a></li>
+                                    <li id="newMeasurementPointMenuItem"><a href="#">Nuevo punto de medici&oacute;n</a></li>
+                                </ul>
+                            </li>
+                            <li id="editAssetMenuItem"><a href="#">Editar activo</a></li>
+                            <li id="deleteAssetMenuItem"><a href="#">Eliminar activo</a></li>
+                            <li id="copyAssetMenuItem"><a href="#">Copiar</a></li>
+                            <li id="pairsXYMenuItem"><a href="#">Pares XY</a></li>
+                            <li id="pasteMenuItem"><a href="#">Pegar</a></li>
+                            <li id="summaryViewPointsMenuItem" isAdmin="true"><a href="#">Vista resumen</a></li>
+                            <li id="editor3dMenuItem"><a href="#">Editor 3D</a></li>
+                        </ul>
+                    </li>
+                } else {
+                    <li id="summaryViewPointsMenuItem" title="Vista resumen activos" isAdmin="false"><a href="#">Vista resumen</a></li>
+                }
+            }
+        }
+    </ul>
+</div>

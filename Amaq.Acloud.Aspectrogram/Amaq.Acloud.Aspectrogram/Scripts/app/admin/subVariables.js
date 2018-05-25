@@ -122,7 +122,7 @@ SubVariables = (function () {
             Status: [arrayObjectStatus[0].Id],
             Bands: null,
             Maximum: -3.0,
-            Minimum: -15.0,
+            Minimum: -18.0,
             IsDefaultValue: false,
             MeasureType: 7,
             FromIntegratedWaveform: 0,

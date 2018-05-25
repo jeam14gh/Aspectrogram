@@ -184,6 +184,8 @@
         {
             while (!_stop)
             {
+                var x = 0;
+
                 try
                 {
                     if (_principalAssets != null)
@@ -338,6 +340,7 @@
                                             if (localHistoricalDataBatch.Count > 0)
                                             {
                                                 //counter += localHistoricalDataBatch.Count;
+                                                x = localHistoricalDataBatch.Count;
 
                                                 try
                                                 {
@@ -374,7 +377,7 @@
                                 }
                                 catch (Exception ex)
                                 {
-                                    log.Error("Ha ocurrido un error registrando en HistoricalDataStream", ex);
+                                    log.Error("Ha ocurrido un error registrando en HistoricalDataStream. Cantidad de registros: " + x, ex);
                                 }
                             }, TaskCreationOptions.LongRunning);
                         }
@@ -385,7 +388,10 @@
                     log.Error("Ha ocurrido un error en HistoricalDataRegister.DoRegister", ex);
                 }
 
-                //System.Threading.Thread.Sleep(100); // Descanso para el procesador
+                if (AsdaqProperties.HistoricalDataUploadInterval > 0)
+                {
+                    System.Threading.Thread.Sleep(AsdaqProperties.HistoricalDataUploadInterval); // Descanso para el procesador     
+                }         
             }
 
             _registerOverallsTask?.GetAwaiter().GetResult(); // Esperar a que termine el subproceso

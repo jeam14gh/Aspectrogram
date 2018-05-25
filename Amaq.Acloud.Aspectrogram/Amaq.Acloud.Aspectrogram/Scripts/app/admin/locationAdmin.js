@@ -65,6 +65,7 @@ LocationAdmin = (function () {
                 animation: { show: { effect: "slide", duration: 500 }, hide: { effect: "fade", duration: 500 } },
                 open: function (args) {
                     autoHeightEjDialog("#formLocation", _heightWindow);
+                    $(".e-resize-handle").removeClass("e-js");
                 },
                 beforeOpen: function (args) {
 
@@ -309,6 +310,7 @@ LocationAdmin = (function () {
                             $("#dialogDelete").ejDialog("destroy");
                         }
                     });
+                    $(".e-resize-handle").removeClass("e-js");
                 },
                 close: function (args) {
                     $("#dialogDelete").addClass('hidden');

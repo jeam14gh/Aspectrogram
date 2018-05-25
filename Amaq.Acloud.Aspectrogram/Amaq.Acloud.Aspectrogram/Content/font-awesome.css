@@ -2024,3 +2024,36 @@
 .fa-fonticons:before {
   content: "\f280";
 }
+
+.fa-print::before {
+  content: url("../Content/images/ICOREPORTE.png");
+}
+.fa-cog::before {
+  content: url("../Content/images/ICOHERRAMIENTAS.png");
+}
+
+
+
+/*
+    .fa-map-marker::before {
+  content: url("../Content/images/icono.svg");
+  width: 10px;
+  color: #ff0000;
+  height: 10px;
+  border:none;
+}
+
+
+.fa-map-marker::before {
+  content: url("../Content/images/axes.png");
+  width: 10px;
+  height: 10px;
+}
+
+fa fa-diamond
+
+    fa fa-print
+    fa fa-cog
+
+
+*/

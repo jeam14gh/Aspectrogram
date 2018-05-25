@@ -1,0 +1,15 @@
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Amaq.Acloud.Aspectrogram.Entities.dll.config
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Amaq.Acloud.Aspectrogram.Entities.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Amaq.Acloud.Entities.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Amaq.Libraries.MongoRepository.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\MongoDB.Bson.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\MongoDB.Driver.Core.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\MongoDB.Driver.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Newtonsoft.Json.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\MongoDB.Driver.GridFS.dll
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Amaq.Acloud.Entities.xml
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Amaq.Libraries.MongoRepository.pdb
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Amaq.Libraries.MongoRepository.xml
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\bin\Release\Newtonsoft.Json.xml
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\obj\Release\Amaq.Acloud.Aspectrogram.Entities.csprojResolveAssemblyReference.cache
+E:\AmaqDevelopment\Aspectrogram\Amaq.Acloud.Aspectrogram\Amaq.Acloud.Aspectrogram.Entities\obj\Release\Amaq.Acloud.Aspectrogram.Entities.dll

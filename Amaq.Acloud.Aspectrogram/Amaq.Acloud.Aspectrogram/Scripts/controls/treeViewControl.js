@@ -147,29 +147,39 @@ TreeViewControl = (function () {
 
             for (i = 0; i < promise.length; i += 1) {
                 if (promise[i].EntityType == 2) {
+                    promise[i].IconName = AcloudIcons.Asset.name;
                     promise[i].htmlAttribute = { "data-nodetype": "asset-node" }; // Tipificar los nodos de tipo asset para asociarles menú contextual de opciones
+                } else if (promise[i].EntityType == 1 && promise[i].Level.indexOf(".") == -1) {
+                    promise[i].IconName = AcloudIcons.Home.name;
+                    promise[i].htmlAttribute = { "data-nodetype": "location-node" }; // Tipificar los nodos de tipo asset para asociarles menú contextual de opciones
                 }
                 else {
+                    promise[i].IconName = AcloudIcons.Location.name;
                     promise[i].htmlAttribute = { "data-nodetype": "location-node" }; // Tipificar los nodos de tipo location
                 }
+
+                //// TEST
+                //if (promise[i].HasChild) {
+                //    promise[i].Expanded = true;
+                //} else {
+                //    promise[i].Expanded = false;
+                //}
             }
 
             $("#treeView").ejTreeView({
-                allowEditing: true,
+                expandOn: '',//'dblclick',
+                allowEditing: false,
                 fields: {
                     id: "Id",
                     parentId: "ParentId",
                     text: "Name",
                     hasChild: "HasChild",
                     dataSource: promise,
-                    expanded: "Expanded",
+                    //expanded: "HasChild",//Expanded
                     htmlAttribute: "htmlAttribute" // Propiedad con atributos html personalizados para el elemento <li> que representa el nodo
                 },
                 template: "#treeTemplate",
-                allowKeyboardNavigation: true,
-                nodePaste: function (args) {
-                    this;
-                },
+                allowKeyboardNavigation: false,
                 nodeClick: function (args) {
                     if (selectedTreeNode.EntityType == 2)
                         _selectedEntityType = 2;
@@ -236,6 +246,134 @@ TreeViewControl = (function () {
                     $("#assetMenu").ejMenu("destroy");
                     _createContextMenus();
                 },
+                //beforeEdit: function (args) {
+                //    //this;
+                //    //// Crea el control 
+                //    //args.cancel = true;
+                //    //var clon = $("div.e-animate").clone();
+                //    //$(clon).removeClass("e-animate");
+
+                //    //$("#" + args.currentElement[0]["id"]).html("<input type='text' id='txtEditNode' class='e-text' value='" + selectedTreeNode.Name + "'/>");
+                //    //$("#txtEditNode").focus();
+                //    //$('#txtEditNode').keyup(function (e) {
+                //    //    // Si oprime Enter dentro del textbox guarda los cambios en BD
+                //    //    if (e.keyCode == 13) {
+                //    //        var node = {
+                //    //            Id: selectedTreeNode.Id,
+                //    //            Name: $('#txtEditNode').val(),
+                //    //            EntityType: selectedTreeNode.EntityType,
+                //    //            EntityId: (selectedTreeNode.EntityType == 2) ? selectedTreeNode.AssetId : null
+                //    //        };
+
+                //    //        $.ajax({
+                //    //            url: "/Home/UpdateNameInTreeNode",
+                //    //            method: "POST",
+                //    //            data: { nodeDto: node },
+                //    //            success: function (response) { },
+                //    //            complete: function (e) {
+                //    //                $("#txtEditNode").remove(); // Elimina el textbox creado al editar un nodo del arbol
+                //    //                //$("li#" + selectedTreeNode.Id + " > div >a> div").show();
+                //    //                $("#treeView_active").html(clon);
+
+                //    //                // Se actualizan los datos tanto en el jsonTree como el treeObj
+                //    //                ej.DataManager(jsonTree).update("Id", { Id: node.Id, Name: node.Name }, jsonTree);
+                //    //                ej.DataManager(treeObj.currentSelectedData).update("Id", { Id: node.Id, Name: node.Name }, treeObj.currentSelectedData);
+
+                //    //                //var iconClass = "fa fa-map-marker";
+
+                //    //                //// Actualizamos el mainCache de activos 
+                //    //                //if (node.EntityType == 2) {
+                //    //                //    ej.DataManager(mainCache.loadedAssets).update("Id", { Id: node.Id, Name: node.Name }, mainCache.loadedAssets);
+                //    //                //    iconClass = "fa fa-diamond";
+                //    //                //}
+
+                //    //                //// Cambia el texto del arbol (treeView)
+                //    //                //var color = $("#treeView li#" + node.Id + " a.e-text>div>span")[0].style["color"];
+                //    //                //$("#treeView li#" + node.Id + ">div>#treeView_active>div").html("<span class='" + iconClass + "' icon-large' style='background-color: transparent; color:" + color + "; padding: 2px;'></span> " + node.Name);
+                //    //                //$("#treeView").data("ejTreeView").option({ allowKeyboardNavigation: true }); // Habilita la navegación en el árbol por medio del teclado
+                //    //            },
+                //    //            error: function (jqXHR, textStatus) {
+                //    //                popUp("error", "A ocurrido un error al actualizar. Intente nuevamente!");
+                //    //            }
+                //    //        });
+                //    //    }
+                //    //    else if (e.keyCode == 27) { // Escape
+                //    //        if ($('#txtEditNode').length > 0) {
+                //    //            $("#txtEditNode").remove(); // Elimina el textbox creado al editar un nodo del arbol
+                //    //            $("#treeView_active").html(clon);
+                //    //            //$("#treeView").data("ejTreeView").option({ allowKeyboardNavigation: true }); // Habilita la navegación en el árbol por medio del teclado
+                //    //            //$("li#" + selectedTreeNode.Id + " > div >a> div").show();
+                //    //        }
+                //    //    }
+                //    //});
+                //},
+                //beforeExpand: function (args) {
+                //    this;
+                //},
+                //nodeExpand: function (args) {
+                //    this;
+                //},
+                //nodeEdit: function (args) {
+                //    //$("#Edit_Input").val(selectedTreeNode.Name);
+                //    // Si oprime Enter dentro del textbox guarda los cambios en BD
+                //    //if (args.event) {
+                //    //    if (args.event.keyCode == 13) {
+                //    //        var node = {
+                //    //            Id: selectedTreeNode.Id,
+                //    //            //Name: $('#txtEditNode').val(),
+                //    //            Name: args.newText,
+                //    //            EntityType: selectedTreeNode.EntityType,
+                //    //            EntityId: (selectedTreeNode.EntityType == 2) ? selectedTreeNode.AssetId : null
+                //    //        };
+
+                //    //        $.ajax({
+                //    //            url: "/Home/UpdateNameInTreeNode",
+                //    //            method: "POST",
+                //    //            data: { nodeDto: node },
+                //    //            success: function (response) { },
+                //    //            complete: function (e) {
+                //    //                //$("#txtEditNode").remove(); // Elimina el textbox creado al editar un nodo del arbol
+                //    //                //$("li#" + selectedTreeNode.Id + " > div >a> div").show();
+
+                //    //                // Se actualizan los datos tanto en el jsonTree como el treeObj
+                //    //                //ej.DataManager(jsonTree).update("Id", { Id: node.Id, Name: node.Name }, jsonTree);
+                //    //                //ej.DataManager(treeObj.currentSelectedData).update("Id", { Id: node.Id, Name: node.Name }, treeObj.currentSelectedData);
+
+                //    //                //var iconClass = "fa fa-map-marker";
+
+                //    //                //// Actualizamos el mainCache de activos 
+                //    //                if (node.EntityType == 2) {
+                //    //                    //ej.DataManager(mainCache.loadedAssets).update("Id", { Id: node.Id, Name: node.Name }, mainCache.loadedAssets);
+                //    //                    //iconClass = "fa fa-diamond";
+                //    //                }
+
+                //    //                //// Cambia el texto del arbol (treeView)
+                //    //                //var color = $("#treeView li#" + node.Id + " a.e-text>div>span")[0].style["color"];
+                //    //                //$("#treeView li#" + node.Id + ">div>#treeView_active>div").html("<span class='" + iconClass + "' icon-large' style='background-color: transparent; color:" + color + "; padding: 2px;'></span> " + node.Name);
+                //    //                //$("#treeView").data("ejTreeView").option({ allowKeyboardNavigation: true }); // Habilita la navegación en el árbol por medio del teclado
+                //    //            },
+                //    //            error: function (jqXHR, textStatus) {
+                //    //                popUp("error", "A ocurrido un error al actualizar. Intente nuevamente!");
+                //    //            }
+                //    //        });
+                //    //    }
+                //    //    else {
+                //    //        //args.newText =
+                //    //        var oldname = args.oldText.trim();
+                //    //        this.updateText($("#" + selectedTreeNode.Id), oldname);
+
+                //    //        var iconClass = "fa fa-map-marker";
+                //    //        if (selectedTreeNode.EntityType == 2) {
+                //    //            iconClass = "fa fa-diamond";
+                //    //        }
+                //    //        //var color = $("#treeView li#" + node.Id + " a.e-text>div>span")[0].style["color"];
+
+                //    //        $("#treeView li#" + selectedTreeNode.Id + ">div>#treeView_active").
+                //    //            html("<div><span class='" + iconClass + "' icon-large' style='background-color: transparent; color:" + selectedTreeNode.StatusColor + "; padding: 2px;'></span> " + oldname + "</div>");
+
+                //    //    }
+                //    //}
+                //},
             });
 
             $(".treeViewFilter").removeClass("hidden");
@@ -255,22 +393,21 @@ TreeViewControl = (function () {
                             copiedNodes = [];
                             popUp("warning", "No se permite copiar ubicación!");
                         }
-                        //else if (_selectedEntityType == 3) {
-                        //    if (selectedMdVariable)
-                        //        new MeasurementPointAdmin().Copy(selectedMeasurementPoint);
-                        //}
                     },
-                    //paste: function () {
-                    //    if (selectedTreeNode.EntityType == 1)
-                    //        new AssetAdmin().Paste(selectedTreeNode);
-                    //    else if (selectedTreeNode.EntityType == 2)
-                    //        new AssetAdmin().Paste(selectedTreeNode);
-                    //},
                     keydown: function (e) {
                         if (e.which == 113) { //F2
                             _editTreeNode();
+                            //$("#treeView li#" + selectedTreeNode.Id + ">div>#treeView_active").dblclick();
                         }
                         else if (e.which == 27) { // ESC 
+                            //var iconClass = "fa fa-map-marker";
+                            //if (selectedTreeNode.EntityType == 2) {
+                            //    iconClass = "fa fa-diamond";
+                            //}
+                            ////var color = $("#treeView li#" + node.Id + " a.e-text>div>span")[0].style["color"];
+
+                            //$("#treeView li#" + selectedTreeNode.Id + ">div>#treeView_active").
+                            //    html("<div><span class='" + iconClass + "' icon-large' style='background-color: transparent; color:" + selectedTreeNode.StatusColor + "; padding: 2px;'></span> " + selectedTreeNode.Name + "</div>");
                             _cancelEditTreeNode();
                         }
                         else if ((e.keyCode == 86) && (e.ctrlKey)) { // Pegar
@@ -279,9 +416,9 @@ TreeViewControl = (function () {
                             else if (selectedTreeNode.EntityType == 2)
                                 new AssetAdmin().Paste(selectedTreeNode);
                         }
-                    }
+                    },
                 });
-            }
+            }            
 
             //_createContextMenuLocation();
             _createContextMenus();
@@ -746,8 +883,8 @@ TreeViewControl = (function () {
                         var isAdmin = JSON.parse($("#summaryViewAssetsMenuItem").attr("isAdmin"));
                         new AssetAdmin().SummaryViewAssets(_selectedLocation, isAdmin);
                         break;
-                    default:
-                        popUp("warning", "Funcionalidad desactivada temporalmente.");
+                        //default:
+                        //popUp("warning", "Funcionalidad desactivada temporalmente.");
                 }
             }
             else {
@@ -812,8 +949,8 @@ TreeViewControl = (function () {
                         var isAdmin = JSON.parse($("#summaryViewPointsMenuItem").attr("isAdmin"));
                         new AssetAdmin().SummaryViewPoints(selectedAsset, isAdmin);
                         break;
-                    default:
-                        popUp("warning", "Funcionalidad desactivada temporalmente.");
+                        //default:
+                        //popUp("warning", "Funcionalidad desactivada temporalmente.");
                 }
             }
             else {
@@ -851,8 +988,11 @@ TreeViewControl = (function () {
                     case "deleteMeasurementPointMenuItem":
                         new MeasurementPointAdmin().Delete();
                         break;
-                    default:
-                        popUp("warning", "Funcionalidad desactivada temporalmente.");
+                    case "testDataGraphically":
+                        new TestGraph().Show();
+                        break;
+                        //default:
+                        //popUp("warning", "Funcionalidad desactivada temporalmente.");
                 }
             }
             else {

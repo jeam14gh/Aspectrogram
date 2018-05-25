@@ -74,66 +74,80 @@
         /// Calcula el valor de amplitud 1x
         /// </summary>
         /// <param name="waveform">Forma de onda</param>
-        /// <param name="firstFlank">Primer flanco</param>
-        /// <param name="lastFlank">Último flanco</param>
-        /// <param name="numberOfFlanks">Cantidad de flancos</param>
+        /// <param name="positions">Total de flancos</param>
         /// <param name="mPointAcquisitionBuffer">Búfer de adquisición del punto de medición</param>
         /// <param name="step">Cantidad de señales entre el primer flanco y el último flanco</param>
         /// <returns></returns>
-        public static double CalculateAmplitude1x(double[] waveform, int firstFlank, int lastFlank, int numberOfFlanks,
+        public static double CalculateAmplitude1x(double[] waveform, uint[] positions,
             CircularBuffer<BufferDataItem> mPointAcquisitionBuffer, int step)
         {
-            if (numberOfFlanks < 2)
-            {
-                return 0;
-            }
-
-            int decrement = 0;
-            int samplesToRead = waveform.Length;
-            int j = 0;
-
-            var lastF = (int)(lastFlank + (AsdaqProperties.WINDOW_IN_SECONDS - 1) * samplesToRead);
-            var firstF = (int)(firstFlank + (AsdaqProperties.WINDOW_IN_SECONDS - 1 - step) * samplesToRead);
-
-            var length = lastF - firstF + 1;
-            double sumX = 0;
-            double sumY = 0;
-            double arg = -2.0 * Math.PI / length;
-
             var baseIndex = mPointAcquisitionBuffer.Head;
-
             // Control de indices negativos
             if (baseIndex < 0)
             {
                 baseIndex += mPointAcquisitionBuffer.Capacity;
             }
-
-            var index = baseIndex % mPointAcquisitionBuffer.Capacity; // Indice basado en la capacidad máxima del búfer
-
-            for (int n = firstF; n < lastF; n++)
+            // Indice basado en la capacidad maxima del bufer
+            var index = baseIndex % mPointAcquisitionBuffer.Capacity;
+            index -= step - 1;
+            // Control de indices negativos
+            if (index < 0)
             {
-                // Cantidad de posiciones a retroceder en el búfer de adquisición
-                decrement = (int)(AsdaqProperties.WINDOW_IN_SECONDS - 1 - (n / samplesToRead));
+                index += mPointAcquisitionBuffer.Capacity;
+            }
 
-                // Hallar el indice con base en el búfer circular
-                index = (index - decrement) % mPointAcquisitionBuffer.Capacity; // Decremento del indice
-
-                // Control de indices negativos
-                if (index < 0)
+            double[] joinedWaveform = null;
+            if (step > 0)
+            {
+                for (int i = 0; i < step; i++)
                 {
-                    index += mPointAcquisitionBuffer.Capacity;
+                    if (joinedWaveform == null)
+                    {
+                        joinedWaveform = mPointAcquisitionBuffer.getAtPosition(index).Waveform;
+                    }
+                    else
+                    {
+                        joinedWaveform = joinedWaveform.Concat(mPointAcquisitionBuffer.getAtPosition(index).Waveform).ToArray();
+                    }
+                    // Incremento del indice
+                    index = (index + 1) % mPointAcquisitionBuffer.Capacity;
+                    // Control de indices negativos
+                    if (index < 0)
+                    {
+                        index += mPointAcquisitionBuffer.Capacity;
+                    }
                 }
 
-                j = n % samplesToRead;
-
-                // Es necesario para el calculo de la fase (el coseno y el seno deben arrancar en 0)
-                var k = n - firstF;
-                var isCurrentWaveform = (decrement == 0);
-                sumX += ((isCurrentWaveform) ? waveform[j] : mPointAcquisitionBuffer.getAtPosition(index).Waveform[j]) * Math.Cos(arg * k * (numberOfFlanks - 1));
-                sumY += ((isCurrentWaveform) ? waveform[j] : mPointAcquisitionBuffer.getAtPosition(index).Waveform[j]) * Math.Sin(arg * k * (numberOfFlanks - 1));
+                joinedWaveform = joinedWaveform.Concat(waveform).ToArray();
             }
-            var bSi = 2 / (double)length;
-            return 2 * bSi * Math.Sqrt(sumX * sumX + sumY * sumY);
+            else
+            {
+                joinedWaveform = waveform;
+            }
+
+            double amplitude = 0.0;
+            for (int i = 0; i < positions.Length - 1; i++)
+            {
+                int firstFlank = (int)positions[i];
+                int lastFlank = (int)positions[i + 1];
+                int length = lastFlank - firstFlank;
+                // Argumento para la transformada directa => e^(-jwt), w=2*pi/N
+                double omega = 2.0 * Math.PI / length;
+                double sumX = 0;
+                double sumY = 0;
+                double bSi = 2 / (double)length;
+                for (int j = firstFlank; j < lastFlank; j++)
+                {
+                    // Es necesario para el calculo de la fase (el coseno y el seno deben arrancar en 0)
+                    int k = j - firstFlank;
+                    // e^(-jwt) = cos(wt) - j * sin(wt)
+                    sumX += joinedWaveform[j] * Math.Cos(omega * k);
+                    sumY += joinedWaveform[j] * (-1) * Math.Sin(omega * k);
+                }
+                double tmpAmplitude = 2 * bSi * Math.Sqrt(sumX * sumX + sumY * sumY);
+                amplitude += tmpAmplitude;
+            }
+            return amplitude / (positions.Length - 1);
         }
 
         /// <summary>
@@ -150,69 +164,80 @@
         /// Calcula el valor de fase 1x
         /// </summary>
         /// <param name="waveform">Forma de onda</param>       
-        /// <param name="firstFlank">Primer flanco</param>
-        /// <param name="lastFlank">Último flanco</param>
-        /// <param name="numberOfFlanks">Cantidad de flancos</param>
+        /// <param name="positions">Total de flancos</param>
         /// <param name="mPointAcquisitionBuffer">Búfer de adquisición del punto de medición</param>
         /// <param name="step">Cantidad de señales entre el primer flanco y el último flanco</param>
         /// <returns></returns>
-        public static double CalculatePhase1x(double[] waveform, int firstFlank, int lastFlank, int numberOfFlanks,
+        public static double CalculatePhase1x(double[] waveform, uint[] positions,
             CircularBuffer<BufferDataItem> mPointAcquisitionBuffer, int step)
         {
-            if (numberOfFlanks < 2)
-            {
-                return 0;
-            }
-
-            int decrement = 0;
-            int samplesToRead = waveform.Length;
-            int j = 0;
-
-            var lastF = (int)(lastFlank + (AsdaqProperties.WINDOW_IN_SECONDS - 1) * samplesToRead);
-            var firstF = (int)(firstFlank + (AsdaqProperties.WINDOW_IN_SECONDS - 1 - step) * samplesToRead);
-
-            var length = lastF - firstF + 1;
-            double sumX = 0;
-            double sumY = 0;
-            // Argumento para la transformada directa => e^(-jwt), w=2*pi/N
-            double omega = 2.0 * Math.PI / length;
-
             var baseIndex = mPointAcquisitionBuffer.Head;
-
             // Control de indices negativos
             if (baseIndex < 0)
             {
                 baseIndex += mPointAcquisitionBuffer.Capacity;
             }
-
             // Indice basado en la capacidad maxima del bufer
             var index = baseIndex % mPointAcquisitionBuffer.Capacity;
-
-            for (int n = firstF; n < lastF; n++)
+            index -= step - 1;
+            // Control de indices negativos
+            if (index < 0)
             {
-                // Cantidad de posiciones a retroceder en el búfer de adquisición
-                decrement = (int)(AsdaqProperties.WINDOW_IN_SECONDS - 1 - (n / samplesToRead));
+                index += mPointAcquisitionBuffer.Capacity;
+            }
 
-                // Hallar el indice con base en el búfer circular
-                index = (index - decrement) % mPointAcquisitionBuffer.Capacity; // Decremento del indice
-
-                // Control de indices negativos
-                if (index < 0)
+            double[] joinedWaveform = null;
+            if (step > 0)
+            {
+                for (int i = 0; i < step; i++)
                 {
-                    index += mPointAcquisitionBuffer.Capacity;
+                    if (joinedWaveform == null)
+                    {
+                        joinedWaveform = mPointAcquisitionBuffer.getAtPosition(index).Waveform;
+                    }
+                    else
+                    {
+                        joinedWaveform = joinedWaveform.Concat(mPointAcquisitionBuffer.getAtPosition(index).Waveform).ToArray();
+                    }
+                    // Incremento del indice
+                    index = (index + 1) % mPointAcquisitionBuffer.Capacity;
+                    // Control de indices negativos
+                    if (index < 0)
+                    {
+                        index += mPointAcquisitionBuffer.Capacity;
+                    }
                 }
 
-                j = n % samplesToRead;
-
-                // Es necesario para el calculo de la fase (el coseno y el seno deben arrancar en 0)
-                var k = n - firstF;
-                var isCurrentWaveform = (decrement == 0);
-                // e^(-jwt) = cos(wt) - j * sin(wt)
-                sumX += ((isCurrentWaveform) ? waveform[j] : mPointAcquisitionBuffer.getAtPosition(index).Waveform[j]) * Math.Cos(omega * k * (numberOfFlanks - 1));
-                sumY += ((isCurrentWaveform) ? waveform[j] : mPointAcquisitionBuffer.getAtPosition(index).Waveform[j]) * (-1) * Math.Sin(omega * k * (numberOfFlanks - 1));
+                joinedWaveform = joinedWaveform.Concat(waveform).ToArray();
             }
-            double pha1x = Math.Atan2(-sumY, sumX) * (180 / Math.PI);
-            return (pha1x < 0) ? pha1x + 360 : pha1x;
+            else
+            {
+                joinedWaveform = waveform;
+            }
+
+            double phase = 0.0;
+            for (int i = 0; i < positions.Length - 1; i++)
+            {
+                int firstFlank = (int)positions[i];
+                int lastFlank = (int)positions[i + 1];
+                int length = lastFlank - firstFlank;
+                // Argumento para la transformada directa => e^(-jwt), w=2*pi/N
+                double omega = 2.0 * Math.PI / length;
+                double sumX = 0;
+                double sumY = 0;
+                for (int j = firstFlank; j < lastFlank; j++)
+                {
+                    // Es necesario para el calculo de la fase (el coseno y el seno deben arrancar en 0)
+                    int k = j - firstFlank;
+                    // e^(-jwt) = cos(wt) - j * sin(wt)
+                    sumX += joinedWaveform[j] * Math.Cos(omega * k);
+                    sumY += joinedWaveform[j] * (-1) * Math.Sin(omega * k);
+                }
+                double tmpPhase = Math.Atan2(-sumY, sumX) * (180 / Math.PI);
+                tmpPhase = (tmpPhase < 0) ? (tmpPhase + 360) : tmpPhase;
+                phase += tmpPhase;
+            }
+            return phase / (positions.Length - 1);
         }
 
         /// <summary>

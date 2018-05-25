@@ -9,7 +9,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - A-SPECTROGRAM</title>
+    <title>A-CLOUD</title>
     <!--[if IE]>
     <script type="text/javascript" src="~/Scripts/dygraph/excanvas.js"></script>
     <![endif]-->
@@ -20,6 +20,7 @@
     @Styles.Render("~/Content/css")
     @Styles.Render("~/Content/amaq3d")
 
+
     @Scripts.Render("~/bundles/dygraph")
     @Scripts.Render("~/bundles/modernizr")
     @Scripts.Render("~/bundles/jquery")
@@ -29,17 +30,27 @@
     @Scripts.Render("~/bundles/areaSelect")
     @Scripts.Render("~/bundles/toastr")
 
+    <link rel="shortcut icon" href="~/Content/images/LogoP3.ico" />
+
     <!--Scripts para Syncfusion, debido a las referencias a otros archivos no se pueden incluir como bundle-->
     <link rel="stylesheet" href="~/Content/ej/web/default-theme/ej.theme.css" />
     <link rel="stylesheet" href="~/Content/ej/web/default-theme/ej.web.all.css" />
-    <script type="text/javascript" src="~/Scripts/jsrender.min.js"></script>
+    <link rel="stylesheet" href="~/Content/iconsac.css" />
+    <link rel="stylesheet" href="~/Content/wrench.css" />
+    <link rel="stylesheet" href="~/Content/fontawesome-all.css" />
+    <link rel="stylesheet" href="~/Content/turbo.css" />
+
+    <script src="//cdn.syncfusion.com/js/assets/external/jquery.validate.min.js"></script> 
+
     <script type="text/javascript" src="~/Scripts/jquery.easing.1.3.min.js"></script>
+
+    <script src="//cdn.syncfusion.com/js/assets/external/jquery.globalize.min.js"></script>
+
+    <script type="text/javascript" src="~/Scripts/jsrender.min.js"></script>
     <script type="text/javascript" src="~/Scripts/ej/ej.web.all.min.js"></script>
     <script type="text/javascript" src="~/Scripts/ej/cultures/ej.culture.es-ES.js"></script>
     <script type="text/javascript" src="~/Scripts/properties.js"></script>
     <script type="text/javascript" src="~/Scripts/referencesNI.js"></script>
-    @*<script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
-        <script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>*@
 </head>
 <body>
 
@@ -55,6 +66,14 @@
         @*</div>*@
     </div>
 
+    <script id="TemplateAlarms" type="text/x-jsrender">
+        <button id="btnOpenAlarms" class="iconAlarm" ><img src="Content/images/alarms.png" /> </button>        
+    </script>
+
+    <script id="templateOptions" type="text/x-jsrender">
+        <button id="btnOpenOptions" class="iconAlarm"><img src="~/Content/images/optionsSubvar.png" /> </button>
+    </script>
+    
     @Scripts.Render("~/Scripts/app/helpers/helpers.js")
     @Scripts.Render("~/Scripts/helpers/chartScaleY.js");
     @Scripts.Render("~/Scripts/controls/treeViewControl.js")
@@ -64,22 +83,25 @@
     @Scripts.Render("~/Scripts/app/admin/rtdCoefficient.js")
     @Scripts.Render("~/Scripts/app/admin/subVariables.js")
     @Scripts.Render("~/Scripts/app/admin/measurementPointAdmin.js")
+    @Scripts.Render("~/Scripts/app/admin/userPreferencesAdmin.js")
+    @Scripts.Render("~/Scripts/app/admin/measuresSystem.js")
 
     <script id="treeTemplate" type="text/x-jsrender">
         <div>
             {{if EntityType == 1}}
-            <span class="fa fa-map-marker icon-large" style="background-color: transparent; color:{{>StatusColor}}; padding: 2px;"></span>
+            <span class="fa {{>IconName}} " style="background-color: transparent; color:{{>StatusColor}}; padding: 2px;"></span>
             {{else}}
             {{if EntityType == 2}}
-            <span class="fa fa-diamond icon-large" style="background-color: transparent; color:{{>StatusColor}}; padding: 2px;"></span>
+            <span class="{{>IconName}} " style="background-color: transparent; color:{{>StatusColor}}; padding: 0px; font-size: 18px !important;"></span>
             {{/if}}
             {{/if}}
 
             {{>Name}}
         </div>
-    </script>
+    </script>    
 
-    <script type="text/javascript">
+    <script type="text/javascript">       
+
         //Lenguaje en español de Grid's
         ej.Grid.Locale["es-ES"] = {
             EmptyRecord: "No hay registros que mostrar",
@@ -220,6 +242,7 @@
             _validatedFieldsSV,
             // Lista de KPH dentro de una activo principal para gestión en vista resumen ó configuración de evento de velocidad
             _listKph,
+            _user,
             // Objeto que guarda en memoria los valores de la escala en Y de un espectro por tipo (velocidad y aceleración)
             _scaleY;
 
@@ -232,14 +255,15 @@
         _selectedEntityType = 0;
         mainCache = {
             loadedMeasurementPoints: [],
-            loadedAssets: []
+            loadedAssets: [],
+            userPreferences: {}
         };
         _validatedFieldsSV = true;
         _listKph = [{ Name: "Ninguno", Id: "0" }];
 
         windowing = {
             None: { Text: "Ninguno", Value: 0 },
-            Hanning: { Text: "Hanning", Value: 1 },
+            Hanning: { Text: "Hanning", Value: 1 }, 
             Hamming: { Text: "Hamming", Value: 2 }
         };
         spectrumTypes = {
@@ -248,9 +272,10 @@
             Acceleration: { Text: "Acel", Value: 2 }
         };
         xCoordinateUnits = {
-            Cpm: { Text: "Cpm", Value: 0, Factor: 1 / 60 },
+            Cpm: { Text: "Cpm", Value: 0, Factor: 60 },
+            Hertz: { Text: "Hz", Value: 2, Factor: 1 },
             Order: { Text: "X", Value: 1, Factor: 1 },
-            Hertz: { Text: "Hz", Value: 2, Factor: 1 }
+            Cps: { Text: "Cps", Value: 3, Factor: 1 },
         };
         TagTypes = {
             None: { Text: "Ninguna", Value: 0 },
@@ -270,7 +295,6 @@
                 { Name: "X", Code: 1 }, { Name: "Y", Code: 2 },
                 { Name: "Axial", Code: 3 }, { Name: "Radial", Code: 4 }, ];
         _scaleY = [];
-        //{ Velocity: null, Acceleration: null, widgetId: null };
 
         $.ajax({
             url: "/Home/GetSetOfRiskStates",
@@ -331,6 +355,19 @@
             }
         });
 
+        // Obtener las preferencias de usuario de usuario logueado
+        $.ajax({
+            url: "/Home/GetUserPreferences",
+            method: "GET",
+            data: { },
+            success: function (response) {
+                mainCache.userPreferences = response;
+            },
+            error: function (jqXHR, textStatus) {
+                console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
+            }
+        });
+
         // Obtener los tipos de sensor registrados en el sistema Aspectrogram
         $.ajax({
             url: "/Home/GetAllSensorTypes",
@@ -388,6 +425,14 @@
         eventSubVariables = [];
 
         $(document).ready(function () {
+            //$.validator.setDefaults({
+            //    ignore: [],
+            //    errorClass: 'e-validation-error',
+            //    errorPlacement: function (error, element) {
+            //        $(error).insertAfter(element.closest(".e-widget"));
+            //    }
+            //});
+
             // SPLITTER HORIZONTAL
             $("#outterSpliter").ejSplitter({
                 height: "100%", width: "100%",
@@ -425,12 +470,14 @@
             // SPLITTER VERTICAL
             $("#mainTreeContainer").ejSplitter({
                 orientation: ej.Orientation.Vertical,
+                //properties: [{ paneSize: "55%" }, { paneSize: "34%" }, { paneSize: "11%" }],
                 properties: [{ paneSize: "55%" }, { paneSize: "34%" }, { paneSize: "11%" }],
             });
             // SPLITTER VERTICAL
 
             // Colapsar el control splitter del reproductor y expandir el splitter del arbol principal.
             $("#mainTreeContainer").data("ejSplitter").collapse(2);
+            $("#mainTreeContainer").find("span.e-splitbar:eq(1)").hide(); // Oculta el spliter del reproductor
         });
 
         _getMdVariableById = function (id, url) {
@@ -449,6 +496,9 @@
                 }
             }).responseText);
         };
+
+
+
     </script>
 
     @RenderSection("scripts", required: false)

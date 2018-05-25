@@ -95,7 +95,6 @@ JcEventPlayer = (function () {
             _refresh;
 
         _currentPosition = 0;
-        _loadedTime = 0;
         _duration = 0;
         _progressPercentage = 0;
         _paused = true;
@@ -108,6 +107,7 @@ JcEventPlayer = (function () {
                 parent,
                 timeStamp;
 
+            _loadedTime = 0;
             _playerId = Math.floor(Math.random() * 100000);
             _duration = timeStampArray.length;
             _historicTrendId = historicTrendId.toString();
@@ -270,12 +270,19 @@ JcEventPlayer = (function () {
             _timerFeedback.innerHTML = (_timeStampArray.length > 0) ? formatDate(new Date(_timeStampArray[0])) : "";
             $(_container).append(_timerFeedback);
 
+            // Removemos el HTML del reproductor
             _this.Close();
+
+            // Eliminamos la subscripcion (caso exista) de nuevos datos
+            if (_newRangeSubscription) {
+                _newRangeSubscription.remove();
+            }
 
             // Agregamos todos los elementos del reproductor al contenedor padre
             parent = document.getElementById("jcEventPlayerParent");
             $(parent).html("");
             $(parent).append(_container);
+            $("#mainTreeContainer").find("span.e-splitbar:eq(1)").show(); // Muestra el spliter del reproductor
             $("#mainTreeContainer").data("ejSplitter").expand(2);
             if (_timeStampArray.length > 0) {
                 _eventMode.GetDynamicHistoricalData(_mdVariableIdList, _assetNodeId, _timeStampArray, _playerId);
@@ -294,6 +301,7 @@ JcEventPlayer = (function () {
 
             _closeTrendSubscription = PublisherSubscriber.subscribe("/historicClose/refresh", [_historicTrendId], function (data) {
                 if (data[_historicTrendId]) {
+                    $("#mainTreeContainer").find("span.e-splitbar:eq(1)").hide(); // Oculta el spliter del reproductor
                     $("#mainTreeContainer").data("ejSplitter").collapse(2);
                     _this.Close();
                 }
@@ -375,7 +383,7 @@ JcEventPlayer = (function () {
         };
 
         _updateProgressBar = function () {
-            _progressPercentage = Math.floor((100 / _duration) * _loadedTime);
+            _progressPercentage = Math.floor((_loadedTime / _duration) * 100);
             $(_progressBar).progressbar({ value: _progressPercentage });
             $(_progressBar).find(".ui-progressbar-value").css({
                 "width": _progressPercentage + "%"

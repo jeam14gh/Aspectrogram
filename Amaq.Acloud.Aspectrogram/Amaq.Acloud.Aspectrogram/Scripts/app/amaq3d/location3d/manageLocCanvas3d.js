@@ -11,7 +11,7 @@ ManageLocCanvas3d = (function () {
     /*
      * Constructor.
      */
-    ManageLocCanvas3d = function (parentContId) {
+    ManageLocCanvas3d = function (_widgetId, parentContId) {
 
 
         var _scene,
@@ -39,8 +39,8 @@ ManageLocCanvas3d = (function () {
 
         _cameras = {
             prop: {
-                alpha: -Math.PI / 3,
-                beta: Math.PI / 3,
+                alpha: 0,
+                beta: 0,
                 radius: 10000,
                 target: new BABYLON.Vector3(100, 0, 0),
                 lowerRadiusLimit: 10,
@@ -53,8 +53,10 @@ ManageLocCanvas3d = (function () {
         };
 
         _lights = [
-                { name: "Hemispheric", pos: new BABYLON.Vector3(0, 0, 0), intensity: 0.5 },
-                { name: "Directional", pos: new BABYLON.Vector3(0, 0, 1), intensity: 0.8 }
+                { name: "Hemispheric", pos: new BABYLON.Vector3(0, -1000, 0), intensity: 0.5 },
+                { name: "Hemispheric", pos: new BABYLON.Vector3(0, 1000, 0), intensity: 0.5 },
+                { name: "Directional1", pos: new BABYLON.Vector3(0, 0, 1), intensity: 0.8 },
+                { name: "Directional2", pos: new BABYLON.Vector3(0, 1, 0), intensity: 0.8 }
         ];
             
 
@@ -62,8 +64,8 @@ ManageLocCanvas3d = (function () {
             var idCanvas, idContCanvas;
 
 
-            if (location3d.containerCanvas === null ||
-                location3d.containerCanvas === undefined) {
+            if (location3d.containerCanvas[_widgetId] === null ||
+                location3d.containerCanvas[_widgetId] === undefined) {
 
                 idContCanvas = "contCanvasLoc3D-";
                 idCanvas = "canvasLoc3D-";
@@ -73,22 +75,22 @@ ManageLocCanvas3d = (function () {
                 _parentContainer.append('<div id="' + idContCanvas + '">' +
                     '<canvas id="' + idCanvas + '"></canvas></div>');
 
-                location3d.containerCanvas = document.getElementById(idContCanvas);
+                location3d.containerCanvas[_widgetId] = document.getElementById(idContCanvas);
 
-                location3d.canvas = document.getElementById(idCanvas);
+                location3d.canvas[_widgetId] = document.getElementById(idCanvas);
+                location3d.vbles[_widgetId] = {};
+                location3d.engine[_widgetId] = new BABYLON.Engine(location3d.canvas[_widgetId]);
+                location3d.scene[_widgetId] = new BABYLON.Scene(location3d.engine[_widgetId]);
+                location3d.events[_widgetId] = new EventsLoc3d(_widgetId, parentContId);
+                location3d.contLoader[_widgetId] = $("#" + _idContLoader);
 
-                location3d.engine = new BABYLON.Engine(location3d.canvas);
-                location3d.scene= new BABYLON.Scene(location3d.engine);
-                location3d.events = new EventsLoc3d();
-                location3d.contLoader = $("#" + _idContLoader);
-
-                _contCanvas = location3d.containerCanvas;
-                _canvas = location3d.canvas;
-                _engine = location3d.engine;
-                _scene = location3d.scene;
+                _contCanvas = location3d.containerCanvas[_widgetId];
+                _canvas = location3d.canvas[_widgetId];
+                _engine = location3d.engine[_widgetId];
+                _scene = location3d.scene[_widgetId];
 
 
-                _events = viewer3d.events;
+                _events = location3d.events[_widgetId];
 
                 _contCanvas.style.width = "100%";
                 _contCanvas.style.height = "100%";
@@ -110,13 +112,12 @@ ManageLocCanvas3d = (function () {
 
         this.createScene = function () {
 
-            var camera, light = {};
+            var camera,
+                light = {};
+
+            light = {};
 
             _engine.enableOfflineSupport = false;
-
-            //_scene.clearColor = BABYLON.Color3.FromHexString(nodes[_id3dW].Properties3d.colors.clearColor);
-
-            console.log(_scene);
 
             camera = new BABYLON.ArcRotateCamera(
                 _cameras.name,
@@ -142,15 +143,24 @@ ManageLocCanvas3d = (function () {
                 _lights[0].pos,
                 _scene);
             light[_lights[0].name].intensity = _lights[0].intensity;
-
-            light[_lights[1].name] = new BABYLON.DirectionalLight(
+            
+            light[_lights[1].name] = new BABYLON.HemisphericLight(
                 _lights[1].name,
                 _lights[1].pos,
                 _scene);
 
-            light[_lights[1].name].intensity = _lights[1].intensity;
-            light[_lights[1].name].parent = camera;
+            light[_lights[1].name].intensity = _lights[2].intensity;
+            //light[_lights[1].name].parent = camera;
 
+            light[_lights[2].name] = new BABYLON.DirectionalLight(
+                _lights[2].name,
+                _lights[2].pos,
+                _scene);
+
+            light[_lights[2].name].intensity = _lights[2].intensity;
+            light[_lights[2].name].parent = camera;
+
+            _scene.clearColor = BABYLON.Color3.FromHexString("#000000");
 
 
             _engine.runRenderLoop(function () {
@@ -175,22 +185,17 @@ ManageLocCanvas3d = (function () {
 
         this.addEventListeners = function () {
 
+
+            _canvas.addEventListener("mousemove", _events.onMouseMove, false);
+
             $('.grid-stack-item').on('resizestop', function () {
                 setTimeout(function () {
                     _engine.resize();
-                    if (_scene.activeCamera !== null) {
-                        if (_scene.activeCamera.mode) {
-                            var ratio = _contCanvas.offsetWidth / _contCanvas.offsetHeight;
-                            var zoom = _scene.activeCamera.orthoTop;
-                            var newWidth = zoom * ratio;
-                            _scene.activeCamera.orthoLeft = -Math.abs(newWidth);
-                            _scene.activeCamera.orthoRight = newWidth;
-                            _scene.activeCamera.orthoBottom = -Math.abs(zoom);
-                        }
-                    }
+                   
 
                 }, 100);
             });
+
             /*
             window.addEventListener("resize", _events.onResize, false);
             _canvas.addEventListener("mousedown", _events.onMouseDown, false);
@@ -207,6 +212,8 @@ ManageLocCanvas3d = (function () {
         };
 
         this.disposeEventListeners = function () {
+
+            _canvas.removeEventListener("mousemove", _events.onMouseMove, false);
             /*
             window.removeEventListener("resize", _events.onResize, false);
             _canvas.removeEventListener("mousedown", _events.onMouseDown, false);

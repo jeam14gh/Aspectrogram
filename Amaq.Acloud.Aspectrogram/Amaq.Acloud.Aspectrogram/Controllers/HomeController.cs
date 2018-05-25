@@ -240,7 +240,7 @@
 
             if ((principalAssetNodeIdList != null) && (principalAssetNodeIdList.Count > 0))
             {
-                rTPropertiesByPrincipalAssetNode = 
+                rTPropertiesByPrincipalAssetNode =
                     new NodeProxy(Properties.AppUserState).GetRTPropertiesByPrincipalAssetNode(principalAssetNodeIdList);
             }
             return await Task.FromResult(new JsonResult
@@ -269,7 +269,7 @@
         {
             JsonResult result = null;
 
-            if (string.IsNullOrEmpty(id))            
+            if (string.IsNullOrEmpty(id))
                 return await Task.FromResult(result);
             else
                 return await Task.FromResult(Json(new NodeExtensionProxy(Properties.AppUserState).GetById(id), JsonRequestBehavior.AllowGet));
@@ -363,7 +363,13 @@
         public async Task<JsonResult> GetDistinctTimeStamp(string principalAssetId, string startDate, string endDate)
         {
             var timeStampArray = new HistoricalDataProxy(Properties.AppUserState).GetDistinctTimeStamp(principalAssetId, startDate, endDate);
-            return await Task.FromResult(Json(timeStampArray, JsonRequestBehavior.AllowGet));
+            return await Task.FromResult(new JsonResult
+            {
+                Data = JsonConvert.SerializeObject(timeStampArray),
+                ContentType = "application/json",
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+                MaxJsonLength = int.MaxValue
+            });
         }
 
         /// <summary>
@@ -482,9 +488,9 @@
         public async Task<JsonResult> UpdateMdVariableAndNode(MdVariableExtension mdVariable)
         {
             var nodeDto = new NodeToUpdateDto { Id = mdVariable.NodeId, Name = mdVariable.Name, Description = mdVariable.Description };
-            new MdVariableExtensionProxy(Properties.AppUserState).UpdateIncludingParameterValues(mdVariable);
+            var point = new MdVariableExtensionProxy(Properties.AppUserState).UpdateIncludingParameterValues(mdVariable);
             new NodeExtensionProxy(Properties.AppUserState).UpdateNameAndDescription(nodeDto);
-            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
+            return await Task.FromResult(Json(point, JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -503,8 +509,8 @@
         [HttpPost]
         public async Task<JsonResult> UpdateSubVariables(List<SubVariableExtension> subVariables)
         {
-            new SubVariableExtensionProxy(Properties.AppUserState).UpdateMany2(subVariables);
-            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
+            var subVars = new SubVariableExtensionProxy(Properties.AppUserState).UpdateMany2(subVariables);
+            return await Task.FromResult(Json(subVars, JsonRequestBehavior.AllowGet));
         }
 
         /// <summary>
@@ -847,7 +853,7 @@
         {
             return await Task.FromResult(Json(new AssetExtensionProxy(Properties.AppUserState).GetByNodeId(nodeIdList), JsonRequestBehavior.AllowGet));
         }
-        
+
         /// <summary>
         /// Actualiza una lista de puntos de acuerdo a la posicion que tenga en el listbox
         /// </summary>
@@ -865,7 +871,8 @@
         public async Task<JsonResult> UpdateNameInTreeNode(NodeToUpdateDto nodeDto)
         {
             new NodeExtensionProxy(Properties.AppUserState).UpdateName(nodeDto);
-            return Json("", JsonRequestBehavior.AllowGet);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
+            //return Json("", JsonRequestBehavior.AllowGet);
         }
 
         /// <summary>
@@ -953,7 +960,7 @@
         public JsonResult CreateSubAssetLib3d(SubAssetLib3d subAssetLib)
         {
             return Json(new SubAssetLib3dProxy(Properties.AppUserState).CreateSubAssetLib3d(subAssetLib), JsonRequestBehavior.AllowGet);
-        }      
+        }
 
         /// <summary>
         /// Obtiene todos los tipos de sensor registrados en el sistema Aspectrogram
@@ -972,8 +979,8 @@
         public JsonResult UpdateSummaryView(List<MdVariableExtension> points, List<AssetExtension> assets)
         {
             new AssetExtensionProxy(Properties.AppUserState).UpdateMany(assets);
-            new MdVariableExtensionProxy(Properties.AppUserState).UpdatePoints(points);
-            return Json("", JsonRequestBehavior.AllowGet);
+            var _points = new MdVariableExtensionProxy(Properties.AppUserState).UpdatePoints(points);
+            return Json(_points);
         }
 
         /// <summary>
@@ -992,6 +999,45 @@
         public JsonResult GetAllReferenceAngular()
         {
             return Json(new MdVariableExtensionProxy(Properties.AppUserState).GetAllReferenceAngular(), JsonRequestBehavior.AllowGet);
+        }
+
+        /// <summary>
+        /// Retorna todo el listado de rodamientos
+        /// </summary>
+        [HttpGet]
+        public JsonResult GetAllBearingFaultFrequency()
+        {
+            var bearing = new BearingFaultFrequencyProxy(Properties.AppUserState).GetAll();
+            return new JsonResult
+            {
+                Data = bearing,
+                ContentType = "application/json",
+                MaxJsonLength = int.MaxValue,
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet
+            };
+        }
+
+        /// <summary>
+        /// Retorna la configuracion
+        /// </summary>
+        [HttpGet]
+        public JsonResult GetUserPreferences()
+        {
+            var userConfiguration = new UserConfigurationProxy(Properties.AppUserState).GetByUserId();
+            var user = new UserProxy(Properties.AppUserState).GetById(userConfiguration.UserId);
+            var userPreferences = new UserPreferences { UserConfiguration = userConfiguration, User = user, };
+            return Json(userPreferences, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> UpdateUserPreferences(UserPreferences userPreferences)
+        {
+            new UserProxy(Properties.AppUserState).UpdateUser(userPreferences.User);
+            new UserConfigurationExtensionProxy(Properties.AppUserState).UpdateByUser(userPreferences.UserConfiguration);
+            return await Task.FromResult(Json("", JsonRequestBehavior.AllowGet));
         }
     }
 }

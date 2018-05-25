@@ -84,6 +84,9 @@
     <Reference Include="Amaq.Acloud.Proxy">
       <HintPath>..\References\Amaq.Acloud.Proxy.dll</HintPath>
     </Reference>
+    <Reference Include="Amaq.Libraries.DSPFourier">
+      <HintPath>..\References\Amaq.Libraries.DSPFourier.dll</HintPath>
+    </Reference>
     <Reference Include="Amaq.Libraries.FIRFilter">
       <HintPath>..\References\Amaq.Libraries.FIRFilter.dll</HintPath>
     </Reference>

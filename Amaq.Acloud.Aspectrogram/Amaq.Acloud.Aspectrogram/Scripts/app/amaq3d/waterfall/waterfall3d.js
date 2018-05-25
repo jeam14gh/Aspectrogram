@@ -1,4 +1,4 @@
-﻿/*property
+﻿    /*property
     ampMax, armQty, bilog, bufferSpectrum, containerCanvas, dinamic, flagBilog,
     flagRPM, flagTime, id, infoLabels, labelsColor, lines, nameL, nameM, nameS,
     nomVel, numAxis, numChromeScale, numberCubesY, qty, qtyArm, qtyData, scene,
@@ -33,7 +33,7 @@ Waterfall3d = (function () {
             _sizeCube = 600,
             _canvasTextSize = 50,
             _qtyLines = 5,
-            _frecMax,
+            _freqMax,
             _infoTxt,
             _infoTextsLabels,            
             _containerId,
@@ -93,13 +93,11 @@ Waterfall3d = (function () {
             _containerId = fullSpecCascade3d.containerCanvas[idPoint + wId].id;
             _scene = fullSpecCascade3d.scene[idPoint + wId];
             _vbles = fullSpecCascade3d.vbles[idPoint + wId];
-            
             _colorLabels = fSWatConfig.labelsColor;
         } else {
             _containerId = cascade3d.containerCanvas[idPoint + wId].id;
             _scene = cascade3d.scene[idPoint + wId];
             _vbles = cascade3d.vbles[idPoint + wId];
-            
             _colorLabels = watConfig.labelsColor;
         }
 
@@ -109,18 +107,11 @@ Waterfall3d = (function () {
         this.unitsAmp = "um";
         this.overallMeasureType = 1;
         this.armonicValue = 5;
-        this.frecMax = null;
+        this.freqMax = {
+            Hz: null,
+            Cpm: null
+        };
         this.freqChoosed = 0;
-
-        _infoTxt = [
-            { id: "Amp", numAxis: 4, units: scope.unitsAmp, dinamic: true },
-            { id: "Frec", numAxis: 5, units: "Hz", dinamic: false },
-            { id: "Tiemp", numAxis: 7, units: null, dinamic: true },
-            { id: "RPM", numAxis: 7, units: "RPM", dinamic: true },
-            { id: "Amp2", numAxis: 4, units: scope.unitsAmp, dinamic: true },
-            { id: "Frec2", numAxis: 5, units: "Hz", dinamic: false },
-            { id: "RPM2", numAxis: 7, units: "RPM", dinamic: true }
-        ];
 
         this.flagTime = true;
         this.flagRPM = false;
@@ -131,11 +122,25 @@ Waterfall3d = (function () {
         this.nomVel = 12288;
         this.ampMax = 650;
         this.qtyData = 4;
-        this.numberCubesY = 80;
+        this.numberCubesY = 380;
         this.srcBmp = "";
-        //this.srcBmp = "/Content/bmpWaterfall/" + arrayBmp[watConfig.numChromeScale] + ".bmp";
 
+        if (scope.flagFirstWaterfall) {
+            this.xCoordinateUnit = xCoordinateUnits.Cpm;
+        }
 
+        _infoTxt = [
+            { id: "Amp", numAxis: 4, units: scope.unitsAmp, dinamic: true },
+            { id: "Frec", numAxis: 5, units: scope.xCoordinateUnit.Text, dinamic: false },
+            { id: "Tiemp", numAxis: 7, units: null, dinamic: true },
+            { id: "RPM", numAxis: 7, units: "RPM", dinamic: true },
+            { id: "Amp2", numAxis: 4, units: scope.unitsAmp, dinamic: true },
+            { id: "Frec2", numAxis: 5, units:  scope.xCoordinateUnit.Text, dinamic: false },
+            { id: "RPM2", numAxis: 7, units: "RPM", dinamic: true }
+        ];
+
+        _freqMax = this.freqMax;
+        
         this.infoLabels = {
             lines: {
                 qty: _qtyLines,
@@ -160,143 +165,52 @@ Waterfall3d = (function () {
             '#FF9416',
             '#D42AE8',
         ];
-
-        _calculateMaxFrec = function () {
-
-            if (scope.frecMax == null || scope.frecMax == 0) {
-                if (scope.armonicValue > 10) {
-                    _frecMax = (scope.nomVel / 60) * scope.armonicValue;
-                }
-                else {
-                    _frecMax = (scope.nomVel / 60) * 10;
-                }
-            } else {
-                _frecMax = scope.frecMax;
-            }
-            
-        };
-
-        _locateCursor = function () {
-
-            if (_scene.getMeshByName("ribbonSpec")) {
-                _scene.getMeshByName("ribbonSpec").dispose();
-            }
-
-            
-
-            var numSpec, pathBase, pathSpec1 = [], pathSpec2 = [], RibbonBase, RibbonSpec, mat, sizeZ, deltaY = 0, factSize, factY, colorRibbon;
-
-            colorRibbon = "#99CCEF";
-            numSpec = _vbles.numSpec;
-            sizeZ = _sizeCube / scope.bufferSpectrum.length;
-            factSize = _sizeCube / _frecMax;
-            factY = _dataWaterfall.y.fact;
-            mat = new BABYLON.StandardMaterial("matRibbonSpec", _scene);
-            mat.alpha = 1.0;
-            mat.diffuseColor = BABYLON.Color3.FromHexString(colorRibbon);
-            mat.emissiveColor = BABYLON.Color3.FromHexString(colorRibbon);
-            mat.specularColor = BABYLON.Color3.FromHexString(colorRibbon);
-            mat.backFaceCulling = false;
-            mat.wireframe = false;
-
-            pathBase = [[new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube / 2 + 2, -_sizeCube / 2 - sizeZ / 2),
-                        new BABYLON.Vector3(_sizeCube / 2, -_sizeCube / 2 + 2, -_sizeCube / 2 - sizeZ / 2)],
-                [new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube / 2 + 2, -_sizeCube / 2 + sizeZ / 2),
-                        new BABYLON.Vector3(_sizeCube / 2, -_sizeCube / 2 + 2, -_sizeCube / 2 + sizeZ / 2)]];
-
-            for (var i = 0; i < scope.bufferSpectrum[numSpec].spec.length - 2; i++) {
-
-                deltaY = scope.bufferSpectrum[numSpec].spec[i + 1][1] - scope.bufferSpectrum[numSpec].spec[i][1];
-
-                if (deltaY > 0) {
-                    pathSpec1.push(new BABYLON.Vector3(scope.bufferSpectrum[numSpec].spec[i][0] * factSize * scope.bufferSpectrum[numSpec].sampleTime - 2,
-                    scope.bufferSpectrum[numSpec].spec[i][1] * factY,
-                    -_sizeCube / 2 - sizeZ / 2));
-                    pathSpec2.push(new BABYLON.Vector3(scope.bufferSpectrum[numSpec].spec[i][0] * factSize * scope.bufferSpectrum[numSpec].sampleTime - 2,
-                        scope.bufferSpectrum[numSpec].spec[i][1] * factY,
-                        -_sizeCube / 2 + sizeZ / 2));
-                }
-                else {
-                    pathSpec1.push(new BABYLON.Vector3(scope.bufferSpectrum[numSpec].spec[i][0] * factSize * scope.bufferSpectrum[numSpec].sampleTime + 2,
-                    scope.bufferSpectrum[numSpec].spec[i][1] * factY,
-                    -_sizeCube / 2 - sizeZ / 2));
-                    pathSpec2.push(new BABYLON.Vector3(scope.bufferSpectrum[numSpec].spec[i][0] * factSize * scope.bufferSpectrum[numSpec].sampleTime + 2,
-                        scope.bufferSpectrum[numSpec].spec[i][1] * factY ,
-                        -_sizeCube / 2 + sizeZ / 2));
-                }                             
-            }
-
-            RibbonSpec = new BABYLON.Mesh.CreateRibbon("ribbonSpec", [pathSpec1, pathSpec2], false, false, null, _scene);
-            RibbonSpec.isPickable = false;
-            RibbonSpec.position.x = -_sizeCube / 2;
-            RibbonSpec.position.y = -_sizeCube / 2 + _sizeCube * 0.01;
-            RibbonSpec.position.z = numSpec * sizeZ + sizeZ / 2;
-            RibbonSpec.material = mat;
-
-        };
      
-        this.chooseFrecuency = function (freqChoosed, checked) {
-            var fieldSpec, maxY = 0, y, box;
-            /*
-            if (flagFullSpec) {
-                for (var i = 0; i < scope.bufferSpectrum.length; i++) {
-                    fieldSpec = parseInt(
-                        (scope.bufferSpectrum[i].spec[parseInt(scope.bufferSpectrum[i].spec.length / 2) + 1][0] / scope.bufferSpectrum[i].sampleTime) * freqChoosed + parseInt(scope.bufferSpectrum[i].spec.length / 2));
+        this.chooseFrecuency = function (checked) {
 
-                    if (fieldSpec > 0) {
-                        y = scope.bufferSpectrum[i].spec[fieldSpec -1 ][2];
-                    } else {
-                        y = scope.bufferSpectrum[i].spec[fieldSpec][1];
-                    }
-                    
-                    if (y > maxY) {
-                        // maxY = scope.bufferSpectrum[i].spec[fieldSpec][1];
-                        if (fieldSpec > 0) {
-                            maxY = scope.bufferSpectrum[i].spec[fieldSpec - 1][2];
-                        } else {
-                            maxY = scope.bufferSpectrum[i].spec[fieldSpec][1];
-                        }
-                    }
-                }
-            } else {
-                for (var i = 0; i < scope.bufferSpectrum.length; i++) {
-                    fieldSpec = parseInt((scope.bufferSpectrum[i].spec[1][0] / scope.bufferSpectrum[i].sampleTime) * freqChoosed);
+            var fieldSpec,
+                maxY, y,
+                box;
 
-                    y = scope.bufferSpectrum[i].spec[fieldSpec - 1][1];
-                    if (y > maxY) {
-                        maxY = scope.bufferSpectrum[i].spec[fieldSpec - 1][1];
-                    }
-                }
-            }*/
+            maxY = 0;
 
-            _createLineForFreq(freqChoosed, checked);
+            //scope.freqChoosed = scope.freqChoosed / scope.xCoordinateUnit.Factor;
+            //scope.freqChoosed = scope.freqChoosed;
+            _createLineForFreq(checked);
             box = _scene.getMeshByName("boxFreqChoosed");
-            box.position = new BABYLON.Vector3(-_sizeCube / 2 + parseInt(freqChoosed) * _vbles.dataWaterfall.x.fact[0], -_sizeCube / 2 + 2 * _vbles.dataWaterfall.y.fact, 0);
 
+            if (scope.xCoordinateUnit.Text == "Cpm") {
+                box.position = new BABYLON.Vector3(-_sizeCube / 2 + parseInt(scope.freqChoosed / 60) * _vbles.dataWaterfall.x.fact[0], -_sizeCube / 2 * 0.98, 0);
+            } else {
+                box.position = new BABYLON.Vector3(-_sizeCube / 2 + parseInt(scope.freqChoosed) * _vbles.dataWaterfall.x.fact[0], -_sizeCube / 2 * 0.98, 0);
+            }
+            
             box.visibility = checked;
-
         };
 
         this.createRealTimeWaterfall = function () {
             this.locateCamera();
-            //_findMinMaxGral();
             _createSkeleton();
-
         };
 
         this.createHistoricWaterfall = function () {
 
             _vbles.flagRPM = this.flagRPM;
-            _calculateMaxFrec();
+            //_calculateMaxFrec();
             _calculateSizePartsWaterfall();
             this.locateCamera();
-            _createCubeForFreq();
-            //_createRibbonForFreq();
-            //_findMinMaxGral();                       
+            _createCubeForFreq();            
         };
 
         this.fillWaterfallHistCubes = function (arraySignal) {
-            var dataSizeSignal, spectrum, path, factColor, k, pixel, data, pixelLog, dataLog, canvasB, wImg, hImg;
+
+            var dataSizeSignal,
+                spectrum, path,
+                factColor, k, pixel,
+                data, pixelLog,
+                dataLog, canvasB,
+                wImg, hImg;
+
             _vbles.armonicsInfo = [];
             _vbles.RPM = [];
             _vbles.timeStamp = [];
@@ -304,11 +218,8 @@ Waterfall3d = (function () {
             _createSkeleton();
 
             _vbles.locateCursor = _locateCursor;
-
-            //scope.armonicColors = [];
             scope.bufferSpectrum = [];
             _escalaCromatica = [];
-
             scope.flagBilog = watConfig.bilog;
             _vbles.qtyArm = watConfig.armQty;
             _vbles.qtyArm = scope.qtyArm;
@@ -325,8 +236,7 @@ Waterfall3d = (function () {
                         pixel = _ctxBmp.getImageData(2, _cantColores - 1 - i, _imgBmp.width, _imgBmp.height);
                         data = pixel.data;
                         _escalaCromatica.push([data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255]);
-                    }
-                    else {
+                    } else {
                         k = Math.round((_cantColores - 1) * Math.log10((i + 0.01) / 0.01) / Math.log10((_cantColores - 1 + 0.01) / 0.01));
                         pixelLog = _ctxBmp.getImageData(2, _cantColores - 1 - k, _imgBmp.width, _imgBmp.height);
                         dataLog = pixelLog.data;
@@ -338,8 +248,8 @@ Waterfall3d = (function () {
                     for (var j = 0; j < _vbles.arrayFilter.length; j++) {
                         if (arraySignal[i].milliseconds == _vbles.arrayFilter[j]) {
                             spectrum = GetHalfSpectrum(arraySignal[i].signal, arraySignal[i].sampleRate, scope.overallMeasureType, windowing.Hanning).mag;
-                            if (spectrum.length > _frecMax) {
-                                spectrum.splice(_frecMax - 1, (spectrum.length - _frecMax));
+                            if (spectrum.length > _freqMax.Hz) {
+                                spectrum.splice(_freqMax.Hz, (spectrum.length - _freqMax.Hz));
                             }
 
                             dataSizeSignal = new Object(_findSizeValuesXY(spectrum));
@@ -354,23 +264,34 @@ Waterfall3d = (function () {
                 _findMinMaxGral();                
                 _createCubesDegrade();              
                  _createIndColorsAmp();
-          
-                _createTextLabels();
+                 _createTextLabels();
+                 scope.redrawFrecText();
                 _calculateMaxYArmonic();
                 _createArmonicsLines();
-
                 _selLabelsColor(false);
-                setTimeout(function () { cascade3d.contLoader[idPoint + wId].hide(); }, 3000);
+
+                setTimeout(function () {
+                    cascade3d.contLoader[idPoint + wId].hide();
+                }, 3000);
             }
         };
 
         this.fillClassicWaterfallHist = function (arraySignal) {
-            var dataSizeSignal, spectrum, path, factColor, k, pixel, data, pixelLog, dataLog, canvasB, wImg, hImg, sampleRate;
+
+            var dataSizeSignal,
+                spectrum, path,
+                factColor, k,
+                pixel, data,
+                pixelLog,
+                dataLog,
+                canvasB,
+                wImg, hImg,
+                sampleRate;
+
             _vbles.armonicsInfo = [];
             _vbles.RPM = [];
             _vbles.timeStamp = [];
             _vbles.qtyArm = scope.qtyArm;
-            //scope.armonicColors = [];
             scope.bufferSpectrum = [];
 
             _colorLabels = "#222244";
@@ -382,8 +303,8 @@ Waterfall3d = (function () {
                     
                     if (arraySignal[i].milliseconds == _vbles.arrayFilter[j]) {
                         spectrum = GetHalfSpectrum(arraySignal[i].signal, arraySignal[i].sampleRate, scope.overallMeasureType, windowing.Hanning).mag;
-                        if (spectrum.length > _frecMax) {
-                            spectrum.splice(_frecMax - 1, (spectrum.length - _frecMax));
+                        if (spectrum.length > _freqMax.Hz) {
+                            spectrum.splice(_freqMax.Hz, (spectrum.length - _freqMax.Hz));
                         }
 
                         dataSizeSignal = new Object(_findSizeValuesXY(spectrum));
@@ -399,18 +320,31 @@ Waterfall3d = (function () {
                 _createWallSignal();
                 _createLinesSignals();
                 _createTextLabels();
+                scope.redrawFrecText();
                 _vbles.dataWaterfall = _dataWaterfall;
                 _calculateMaxYArmonic();
                 _createArmonicsLines();
 
                 _selLabelsColor(true);
 
-                setTimeout(function () { cascade3d.contLoader[idPoint + wId].hide(); }, 2000);
-                
+                setTimeout(function () {
+                    cascade3d.contLoader[idPoint + wId].hide();
+                }, 2000);
         };
 
-        this.fillWaterfallHistCubesFullSpec = function (arraySignalX, arraySignalY) {
-            var dataSizeSignal, spectrum, spectrum2, path, factColor, k, pixel, data, pixelLog, dataLog, canvasB, wImg, hImg;
+        this.fillWaterfallHistCubesFullSpec = function (arraySignalX, arraySignalY, rotDir) {
+
+            var dataSizeSignal,
+                spectrum,
+                spectrum2,
+                path,
+                factColor,
+                k, pixel,
+                data, pixelLog,
+                dataLog,
+                canvasB,
+                wImg, hImg;
+
             _vbles.armonicsInfo = [];
             _vbles.RPM = [];
             _vbles.timeStamp = [];
@@ -418,7 +352,6 @@ Waterfall3d = (function () {
             _createSkeleton();
             _vbles.locateCursor = _locateCursor;
 
-            //scope.armonicColors = [];
             scope.bufferSpectrum = [];
             _escalaCromatica = [];
 
@@ -438,8 +371,7 @@ Waterfall3d = (function () {
                         pixel = _ctxBmp.getImageData(2, _cantColores - 1 - i, _imgBmp.width, _imgBmp.height);
                         data = pixel.data;
                         _escalaCromatica.push([data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255]);
-                    }
-                    else {
+                    }else {
                         k = Math.round((_cantColores - 1) * Math.log10((i + 0.01) / 0.01) / Math.log10((_cantColores - 1 + 0.01) / 0.01));
                         pixelLog = _ctxBmp.getImageData(2, _cantColores - 1 - k, _imgBmp.width, _imgBmp.height);
                         dataLog = pixelLog.data;
@@ -450,10 +382,10 @@ Waterfall3d = (function () {
                 for (var i = 0; i < arraySignalX.length; i++) {
                     for (var j = 0; j < _vbles.arrayFilter.length; j++) {
                         if (arraySignalX[i].milliseconds == _vbles.arrayFilter[j]) {
-                            spectrum = GetFullSpectrum(arraySignalX[i].signal, arraySignalY[i].signal, arraySignalX[i].sampleRate, scope.overallMeasureType, windowing.Hanning);
-                            if (spectrum.length > _frecMax * 2) {
+                            spectrum = GetFullSpectrum(arraySignalX[i].signal, arraySignalY[i].signal, arraySignalX[i].sampleRate, scope.overallMeasureType, windowing.Hanning, rotDir);
+                            if (spectrum.length > _freqMax.Hz * 2) {
 
-                                spectrum2 = spectrum.slice(spectrum.length / 2 - _frecMax, spectrum.length / 2 + _frecMax);
+                                spectrum2 = spectrum.slice(spectrum.length / 2 - _freqMax.Hz, spectrum.length / 2 + _freqMax.Hz);
                             }
                             dataSizeSignal = new Object(_findSizeValuesXY(spectrum2));
                             _vbles.armonicsInfo.push(_calculateFullSpecArmonics(spectrum2, arraySignalX[i].vel));
@@ -461,7 +393,6 @@ Waterfall3d = (function () {
                             _vbles.RPM.push(arraySignalX[i].vel);
                             _vbles.timeStamp.push(arraySignalX[i].timeStamp);
                         }
-                        
                     }
                 }
 
@@ -470,33 +401,32 @@ Waterfall3d = (function () {
                 _createIndColorsAmp();
                 _createTextLabels();
 
+                scope.redrawFrecText();
                 _calculateMaxYArmonicFS();
                 _createArmonicsLinesFS();
                 _selLabelsColor(false);
-                setTimeout(function () { fullSpecCascade3d.contLoader[idPoint + wId].hide(); }, 3000);
+                setTimeout(function () {
+                    fullSpecCascade3d.contLoader[idPoint + wId].hide();
+                }, 3000);
             }
         };
 
-        this.fillClassicWaterfallHistFullSpec = function (arraySignalX, arraySignalY) {
+        this.fillClassicWaterfallHistFullSpec = function (arraySignalX, arraySignalY, rotDir) {
             var dataSizeSignal, spectrum, spectrum2, path, factColor, k, pixel, data, pixelLog, dataLog, canvasB, wImg, hImg, sampleRate;
             _vbles.armonicsInfo = [];
             _vbles.RPM = [];
             _vbles.timeStamp = [];
             _vbles.qtyArm = scope.qtyArm;
-            //scope.armonicColors = [];
             scope.bufferSpectrum = [];
             _createSkeleton();
 
             for (var i = 0; i < arraySignalX.length - 1; i++) {
                 for (var j = 0; j < _vbles.arrayFilter.length; j++) {
                     if (arraySignalX[i].milliseconds == _vbles.arrayFilter[j]) {
-                        spectrum = GetFullSpectrum(arraySignalX[i].signal, arraySignalY[i].signal, arraySignalY[i].sampleRate, scope.overallMeasureType, windowing.Hanning);
-
+                        spectrum = GetFullSpectrum(arraySignalX[i].signal, arraySignalY[i].signal, arraySignalY[i].sampleRate, scope.overallMeasureType, windowing.Hanning, rotDir);
                 
-                        if (spectrum.length > _frecMax * 2) {
-
-                            spectrum = spectrum.slice(spectrum.length / 2 - parseInt(_frecMax), spectrum.length / 2 + parseInt(_frecMax));
-                            
+                        if (spectrum.length > _freqMax.Hz * 2) {
+                            spectrum = spectrum.slice(spectrum.length / 2 - parseInt(_freqMax.Hz), spectrum.length / 2 + parseInt(_freqMax.Hz));
                         }
                 
                         dataSizeSignal = new Object(_findSizeValuesXY(spectrum));
@@ -505,7 +435,6 @@ Waterfall3d = (function () {
                         _vbles.RPM.push(arraySignalX[i].vel);
                         _vbles.timeStamp.push(arraySignalX[i].timeStamp);
                     }
-                    
                 }
             }
 
@@ -513,122 +442,379 @@ Waterfall3d = (function () {
             _createWallSignal();
             _createLinesSignals();
             _createTextLabels();
+            scope.redrawFrecText();
             _vbles.dataWaterfall = _dataWaterfall;
             _calculateMaxYArmonicFS();
             _createArmonicsLinesFS();
             _selLabelsColor(true);
             setTimeout(function () { fullSpecCascade3d.contLoader[idPoint + wId].hide(); }, 3000);
-            
+        };
 
+        this.locateCamera = function () {
+
+            var element = document.getElementById(_containerId);
+            _scene.activeCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+
+            if (flagFullSpec) {
+                element.addEventListener("wheel", fullSpecCascade3d.events[idPoint + wId].zoomOrtographicCascade);
+                _scene.activeCamera.target = new BABYLON.Vector3(0, 0, 0);
+                _scene.activeCamera.target = new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube * 0.3, -_sizeCube * 0.2);
+                _scene.activeCamera.alpha = -1.38;
+                _scene.activeCamera.beta = 1.045;
+
+                _scene.activeCamera.orthoBottom = -_sizeCube * 0.66;
+                _scene.activeCamera.orthoLeft = -_sizeCube * 0.66 * _scene._engine.getAspectRatio(_scene.activeCamera);
+                _scene.activeCamera.orthoTop = _sizeCube * 0.66;
+                _scene.activeCamera.orthoRight = _sizeCube * 0.66 * _scene._engine.getAspectRatio(_scene.activeCamera);
+                _scene.activeCamera.radius = 16000;
+            } else {
+                element.addEventListener("wheel", cascade3d.events[idPoint + wId].zoomOrtographicCascade);
+                //_scene.activeCamera.target = new BABYLON.Vector3(-_sizeCube / 2, 0, 0);
+                _scene.activeCamera.target = new BABYLON.Vector3(60, -_sizeCube * 0.254, -_sizeCube * 0.116);
+                _scene.activeCamera.alpha = -1.3153;
+                _scene.activeCamera.beta = 1.045;
+
+                _scene.activeCamera.orthoBottom = -_sizeCube * 0.54;
+                _scene.activeCamera.orthoLeft = -_sizeCube * 0.54 * _scene._engine.getAspectRatio(_scene.activeCamera);
+                _scene.activeCamera.orthoTop = _sizeCube * 0.54;
+                _scene.activeCamera.orthoRight = _sizeCube * 0.54 * _scene._engine.getAspectRatio(_scene.activeCamera);
+                _scene.activeCamera.radius = 16200;
+            }
+
+            _scene.activeCamera.wheelPrecision = 0.1;
+            _scene.activeCamera.upperRadiusLimit = 80000;
+            _scene.activeCamera.lowerRadiusLimit = 2;
+            _scene.activeCamera.panningSensibility = 2;
+            _scene.lights[0].intensity = 0;
+            _scene.lights[1].intensity = 0;
+        };
+
+        this.createExtraArmonicLine = function (firstTime) {
+
+            var path = [], line, factX, factY, factZ, x, y, z;
+
+            factY = _dataWaterfall.y.fact;
+            factX = _dataWaterfall.x.fact;
+            factZ = _sizeCube / _vbles.armonicsInfo.length;
+
+            for (var j = 0; j < _vbles.armonicsInfo.length; j++) {
+                x = _vbles.RPM[j] * factX[4] * (scope.armonicValue) / 60;
+                y = _arrayMaxY[4] * factY * 1.01;
+                z = factZ * j;
+                path.push(new BABYLON.Vector3(-_sizeCube / 2 + x, -_sizeCube / 2 + y, -_sizeCube / 2 + z));
+            }
+
+            if (_scene.getMeshByName("lineArmonic-4-" + idPoint + wId) != undefined) {
+                _scene.getMeshByName("lineArmonic-4-" + idPoint + wId).dispose();
+                line = BABYLON.Mesh.CreateLines("lineArmonic-4-" + idPoint + wId, path, _scene);
+            }
+
+            line.color = BABYLON.Color3.FromHexString(scope.armonicColors[4]);
+
+            if (firstTime || (scope.armonicValue > scope.bufferSpectrum[0].spec.length * 60 / scope.nomVel)) {
+                line.visibility = false;
+            } else {
+                line.visibility = true;
+            }
+            path = [];
+        };
+
+        this.createExtraArmonicLineFS = function (firstTime) {
+
+            var pathX = [], lineX, pathY = [], lineY, factX, factY, factZ, xX, yX, zX, xY, yY, zY;
+
+            factY = _dataWaterfall.y.fact;
+            factX = _dataWaterfall.x.fact;
+            factZ = _sizeCube / _vbles.armonicsInfo.length;
+
+            for (var j = 0; j < _vbles.armonicsInfo.length; j++) {
+                xX = -_vbles.RPM[j] * factX[4] * (scope.armonicValue) / 60;
+
+                yX = _arrayMaxY[4].maxYArmX * factY * 1.01;
+                zX = factZ * j;
+                pathX.push(new BABYLON.Vector3(-_sizeCube / 2 + xX, -_sizeCube / 2 + yX, -_sizeCube / 2 + zX));
+
+                xY = _vbles.RPM[j] * factX[4] * (scope.armonicValue) / 60;
+
+
+                yY = _arrayMaxY[4].maxYArmY * factY * 1.01;
+                zY = factZ * j;
+                pathY.push(new BABYLON.Vector3(-_sizeCube / 2 + xY, -_sizeCube / 2 + yY, -_sizeCube / 2 + zY));
+            }
+
+            if (_scene.getMeshByName("lineArmonic-4-X-" + idPoint + wId) != undefined) {
+                _scene.getMeshByName("lineArmonic-4-X-" + idPoint + wId).dispose();
+                lineX = BABYLON.Mesh.CreateLines("lineArmonic-4-X-" + idPoint + wId, pathX, _scene);
+            }
+
+            lineX.color = BABYLON.Color3.FromHexString(scope.armonicColors[4]);
+            pathX = [];
+
+            if (_scene.getMeshByName("lineArmonic-4-Y-" + idPoint + wId) != undefined) {
+                _scene.getMeshByName("lineArmonic-4-Y-" + idPoint + wId).dispose();
+                lineY = BABYLON.Mesh.CreateLines("lineArmonic-4-Y-" + idPoint + wId, pathY, _scene);
+            }
+
+            lineY.color = BABYLON.Color3.FromHexString(scope.armonicColors[4]);
+            pathY = [];
+
+            if (firstTime || (scope.armonicValue > scope.freqMax.Hz * 60 / scope.nomVel)) {
+                lineX.visibility = false;
+                lineY.visibility = false;
+            } else {
+                lineX.visibility = true;
+                lineY.visibility = true;
+            }
+        };
+
+        this.redrawFrecText = function () {
+
+            var
+                pos,
+                canvasText,
+                valueFrec,
+                valueFrec2,
+                canvasText2,
+                dynamicTexture,
+                context2D,
+                et, et2,
+                ot, ot2;
+
+            pos = _scene.getMeshByName("Labels-units-" + _infoTxt[1].id).position;
+            _scene.getMeshByName("Labels-units-" + _infoTxt[1].id).dispose();
+            canvasText = _createText("Labels-units-" + _infoTxt[1].id, _canvasTextSize / 1.5, 80);
+
+            et = canvasText.material.emissiveTexture;
+            ot = canvasText.material.opacityTexture;
+            et.drawText(scope.xCoordinateUnit.Text, null, 20, "18px Segoe UI", _colorLabels, null);
+            ot.drawText(scope.xCoordinateUnit.Text, null, 20, "18px Segoe UI", _colorLabels, null);
+            canvasText.position = pos;
+
+            for (var i = 0; i <= _qtyLines; i++) {
+
+                if (scope.xCoordinateUnit.Text == "Cpm") {
+                    valueFrec = i * (_freqMax.Cpm / _qtyLines);
+                } else {
+                    valueFrec = i * (_freqMax.Hz / _qtyLines);
+                }
+
+                valueFrec = valueFrec.toFixed(0);
+
+                pos = _scene.getMeshByName("Labels-Value-" + _infoTxt[1].id + "-" + i).position;
+                _scene.getMeshByName("Labels-Value-" + _infoTxt[1].id + "-" + i).dispose();
+                canvasText = _createText("Labels-Value-" + _infoTxt[1].id + "-" + i, _canvasTextSize / 1.5, 80);
+
+
+                et2 = canvasText.material.emissiveTexture;
+                ot2 = canvasText.material.opacityTexture;
+                et2.drawText(valueFrec, null, 20, "12px Segoe UI", _colorLabels, null);
+                ot2.drawText(valueFrec, null, 20, "12px Segoe UI", _colorLabels, null);
+
+                canvasText.position = pos;
+            }
+
+            if (flagFullSpec) {
+
+                for (var i = 0; i < _qtyLines; i++) {
+
+                    if (scope.xCoordinateUnit.Text == "Cpm") {
+                        valueFrec = i * (_freqMax.Cpm / _qtyLines);
+                        valueFrec2 = -(_qtyLines - i) * _freqMax.Cpm / _qtyLines;
+                    } else {
+                        valueFrec = i * (_freqMax.Hz / _qtyLines);
+                        valueFrec2 = -(_qtyLines - i) * _freqMax.Hz / _qtyLines;
+                    }
+
+                    valueFrec = valueFrec.toFixed(0);
+                    valueFrec2 = valueFrec2.toFixed(0);
+
+                    pos = _scene.getMeshByName("Labels-Value-" + _infoTxt[1].id + "-" + i).position;
+                    _scene.getMeshByName("Labels-Value-" + _infoTxt[1].id + "-" + i).dispose();
+                    canvasText = _createText("Labels-Value-" + _infoTxt[1].id + "-" + i, _canvasTextSize / 1.5, 80);
+
+                    et2 = canvasText.material.emissiveTexture;
+                    ot2 = canvasText.material.opacityTexture;
+                    et2.drawText(valueFrec, null, 20, "12px Segoe UI", _colorLabels, null);
+                    ot2.drawText(valueFrec, null, 20, "12px Segoe UI", _colorLabels, null);
+                    canvasText.position = pos;
+
+
+                    pos = _scene.getMeshByName("Labels-Value-" + _infoTxt[5].id + "-" + i).position;
+                    _scene.getMeshByName("Labels-Value-" + _infoTxt[5].id + "-" + i).dispose();
+                    canvasText = _createText("Labels-Value-" + _infoTxt[5].id + "-" + i, _canvasTextSize / 1.5, 80);
+
+                    et2 = canvasText.material.emissiveTexture;
+                    ot2 = canvasText.material.opacityTexture;
+                    et2.drawText(valueFrec2, null, 20, "12px Segoe UI", _colorLabels, null);
+                    ot2.drawText(valueFrec2, null, 20, "12px Segoe UI", _colorLabels, null);
+                    canvasText.position = pos;
+                }
+            }
+        };
+
+        this.paintArmonic = function (num, flag) {
+            var valX, numCubeX, path = [], posX = scope.sizeCubeVal;
+            if (flag) {
+                for (var i = 0; i < _vbles.armonicsInfo.length; i++) {
+                    valX = cascade3d.vbles[idPoint + wId].RPM[i] / 60;
+                    numCubeX = Math.floor((valX * _dataWaterfall.x.fact) / (scope.sizeCubeVal)) * (scope.sizeCubeVal);
+
+                    path.push(new BABYLON.Vector3((posX + numCubeX) * num, scope.sizeCubeVal / 4, (_sizeCube / scope.bufferSpectrum.length) * i));
+
+                    color = scope.armonicColors[num - 1];
+
+                }
+                _createParticles(path, color, num - 1, "box", "arm");
+            } else {
+                _scene.getMeshByName("SPS-Spec-16-base" + num - 1 + "-" + "arm").dispose();
+            }
+
+        };
+
+        _locateCursor = function () {
+
+            var numSpec,
+                pathBase,
+                pathSpec1,
+                pathSpec2,
+                RibbonBase,
+                RibbonSpec,
+                mat, sizeZ,
+                deltaY = 0,
+                factSize,
+                factY, i,
+                colorRibbon;
+
+
+            pathSpec1 = [];
+            pathSpec2 = [];
+            deltaY = 0;
+
+            if (_scene.getMeshByName("ribbonSpec")) {
+                _scene.getMeshByName("ribbonSpec").dispose();
+            }
+
+            colorRibbon = "#99CCEF";
+            numSpec = _vbles.numSpec;
+            sizeZ = _sizeCube / scope.bufferSpectrum.length;
+            factSize = _sizeCube / _freqMax.Hz;
+            factY = _dataWaterfall.y.fact;
+
+            mat = new BABYLON.StandardMaterial("matRibbonSpec", _scene);
+            mat.alpha = 1.0;
+            mat.diffuseColor = BABYLON.Color3.FromHexString(colorRibbon);
+            mat.emissiveColor = BABYLON.Color3.FromHexString(colorRibbon);
+            mat.specularColor = BABYLON.Color3.FromHexString(colorRibbon);
+            mat.backFaceCulling = false;
+            mat.wireframe = false;
+
+            pathBase = [[new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube / 2 + 2, -_sizeCube / 2 - sizeZ / 2),
+                        new BABYLON.Vector3(_sizeCube / 2, -_sizeCube / 2 + 2, -_sizeCube / 2 - sizeZ / 2)],
+                [new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube / 2 + 2, -_sizeCube / 2 + sizeZ / 2),
+                        new BABYLON.Vector3(_sizeCube / 2, -_sizeCube / 2 + 2, -_sizeCube / 2 + sizeZ / 2)]];
+
+            for (i = 0; i < scope.bufferSpectrum[numSpec].spec.length - 2; i++) {
+
+                deltaY = scope.bufferSpectrum[numSpec].spec[i + 1][1] - scope.bufferSpectrum[numSpec].spec[i][1];
+
+                if (deltaY > 0) {
+                    pathSpec1.push(new BABYLON.Vector3(scope.bufferSpectrum[numSpec].spec[i][0] * factSize * scope.bufferSpectrum[numSpec].sampleTime - 2,
+                    scope.bufferSpectrum[numSpec].spec[i][1] * factY,
+                    -_sizeCube / 2 - sizeZ / 2));
+                    pathSpec2.push(new BABYLON.Vector3(scope.bufferSpectrum[numSpec].spec[i][0] * factSize * scope.bufferSpectrum[numSpec].sampleTime - 2,
+                        scope.bufferSpectrum[numSpec].spec[i][1] * factY,
+                        -_sizeCube / 2 + sizeZ / 2));
+                } else {
+                    pathSpec1.push(new BABYLON.Vector3(scope.bufferSpectrum[numSpec].spec[i][0] * factSize * scope.bufferSpectrum[numSpec].sampleTime + 2,
+                    scope.bufferSpectrum[numSpec].spec[i][1] * factY,
+                    -_sizeCube / 2 - sizeZ / 2));
+                    pathSpec2.push(new BABYLON.Vector3(scope.bufferSpectrum[numSpec].spec[i][0] * factSize * scope.bufferSpectrum[numSpec].sampleTime + 2,
+                        scope.bufferSpectrum[numSpec].spec[i][1] * factY,
+                        -_sizeCube / 2 + sizeZ / 2));
+                }
+            }
+
+            RibbonSpec = new BABYLON.Mesh.CreateRibbon("ribbonSpec", [pathSpec1, pathSpec2], false, false, null, _scene);
+            RibbonSpec.isPickable = false;
+            RibbonSpec.position.x = -_sizeCube / 2;
+            RibbonSpec.position.y = -_sizeCube / 2 + _sizeCube * 0.01;
+            RibbonSpec.position.z = numSpec * sizeZ + sizeZ / 2;
+            RibbonSpec.material = mat;
         };
 
         _createWallSignal = function () {
 
-            var colFondo = new BABYLON.Color3(1, 1, 1);
+            var colFondo,
+                h, i,
+                factY,
+                factX,
+                factZ,
+                points,
+                ind, col,
+                spec,
+                meshFB,
+                vertexData,
+                indexVert1,
+                numY;
+
+            colFondo = new BABYLON.Color3(1, 1, 1);
             _scene.clearColor = new BABYLON.Color3(1, 1, 1);
             watConfig.bGColor = _scene.clearColor.toHexString();
 
-            var deltaY, factY, factX, factZ, points = [], ind = [], col = [], spec, meshFB, vertexData, indexVert1, indexVert2, indexVert3, numY, contInd = 0;
-            var pointsArray = [], indArray = [], colArray = [], pointsAux = [], indAux = [], colAux = [], qtyInd, auxPoint;
             factY = _dataWaterfall.y.fact;
-            
             factZ = _sizeCube / scope.bufferSpectrum.length;
 
-            var numSpec;
+            for (h = 0; h < scope.bufferSpectrum.length ; h++) {
 
-            for (var h = 0; h < scope.bufferSpectrum.length; h ++) {
-         
-                    spec = scope.bufferSpectrum[h].spec;
-                    points = [], ind = [], col = [], indexVert1 = 1, indexVert2 = 3, indexVert3 = 2, pointsArray = [], indArray = [], colArray = [], pointsAux = [], indAux = [], colAux = [];
-                    factX = _dataWaterfall.x.fact[h];
-                    contInd = 0;
-                    for (var i = 0; i < spec.length - 2; i++) {
-                        if (flagFullSpec) {
-                            if (i < _frecMax) {
-                                numY = 1;
-                            } else {
-                                numY = 2;
-                            }
+                spec = scope.bufferSpectrum[h].spec;
+                points = [], ind = [], col = [], indexVert1 = 0;
+                factX = _dataWaterfall.x.fact[h];
+
+                for (i = 0; i < spec.length - 1; i++) {
+                    if (flagFullSpec) {
+                        if (i < _freqMax.Hz) {
+                            numY = 1;
                         } else {
-                            numY = 1;
+                            numY = 2;
                         }
-                        deltaY = Math.abs(spec[i + 1][numY] - spec[i][numY]) * factY;
-
-
-                        if (deltaY > 0.01) {
-
-                            points.push(spec[i][0] * factX, spec[i][numY] * factY, 0,
-                                    spec[i][0] * factX, 0, 0,
-                                    spec[i + 1][0] * factX, spec[i + 1][numY] * factY, 0,
-                                    spec[i][0] * factX, 0, 0,
-                                    spec[i + 1][0] * factX, spec[i + 1][numY] * factY, 0,
-                                    spec[i + 1][0] * factX, 0, 0);
-                            ind.push(indexVert1 + 1, indexVert1 + 2, indexVert1 + 3,
-                                indexVert1 + 2, indexVert1 + 3, indexVert1 + 4);
-                            col.push(colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1);
-                            indexVert1 += 4;
-                            contInd += 6;
-                        }
-
-                    }
-                  
-                    for (var i = 0; i < spec.length - 2; i++) {
-                        if (flagFullSpec) {
-                            if (i < _frecMax) {
-                                numY = 1;
-                            }else{
-                                numY = 2;
-                            }
-                        }else{
-                            numY = 1;
-                        }
-                        deltaY = Math.abs(spec[i + 1][numY] - spec[i][numY]) * factY;
-                        if (deltaY > 0.01) {
-
-                            points.push(spec[i][0] * factX, spec[i][numY] * factY, 0,
-                                    spec[i][0] * factX, 0, 0,
-                                    spec[i + 1][0] * factX, spec[i + 1][numY] * factY, 0,
-                                    spec[i][0] * factX, 0, 0,
-                                    spec[i + 1][0] * factX, spec[i + 1][numY] * factY, 0,
-                                    spec[i + 1][0] * factX, 0, 0);
-                            ind.push(indexVert2 + 1, indexVert2 + 2, indexVert2 + 3,
-                                indexVert2 + 2, indexVert2 + 3, indexVert2 + 4);
-                            col.push(colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1,
-                                colFondo.r, colFondo.g, colFondo.b, 1);
-                            indexVert2 += 4;
-                            contInd += 6;
-                        }
+                    } else {
+                        numY = 1;
                     }
 
-                    meshFB = new BABYLON.Mesh("spec-" + 0 + "-" + h, _scene);
-                    meshFB.material = new BABYLON.StandardMaterial("mat" + name, _scene);
-                    meshFB.material.backFaceCulling = false;
-                    meshFB.material.specularColor = new BABYLON.Color3(0, 0, 0);
-                    meshFB.material.emissiveColor = new BABYLON.Color3(1, 1, 1);
-                    meshFB.material.freeze();
+                    points.push(spec[i][0] * factX, spec[i][numY] * factY, 0,
+                            spec[i][0] * factX, 0, 0,
+                            spec[i + 1][0] * factX, spec[i + 1][numY] * factY, 0,
+                            spec[i][0] * factX, 0, 0,
+                            spec[i + 1][0] * factX, spec[i + 1][numY] * factY, 0,
+                            spec[i + 1][0] * factX, 0, 0);
+                    ind.push(indexVert1 , indexVert1 + 1, indexVert1 + 2,
+                        indexVert1 + 3, indexVert1 + 4, indexVert1 + 5);
+                    col.push(colFondo.r, colFondo.g, colFondo.b, 1,
+                        colFondo.r, colFondo.g, colFondo.b, 1,
+                        colFondo.r, colFondo.g, colFondo.b, 1,
+                        colFondo.r, colFondo.g, colFondo.b, 1,
+                        colFondo.r, colFondo.g, colFondo.b, 1,
+                        colFondo.r, colFondo.g, colFondo.b, 1);
+                    indexVert1 += 6;
+                }
 
-                    vertexData = new BABYLON.VertexData();
+                meshFB = new BABYLON.Mesh("spec-" + 0 + "-" + h, _scene);
+                meshFB.material = new BABYLON.StandardMaterial("mat" + name, _scene);
+                meshFB.material.backFaceCulling = false;
+                meshFB.material.specularColor = new BABYLON.Color3(0, 0, 0);
+                meshFB.material.emissiveColor = new BABYLON.Color3(1, 1, 1);
+                meshFB.material.freeze();
 
-                    vertexData.positions = points;
-                    vertexData.indices = ind;
-                    vertexData.colors = col;
+                vertexData = new BABYLON.VertexData();
 
-                    vertexData.applyToMesh(meshFB, 1);
+                vertexData.positions = points;
+                vertexData.indices = ind;
+                vertexData.colors = col;
 
-                    meshFB.position = new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube / 2, -_sizeCube / 2 + h * factZ);
+                vertexData.applyToMesh(meshFB, 1);
 
-                
+                meshFB.position = new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube / 2, -_sizeCube / 2 + h * factZ);
             }
-
 
             return meshFB;
         };
@@ -645,12 +831,12 @@ Waterfall3d = (function () {
                 spec = scope.bufferSpectrum[i].spec;
                 path = [];
                 if (!flagFullSpec) {
-                    for (var j = 0; j < spec.length - 2; j++) {
+                    for (var j = 0; j < spec.length; j++) {
                         path.push(new BABYLON.Vector3(spec[j][0] * factX, spec[j][1] * factY, 0));
                     }
                 } else {
-                    for (var j = 0; j < spec.length - 2; j++) {
-                        if (j < _frecMax ) {
+                    for (var j = 0; j < spec.length; j++) {
+                        if (j < _freqMax.Hz) {
                             path.push(new BABYLON.Vector3(spec[j][0] * factX, spec[j][1] * factY, 0));
                         } else {
                             path.push(new BABYLON.Vector3(spec[j][0] * factX, spec[j][2] * factY, 0));
@@ -744,55 +930,6 @@ Waterfall3d = (function () {
             return parent;
         };
 
-        this.locateCamera = function () {
-
-            var element = document.getElementById(_containerId);
-            _scene.activeCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-
-            if (flagFullSpec) {
-                element.addEventListener("wheel", fullSpecCascade3d.events[idPoint + wId].zoomOrtographic);
-                _scene.activeCamera.target = new BABYLON.Vector3(0, 0, 0);
-                _scene.activeCamera.target = new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube * 0.3, -_sizeCube * 0.2);
-                _scene.activeCamera.alpha = -1.38;
-                _scene.activeCamera.beta = 1.045;
-
-                _scene.activeCamera.orthoBottom = -_sizeCube * 0.66;
-                _scene.activeCamera.orthoLeft = -_sizeCube * 0.66 * _scene._engine.getAspectRatio(_scene.activeCamera);
-                _scene.activeCamera.orthoTop = _sizeCube * 0.66;
-                _scene.activeCamera.orthoRight = _sizeCube * 0.66 * _scene._engine.getAspectRatio(_scene.activeCamera);
-                _scene.activeCamera.radius = 16000;
-            } else {
-                element.addEventListener("wheel", cascade3d.events[idPoint + wId].zoomOrtographic);
-                //_scene.activeCamera.target = new BABYLON.Vector3(-_sizeCube / 2, 0, 0);
-                _scene.activeCamera.target = new BABYLON.Vector3(60, -_sizeCube * 0.254, -_sizeCube * 0.116);
-                _scene.activeCamera.alpha = -1.3153;
-                _scene.activeCamera.beta = 1.045;
-
-                _scene.activeCamera.orthoBottom = -_sizeCube * 0.54;
-                _scene.activeCamera.orthoLeft = -_sizeCube * 0.54 * _scene._engine.getAspectRatio(_scene.activeCamera);
-                _scene.activeCamera.orthoTop = _sizeCube * 0.54;
-                _scene.activeCamera.orthoRight = _sizeCube * 0.54 * _scene._engine.getAspectRatio(_scene.activeCamera);
-                _scene.activeCamera.radius = 16200;
-            }
-            /*
-            
-            _scene.activeCamera.radius = _sizeCube * 4.5;
-
-            _scene.activeCamera.orthoBottom = -_sizeCube * 0.8;
-            _scene.activeCamera.orthoLeft = -_sizeCube * 0.8 * _scene._engine.getAspectRatio(_scene.activeCamera);
-            _scene.activeCamera.orthoTop = _sizeCube * 0.8;
-            _scene.activeCamera.orthoRight = _sizeCube * 0.8 * _scene._engine.getAspectRatio(_scene.activeCamera);
-
-            _scene.activeCamera.alpha = -Math.PI / 2;
-            _scene.activeCamera.beta = 0.1;*/
-            _scene.activeCamera.wheelPrecision = 0.1;
-            _scene.activeCamera.upperRadiusLimit = 80000;
-            _scene.activeCamera.lowerRadiusLimit = 2;
-            _scene.activeCamera.panningSensibility = 2;
-            _scene.lights[0].intensity = 0;
-            _scene.lights[1].intensity = 0;
-        };
-
         _findSizeValuesXY = function (signal) {
 
             var data = new Object({
@@ -836,7 +973,7 @@ Waterfall3d = (function () {
 
             var data = new Object({
                 x: {
-                    total: _frecMax,
+                    total: _freqMax.Hz,
                     fact: []
                 },
                 y: {
@@ -856,7 +993,7 @@ Waterfall3d = (function () {
                 if (scope.bufferSpectrum[i0].dataSizeSignal.y.min < data.y.min) {
                     data.y.min = scope.bufferSpectrum[i0].dataSizeSignal.y.min;
                 }
-                data.x.fact.push((scope.bufferSpectrum[i0].sampleTime * _sizeCube) / _frecMax);
+                data.x.fact.push((scope.bufferSpectrum[i0].sampleTime * _sizeCube) / _freqMax.Hz);
             }
 
             data.y.total = data.y.max - data.y.min;
@@ -962,7 +1099,7 @@ Waterfall3d = (function () {
 
         _createTextLabels = function () {
 
-            var canvasText, et, ot, factPosX = false, factPosZ = false, posX, posY, posZ, et2, ot2, canvasText2, valueAmp, valueFrec, valueFrec2, valueTiemp, valueRPM;
+            var canvasText, et, ot, factPosX = false, factPosZ = false, posX, posY, posZ, et2, ot2, canvasText2, valueAmp, valueFrec, valueFrec2, valueTiemp, valueRPM, frec2;
 
             _infoTxt[0].units = scope.unitsAmp;
 
@@ -995,127 +1132,133 @@ Waterfall3d = (function () {
                         canvasText = _createText("Labels-units-" + _infoTxt[i].id, _canvasTextSize / 1.5, 80);
                         et = canvasText.material.emissiveTexture;
                         ot = canvasText.material.opacityTexture;
-                        et.drawText(_infoTxt[i].units, null, 20, "22px Segoe UI", _colorLabels, null);
-                        ot.drawText(_infoTxt[i].units, null, 20, "22px Segoe UI", _colorLabels, null);
+                        et.drawText(_infoTxt[i].units, null, 20, "18px Segoe UI", _colorLabels, null);
+                        ot.drawText(_infoTxt[i].units, null, 20, "18px Segoe UI", _colorLabels, null);
                     }
 
                     switch (_infoTxt[i].id) {
-                        case "Amp": {
+                        case "Amp":
                             canvasText.position = new BABYLON.Vector3((_sizeCube * 1.2) / 2, -(_sizeCube * (0.5 - _factScaleY - 0.05)), _sizeCube / 2);
                             posX = (_sizeCube / 2) * 1.1;
                             posY = -(_sizeCube / 2) * (1 + _factScaleY / 4) * 0.99;
                             posZ = _sizeCube / 2;
-                        } break;
-                        case "Frec": {
+                            break;
+                        case "Frec":
                             canvasText.position = new BABYLON.Vector3(-_sizeCube / 2, -(_sizeCube * (1 + _factScaleY / 2)) / 2, 0);
                             posX = -_sizeCube / 2;
                             posY = -_sizeCube / 2;
                             posZ = -_sizeCube / 2 * 1.1;
-                        } break;
-                        case "Tiemp": {
+                            
+                            break;
+                        case "Tiemp":
                             canvasText.position = new BABYLON.Vector3(0, -(_sizeCube * (1 + _factScaleY / 2)) / 2, -_sizeCube / 2);
                             posX = _sizeCube / 2;
                             posY = -_sizeCube / 2;
                             posZ = -_sizeCube / 2;
-                        } break;
-                        case "RPM": {
+                            break;
+                        case "RPM":
                             canvasText.position = new BABYLON.Vector3(-1.2 * _sizeCube / 2, -(_sizeCube * (1 + _factScaleY / 2)) / 2, 0);
                             posX = -_sizeCube / 2;
                             posY = -_sizeCube / 2;
                             posZ = -_sizeCube / 2;
-                        } break;
-                        case "Amp2": {
+                            break;
+                        case "Amp2":
                             canvasText.position = new BABYLON.Vector3(-2.5 * (_sizeCube * 1.2) / 2, -(_sizeCube * (0.5 - _factScaleY - 0.05)), _sizeCube / 2);
-                            posX = -2.5 * _sizeCube / 2;
+                            posX = -2.8 * _sizeCube / 2;
                             posY = -(_sizeCube / 2) * (1 + _factScaleY / 4) * 0.99;
                             posZ = _sizeCube / 2;
-                        } break;
-                        case "Frec2": {
+                            break;
+                        case "Frec2":
                             canvasText.position = new BABYLON.Vector3(-_sizeCube / 2, -(_sizeCube * (1 + _factScaleY / 2)) / 2, -_sizeCube / 2);
                             posX = -3 * _sizeCube / 2;
                             posY = -_sizeCube / 2;
                             posZ = -_sizeCube / 2 * 1.1;
-                        } break;
-                        case "RPM2": {
-
+                            break;
+                        case "RPM2":
                             canvasText.position = new BABYLON.Vector3(-3 * _sizeCube * 1.2 / 2, -(_sizeCube * (1 + _factScaleY / 2)) / 2, 0);
                             posX = -2.5 * _sizeCube / 2;
                             posY = -_sizeCube / 2;
                             posZ = -_sizeCube / 2;
-                        } break;
+                            break;
                     }
 
-
-
                     for (var j = 0; j <= _qtyLines; j++) {
+                        if (scope.xCoordinateUnit.Text == "Cpm") {
+                            valueFrec = j * (_freqMax.Cpm / _qtyLines);
+                            valueFrec2 = -(_qtyLines - j) * _freqMax.Cpm / _qtyLines;
+                        } else {
+                            valueFrec = j * (_freqMax.Hz / _qtyLines);
+                            valueFrec2 = -(_qtyLines - j) * _freqMax.Hz / _qtyLines;
+                        }
+
                         canvasText2 = _createText("Labels-Value-" + _infoTxt[i].id + "-" + j, _canvasTextSize / 1.5, 80);
                         et2 = canvasText2.material.emissiveTexture;
                         ot2 = canvasText2.material.opacityTexture;
-                        valueFrec = j * (_frecMax / _qtyLines);
+                        
                         valueAmp = j * (_dataWaterfall.y.maxAxis / _qtyLines);
                         valueAmp = valueAmp.toFixed(2);
-                        valueFrec2 = -(_qtyLines - j) * _frecMax / _qtyLines;
+                        
+                        valueFrec = valueFrec.toFixed(0);
+                        valueFrec2 = valueFrec2.toFixed(0);
 
-
-                        valueFrec = valueFrec.toFixed(2);
-                        valueFrec2 = valueFrec2.toFixed(2);
-                        // valueAmp = valueAmp.toFixed(2);
                         switch (_infoTxt[i].id) {
                             case "Amp":
-                                et2.drawText(valueAmp, null, 25, "18px Segoe UI", _colorLabels, null);
-                                ot2.drawText(valueAmp, null, 25, "18px Segoe UI", _colorLabels, null);
+                                et2.drawText(valueAmp, null, 25, "12px Segoe UI", _colorLabels, null);
+                                ot2.drawText(valueAmp, null, 25, "12px Segoe UI", _colorLabels, null);
                                 canvasText2.position = new BABYLON.Vector3(posX * 1.15, posY + j * 1.05 * (_sizeCube / 4) * (1 + _factScaleY / 2) / _qtyLines, posZ);
                                 break;
                             case "Frec":
-                                et2.drawText(valueFrec, null, 20, "18px Segoe UI", _colorLabels, null);
-                                ot2.drawText(valueFrec, null, 20, "18px Segoe UI", _colorLabels, null);
+                                et2.drawText(valueFrec, null, 20, "12px Segoe UI", _colorLabels, null);
+                                ot2.drawText(valueFrec, null, 20, "12px Segoe UI", _colorLabels, null);
                                 canvasText2.position = new BABYLON.Vector3(posX + j * (_sizeCube / _qtyLines), posY * 1.2, posZ * 1.1);
                                 break;
                             case "Tiemp":
                                 if (scope.bufferSpectrum[Math.ceil(j * (scope.bufferSpectrum.length / _qtyLines))]) {
-                                    et2.drawText(scope.bufferSpectrum[Math.ceil(j * (scope.bufferSpectrum.length / _qtyLines))].timeStamp, null, 20, "18px Segoe UI", _colorLabels, null);
-                                    ot2.drawText(scope.bufferSpectrum[Math.ceil(j * (scope.bufferSpectrum.length / _qtyLines))].timeStamp, null, 20, "18px Segoe UI", _colorLabels, null);
+                                    et2.drawText(scope.bufferSpectrum[Math.ceil(j * (scope.bufferSpectrum.length / _qtyLines))].timeStamp, null, 20, "12px Segoe UI", _colorLabels, null);
+                                    ot2.drawText(scope.bufferSpectrum[Math.ceil(j * (scope.bufferSpectrum.length / _qtyLines))].timeStamp, null, 20, "12px Segoe UI", _colorLabels, null);
                                     canvasText2.position = new BABYLON.Vector3(posX * 1.3, posY * 1.1, posZ + j * (_sizeCube / _qtyLines));
                                 }
                                 break;
                             case "RPM":
-
                                 if (scope.bufferSpectrum[Math.ceil(j * (scope.bufferSpectrum.length / _qtyLines))]) {
-                                    et2.drawText(Math.ceil(_vbles.RPM[Math.ceil(j * (_vbles.RPM.length / _qtyLines))]), null, 20, "18px Segoe UI", _colorLabels, null);
-                                    ot2.drawText(Math.ceil(_vbles.RPM[Math.ceil(j * (_vbles.RPM.length / _qtyLines))]), null, 20, "18px Segoe UI", _colorLabels, null);
+                                    et2.drawText(Math.ceil(_vbles.RPM[Math.ceil(j * (_vbles.RPM.length / _qtyLines))]), null, 20, "12px Segoe UI", _colorLabels, null);
+                                    ot2.drawText(Math.ceil(_vbles.RPM[Math.ceil(j * (_vbles.RPM.length / _qtyLines))]), null, 20, "12px Segoe UI", _colorLabels, null);
                                     canvasText2.position = new BABYLON.Vector3(posX * 1.3, posY * 1.1, posZ + j * (_sizeCube / _qtyLines));
                                 }
                                 break;
                             case "Amp2":
-                                et2.drawText(valueAmp, null, 30, "18px Segoe UI", _colorLabels, null);
+                                et2.drawText(valueAmp, null, 30, "12px Segoe UI", _colorLabels, null);
                                 canvasText2.position = new BABYLON.Vector3(posX * 1.15, posY + j * 1.05 * (_sizeCube / 4) * (1 + _factScaleY / 2) / _qtyLines, posZ);
-                                ot2.drawText(valueAmp, null, 30, "18px Segoe UI", _colorLabels, null);
+                                ot2.drawText(valueAmp, null, 30, "12px Segoe UI", _colorLabels, null);
                                 canvasText2.position = new BABYLON.Vector3(posX * 1.15, posY + j * 1.05 * (_sizeCube / 4) * (1 + _factScaleY / 2) / _qtyLines, posZ);
                                 break;
                             case "Frec2":
                                 if (j < _qtyLines) {
-                                    et2.drawText(valueFrec2, null, 20, "18px Segoe UI", _colorLabels, null);
+                                    et2.drawText(valueFrec2, null, 20, "12px Segoe UI", _colorLabels, null);
                                     canvasText2.position = new BABYLON.Vector3(posX + j * (_sizeCube / _qtyLines), posY * 1.2, posZ * 1.1);
-                                    ot2.drawText(valueFrec2, null, 20, "18px Segoe UI", _colorLabels, null);
+                                    ot2.drawText(valueFrec2, null, 20, "12px Segoe UI", _colorLabels, null);
                                     canvasText2.position = new BABYLON.Vector3(posX + j * (_sizeCube / _qtyLines), posY * 1.2, posZ * 1.1);
                                 }
                                 break;
                             case "RPM2":
                                 if (scope.bufferSpectrum[Math.ceil(j * (scope.bufferSpectrum.length / _qtyLines))]) {
-                                    et2.drawText(Math.ceil(_vbles.RPM[Math.ceil(j * (_vbles.RPM.length / _qtyLines))]), null, 20, "18px Segoe UI", _colorLabels, null);
-                                    ot2.drawText(Math.ceil(_vbles.RPM[Math.ceil(j * (_vbles.RPM.length / _qtyLines))]), null, 20, "18px Segoe UI", _colorLabels, null);
+                                    et2.drawText(Math.ceil(_vbles.RPM[Math.ceil(j * (_vbles.RPM.length / _qtyLines))]), null, 20, "12px Segoe UI", _colorLabels, null);
+                                    ot2.drawText(Math.ceil(_vbles.RPM[Math.ceil(j * (_vbles.RPM.length / _qtyLines))]), null, 20, "12px Segoe UI", _colorLabels, null);
                                     canvasText2.position = new BABYLON.Vector3(posX * 1.3, posY * 1.1, posZ + j * (_sizeCube / _qtyLines));
                                 }
                                 break;
                         }
-
                     }
-
                 }
-
             }
 
-        }
+            if (flagFullSpec) {
+                _scene.getMeshByName("Labels-units-" + _infoTxt[5].id).dispose();
+                frec2 = _scene.getMeshByName("Labels-units-" + _infoTxt[1].id);
+                frec2.position = new BABYLON.Vector3(-_sizeCube / 2, -(_sizeCube * (1 + _factScaleY / 2)) / 2, -_sizeCube / 2);
+            }
+
+        };
 
         _createSkeleton = function () {
 
@@ -1219,17 +1362,17 @@ Waterfall3d = (function () {
         _createCubesDegrade = function () {
 
             var path1 = [], path2 = [], posX, posY, colorT = [], color, numCubesBase, factColor, objArrayY, numCubeX, maxY = [], posEscalaCrom, numPart, factY;
-            numCubesBase = Math.floor((_sizeCube / _frecMax) * scope.sizeCubeVal);
+            numCubesBase = Math.floor((_sizeCube / _freqMax.Hz) * scope.sizeCubeVal);
             factY = (_sizeCube * _factScaleY) / scope.numberCubesY;
             _colorBase = new BABYLON.Color3(_escalaCromatica[0][0], _escalaCromatica[0][1], _escalaCromatica[0][2]);
 
             //posX = scope.sizeCubeVal;
             for (var j = 0; j < scope.bufferSpectrum.length; j++) {
                 if (flagFullSpec) {
-                    posX = -(_sizeCube / (_frecMax)) * scope.sizeCubeVal;
+                    posX = -(_sizeCube / (_freqMax.Hz)) * scope.sizeCubeVal;
                     //posX = -scope.sizeCubeVal * 2;
                 } else {
-                    posX = (_sizeCube / _frecMax) * scope.sizeCubeVal;
+                    posX = (_sizeCube / _freqMax.Hz) * scope.sizeCubeVal;
                     //posX = scope.sizeCubeVal;
                 }
                 
@@ -1485,86 +1628,6 @@ Waterfall3d = (function () {
             _vbles.unitsAmp = scope.unitsAmp;
         };
 
-        this.createExtraArmonicLine = function () {
-           
-            var path = [], line, factX, factY, factZ, x, y, z;
-
-            factY = _dataWaterfall.y.fact;
-            factX = _dataWaterfall.x.fact;
-            factZ = _sizeCube / _vbles.armonicsInfo.length;
-
-            for (var j = 0; j < _vbles.armonicsInfo.length; j++) {
-                x = _vbles.RPM[j] * factX[4] * (scope.armonicValue) / 60;
-                y = _arrayMaxY[4] * factY * 1.01;
-                z = factZ * j;
-                path.push(new BABYLON.Vector3(-_sizeCube / 2 + x, -_sizeCube / 2 + y, -_sizeCube / 2 + z));
-            }
-
-            if (_scene.getMeshByName("lineArmonic-4-" + idPoint + wId) != undefined) {
-                _scene.getMeshByName("lineArmonic-4-" + idPoint + wId).dispose();
-                line = BABYLON.Mesh.CreateLines("lineArmonic-4-" + idPoint + wId, path, _scene);
-            }
-
-            line.color = BABYLON.Color3.FromHexString(scope.armonicColors[4]);
-            path = [];          
-        };
-
-        this.createExtraArmonicLineFS = function (firstTime) {
-
-            var pathX = [], lineX, pathY = [], lineY, factX, factY, factZ, xX, yX, zX, xY, yY, zY;
-
-            factY = _dataWaterfall.y.fact;
-            factX = _dataWaterfall.x.fact;
-            factZ = _sizeCube / _vbles.armonicsInfo.length;
-
-            for (var j = 0; j < _vbles.armonicsInfo.length; j++) {
-                //xX = _vbles.RPM[j] * factX[4] * (4 + 1) / 60;
-                //if (4 == _vbles.armonicsInfo[0].length - 1) {
-                //    xX = _vbles.RPM[j] * factX[4] * (scope.armonicValue) / 60;
-                //}
-                xX = -_vbles.RPM[j] * factX[4] * (scope.armonicValue) / 60;
-
-                yX = _arrayMaxY[4].maxYArmX * factY * 1.01;
-                zX = factZ * j;
-                pathX.push(new BABYLON.Vector3(-_sizeCube / 2 + xX, -_sizeCube / 2 + yX, -_sizeCube / 2 + zX));
-
-                //xY = _vbles.RPM[j] * factX[4] * (4 + 1) / 60;
-                //if (4 == _vbles.armonicsInfo[0].length - 1) {
-                //    xY = _vbles.RPM[j] * factX[4] * (scope.armonicValue) / 60;
-                //}
-                xY = _vbles.RPM[j] * factX[4] * (scope.armonicValue) / 60;
-
-
-                yY = _arrayMaxY[4].maxYArmY * factY * 1.01;
-                zY = factZ * j;
-                pathY.push(new BABYLON.Vector3(-_sizeCube / 2 + xY, -_sizeCube / 2 + yY, -_sizeCube / 2 + zY));
-            }
-
-            if (_scene.getMeshByName("lineArmonic-4-X-" + idPoint + wId) != undefined) {
-                _scene.getMeshByName("lineArmonic-4-X-" + idPoint + wId).dispose();
-                lineX = BABYLON.Mesh.CreateLines("lineArmonic-4-X-" + idPoint + wId, pathX, _scene);
-            }
-
-            lineX.color = BABYLON.Color3.FromHexString(scope.armonicColors[4]);
-            pathX = [];
-
-            if (_scene.getMeshByName("lineArmonic-4-Y-" + idPoint + wId) != undefined) {
-                _scene.getMeshByName("lineArmonic-4-Y-" + idPoint + wId).dispose();
-                lineY = BABYLON.Mesh.CreateLines("lineArmonic-4-Y-" + idPoint + wId, pathY, _scene);
-            }
-
-            lineY.color = BABYLON.Color3.FromHexString(scope.armonicColors[4]);
-            pathY = [];
-
-            if (firstTime) {
-                lineX.visibility = false;
-                lineY.visibility = false;
-            } else {
-                lineX.visibility = true;
-                lineY.visibility = true;
-            }
-        };
-
         _createIndColorsAmp = function () {
             var path = [], posX, posZ, cyl, options, mat, sizeCyl;
             posX = _sizeCube / 2;
@@ -1623,7 +1686,7 @@ Waterfall3d = (function () {
             for (var i = 0; i < scope.bufferSpectrum.length; i++) {
                 box = parent.clone();
                 box.name = "cubeBase-" + i;
-                box.position.y = -_sizeCube / 2;
+                box.position.y = -_sizeCube * 1.001 / 2;
                 
                 box.scaling.z = (_sizeCube / scope.bufferSpectrum.length) * (scope.sizeCubeVal);
                 if (flagFullSpec) {
@@ -1644,25 +1707,6 @@ Waterfall3d = (function () {
             
             parent.dispose();
            
-        };
-
-        this.paintArmonic = function (num, flag) {
-            var valX, numCubeX, path = [], posX = scope.sizeCubeVal;
-            if (flag) {
-                for (var i = 0; i < _vbles.armonicsInfo.length; i++) {
-                    valX = cascade3d.vbles[idPoint + wId].RPM[i] / 60;
-                    numCubeX = Math.floor((valX * _dataWaterfall.x.fact) / (scope.sizeCubeVal)) * (scope.sizeCubeVal);
-
-                    path.push(new BABYLON.Vector3((posX + numCubeX) * num, scope.sizeCubeVal / 4, (_sizeCube / scope.bufferSpectrum.length) * i));
-
-                    color = scope.armonicColors[num - 1];
-
-                }
-                _createParticles(path, color, num - 1, "box", "arm");
-            } else {
-                _scene.getMeshByName("SPS-Spec-16-base" + num - 1 + "-" + "arm").dispose();
-            }
-
         };
         
         _selLabelsColor = function (flagClasic) {
@@ -1720,7 +1764,7 @@ Waterfall3d = (function () {
             }
 
             for (var i = 0; i < qtyInfoTxt; i++) {
-                if ((i != 3 && flagFullSpec) || !flagFullSpec) {
+                if ((i != 3 && flagFullSpec && i != 5) || !flagFullSpec) {
                     if (infoTxt[i].units !== null && i != 1) {
                         _scene.getMeshByName(textUnits + infoTxt[i].id).material.ambientColor = BABYLON.Color3.FromHexString(colorL);
                         _scene.getMeshByName(textUnits + infoTxt[i].id).material.diffuseColor = BABYLON.Color3.FromHexString(colorL);
@@ -1765,7 +1809,7 @@ Waterfall3d = (function () {
 
             box = BABYLON.Mesh.CreateBox("boxFreqChoosed", 5, _scene);
             box.scaling.z = _sizeCube / 5;
-            box.position = new BABYLON.Vector3(-_sizeCube / 2, 0, 0);
+            box.position = new BABYLON.Vector3(-_sizeCube / 2, -_sizeCube / 2 * 0.98, 0);
 
             box.material = new BABYLON.StandardMaterial("matboxFreqChoosed", _scene);
             box.material.diffuseColor = new BABYLON.Color3(1, 0.2, 0.2);
@@ -1780,27 +1824,37 @@ Waterfall3d = (function () {
             //scope.chooseFrecuency(10);
         };
 
-        _createLineForFreq = function (freqChoosed, checked) {
+        _createLineForFreq = function (checked) {
 
-            var path = [], line, factX, factY, factZ, x, y, z, fieldSpec;
+            var path = [], line, factX, factY, factZ, x, y, z, fieldSpec, freqChoosed;
 
             factY = _dataWaterfall.y.fact;
             factX = _dataWaterfall.x.fact;
             factZ = _sizeCube / scope.bufferSpectrum.length;
+
+            if (scope.xCoordinateUnit.Text == "Cpm") {
+                freqChoosed = scope.freqChoosed / 60;
+            } else {
+                freqChoosed = scope.freqChoosed;
+            }
+
 
             if (!flagFullSpec) {
                 for (var i = 0; i < scope.bufferSpectrum.length; i++) {
                     
                     fieldSpec = parseInt((scope.bufferSpectrum[i].spec[1][0] / scope.bufferSpectrum[i].sampleTime) * freqChoosed);
 
-                    x = fieldSpec * factX[i];
-                    y = scope.bufferSpectrum[i].spec[fieldSpec - 1][1] * factY * 1.01;
-                    z = factZ * i;
+                    if (fieldSpec > 0 && fieldSpec < scope.bufferSpectrum[i].spec.length - 1) {
+                        x = fieldSpec * factX[i];
+                        y = scope.bufferSpectrum[i].spec[fieldSpec - 1][1] * factY * 1.01;
+                        z = factZ * i;
 
-                    if (i == 0) {
-                        path.push(new BABYLON.Vector3(-_sizeCube / 2 + x, -_sizeCube / 1.98, -_sizeCube / 2 + z));
+                        if (i == 0) {
+                            path.push(new BABYLON.Vector3(-_sizeCube / 2 + x, -_sizeCube / 1.98, -_sizeCube / 2 + z));
+                        }
+                        path.push(new BABYLON.Vector3(-_sizeCube / 2 + x, -_sizeCube / 2 + y, -_sizeCube / 2 + z));
                     }
-                    path.push(new BABYLON.Vector3(-_sizeCube / 2 + x, -_sizeCube / 2 + y, -_sizeCube / 2 + z));
+
                 }
                 
             }
@@ -1825,9 +1879,6 @@ Waterfall3d = (function () {
 
                 }
             }
-
-            
-
             if (_scene.getMeshByName("lineFreq-" + idPoint + wId) != undefined) {
                 _scene.getMeshByName("lineFreq-" + idPoint + wId).dispose();
                 line = BABYLON.Mesh.CreateLines("lineFreq-" + idPoint + wId, path, _scene);
@@ -1892,7 +1943,6 @@ Waterfall3d = (function () {
             }
 
         };
-
 
     };
     return Waterfall3d;

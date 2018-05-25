@@ -8,7 +8,7 @@
             <div class="col-md-12">
                 <h2 class="titleSlider">Frecuencia de corte</h2>
                 <div id="stopFrequency" style="width:95%;float:left;"></div>
-                <div class="sliderValue" style="float:right;margin-top:-5px;width:5%;padding-left:10px;">0</div>
+                <div class="sliderValue" style="float:right;margin-top:-5px;width:5%;padding-left:10px;">0 Hz</div>
             </div>
         </div>
     </div>
@@ -27,6 +27,7 @@
 </div>
 
 @section scripts {
+    @Scripts.Render("~/Scripts/acloudIcons.js")
     @Scripts.Render("~/Scripts/helpers/widgetHelper.js")
     @Scripts.Render("~/Scripts/controls/listboxControl.js")
     @Scripts.Render("~/Scripts/helpers/binaryReader.js")
@@ -46,6 +47,8 @@
     @Scripts.Render("~/Scripts/app/realTimeMode.js")
     @Scripts.Render("~/Scripts/app/historicalTimeMode.js")
     @Scripts.Render("~/Scripts/app/eventTimeMode.js")
+    @Scripts.Render("~/Scripts/app/admin/assetAdmin.js")
+    @Scripts.Render("~/Scripts/helpers/lzma.js")
 
     @Scripts.Render("~/Scripts/app/helpers/aspectrogramWidget.js")
     @Scripts.Render("~/Scripts/app/helpers/dataMock.js")
@@ -61,6 +64,7 @@
     @Scripts.Render("~/Scripts/app/graphs/scatterGraph.js")
     @Scripts.Render("~/Scripts/app/graphs/waveformGraph.js")
     @Scripts.Render("~/Scripts/app/graphs/spectrumGraph.js")
+    @Scripts.Render("~/Scripts/app/graphs/testGraph.js")
 
     @Scripts.Render("~/Scripts/math.js")
     @Scripts.Render("~/Scripts/jspdf.debug.js")
@@ -80,8 +84,9 @@
     @Scripts.Render("~/Scripts/app/amaq3d/loadMeshes.js")
     @Scripts.Render("~/Scripts/app/amaq3d/viewer3d/shaftDeflection.js")
     @Scripts.Render("~/Scripts/app/amaq3d/viewer3d/loadDataViewer3d.js")
-
-    @Scripts.Render("~/Scripts/app/amaq3d/location3d/loadMeshesLoc3d.js")
+    
+    @Scripts.Render("~/Scripts/app/amaq3d/location3d/company3d.js")
+    @Scripts.Render("~/Scripts/app/amaq3d/location3d/plant3d.js")
     @Scripts.Render("~/Scripts/app/amaq3d/location3d/manageLocCanvas3d.js")
     @Scripts.Render("~/Scripts/app/amaq3d/location3d/eventsLoc3d.js")
     @Scripts.Render("~/Scripts/app/amaq3d/location3d/appNavigation3d.js")
@@ -109,6 +114,8 @@
         
     <script type="text/javascript">
         var
+            // Referencia al objeto que permite descomprimir las formas de onda en formato lzma
+            my_lzma,
             // Referencia al helper widget
             widgetHelper,
             // Bandera que indica si el filtro dinamico esta activado o no
@@ -134,6 +141,7 @@
             // Funcion que realiza el renderizado del valor en el filtro dinamico
             showValue;
 
+        my_lzma = new LZMA("Scripts/helpers/lzma_worker.js");
         eventPlayerObj = new JcEventPlayer();
         widgetHelper = new WidgetHelper();
         enableFilter = false;
@@ -150,12 +158,11 @@
         };
         $(window).on("visibilitychange", function (e) {
             // Notifica a cada gráfica que contenga chart Dygraph para que aplique resize al respectivo chart para solucionar bug de Dygraph
-            PublisherSubscriber.publish('/resizechart', null);
+            PublisherSubscriber.publish("/resizechart", null);
         });
-        $(window).on("beforeunload", function (e) {
-            e.returnValue = "Información importante se puede perder.";
-            return "Información importante se puede perder.";
-        });
+        window.onbeforeunload = function (e) {
+            return "Are you sure you want to leave? changes will be lost";
+        };
         rt = new RealTimeMode;
         showValue = function (event, ui) {
             var
@@ -165,9 +172,9 @@
             value = $.isArray(value) ? value[0] + " a " + value[1] : value;
             stopFrequency = value;
             if ($(this).slider("option", "orientation") == "vertical") {
-                $(this).prev().children(".sliderValue").text(value);
+                $(this).prev().children(".sliderValue").text(value + " Hz");
             } else {
-                $(this).next(".sliderValue").text(value);
+                $(this).next(".sliderValue").text(value + " Hz");
             }
             // Notificar a todas las graficas para que apliquen el filtro y actualicen los chart
             PublisherSubscriber.publish("/applyfilter", null);
@@ -254,15 +261,54 @@
                         generateReport.savePDFReport();
                         break;
                     case "previewReport":
-                        //$("#dialogPDFPreview").ejDialog("open");
                         var previewReport = new PrintReport();
                         previewReport.createDialogPreview();
-                        //var printReport = new PrintReport().loadDataToGlobalsReport();
+                        break;
+                    case "BearingsListMenu":
+                        new AssetAdmin().CreateBearingsList();
+                        break;
+                    case "dialogUserPreferencesAdmin":
+                        new UserPreferencesAdmin().Open();
                         break;
                     default:
                         popUp("warning", "Funcionalidad desactivada temporalmente.");
                 }
             });
+
+            jQuery('icono.svg').each(function(){
+                var $img = jQuery(this);
+                var imgID = $img.attr('id');
+                var imgClass = $img.attr('class');
+                var imgURL = $img.attr('src');
+
+                jQuery.get(imgURL, function(data) {
+                    // Get the SVG tag, ignore the rest
+                    var $svg = jQuery(data).find('svg');
+
+                    // Add replaced image's ID to the new SVG
+                    if(typeof imgID !== 'undefined') {
+                        $svg = $svg.attr('id', imgID);
+                    }
+                    // Add replaced image's classes to the new SVG
+                    if(typeof imgClass !== 'undefined') {
+                        $svg = $svg.attr('class', imgClass+' replaced-svg');
+                    }
+
+                    // Remove any invalid XML tags as per http://validator.w3.org
+                    $svg = $svg.removeAttr('xmlns:a');
+
+                    // Replace image with new SVG
+                    $img.replaceWith($svg);
+
+                }, 'xml');
+
+            });
+
         });
+
+        
     </script>
+
+
+
 }

@@ -109,7 +109,7 @@ ImageExport = (function () {
                 blob,
                 builder;
             src = _this.asDataURL();
-            imgData = atob(src.split(',')[1]);
+            imgData = atob(src.split(",")[1]);
             arraybuffer = new ArrayBuffer(imgData.length);
             view = new Uint8Array(arraybuffer);
             for (i = 0; i < imgData.length; i += 1) {
@@ -117,13 +117,13 @@ ImageExport = (function () {
             }
             try {
                 // Metodo recomendado
-                blob = new Blob([arraybuffer], { type: 'application/octet-stream' });
+                blob = new Blob([arraybuffer], { type: "application/octet-stream" });
             } catch (e) {
                 // La API BlobBuilder ha sido desaprobado en favor de Blob, sin embargo navegadores antiguos desconocen el constructor Blob.
                 // IE10 soporta BlobBuilder, pero dado que el constructor de Blob tambien funciona, no hay necesidad de agregar MSBlobBuilder.
                 builder = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
                 builder.append(arraybuffer);
-                blob = builder.getBlob('application/octet-stream');
+                blob = builder.getBlob("application/octet-stream");
             }
             _name += formatDate(new Date()).split(" ")[1].split(".")[0] + ".png";
             saveAs(blob, _name);
@@ -162,7 +162,7 @@ ImageExport = (function () {
                 isIE;
             canvas = document.createElement("canvas");
             isIE = (/MSIE/.test(navigator.userAgent) && !window.opera);
-            if (isIE && (typeof (G_vmlCanvasManager) != 'undefined')) {
+            if (isIE && (typeof (G_vmlCanvasManager) !== undefined)) {
                 canvas = G_vmlCanvasManager.initElement(canvas);
             }
             return canvas;

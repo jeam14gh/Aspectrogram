@@ -1,0 +1,16 @@
+﻿@if (Request.IsAuthenticated)
+{
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                @Html.ActionLink(" ", "Index", "Home", new { area = "" }, new { @class = "navbar-brand icon-logo-small" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                </ul>
+                @Html.Partial("_LoginPartial")
+            </div>
+        </div>
+    </div>
+}
+

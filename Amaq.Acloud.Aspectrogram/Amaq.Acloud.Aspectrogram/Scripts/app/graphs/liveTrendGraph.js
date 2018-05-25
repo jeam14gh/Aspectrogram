@@ -274,16 +274,13 @@ LiveTrendGraph = (function ()
                     break;
                 case "exportToExcel" + _widgetId:
                     var contId, name, labels = [];
-                    name = 'Tiempo Real, Tendencia' + assetData.Name;
-                    contId = 'tableToExcelWaveformGraph' + _widgetId;
-
+                    name = "Tiempo Real, Tendencia" + assetData.Name;
+                    contId = "tableToExcelLiveTrendGraph" + _widgetId;
                     for (var j = 0; j < _chart.user_attrs_.labels.length; j++) {
                         labels.push(_chart.user_attrs_.labels[j]);
                     }
-
                     createTableToExcel(_container, contId, name, labels, _chart.file_, true)
-                    tableToExcel('tableToExcelWaveformGraph' + _widgetId, name);
-
+                    tableToExcel("tableToExcelLiveTrendGraph" + _widgetId, name);
                     break;
                 default:
                     console.log("Opcion de menu no implementada");
@@ -337,10 +334,9 @@ LiveTrendGraph = (function ()
             // Si hay sensores y/o medidas diferentes entre puntos de medición, entonces la etiquete del eje Y es "Valor"
             if (anyDifferent) {
                 _ylabel = "Valor";
-            }
-            else {
+            } else {
                 if (current) {
-                    _ylabel = current.Name + ' [' + current.Units + ']';
+                    _ylabel = current.Name + " [" + current.Units + "]";
                 }
             }
 
@@ -568,6 +564,9 @@ LiveTrendGraph = (function ()
             panelBody = $("<div class=\"panel-body\" style=\"padding-top:0 !important;padding-bottom:0 !important;\"></div>");
 
             if (measures.length > 0) {
+
+                measures = measures.filter(measure => measure.MeasureType != 6);
+
                 radioGroupName = "sensor_" + measures[0].SensorTypeCode;
 
                 for (i = 0; i < _selectedMeasureBySensor.length; i += 1) {
@@ -893,6 +892,12 @@ LiveTrendGraph = (function ()
                 },
                 onReload: function () {
                     _buffer = [];
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
             });
 

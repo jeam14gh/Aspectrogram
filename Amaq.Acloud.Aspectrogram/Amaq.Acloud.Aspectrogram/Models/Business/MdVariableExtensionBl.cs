@@ -171,7 +171,7 @@
         /// <summary>
         /// Actualiza un punto de medición incluyendo la propiedad ParameterValues
         /// </summary>
-        public void UpdateIncludingParameterValues(MdVariableExtension mdVariable)
+        public MdVariableExtension UpdateIncludingParameterValues(MdVariableExtension mdVariable)
         {
             if (mdVariable.AiMeasureMethod != null)
             {
@@ -189,10 +189,16 @@
                     mdVariable.AiMeasureMethod.ParameterTypes = null;
                     mdVariable.AiMeasureMethod.ParameterValues = null;
                 }
+
+                if ((mdVariable.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVariable.AiMeasureMethod.M)) || (Double.IsInfinity(mdVariable.AiMeasureMethod.M)) || (Double.IsNaN(mdVariable.AiMeasureMethod.B)))
+                    RegisterInLog(mdVariable, false, "Actualizar punto", "UpdateIncludingParameterValues");
+
+                if (Double.IsNaN(mdVariable.AiMeasureMethod.M) || Double.IsInfinity(mdVariable.AiMeasureMethod.M))
+                    mdVariable.AiMeasureMethod.M = 1;
             }
 
             _mdVariableExtensionRepository.UpdateIncludingParameterValues(mdVariable);
-            CalculateAgainMandB(mdVariable);
+            return CalculateAgainMandB(mdVariable);
         }
 
         /// <summary>
@@ -246,8 +252,10 @@
         /// <param name="channels">Lista canales con puntos de medición</param>
         /// <param name="isAcelerometerChannel">Indica si el tipo de canal es aceleración o no de un módulo de un Asdaq</param>
         /// <param name="aiCurrentExcitationValue">Valor de corriente de excitación del módulo Asdaq</param>
-        public void UpdateAiMeasureMethod(List<NiAiChannel> channels, bool isAcelerometerChannel, double aiCurrentExcitationValue)
+        //public void UpdateAiMeasureMethod(List<NiAiChannel> channels, bool isAcelerometerChannel, double aiCurrentExcitationValue)
+        public List<MdVariableExtension> UpdateAiMeasureMethod(List<NiAiChannel> channels, bool isAcelerometerChannel, double aiCurrentExcitationValue)
         {
+            var points = new List<MdVariableExtension>();
             var unit = string.Empty;
             for (int i = 0; i < channels.Count; i++)
             {
@@ -298,6 +306,7 @@
                     };
 
                     _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVariable);
+                    points.Add(mdVariable);
                 }
                 else
                 {
@@ -319,15 +328,22 @@
                     };
 
                     _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVariable);
+                    points.Add(mdVariable);
                 }
             }
+
+            return points;
         }
 
         /// <summary>
         /// Calcula los parametros M y B de cada punto de medición a partir de una lista obtenida en la configuración de canales de un Asdaq
         /// </summary>
-        public void CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto, string processType)
+        /// <param name="mdVariablesDto"></param>
+        /// <param name="processType">Nos indica el tipo de proceso que se realiazó previamente</param>
+        /// <returns>Todos los puntos de medición</returns>
+        public List<MdVariableExtension> CalculateMandB(List<MdVariableUpdateMBDto> mdVariablesDto, string processType)
         {
+            var points = new List<MdVariableExtension>();
             if (mdVariablesDto != null)
             {
                 // Se hace un orderBy que liste primero los puntos de medición que se deben recalcular (estado original antes de cualquier relacion con un canal Asdaq) 
@@ -346,8 +362,13 @@
                             mdVariable.AiMeasureMethod.M = mdVariable.AiMeasureMethod.M * mdVarsDto[m].Gain; // M= M * G
                             _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVariable);
 
-                            if ((mdVariable.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVariable.AiMeasureMethod.M)) || (Double.IsNaN(mdVariable.AiMeasureMethod.B)))
+                            if ((mdVariable.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVariable.AiMeasureMethod.M)) || (Double.IsInfinity(mdVariable.AiMeasureMethod.M)) || (Double.IsNaN(mdVariable.AiMeasureMethod.B)))
                                 RegisterInLog(mdVariable, true, processType, "CalculateMandB");
+
+                            if (Double.IsNaN(mdVariable.AiMeasureMethod.M) || Double.IsInfinity(mdVariable.AiMeasureMethod.M))
+                                mdVariable.AiMeasureMethod.M = 1;
+
+                            points.Add(mdVariable);
 
                             continue;
                         }
@@ -360,14 +381,21 @@
                             mdVariable.AiMeasureMethod.M = M / mdVarsDto[m].Gain; // M'= M / G
                             _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVariable);
 
-                            if ((mdVariable.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVariable.AiMeasureMethod.M)) || (Double.IsNaN(mdVariable.AiMeasureMethod.B)))
+                            if ((mdVariable.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVariable.AiMeasureMethod.M)) || (Double.IsInfinity(mdVariable.AiMeasureMethod.M)) || (Double.IsNaN(mdVariable.AiMeasureMethod.B)))
                                 RegisterInLog(mdVariable, false, processType, "CalculateMandB");
+
+                            if (Double.IsNaN(mdVariable.AiMeasureMethod.M) || Double.IsInfinity(mdVariable.AiMeasureMethod.M))
+                                mdVariable.AiMeasureMethod.M = 1;
+
+                            points.Add(mdVariable);
 
                             continue;
                         }
                     }
                 }
             }
+
+            return points;
         }
 
         /// <summary>
@@ -426,8 +454,9 @@
         /// <summary>
         /// Actualiza una lista de puntos de medición en algunas de sus propiedades y en la subVariable directa si existe 
         /// </summary>
-        public void UpdatePoints(List<MdVariableExtension> points)
+        public List<MdVariableExtension> UpdatePoints(List<MdVariableExtension> points)
         {
+            var _points = new List<MdVariableExtension>();
             if (points != null)
             {
                 foreach (var p in points)
@@ -446,20 +475,29 @@
                                 p.AiMeasureMethod.ParameterValues = null;
                         }
 
-                        if ((p.AiMeasureMethod.M == 0) || (Double.IsNaN(p.AiMeasureMethod.M)) || (Double.IsNaN(p.AiMeasureMethod.B)))
+                        if ((p.AiMeasureMethod.M == 0) || (Double.IsNaN(p.AiMeasureMethod.M)) || (Double.IsInfinity(p.AiMeasureMethod.M)) || (Double.IsNaN(p.AiMeasureMethod.B)))
                             RegisterInLog(p, false, "Edición de punto de medición", "UpdatePoints");
+
+                        if (Double.IsNaN(p.AiMeasureMethod.M) || Double.IsInfinity(p.AiMeasureMethod.M))
+                            p.AiMeasureMethod.M = 1;
                     }
 
                     _mdVariableExtensionRepository.UpdateProperties(p);
-                    // Buscamos si el punto de medición está asociado a un canal Asdaq para recalcular de nuevo su M y B
-                    CalculateAgainMandB(p);
 
                     var direct = p.SubVariables.Where(w => w.IsDefaultValue).FirstOrDefault();
 
                     if (direct != null)
-                        new SubVariableExtensionBl(CoreDbUrl).UpdateDirect(direct);
+                    {
+                        var subVar = new SubVariableExtensionBl(CoreDbUrl).UpdateDirect(direct);
+                        direct = subVar;
+                    }
+
+                    // Buscamos si el punto de medición está asociado a un canal Asdaq para recalcular de nuevo su M y B
+                    _points.Add(CalculateAgainMandB(p));
                 }
             }
+
+            return _points;
         }
 
         /// <summary>
@@ -473,10 +511,9 @@
         /// <summary>
         /// Cálcula de nuevo la M y B de un punto de medición anteriormente editado, si éste está relacionado con un canal Asdaq.
         /// </summary>
-        public void CalculateAgainMandB(MdVariableExtension mdVar)
+        public MdVariableExtension CalculateAgainMandB(MdVariableExtension mdVar)
         {
             var exist = false;
-            var dto = new List<MdVariableUpdateMBDto>();
             var asdaq = new AsdaqBl(CoreDbUrl).GetAll();
 
             foreach (var a in asdaq)
@@ -484,39 +521,45 @@
                 if (exist)
                     break;
 
-                foreach (var c in a.NiCompactDaqs.SelectMany(s => s.CSeriesModules).ToList())
+                // Si existen Aconditioners recorremos todos los canales para encontrar todos los puntos de medición y calcular de nuevo su M y B
+                if (a.Aconditioners != null) 
                 {
-                    var channel = c.AiChannels.Where(w => w.MdVariableId == mdVar.Id).FirstOrDefault();
-                    if (channel != null)
+                    foreach (var c in a.NiCompactDaqs.SelectMany(s => s.CSeriesModules).ToList())
                     {
-                        var aconditioner = a.Aconditioners.Where(ac => ac.Serial == channel.SerialAcon).FirstOrDefault();
-
-                        if (aconditioner != null)
+                        var channel = c.AiChannels.Where(w => w.MdVariableId == mdVar.Id).FirstOrDefault();
+                        if (channel != null)
                         {
-                            if ((aconditioner.AconChannels.Count > 0) && (aconditioner.AconChannels != null))
+                            var aconditioner = a.Aconditioners.Where(ac => ac.Serial == channel.SerialAcon).FirstOrDefault();
+
+                            if (aconditioner != null)
                             {
-                                var acon = aconditioner.AconChannels.Where(w => w.Number == channel.AconChannel).FirstOrDefault();
-
-                                if ((mdVar.AiMeasureMethod != null) && (acon != null))
+                                if ((aconditioner.AconChannels.Count > 0) && (aconditioner.AconChannels != null))
                                 {
-                                    var B = mdVar.AiMeasureMethod.B;
-                                    var M = mdVar.AiMeasureMethod.M;
+                                    var acon = aconditioner.AconChannels.Where(w => w.Number == channel.AconChannel).FirstOrDefault();
 
-                                    mdVar.AiMeasureMethod.B = B - (acon.Displacement / acon.Gain) * M; // B'= B - ( O / G ) * M
-                                    mdVar.AiMeasureMethod.M = M / acon.Gain; // M'= M / G
-                                    _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVar);
-                                    exist = true;
+                                    if ((mdVar.AiMeasureMethod != null) && (acon != null))
+                                    {
+                                        var B = mdVar.AiMeasureMethod.B;
+                                        var M = mdVar.AiMeasureMethod.M;
 
-                                    if ((mdVar.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVar.AiMeasureMethod.M)) || (Double.IsNaN(mdVar.AiMeasureMethod.B)))
-                                        RegisterInLog(mdVar, false, "Edición de punto de medición", "CalculateAgainMandB");
+                                        mdVar.AiMeasureMethod.B = B - (acon.Displacement / acon.Gain) * M; // B'= B - ( O / G ) * M
+                                        mdVar.AiMeasureMethod.M = M / acon.Gain; // M'= M / G
+                                        _mdVariableExtensionRepository.UpdateAiMeasureMethod(mdVar);
+                                        exist = true;
 
-                                    break;
+                                        if ((mdVar.AiMeasureMethod.M == 0) || (Double.IsNaN(mdVar.AiMeasureMethod.M)) || (Double.IsNaN(mdVar.AiMeasureMethod.B)))
+                                            RegisterInLog(mdVar, false, "Edición de punto de medición", "CalculateAgainMandB");
+
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+
+            return mdVar;
         }
 
         /// <summary>
@@ -543,5 +586,64 @@
                 log.Info(e.Message + " ::: EXCEPCIÓN AL REGISTRAR UN ERROR DE CÁLCULO DE UN PUNTO DE MEDICIÓN.");
             }
         }
+
+        /// <summary>
+        /// Retorna el objeto AiMeasureMethod con sus parámetros M y B cálculados de un punto de medición.
+        /// </summary>
+        public AiMeasureMethod CalculateMB(MdVariableExtension p)
+        {
+            var factor = 1;
+            var rin = 1;
+            var m = new AiMeasureMethod().M;
+            var b = new AiMeasureMethod().B;
+
+            // Proximidad, Acelerometro, Velocimetro ó Desplazamiento axial
+            if (p.SensorTypeCode.Equals(1) || p.SensorTypeCode.Equals(2) || p.SensorTypeCode.Equals(3) || p.SensorTypeCode.Equals(9))
+            {
+                m = ((1000 / p.Sensibility) * factor);
+                b = 0;
+            }
+            else if (p.SensorTypeCode.Equals(5)) // RTD
+            {
+                m = 1000 / (p.RtdParams.Coefficient * p.RtdParams.Ro * p.RtdParams.Iex);
+                b = -1 / p.RtdParams.Coefficient;
+            }
+            else if (p.SensorTypeCode.Equals(6)) // Voltaje
+            {
+                m = (p.VoltageParams.Xmax - p.VoltageParams.Xmin) / (p.VoltageParams.Vmax - p.VoltageParams.Vmin);
+                b = p.VoltageParams.Xmax - ((p.VoltageParams.Xmax - p.VoltageParams.Xmin) / (p.VoltageParams.Vmax - p.VoltageParams.Vmin) * p.VoltageParams.Vmax);
+            }
+            else if (p.SensorTypeCode.Equals(7)) // Corriente
+            {
+                m = (p.CurrentParams.Xmax - p.CurrentParams.Xmin) / (rin * (p.CurrentParams.Imax - p.CurrentParams.Imin));
+                b = p.CurrentParams.Xmax - ((p.CurrentParams.Xmax - p.CurrentParams.Xmin) / (p.CurrentParams.Imax - p.CurrentParams.Imin) * p.CurrentParams.Imax);
+            }
+            else if (p.SensorTypeCode.Equals(10)) // Flujo magnético
+            {
+                m = (p.MagneticFlowParams.Xmax - p.MagneticFlowParams.Xmin) / (rin * (p.MagneticFlowParams.Imax - p.MagneticFlowParams.Imin));
+                b = p.MagneticFlowParams.Xmax - ((p.MagneticFlowParams.Xmax - p.MagneticFlowParams.Xmin) / (p.MagneticFlowParams.Imax - p.MagneticFlowParams.Imin) * p.MagneticFlowParams.Imax);
+            }
+
+            if (p.AiMeasureMethod != null)
+            {
+                // Validamos si la "M" es 0, NaN o Infinity para registrarlo como un log y setearla en 1 para evitar errores de cargado en el arbol
+                if ((m == 0) || (Double.IsNaN(m)) || (Double.IsInfinity(m)) || (Double.IsNaN(b)))
+                    RegisterInLog(p, false, "Copiar punto", "CalculateMB");
+
+                if (Double.IsNaN(m) || Double.IsInfinity(m))
+                    m = 1;
+
+                p.AiMeasureMethod.M = m;
+                p.AiMeasureMethod.B = b;
+                return p.AiMeasureMethod;
+            }
+            else { return null; }
+
+        }
+
+        //public double getM()
+        //{
+
+        //}
     }
 }

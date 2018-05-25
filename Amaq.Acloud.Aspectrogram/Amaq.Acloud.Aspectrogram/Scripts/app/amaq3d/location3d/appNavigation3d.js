@@ -14,6 +14,7 @@ AppNavigation3d = (function () {
     AppNavigation3d = function (width, height, aspectRatio) {
 
         var _scene,
+            _canvas,
         // Contenedor HTML del input Text area
         _container,
         _contLoader,
@@ -25,6 +26,7 @@ AppNavigation3d = (function () {
         // Referencia al Id del widget
         _widgetId = Math.floor(Math.random() * 100000),
         _manageCanvas,
+        _company3d,
         _loadMeshesLoc3d,
         _buildViewer3d;
 
@@ -44,11 +46,19 @@ AppNavigation3d = (function () {
          */
         _buildViewer3d = function () {
 
-            _manageCanvas = new ManageLocCanvas3d(_containerParentId);
+            _manageCanvas = new ManageLocCanvas3d(_widgetId, _containerParentId);
             _manageCanvas.openCanvas();
 
+            _scene = location3d.scene[_widgetId];
+            _canvas = location3d.canvas[_widgetId];
+
+            _company3d = new Company3d(_widgetId, _containerParentId);
+            _company3d.loadCompany();
+
+
+            /*
             _loadMeshesLoc3d = new LoadMeshesLoc3d(_containerParentId, _manageCanvas);
-            _loadMeshesLoc3d.loadLocations();
+            _loadMeshesLoc3d.loadLocations();*/
         };
 
 

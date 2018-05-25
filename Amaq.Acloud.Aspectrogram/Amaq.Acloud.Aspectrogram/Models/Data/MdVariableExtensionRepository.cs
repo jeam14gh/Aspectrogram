@@ -7,6 +7,7 @@
     using MongoDB.Bson;
     using Acloud.Data;
     using System;
+    using Entities.ValueObjects;
 
     /// <summary>
     /// Repository MdVariableExtension
@@ -61,7 +62,7 @@
         {
             var objectIdList = mdVariableIdList.Select(id => new ObjectId(id as string)).ToList();
             var filter = builder.In("_id", objectIdList);
-            var projection = Builders<MdVariableExtension>.Projection.Include(m => m.Name).Include(p => p.ParentId).Include(i=>i.AiMeasureMethod).Include(i=>i.SensorTypeCode);
+            var projection = Builders<MdVariableExtension>.Projection.Include(m => m.Name).Include(p => p.ParentId).Include(i => i.AiMeasureMethod).Include(i => i.SensorTypeCode);
             return collection.Find(filter).Project<MdVariableExtension>(projection).ToList();
         }
 
@@ -101,8 +102,8 @@
         {
             var filter = builder.Eq(m => m.Id, mdVariable.Id);
             var update = Builders<MdVariableExtension>.Update.
-                Set(m => m.AiMeasureMethod, mdVariable.AiMeasureMethod);
-            collection.UpdateMany(filter, update);
+                Set(m => m.AiMeasureMethod, mdVariable.AiMeasureMethod);            
+            collection.UpdateOne(filter, update);
         }
 
         /// <summary>
@@ -197,7 +198,7 @@
                 Set(m => m.SensorAngle, mdVariable.SensorAngle).
                 Set(m => m.Units, mdVariable.Units).
                 Set(m => m.Sensibility, mdVariable.Sensibility).
-                Set(m => m.AiMeasureMethod, mdVariable.AiMeasureMethod).                
+                Set(m => m.AiMeasureMethod, mdVariable.AiMeasureMethod).
                 //Set(m => m.AiMeasureMethod.M, mdVariable.AiMeasureMethod.M).
                 //Set(m => m.AiMeasureMethod.B, mdVariable.AiMeasureMethod.B).
                 Set(m => m.RtdParams, mdVariable.RtdParams).

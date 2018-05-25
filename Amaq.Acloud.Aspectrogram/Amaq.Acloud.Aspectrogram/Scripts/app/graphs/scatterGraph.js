@@ -624,7 +624,7 @@ ScatterGraph = (function () {
                 endDate = new Date(_timeStampArray[_timeStampArray.length - 1]);
                 txt = "<b style=\"color:" + _currentColor + ";\">" + _measurementPoint.Name + "</b>:&nbsp;";
                 txt += "(" + formatDate(startDate) + " - " + formatDate(endDate) + ")";
-                $("#" + _measurementPoint.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                $("#point" + _measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
                 _buildGraph(null, false, data, xName, yName);
             });
         };
@@ -707,7 +707,7 @@ ScatterGraph = (function () {
                 subVariableIdList: subVariableIdList,
                 asset: _assetData.Name,
                 seriesName: _seriesName,
-                measurementPointList: [_measurementPoint.Name.replace(/\s/g, "")],
+                measurementPointList: [_measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "")],
                 pause: false,
                 settingsMenu: settingsMenu,
                 onSettingsMenuItemClick: _onSettingsMenuItemClick,
@@ -721,6 +721,12 @@ ScatterGraph = (function () {
                     _movableGrid = !_movableGrid;
                     grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                     $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
             });
 

@@ -21,8 +21,11 @@
                       "~/Content/ej/web/default-theme/ej.web.all.css"));
             
             bundles.Add(new StyleBundle("~/Content/css").Include(
+                      "~/fonts/stylesheet.css",
                       "~/Content/bootstrap.min.css",
-                      "~/Content/font-awesome.css",
+                      "~/Content/iconsac.css",
+                      "~/Content/wrench.css",
+                      "~/Content/fontawesome-all.css",
                       "~/Content/aspectrogramWidget.css",
                       "~/Content/toolbarStyle.css",
                       "~/Content/site.css",

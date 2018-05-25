@@ -68,21 +68,21 @@ WaveformGraph = (function () {
             // Referencia a la suscripcion que sincroniza el chart con los datos enviados por el reproductor
             _playerSubscription,
             // Referencia a la suscripcion para aplicar filtro dinamico
-            _applyFilterSubscription,
+            _dynamicFilterSubscription,
             // Referencia a la suscripcion para aplicar resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
             _resizeChartSubscription,
             // Referencia a la suscripcion que realiza realiza el escalado segun el valor maximo de las graficas abiertas del mismo tipo
             _scaleChartSubscription,
-            // Metodo privado que aplica filtro dinamico a la forma de onda y refresca el chart
-            _applyFilter,
             // Metodo privado que construye el chart caso no exista
             _buildGraph,
+            // Metodo privado que aplica filtro dinamico a la forma de onda y refresca el chart
+            _dynamicFilter,
             // Metodo privado que gestiona el evento click sobre los items del menu de opciones
             _onSettingsMenuItemClick,
             // Metodo privado que se ejecuta por accion del poll al cual fue suscrito el chart
             _refresh,
             // Metodo privado que realiza la suscripcion al publisher para aplicar filtro dinamico
-            _subscribeToApplyFilter,
+            _subscribeToDynamicFilter,
             // Metodo privado que realiza la suscripcion a los nuevos datos
             _subscribeToNewData,
             // Metodo privado que aplica resize al chart Dygraph, necesario para resolver bug de renderizado de Dygraph
@@ -229,7 +229,7 @@ WaveformGraph = (function () {
                             txt = "Amplitud: " + (pts[0].yval < 0 ? "" : "&nbsp;") + pts[0].yval.toFixed(2) + " " + _subvariables.overall.Units;
                             txt += ", Tiempo: " + pts[0].xval.toFixed(2) + " ms";
                             txt += (!Number.isNaN(velocityValue)) ? ", " + _angularSubvariable.Value.toFixed(0) + " RPM" : "";
-                            $("#" + pts[0].name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
+                            $("#" + pts[0].name + _widgetId + " > span").html(txt);
                         }
                         _lastMousemoveEvt = e;
                         _mouseover = true;
@@ -274,24 +274,26 @@ WaveformGraph = (function () {
                 case 0: // Tiempo Real
                     _newDataSubscription = PublisherSubscriber.subscribe("/realtime/refresh", subVariableIdList, function (data) {
                         waveform = data[_subvariables.waveform.Id];
-                        if (!isEmpty(waveform)) {
-                            if (_subvariables.overall) {
-                                _subvariables.overall.Value = 0;
-                                _subvariables.overall.Value = clone(data[_subvariables.overall.Id].Value);
-                            }
-                            if (_subvariables.phase) {
-                                _subvariables.phase.Value = 0;
-                                _subvariables.phase.Value = clone(data[_subvariables.phase.Id].Value);
-                            }
-                            if (_subvariables.amplitude) {
-                                _subvariables.amplitude.Value = 0;
-                                _subvariables.amplitude.Value = clone(data[_subvariables.amplitude.Id].Value);
-                            }
-                            if (_angularSubvariable) {
-                                _angularSubvariable.Value = clone(data[_angularSubvariable.Id].Value);
-                            }
-                            _refresh(waveform);
+                        if (isEmpty(waveform) || isEmpty(waveform.RawValue)) {
+                            console.error("No se encontró datos de forma de onda.");
+                            return;
                         }
+                        if (_subvariables.overall) {
+                            _subvariables.overall.Value = 0;
+                            _subvariables.overall.Value = clone(data[_subvariables.overall.Id].Value);
+                        }
+                        if (_subvariables.phase) {
+                            _subvariables.phase.Value = 0;
+                            _subvariables.phase.Value = clone(data[_subvariables.phase.Id].Value);
+                        }
+                        if (_subvariables.amplitude) {
+                            _subvariables.amplitude.Value = 0;
+                            _subvariables.amplitude.Value = clone(data[_subvariables.amplitude.Id].Value);
+                        }
+                        if (_angularSubvariable) {
+                            _angularSubvariable.Value = clone(data[_angularSubvariable.Id].Value);
+                        }
+                        _refresh(waveform);
                     });
                     break;
                 case 1: // Historico
@@ -426,96 +428,96 @@ WaveformGraph = (function () {
                 // Valores del rango de la escala del gráfico
                 valueRange,
                 // Indica si el gráfico está en escala manual
-                manual,                 
+                manual,
                 scaleY;
 
             if (!_pause) {
-                //if (_currentTimeStamp !== waveform.TimeStamp) {
-                // Estampa de tiempo actual de graficacion
-                _currentTimeStamp = waveform.TimeStamp;
-                // Informacion de texto a mostrar
-                txt = _measurementPoint.Name + "&nbsp;&nbsp;Ang:&nbsp;";
-                txt += parseAng(_measurementPoint.SensorAngle) + "&deg;" + ", " + _subvariables.overall.Name + ": ";
-                txt += _subvariables.overall.Value.toFixed(2) + " " + _subvariables.overall.Units + ", &nbsp;" + _currentTimeStamp;
-                $("#" + _measurementPoint.Name.replace(/\s/g, "") + _widgetId + " > span").html(txt);
-                // Mantener en memoria la ultima forma de onda mostrada
-                _currentData = clone(waveform);
-                // Calculamos el tiempo de muestreo
-                sampleTime = (waveform.Value.length / waveform.SampleRate);
-                // Dato de la forma de onda a graficar
-                xyData = enableFilter ? GetXYDataOnTime(GetFilterSignal(waveform.RawValue, stopFrequency), sampleTime) : waveform.Value;
-                // Calculamos maximo y minimo de la grafica
-                if (xyData.length > 0) {
-                    minimumY = arrayColumn(xyData, 1).min();
-                    maximumY = arrayColumn(xyData, 1).max();
+                if (_currentTimeStamp !== waveform.TimeStamp) {
+                    // Estampa de tiempo actual de graficacion
+                    _currentTimeStamp = waveform.TimeStamp;
+                    // Informacion de texto a mostrar
+                    txt = _measurementPoint.Name + "&nbsp;&nbsp;Ang:&nbsp;";
+                    txt += parseAng(_measurementPoint.SensorAngle) + "&deg;" + ", " + _subvariables.overall.Name + ": ";
+                    txt += _subvariables.overall.Value.toFixed(2) + " " + _subvariables.overall.Units + ", &nbsp;" + _currentTimeStamp;
+                    $("#point" + _measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "") + _widgetId + " > span").html(txt);
+                    // Mantener en memoria la ultima forma de onda mostrada
+                    _currentData = clone(waveform);
+                    // Calculamos el tiempo de muestreo
+                    sampleTime = (waveform.Value.length / waveform.SampleRate);
+                    // Dato de la forma de onda a graficar
+                    xyData = enableFilter ? GetXYDataOnTime(GetFilterSignal(waveform.RawValue, stopFrequency), sampleTime) : waveform.Value;
+                    // Calculamos maximo y minimo de la grafica
+                    if (xyData.length > 0) {
+                        minimumY = arrayColumn(xyData, 1).min();
+                        maximumY = arrayColumn(xyData, 1).max();
 
-                    // Guardamos los valores manuales para cuando se desea cambiar a esta escala.
-                    scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(_widgetId, "WidgetId"));
-                    if (scaleY.length == 0) {
-                        _scaleY.push({
-                            Auto: { MinY: minimumY, MaxY: maximumY },
-                            WidgetId: _widgetId
-                        });
-                    } else {
-                        scaleY[0].Auto.MinY = minimumY;
-                        scaleY[0].Auto.MaxY = maximumY;
-                    }
-                }
-                if (_shortestY === 0 && _largestY === 0) {
-                    _shortestY = minimumY;
-                    _largestY = maximumY;
-                }
-                yLabelBase = _chart.user_attrs_.ylabel.split(" [")[0];
-                yUnit = (_measurementPoint.SensorTypeCode === 4) ? "V" : _subvariables.overall.Units;
-
-                // Valida si el gráfico debe mantener la escala manual o auto y setear la propiedad "valueRange" del _chart
-                manual = $("li>a[data-value= manualScaleY" + _widgetId + "]>i").hasClass('fa-check-square');
-                if (manual && !_autoscale)
-                    valueRange = [-scaleY[0].Manual, scaleY[0].Manual];
-                else
-                    valueRange = [_shortestY * 1.2, _largestY * 1.2];                
-
-                _chart.updateOptions({
-                    "file": xyData,
-                    "ylabel": yLabelBase + " [" + yUnit + "]",
-                    "valueRange": valueRange
-                });
-
-                annotations = [];
-                if (waveform.KeyphasorPositionsOnTime) {
-                    if (waveform.KeyphasorPositionsOnTime.length > 0) {
-                        for (i = 0; i < waveform.KeyphasorPositionsOnTime.length; i += 1) {
-                            annotations.push({
-                                series: _seriesName[0],
-                                x: waveform.KeyphasorPositionsOnTime[i],
-                                width: 10,
-                                height: 10,
-                                text: waveform.KeyphasorPositionsOnTime[i].toString(),
-                                cssClass: "keyphasor-annotation"
+                        // Guardamos los valores manuales para cuando se desea cambiar a esta escala.
+                        scaleY = ej.DataManager(_scaleY).executeLocal(ej.Query().search(_widgetId, "WidgetId"));
+                        if (scaleY.length == 0) {
+                            _scaleY.push({
+                                Auto: { MinY: minimumY, MaxY: maximumY },
+                                WidgetId: _widgetId
                             });
+                        } else {
+                            scaleY[0].Auto.MinY = minimumY;
+                            scaleY[0].Auto.MaxY = maximumY;
                         }
                     }
+                    if (_shortestY === 0 && _largestY === 0) {
+                        _shortestY = minimumY;
+                        _largestY = maximumY;
+                    }
+                    yLabelBase = _chart.user_attrs_.ylabel.split(" [")[0];
+                    yUnit = (_measurementPoint.SensorTypeCode === 4) ? "V" : _subvariables.overall.Units;
+
+                    // Valida si el gráfico debe mantener la escala manual o auto y setear la propiedad "valueRange" del _chart
+                    manual = $("li>a[data-value= manualScaleY" + _widgetId + "]>i").hasClass('fa-check-square');
+                    if (manual && !_autoscale)
+                        valueRange = [-scaleY[0].Manual, scaleY[0].Manual];
+                    else
+                        valueRange = [_shortestY * 1.2, _largestY * 1.2];
+
+                    _chart.updateOptions({
+                        "file": xyData,
+                        "ylabel": yLabelBase + " [" + yUnit + "]",
+                        "valueRange": valueRange
+                    });
+
+                    annotations = [];
+                    if (waveform.KeyphasorPositionsOnTime) {
+                        if (waveform.KeyphasorPositionsOnTime.length > 0) {
+                            for (i = 0; i < waveform.KeyphasorPositionsOnTime.length; i += 1) {
+                                annotations.push({
+                                    series: _seriesName[0],
+                                    x: waveform.KeyphasorPositionsOnTime[i],
+                                    width: 10,
+                                    height: 10,
+                                    text: waveform.KeyphasorPositionsOnTime[i].toString(),
+                                    cssClass: "keyphasor-annotation"
+                                });
+                            }
+                        }
+                    }
+                    _chart.setAnnotations(annotations);
+                    if (_mouseover) {
+                        _chart.mouseMove_(_lastMousemoveEvt);
+                    } else {
+                        DygraphOps.dispatchMouseMove(_chart, 0, 0);
+                    }
+                    chartScaleY.AttachGraph(_graphType, _widgetId, _measurementPoint.SensorTypeCode, minimumY, maximumY);
                 }
-                _chart.setAnnotations(annotations);
-                if (_mouseover) {
-                    _chart.mouseMove_(_lastMousemoveEvt);
-                } else {
-                    DygraphOps.dispatchMouseMove(_chart, 0, 0);
-                }
-                chartScaleY.AttachGraph(_graphType, _widgetId, _measurementPoint.SensorTypeCode, minimumY, maximumY);
-                //}
             }
         };
 
-        _subscribeToApplyFilter = function () {
-            _applyFilterSubscription = PublisherSubscriber.subscribe("/applyfilter", null, function () {
+        _subscribeToDynamicFilter = function () {
+            _dynamicFilterSubscription = PublisherSubscriber.subscribe("/applyfilter", null, function () {
                 if (_currentData && _currentData.Value !== null) {
-                    _applyFilter();
+                    _dynamicFilter();
                 }
             });
         };
 
-        _applyFilter = function () {
+        _dynamicFilter = function () {
             var
                 sampleTime,
                 xyData,
@@ -718,7 +720,7 @@ WaveformGraph = (function () {
                 subVariableIdList: subVariableIdList,
                 asset: _assetData.Name,
                 seriesName: _seriesName,
-                measurementPointList: [_measurementPoint.Name.replace(/\s/g, "")],
+                measurementPointList: [_measurementPoint.Name.replace(/\s|\W|[#$%^&*()]/g, "")],
                 pause: (timeMode === 0) ? true : false,
                 settingsMenu: settingsMenu,
                 onSettingsMenuItemClick: _onSettingsMenuItemClick,
@@ -735,6 +737,12 @@ WaveformGraph = (function () {
                     _movableGrid = !_movableGrid;
                     grid = $(".grid-stack-item-content[data-id=\"" + _widgetId + "\"]").parent();
                     $(".grid-stack").data("gridstack").movable(grid, _movableGrid);
+                },
+                onMaximize: function () {
+                    launchFullScreen(_container.id);
+                },
+                onMinimize: function () {
+                    cancelFullscreen();
                 }
             });
 
@@ -744,7 +752,7 @@ WaveformGraph = (function () {
             // Se suscribe a la notificacion de llegada de nuevos datos.
             _subscribeToNewData(timeStamp, subVariableIdList);
             // Se suscribe a la notificacion de aplicacion de filtro dinamico para la forma de onda
-            _subscribeToApplyFilter();
+            _subscribeToDynamicFilter();
             // Se suscribe a la notificacion de aplicacion de resize para el chart Dygraph
             _subscribeToResizeChart();
             // Se suscribe a la notificacion escala en Y por mayor valor.
@@ -768,9 +776,9 @@ WaveformGraph = (function () {
                 // Eliminar suscripcion de notificacion de llegada de datos por medio del player
                 _playerSubscription.remove();
             }
-            if (_applyFilterSubscription) {
-                // Eliminar suscripcion de notificaciones para aplicar filtro dinámico a la forma de onda
-                _applyFilterSubscription.remove();
+            if (_dynamicFilterSubscription) {
+                // Eliminar suscripcion de notificaciones para aplicar filtro dinamico a la forma de onda
+                _dynamicFilterSubscription.remove();
             }
             if (_resizeChartSubscription) {
                 // Eliminar suscripcion de notificaciones para aplicar resize al chart Dygraph

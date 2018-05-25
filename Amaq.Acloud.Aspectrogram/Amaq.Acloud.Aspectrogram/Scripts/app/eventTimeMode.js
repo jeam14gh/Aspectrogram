@@ -4,6 +4,8 @@
  * @author ACLOUD TEAM
  */
 
+/* globals StreamParser, ej, mainCache, clone, aidbManager, PublisherSubscriber, Concurrent, AjaxErrorHandling, arrayObjectStatus*/
+
 var EventTimeMode = {};
 
 EventTimeMode = (function () {
@@ -18,12 +20,12 @@ EventTimeMode = (function () {
             // Auto-referencia de la clase EventTimeMode
             _this,
             _streamParser,
-            _historicalCount,
+            _steps,
             _initializeHistoricalData,
-            _getStreamInterval,
+            _getStreamIntervalLocal,
+            _getStreamIntervalRemote,
             _getStreamHistoricalData,
-            _saveStreamLocal,
-            _currentHistoricalLength;
+            _saveStreamLocal;
 
         _streamParser = new StreamParser();
         _this = this;
@@ -55,128 +57,14 @@ EventTimeMode = (function () {
             return historicalData;
         };
 
-        //this.GetAllValues = function (mdVariableIdList, assetId, timeStampList, playerId) {
-        //    var
-        //        historicalData,
-        //        factor,
-        //        iterations,
-        //        interval, i,
-        //        subVariables,
-        //        index,
-        //        timeStampRange;
-
-        //    historicalData = _initializeHistoricalData(mdVariableIdList, playerId, 3);
-        //    for (i = 0; i < timeStampList.length; i += 1) {
-        //        historicalData[playerId].TimeStampArray[i] = new Date(timeStampList[i]).toISOString();
-        //    }
-        //    subVariables = historicalData[playerId].SubVariableIdList;
-        //    aidbManager.GetStreamsNotStored(subVariables, historicalData[playerId].TimeStampArray, assetId, function (timeStampArray) {
-        //        _historicalCount = timeStampArray.length;
-        //        if (_historicalCount === 0) {
-        //            PublisherSubscriber.publish("/historicValues/refresh", historicalData);
-        //            return;
-        //        } else {
-        //            for (i = 0; i < _historicalCount; i += 1) {
-        //                index = historicalData[playerId].TimeStampArray.indexOf(timeStampArray[i]);
-        //                if (index > -1) {
-        //                    historicalData[playerId].TimeStampArray.splice(index, 1);
-        //                }
-        //            }
-        //            PublisherSubscriber.publish("/historicValues/refresh", historicalData);
-        //        }
-
-        //        _currentHistoricalLength = 0;
-        //        factor = Math.floor(100 / mdVariableIdList.length);
-        //        factor = (100 % mdVariableIdList.length === 0) ? factor : factor + 1;
-        //        iterations = Math.floor(timeStampArray.length / factor) + 1;
-        //        i = 0;
-        //        interval = setInterval(function () {
-        //            if (i >= iterations) {
-        //                return clearInterval(interval);
-        //            }
-        //            if (i + 1 === iterations) {
-        //                if (timeStampArray.length - i * factor <= 0) {
-        //                    return clearInterval(interval);
-        //                }
-        //                timeStampRange = timeStampArray.slice(i * factor, timeStampArray.length);
-        //            } else {
-        //                timeStampRange = timeStampArray.slice(i * factor, (i + 1) * factor);
-        //            }
-        //            _getStreamHistoricalData(mdVariableIdList, timeStampRange, playerId, historicalData, i, assetId);
-        //            i += 1;
-        //        }, 2000);
-        //    });
-        //};
-
-        //_getStreamHistoricalData = function (mdVariableIdList, timeStampRange, widgetId, historicalData, t, assetId) {
-        //    var
-        //        response;
-
-        //    $.ajax({
-        //        url: "/Home/GetDynamicHistoricalData",
-        //        method: "POST",
-        //        data: {
-        //            mdVariableIdList: mdVariableIdList,
-        //            timeStampArray: timeStampRange
-        //        },
-        //        success: function (resp) {
-        //            response = JSON.parse(resp);
-        //            _currentHistoricalLength += timeStampRange.length;
-        //            Concurrent.Thread.create(_saveStreamLocal, response, historicalData, timeStampRange, widgetId, assetId, _streamParser);
-        //        },
-        //        error: function (jqXHR, textStatus) {
-        //            console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
-        //        }
-        //    });
-        //};
-
-        //_saveStreamLocal = function (response, historicalData, timeStampArray, widgetId, assetId, streamParser) {
-        //    var
-        //        currentSubVariable,
-        //        dataByTimeStamp,
-        //        timeStamp,
-        //        statusColor,
-        //        stream,
-        //        i, j, k;
-
-        //    for (i = 0; i < response.length; i += 1) {
-        //        currentSubVariable = response[i].HistoricalBySubVariable;
-        //        for (j = 0; j < currentSubVariable.length; j += 1) {
-        //            dataByTimeStamp = currentSubVariable[j].SubVariableDataList;
-        //            for (k = 0; k < dataByTimeStamp.length; k += 1) {
-        //                if (currentSubVariable[j].SubVariableDataList[0].StatusId != "") {
-        //                    statusColor = ej.DataManager(arrayObjectStatus).executeLocal(
-        //                        new ej.Query().where("Id", "equal", currentSubVariable[j].SubVariableDataList[0].StatusId))[0].Color;
-        //                } else {
-        //                    statusColor = "#999999";
-        //                }
-        //                stream = streamParser.GetWaveForm(dataByTimeStamp[k].Value);
-        //                aidbManager.AddStreamItem({
-        //                    subVariableId: currentSubVariable[j].SubVariableId,
-        //                    timeStamp: new Date(dataByTimeStamp[k].TimeStamp + "+00:00").getTime(),
-        //                    value: stream.waveform,
-        //                    sampleTime: stream.sampleTime,
-        //                    referencePositions: stream.keyphasor,
-        //                    statusColor: statusColor,
-        //                    isChangeOfRpm: dataByTimeStamp[k].IsChangeOfRpm,
-        //                    isEvent: dataByTimeStamp[k].IsEvent,
-        //                    isNormal: dataByTimeStamp[k].IsNormal
-        //                }, assetId);
-        //            }
-        //        }
-        //    }
-        //    historicalData[widgetId].TimeStampArray = timeStampArray;
-        //    // Si ya fueron cargados todos los datos notificarlo
-        //    PublisherSubscriber.publish("/historicValues/refresh", historicalData);
-        //};
-
         this.GetDynamicHistoricalData = function (mdVarIdList, assetNodeId, timeStampList, playerId) {
             var
                 historicalData,
                 subVarIdList,
                 factor,
                 iterations,
-                index;
+                index,
+                notLocalTimeStamp;
 
             historicalData = _initializeHistoricalData(mdVarIdList, playerId, 3);
             historicalData[playerId].TimeStampArray = timeStampList;
@@ -186,18 +74,23 @@ EventTimeMode = (function () {
             factor = (5000 % mdVarIdList.length === 0) ? factor : factor + 1;
             iterations = Math.floor(timeStampList.length / factor) + 1;
             index = 0;
-            _getStreamInterval(index, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
+            notLocalTimeStamp = [];
+            _getStreamIntervalLocal(index, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
         };
 
-        _getStreamInterval = function (position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId) {
+        _getStreamIntervalLocal = function (position, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId) {
             var
                 timeStampRange,
-                group,
                 notStored,
                 i, j;
 
             if (position + 1 > iterations) {
                 // Significa que se cumplieron todas las iteraciones
+                if (notLocalTimeStamp.length > 0) {
+                    iterations = Math.floor(notLocalTimeStamp.length / factor) + 1;
+                    i = 0;
+                    _getStreamIntervalRemote(i, factor, iterations, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
+                }
                 return;
             } else if (position + 1 === iterations) {
                 timeStampRange = timeStampList.slice(position * factor, timeStampList.length);
@@ -221,20 +114,33 @@ EventTimeMode = (function () {
                 // Consultar datos faltantes
                 if (notStored.length > 0) {
                     historicalData[playerId].TimeStampArray = notStored;
-                    timeStampRange = [];
                     for (i = 0; i < notStored.length; i += 1) {
-                        timeStampRange[i] = new Date(notStored[i]).toISOString();
+                        notLocalTimeStamp.push(new Date(notStored[i]).toISOString());
                     }
-                    _getStreamHistoricalData(mdVarIdList, timeStampRange, assetNodeId, historicalData, playerId, subVarIdList);
-                    sleep(500).then(function () {
-                        position += 1;
-                        _getStreamInterval(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
-                    });
-                } else {
-                    position += 1;
-                    _getStreamInterval(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
                 }
+                position += 1;
+                _getStreamIntervalLocal(position, factor, iterations, timeStampList, notLocalTimeStamp, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
             });
+        };
+
+        _getStreamIntervalRemote = function (position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId) {
+            var
+                timeStampRange;
+
+            if (position + 1 > iterations) {
+                // Significa que se cumplieron todas las iteraciones
+                return;
+            } else if (position + 1 === iterations) {
+                timeStampRange = timeStampList.slice(position * factor, timeStampList.length);
+            } else {
+                timeStampRange = timeStampList.slice(position * factor, (position + 1) * factor);
+            }
+            // Consultar datos faltantes
+            _getStreamHistoricalData(mdVarIdList, timeStampRange, assetNodeId, historicalData, playerId, subVarIdList);
+            setTimeout(function () {
+                position += 1;
+                _getStreamIntervalRemote(position, factor, iterations, timeStampList, mdVarIdList, subVarIdList, assetNodeId, historicalData, playerId);
+            }, 1000);
         };
 
         _getStreamHistoricalData = function (mdVarIdList, timeStampRange, assetNodeId, historicalData, playerId, subVarIdList) {
@@ -250,8 +156,10 @@ EventTimeMode = (function () {
                 },
                 success: function (resp) {
                     response = JSON.parse(resp);
-                    //_saveStreamLocal(response, historicalData, playerId, subVarIdList, assetNodeId, _streamParser);
-                    Concurrent.Thread.create(_saveStreamLocal, response, historicalData, playerId, subVarIdList, assetNodeId, _streamParser);
+                    _steps(response, _streamParser, _saveStreamLocal, subVarIdList, assetNodeId, undefined, playerId).then(function () {
+                        // Publicamos la informacion
+                        PublisherSubscriber.publish("/historicValues/refresh", historicalData);
+                    });
                 },
                 error: function (jqXHR, textStatus) {
                     console.error("Error: " + new AjaxErrorHandling().GetXHRStatusString(jqXHR, textStatus));
@@ -259,54 +167,132 @@ EventTimeMode = (function () {
             });
         };
 
-        _saveStreamLocal = function (response, historicalData, playerId, subVarIdList, assetNodeId, streamParser) {
+        _steps = function (response, streamParser, streamProcessData, subVarIdList, assetNodeId, timeStamp, playerId) {
             var
+                deferred,
                 dataArray,
+                mdVariableStep,
                 i, j, k,
                 currentSubVariable,
+                subVariableStep,
+                dataItem,
+                stream,
                 dataByTimeStamp,
-                statusColor,
+                timeStampStep;
+
+            deferred = $.Deferred();
+            dataArray = [];
+            i = 0;
+            mdVariableStep = function () {
+                if (i < response.length) {
+                    currentSubVariable = response[i].HistoricalBySubVariable;
+                    j = 0;
+                    subVariableStep = function () {
+                        if (j < currentSubVariable.length) {
+                            dataByTimeStamp = currentSubVariable[j].SubVariableDataList;
+                            k = 0;
+                            timeStampStep = function () {
+                                if (k < dataByTimeStamp.length) {
+                                    dataItem = {};
+                                    dataItem.RawTimeStamp = new Date(dataByTimeStamp[k].TimeStamp + "+00:00");
+                                    dataItem.TimeStamp = formatDate(dataItem.RawTimeStamp);
+                                    if (dataByTimeStamp[k].StatusId !== "") {
+                                        dataItem.StatusColor = ej.DataManager(arrayObjectStatus).executeLocal(
+                                            new ej.Query().where("Id", "equal", dataByTimeStamp[k].StatusId))[0].Color;
+                                    } else {
+                                        dataItem.StatusColor = "#999999";
+                                    }
+                                    // En caso de que los datos obtenidos sean nulos, no los procesamos
+                                    if (dataByTimeStamp[k].Value === null) {
+                                        k += 1;
+                                        timeStampStep();
+                                    }
+                                    streamParser.GetWaveForm(dataByTimeStamp[k].Value, function onComplete(data) {
+                                        var
+                                            subVariableId,
+                                            idx;
+
+                                        subVariableId = currentSubVariable[j].SubVariableId;
+                                        dataItem.IsChangeOfRpm = dataByTimeStamp[k].IsChangeOfRpm;
+                                        dataItem.IsEvent = dataByTimeStamp[k].IsEvent;
+                                        dataItem.IsNormal = dataByTimeStamp[k].IsNormal;
+                                        dataItem = streamProcessData(dataItem, streamParser, data, subVariableId, assetNodeId);
+                                        idx = subVarIdList.indexOf(subVariableId);
+                                        if (idx > -1) {
+                                            if (timeStamp !== undefined) {
+                                                dataArray[subVariableId] = [];
+                                                dataArray[subVariableId][timeStamp] = dataItem;
+                                                dataArray[subVariableId].WidgetId = playerId;
+                                            } else {
+                                                dataArray.push({
+                                                    subVariableId: subVariableId,
+                                                    timeStamp: dataItem.RawTimeStamp.getTime(),
+                                                    value: dataItem.RawValue,
+                                                    sampleTime: dataItem.SampleTime,
+                                                    referencePositions: dataItem.KeyphasorPositions,
+                                                    statusColor: dataItem.StatusColor,
+                                                    isChangeOfRpm: dataItem.IsChangeOfRpm,
+                                                    isEvent: dataItem.IsEvent,
+                                                    isNormal: dataItem.IsNormal
+                                                });
+                                            }
+                                        }
+                                        k += 1;
+                                        timeStampStep();
+                                    });
+                                } else {
+                                    j += 1;
+                                    subVariableStep();
+                                }
+                            };
+                            timeStampStep();
+                        } else {
+                            i += 1;
+                            mdVariableStep();
+                        }
+                    };
+                    subVariableStep();
+                } else {
+                    deferred.resolve(dataArray);
+                }
+            };
+            mdVariableStep();
+            return deferred.promise();
+        };
+
+        _saveStreamLocal = function (dataItem, streamParser, data, subVariableId, assetNodeId) {
+            var
                 stream;
 
-            dataArray = [];
-            for (i = 0; i < response.length; i += 1) {
-                currentSubVariable = response[i].HistoricalBySubVariable;
-                for (j = 0; j < currentSubVariable.length; j += 1) {
-                    dataByTimeStamp = currentSubVariable[j].SubVariableDataList;
-                    for (k = 0; k < dataByTimeStamp.length; k += 1) {
-                        if (currentSubVariable[j].SubVariableDataList[0].StatusId !== "") {
-                            statusColor = ej.DataManager(arrayObjectStatus).executeLocal(
-                                new ej.Query().where("Id", "equal", currentSubVariable[j].SubVariableDataList[0].StatusId))[0].Color;
-                        } else {
-                            statusColor = "#999999";
-                        }
-                        // En caso de que la informacion no se encuentre correctamente almacenada
-                        if (dataByTimeStamp[k].Value === null) {
-                            continue;
-                        }
-                        stream = streamParser.GetWaveForm(dataByTimeStamp[k].Value);
-                        dataArray.push({
-                            subVariableId: currentSubVariable[j].SubVariableId,
-                            timeStamp: new Date(dataByTimeStamp[k].TimeStamp + "+00:00").getTime(),
-                            value: stream.waveform,
-                            sampleTime: stream.sampleTime,
-                            referencePositions: stream.keyphasor,
-                            statusColor: statusColor,
-                            isChangeOfRpm: dataByTimeStamp[k].IsChangeOfRpm,
-                            isEvent: dataByTimeStamp[k].IsEvent,
-                            isNormal: dataByTimeStamp[k].IsNormal
-                        });
-                    }
-                }
+            stream = streamParser.ParseWaveForm(data);
+            dataItem.KeyphasorPositions = stream.keyphasor;
+            if (stream.keyphasor.length > 0) {
+                dataItem.KeyphasorPositionsOnTime = GetKeyphasorOnTime(stream.keyphasor, stream.sampleTime, stream.signalLength);
+            } else {
+                dataItem.KeyphasorPositionsOnTime = [];
             }
-            aidbManager.AddStreamItemList(dataArray, assetNodeId);
-            PublisherSubscriber.publish("/historicValues/refresh", historicalData);
+            dataItem.SampleTime = stream.sampleTime;
+            dataItem.Value = GetXYDataOnTime(stream.waveform, stream.sampleTime);
+            dataItem.RawValue = stream.waveform;
+            dataItem.SampleRate = stream.signalLength / stream.sampleTime;
+            aidbManager.AddStreamItem({
+                subVariableId: subVariableId,
+                timeStamp: dataItem.RawTimeStamp.getTime(),
+                value: dataItem.RawValue,
+                sampleTime: dataItem.SampleTime,
+                referencePositions: dataItem.KeyphasorPositions,
+                statusColor: dataItem.StatusColor,
+                isChangeOfRpm: dataItem.IsChangeOfRpm,
+                isEvent: dataItem.IsEvent,
+                isNormal: dataItem.IsNormal
+            }, assetNodeId);
+            return dataItem;
         };
 
         this.Stop = function () {
             // REVISAR QUE OPCIONES SE COLOCAN AQUI
         };
-    }
+    };
 
     return EventTimeMode;
 })();

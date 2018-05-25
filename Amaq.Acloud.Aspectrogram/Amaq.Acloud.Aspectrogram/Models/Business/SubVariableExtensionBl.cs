@@ -183,10 +183,12 @@
         }
 
         /// <summary>
-        /// Actualiza una lista de SubVariables
+        /// Actualiza y retorna una lista de SubVariables
         /// </summary>
-        public void UpdateMany(List<SubVariableExtension> subVariables)
+        public List<SubVariableExtension> UpdateMany(List<SubVariableExtension> subVariables)
         {
+            var subVars = new List<SubVariableExtension>();
+            
             if (subVariables != null)
             {
                 for (int s = 0; s < subVariables.Count; s++)
@@ -194,13 +196,16 @@
                     if (subVariables[s].Id.Length != 24)
                     {
                         subVariables[s].Id = null;
-                        _subVariableExtensionRepository.Add(subVariables[s]);
+                        var subvar = _subVariableExtensionRepository.Add(subVariables[s]);
+                        subVars.Add(subvar);
                         subVariables.RemoveAt(s);
                         s--;
                     }
                 }
                 _subVariableExtensionRepository.UpdateMany(subVariables);
+                subVars.AddRange(subVariables);
             }
+            return subVars;
         }
 
         /// <summary>
@@ -265,7 +270,7 @@
         /// <summary>
         /// Actualiza la subvariable de Directa
         /// </summary>
-        public void UpdateDirect(SubVariableExtension subVariable)
+        public SubVariableExtension UpdateDirect(SubVariableExtension subVariable)
         {
             var bands = subVariable.Bands;
             if (bands != null)
@@ -297,6 +302,7 @@
             }
 
             _subVariableExtensionRepository.UpdateDirect(subVariable, bands);
+            return subVariable;
         }
     }
 }

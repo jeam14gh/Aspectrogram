@@ -1,0 +1,1096 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Amaq.Acloud.Entities</name>
+    </assembly>
+    <members>
+        <member name="T:Amaq.Acloud.Entities.Administration.Company">
+            <summary>
+            Representan una empresa o tenancy en el sistema Acloud
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Administration.Company.Properties3d">
+            <summary>
+            Conjunto de propiedades json para 3d. Se almacena y retorna como string, luego en el navegador se convierte a objeto JSON
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Administration.SyncfusionControl">
+            <summary>
+            Representan los controles de syncfusion disponibles en el sistema Acloud
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Administration.AmaqModule">
+            <summary>
+            Modulos A-MAQ.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Administration.AmaqModule.Name">
+            <summary>
+            Nombre del modulo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Administration.AmaqModule.Description">
+            <summary>
+            Descripcion detallada del modulo.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Administration.User">
+            <summary>
+            Representa un usuario del sistema Acloud
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Administration.User.Companies">
+            <summary>
+            Listado de empresas a las que está asociado el usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Administration.User.Tenants">
+            <summary>
+            Listado de tenencias a las cuales el usuario está asociado. Un tenant representa una empresa y una base de datos para dicha empresa.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Entities.Administration.User.#ctor">
+            <summary>
+            Inicializa la lista de empresas asociadas al usuario.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.Asset">
+            <summary>
+            Propiedades especificas de activos.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Asset.ExternalId">
+            <summary>
+            Id del sistema externo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Asset.Name">
+            <summary>
+            Valor a ser mostrado en el arbol.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Asset.Description">
+            <summary>
+            Nombre descriptivo del Activo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Asset.Image">
+            <summary>
+            Imagen descriptiva del Activo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Asset.UserResponsible">
+            <summary>
+            Usuario responsable del Activo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Asset.NodeId">
+            <summary>
+            Id asociativo de la ubicacion dentro de la coleccion de nodos.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Asset.ForeignKey">
+            <summary>
+            Define la llave foranea con el arbol principal.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.Concept">
+            <summary>
+            Propiedades especificas de Conceptos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.ParentId">
+            <summary>
+            Id del activo al que pertenece (nodo padre) el Concepto.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.Diagnostic">
+            <summary>
+            Diagnostico del experto.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.Recomendations">
+            <summary>
+            Recomendaciones del experto.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.TimeStamp">
+            <summary>
+            Estampa de tiempo de la ultima modificacion del concepto.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.StatusId">
+            <summary>
+            Id del estado de condicion.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.ExpirationDate">
+            <summary>
+            Fecha hasta la que tendra validez el concepto emitido por el experto.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.Categories">
+            <summary>
+            Listado de Ids de categorias que tiene asociado el concepto.
+            Un concepto puede tener desde 0 hasta muchas categorias
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.Owner">
+            <summary>
+            Usuario responsable del Concepto.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Concept.MdVariableHistoricalAttached">
+            <summary>
+            Variables Md adjuntas al concepto.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard">
+            <summary>
+            Un Dashboard es un espacio de trabajo para el usuario compuesto de 1 o varios Widget
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard.Name">
+            <summary>
+            Nombre del Dashboard, el cual se muestra al usuario en las listas de Dashboards 
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard.Title">
+            <summary>
+            Titulo que se muestra en la pestanha del Dashboard en el sitio web
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard.Description">
+            <summary>
+            Descripcion que se muestra al usuario para darle una idea del proposito y utilidad del Dashboard
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard.DashboardType">
+            <summary>
+            Tipo de entidad que pertenece el dashboard.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard.Corp">
+            <summary>
+            Balance de gestion de activos: Costo, Oportunidades, Riesgo y Desempenho (Performance).
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard.Owner">
+            <summary>
+            Usuario responsable del Dashboard (Creador)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard.SharingMode">
+            <summary>
+            Modo de compartimiento del dashboard (basado en ambitos)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Dashboard.Widgets">
+            <summary>
+            Modo de compartimiento del dashboard (ambito)
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget">
+            <summary>
+            Espacio reservado en un Dashboard, con caracteristicas Drag and Drop y Resizable destinado para la visualizacion de informacion
+            util para el usuario (Indicadores, Filtros personalizados, Graficos 3d)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget.Index">
+            <summary>
+            Posicion y/o orden en el cual se muestra el widget dentro del dashboard
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget.WidthPercentage">
+            <summary>
+            Porcentaje del ancho del widget
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget.HeightPercentage">
+            <summary>
+            Porcentaje del alto del widget
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget.ContentType">
+            <summary>
+            Tipo de contenido asociado el Widget (Indicator, Filter, etc...)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget.ContentTypeId">
+            <summary>
+            Id del objeto de la entidad a la cual esta asociado el Widget (Indicator, Filter, etc...)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget.AspectRatio">
+            <summary>
+            Relacion de aspecto para un widget
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget.MinimumWidth">
+            <summary>
+            Ancho minimo necesario para la correcta visualizacion del Widget para cada Dashboard
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.DashboardAndWidget.Widget.MinimumHeight">
+            <summary>
+            Alto minimo necesario para la correcta visualizacion del Widget para cada Dashboard
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter.Name">
+            <summary>
+            Nombre del filtro.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter.Description">
+            <summary>
+            Nombre descriptivo del filtro.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter.Collection">
+            <summary>
+            Nombre de la coleccion que contiene la informacion del filtro.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter.Conditions">
+            <summary>
+            Condiciones para la visualizacion del filtro.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Filter.ControlId">
+            <summary>
+            Nombre del control que representa la informacion del filtro.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator">
+            <summary>
+            Atributos especificos de indicadores.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator.Name">
+            <summary>
+            Nombre del indicador.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator.Description">
+            <summary>
+            Nombre descriptivo del Indicador.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator.InputConstants">
+            <summary>
+            Listado de constantes de entrada para el indicador.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator.InputFilters">
+            <summary>
+            Listado de filtros de entrada para el indicador.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator.OutputData">
+            <summary>
+            Listado de salida de datos para el indicador.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.IndicatorAndFilter.Indicator.ControlId">
+            <summary>
+            Nombre del control que representa la informacion del inidicador.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.Location">
+            <summary>
+            Propiedades especificas de ubicaciones
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Location.ExternalId">
+            <summary>
+            Id del sistema externo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Location.Name">
+            <summary>
+            Valor a ser mostrado en el arbol.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Location.Description">
+            <summary>
+            Nombre descriptivo de la Ubicacion.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Location.Image">
+            <summary>
+            Imagen descriptiva de la Ubicacion.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Location.UserResponsible">
+            <summary>
+            Usuario responsable de la Ubicacion.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Location.NodeId">
+            <summary>
+            Id asociativo de la ubicacion dentro de la coleccion de nodos.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Location.ForeignKey">
+            <summary>
+            Define la llave foranea con el arbol principal.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.MaintenanceOrder">
+            <summary>
+            Atributos especificos de ordenes de mantenimiento.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MaintenanceOrder.OrderId">
+            <summary>
+            Id de la orden de mantenimiento.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MaintenanceOrder.EquipmentNumber">
+            <summary>
+            Numero de equipo SAP.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MaintenanceOrder.FuntionalLocation">
+            <summary>
+            Ubicacion tecnica SAP.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MaintenanceOrder.StartDate">
+            <summary>
+            Fecha de inicio de la orden de mantenimiento.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MaintenanceOrder.EndDate">
+            <summary>
+            Fecha de cierre de la orden de mantenimiento.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MaintenanceOrder.Description">
+            <summary>
+            Nombre descriptivo para la orden de mantenimiento.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MaintenanceOrder.OrderStatus">
+            <summary>
+            Estado de la orden de mantenimiento.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MaintenanceOrder.ForeignKey">
+            <summary>
+            Define la llave foranea con el nodo o arbol principal.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.MdVariable">
+            <summary>
+            Propiedades especificas de Variables Md.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MdVariable.ParentId">
+            <summary>
+            Id del activo al que pertenece (nodo padre) la Variable Md.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MdVariable.Name">
+            <summary>
+            Nombre de la Variable Md.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MdVariable.Description">
+            <summary>
+            Nombre descriptivo de la Variable Md.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MdVariable.IsRealTime">
+            <summary>
+            Bandera que identifica si la Variable Md se consulta de forma permanente.
+            Tiempo real.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MdVariable.UserResponsible">
+            <summary>
+            Usuario responsable de la Variabl Md.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.MdVariable.NodeId">
+            <summary>
+            Id asociativo de la Variable Md dentro de la coleccion de nodos.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.SubVariable">
+            <summary>
+            Propiedades especificas de Sub-Variables.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.ParentId">
+            <summary>
+            Id de la variable a la que pertenece (nodo padre) la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.Name">
+            <summary>
+             Nombre de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.Description">
+            <summary>
+            Nombre descriptivo de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.ValueType">
+            <summary>
+            Tipo de valor de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.Value">
+            <summary>
+            Valor de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.Units">
+            <summary>
+            Unidad en la que se expresa el valor de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.UserResponsible">
+            <summary>
+            Usuario responsable de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.TimeStamp">
+            <summary>
+            Estampa de tiempo de la ultima modificacion del valor.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.Status">
+            <summary>
+            Listado de Ids de estados asociado a diferentes categorias como Riesgo, Costo y Desempeño.
+            Un nodo puede tener 1 o más estados (mínimo 1 estado)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.Thresholds">
+            <summary>
+            Listado de umbrales configurados para la SubVariable
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.SubVariable.Historical">
+            <summary>
+            Historico de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.UserConfiguration">
+            <summary>
+            Asocia para un usuario el perfil de acceso.
+            Un usuario puede tener asociado un unico perfil, pero un perfil
+            puede estar asociado a muchos usuarios.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.UserConfiguration.UserId">
+            <summary>
+            Id del objeto usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.UserConfiguration.ProfileId">
+            <summary>
+            Id del objeto perfil
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.UserConfiguration.Dashboards">
+            <summary>
+            Listado de dashboards personalizados para cada usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.UserConfiguration.DefaultCorp">
+            <summary>
+            CORP que el usuario configura de forma que se muestre por defecto en cada inicio se sesion.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.Category">
+            <summary>
+            Categorias clasificadas según el tipo de entidad o
+            categorias generales como Riesgo, Costo y Desempeño
+            que no están asociadas a un tipo de entidad
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Category.Description">
+            <summary>
+            Descripción detallada de la categoria
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Category.Type">
+            <summary>
+            Tipo de entidad a la que pertenece la categoria
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.Node">
+            <summary>
+            Nodo que contiene de forma jerarquica los diferentes tipos
+            de entidades en el arbol de una empresa.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.ExternalId">
+            <summary>
+            Id del sistema externo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.ParentId">
+            <summary>
+            Id del objeto nodo padre
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.Level">
+            <summary>
+            Nivel separado por "." en la jerarquia
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.Name">
+            <summary>
+            Nombre a ser mostrado en el arbol.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.Description">
+            <summary>
+            Nombre descriptivo del nodo en el arbol.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.HasChild">
+            <summary>
+            Bandera que indica si el nodo tiene hijos internamente.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.Type">
+            <summary>
+            Tipo de entidad que pertenece el nodo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.Categories">
+            <summary>
+            Listado de objectos CategoryNode, donde se distingue el Id de categoria
+            principal del nodo, nodos secundarios del mismo y las categorias asociadas a sus hijos.
+            Un nodo puede tener desde 0 hasta muchas categorias
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Node.Status">
+            <summary>
+            Listado de Ids de estados asociado a diferentes categorias como Riesgo, Costo y Desempenho.
+            Un nodo puede tener 1 o mas estados (minimo 1 estado)
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.Profile">
+            <summary>
+            Perfil que determina los niveles de acceso de un usuario.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Profile.Description">
+            <summary>
+            Quien es? Que hace?
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Profile.ProfileType">
+            <summary>
+            Tipo de perfil, Administrador u Operador
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Profile.AccessCorp">
+            <summary>
+            CORP: Cost, Opportunities, Risk, Performance
+            Balanceo de gestion de activos segun el perfil de usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Profile.AccessNodes">
+            <summary>
+            Listado de documentos con Ids de nodos asociados a permisos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Profile.AccessCategories">
+            <summary>
+            Listado de documentos con Ids de categorias asociados a permisos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Profile.Dashboards">
+            <summary>
+            Listado de dashboards obligatorios para cada perfil de usuario
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Core.Status">
+            <summary>
+            Estados de nodo, para cada categoria como Riesgo, Costo y Desempenho,
+            se puede tener el mismo peso y color, pero representa informacion diferente
+            segun el area de conocimiento (categoria).
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Status.Name">
+            <summary>
+            Nombre del estado
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Status.Description">
+            <summary>
+            Detalle sobre el estado
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Status.Severity">
+            <summary>
+            Grado de severidad del estado (Peso)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Status.Color">
+            <summary>
+            Color a mostrar en la plataforma A-CLOUD
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Status.Corp">
+            <summary>
+            CORP: Cost, Opportunities, Risk, Performance
+            Relacion del estado segun el CORP al que pertenece
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Status.CategoryId">
+            <summary>
+            Estado por categoria (Riesgo, Costo o Desempenho)
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Core.Status.ForeignKey">
+            <summary>
+            Define la llave foranea con el CORP.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.Properties3dDto.EntityType">
+            <summary>
+            Requerido en el navegador por las librerías 3d para saber si gestiona la carga del 3d como un Activo o como una Ubicación
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.Properties3dDto.Title">
+            <summary>
+            Titulo que se usa en ThreeJs para mostrar al usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.Properties3dDto.NodeId">
+            <summary>
+            Id del nodo  que se usa en ThreeJs para identificar el 3d
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.Properties3dDto.StatusColor">
+            <summary>
+            Id del nodo  que se usa en ThreeJs para identificar el 3d
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.Properties3dDto.Properties">
+            <summary>
+            Propiedades 3d como una cadena de texto en formato JSON
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.Properties3dDto.Children">
+            <summary>
+            Hijos directos que tienen propiedades 3d
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Dtos.SaveConceptDto">
+            <summary>
+            Utilizado en el diálogo flotante Nuevo Concepto en el WebSite
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.UpdateValueDto.Id">
+            <summary>
+            Id del objeto a actualizar.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.UpdateValueDto.Value">
+            <summary>
+            Valor a actualizar.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Dtos.ApiResponseDto">
+            <summary>
+            Respuesta del Web API
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Dtos.MdVariableCategoryDto">
+            <summary>
+            Agrupa las Variables Md por las diferentes categorias existentes.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.MdVariableCategoryDto.CategoryName">
+            <summary>
+            Nombre de la categoria principal de la Variable Md.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.MdVariableCategoryDto.MdVariableList">
+            <summary>
+            Listado de Variables Md por cada categoria.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Dtos.BasicCredentialsDto">
+            <summary>
+            Credenciales de acceso básicas usadas en el método GetCompanies del AccountController y del service reference AccountService.
+            Con estos parámetros se solicita al servicio Web API del A-CLOUD los tenants a los cuales está asociado el usuario
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Dtos.FullCredentialsDto">
+            <summary>
+            Credenciales de acceso y parámetros necesarios en el método Login del AccountController y en el método GetTokenAsync del service reference
+            AccountService. Con estos parámetros se solicita al servicio Web API del A-CLOUD el bearer token de autenticación
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Dtos.TreeDto.StatusId">
+            <summary>
+            Id de estado necesario en el navegador para resolver la mayor jerarquia
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Corp.Cost">
+            <summary>
+            Costo
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Corp.Opportunities">
+            <summary>
+            Oportunidades
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Corp.Risk">
+            <summary>
+            Riesgo
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Corp.Performance">
+            <summary>
+            Desempenho
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Enums.DashboardType">
+            <summary>
+            Indica si un Dashboard es solo para Ubicaciones, Activos o ambos
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.DashboardType.Location">
+            <summary>
+            Solo para Ubicaciones
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.DashboardType.Asset">
+            <summary>
+            Solo para Activos 
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.DashboardType.Both">
+            <summary>
+            Ambos
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Enums.ContentType">
+            <summary>
+            Tipo de contenido del Widget
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.ContentType.Graphic3d">
+            <summary>
+            Gráfico 3d. No requiere TypeId en el Widget, ya que el contenido 3d no es una entidad aparte, sino una propiedad
+            del objeto de la entidad correspondiente al nodo seleccionado en el árbol
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.ContentType.Indicator">
+            <summary>
+            Indicador. Requiere el TypeId en el Widget, el cual indica el Id del Indicator que está asociado al Widget
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.ContentType.Filter">
+            <summary>
+            Filtro. Requiere el TypeId en el Widget, el cual indica el Id del Filter que está asociado al Widget
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Enums.Hierarchy3d">
+            <summary>
+            Indica como se grafica el 3d a nivel jerárquico
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Hierarchy3d.All">
+            <summary>
+            Incluir en el 3d el nodo actual y sus hijos directos
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Hierarchy3d.OnlyChildren">
+            <summary>
+            Incluir en el 3d solo los hijos directos
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Hierarchy3d.OnlyItself">
+            <summary>
+            Incluir en el 3d solo el nodo actual
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Enums.Scope">
+            <summary>
+            Ambito de un objeto de una entidad A-CLOUD
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Scope.Public">
+            <summary>
+            El objeto lo puede ver cualquier usuario del sistema, pero solo lo puede modificar el propietario.
+            Cualquier usuario no propietario del objeto lo puede usar como base para crear su propio objeto.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Scope.Private">
+            <summary>
+            El objeto solo lo puede ver y modificar el usuario responsable o propietario
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.Scope.Custom">
+            <summary>
+            El objeto solo lo pueden ver los usuarios con los que fue compartido el objeto, pero solo lo puede modificar el propietario.
+            Un usuario con el que fue compartido el objeto lo puede usar como base para crear su propio objeto.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Enums.ValueType">
+            <summary>
+            Tipos de valor de SubVariables posibles.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.ValueType.Numeric">
+            <summary>
+            Valor de SubVariable tipo numerico.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.ValueType.Text">
+            <summary>
+            Valor de SubVariable tipo texto escrito por el usuario final.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.ValueType.AmaqStream">
+            <summary>
+            Flujo de bytes especial creado por A-Maq para la transferencia de formas de onda
+            y espectro inicialmente.
+            </summary>
+        </member>
+        <member name="F:Amaq.Acloud.Entities.Enums.ValueType.PathFile">
+            <summary>
+            Ruta a un achivo que representa el valor para la SubVariable
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Enums.EntityType">
+            <summary>
+            Tipo de entidad, el valor asociado corresponde al orden
+            jerarquico, donde 1 es el mayor orden existente
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Enums.ProfileType">
+            <summary>
+            Tipos de perfil globales del sistema.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Interfaces.IEntity3d">
+            <summary>
+            Representa las propiedades adicionales que debe tener una entidad para ser una entidad con gráficos 3d valida
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.Interfaces.IEntity3d.Properties3d">
+            <summary>
+            Conjunto de propiedades json para 3d. Se almacena y retorna como string, luego en el navegador se convierte a objeto JSON
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.Serializers.SubVariableValueSerializer">
+            <summary>
+            Permite sobrescribir la deserializacion de un campo permitiendo extender los tipos de datos a retornar.
+            </summary>
+        </member>
+        <member name="M:Amaq.Acloud.Entities.Serializers.SubVariableValueSerializer.Deserialize(MongoDB.Bson.Serialization.BsonDeserializationContext,MongoDB.Bson.Serialization.BsonDeserializationArgs)">
+            <summary>
+            Realiza la deserializacion del campo dependiendo del tipo de dato.
+            </summary>
+            <param name="context">Contexto</param>
+            <param name="args">Argumentos</param>
+            <returns>Tipo de dato deserializado</returns>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.CustomDashboard">
+            <summary>
+            Dashboards personalizados que un usuario puede configurar 
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.CategoryNode">
+            <summary>
+            Asocia los diferentes tipos de categorias que puede tener un nodo y sus hijos.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.CategoryNode.PrincipalCategory">
+            <summary>
+            Categoria principal a la cual se encuentra asociado el nodo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.CategoryNode.SecondaryCategories">
+            <summary>
+            Categorias adicionales que puede tener el nodo.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.CategoryNode.ChildCategories">
+            <summary>
+            Categorias que tienen los nodos hijos.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Condition.Where">
+            <summary>
+            Propiedad usada para la gestion de referencias cruzadas con otras entidades.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Condition.OrderBy">
+            <summary>
+            Ordenar una entidad segun la propiedad especificada.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Condition.GroupBy">
+            <summary>
+            Agrupar una entidad segun la propiedad especificada.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Condition.Select">
+            <summary>
+            Seleccionar una cantidad de campos especificos en la entidad.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.Threshold2">
+            <summary>
+            Representa un umbral
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Threshold2.Value">
+            <summary>
+            Valor que se usa en la condición
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Threshold2.Condition">
+            <summary>
+            Condición solo mayor que o menor que
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.Band">
+            <summary>
+            Representa una zona compuesta de uno o dos threshold
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Band.Description">
+            <summary>
+            Descripcion del umbral.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Band.StatusId">
+            <summary>
+            Id del estado.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Band.UpperThreshold">
+            <summary>
+            Umbral superior
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Band.LowerThreshold">
+            <summary>
+            Umbral inferior
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Threshold.Description">
+            <summary>
+            Descripcion del umbral.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Threshold.StatusId">
+            <summary>
+            Id del estado.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Threshold.Condition">
+            <summary>
+            Umbral superior
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.AccessCategory">
+            <summary>
+            Asocia para cada perfil, una o más categorias y sus respectivos permisos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.AccessCategory.Permission">
+            <summary>
+            Permisos : Crear, Editar y Eliminar
+            El permiso por defecto es Ver
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.AccessNode">
+            <summary>
+            Asocia para cada perfil, uno o más nodos y sus respectivos permisos
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.AccessNode.Permission">
+            <summary>
+            Permisos : Crear, Editar y Eliminar
+            El permiso por defecto es Ver
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.CompanyByUser">
+            <summary>
+            Relación de empresas asociadas a un usuario
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.CompanyByUser.CompanyId">
+            <summary>
+            Relación con la colección Company
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.CompanyByUser.Role">
+            <summary>
+            Rol del usuario en la empresa
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.CompanyByUser.AccessModules">
+            <summary>
+            Modulos a los cuales el usuario tiene acceso dentro de la empresa.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.HistoricalAttached">
+            <summary>
+            Objeto de entidad (Variable Md, Indicador, etc) adjunto para el concepto.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.HistoricalAttached.EntityId">
+            <summary>
+            Id de la entidad (Variable Md, Indicador, etc).
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.HistoricalAttached.HistoricalTimeStamp">
+            <summary>
+            Estampa de tiempo a consultar en el historico.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.HistoricalSubVariable">
+            <summary>
+            Historico de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.HistoricalSubVariable.StatusId">
+            <summary>
+            Id del estado en que se registro el historico de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.HistoricalSubVariable.TimeStamp">
+            <summary>
+            Fecha en que se registro el historico del valor de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.HistoricalSubVariable.Value">
+            <summary>
+            Valor en que se registro el historico de la Sub-Variable.
+            </summary>
+        </member>
+        <member name="T:Amaq.Acloud.Entities.ValueObjects.Tenant">
+            <summary>
+            Tenencia representada por un CompanyName y un DbName
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Tenant.CompanyName">
+            <summary>
+            Nombre de la empresa
+            </summary>
+        </member>
+        <member name="P:Amaq.Acloud.Entities.ValueObjects.Tenant.DbName">
+            <summary>
+            Nombre de la base de datos de la empresa
+            </summary>
+        </member>
+    </members>
+</doc>
