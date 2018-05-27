@@ -65,25 +65,4 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 6
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://wow:8080/tfs/amaq
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Amaq.Acloud.AsdaqService\\Amaq.Acloud.AsdaqService.csproj
-		SccProjectName1 = Amaq.Acloud.AsdaqService
-		SccLocalPath1 = Amaq.Acloud.AsdaqService
-		SccProjectUniqueName2 = Amaq.Acloud.Aspectrogram.Entities\\Amaq.Acloud.Aspectrogram.Entities.csproj
-		SccProjectName2 = Amaq.Acloud.Aspectrogram.Entities
-		SccLocalPath2 = Amaq.Acloud.Aspectrogram.Entities
-		SccProjectUniqueName3 = Amaq.Acloud.Aspectrogram\\Amaq.Acloud.Aspectrogram.WebSite.csproj
-		SccProjectName3 = Amaq.Acloud.Aspectrogram
-		SccLocalPath3 = Amaq.Acloud.Aspectrogram
-		SccProjectUniqueName4 = Amaq.Acloud.Aspectrogram.Proxy\\Amaq.Acloud.Aspectrogram.Proxy.csproj
-		SccProjectName4 = Amaq.Acloud.Aspectrogram.Proxy
-		SccLocalPath4 = Amaq.Acloud.Aspectrogram.Proxy
-		SccProjectUniqueName5 = Amaq.Acloud.AsdaqViewer\\Amaq.Acloud.AsdaqViewer.csproj
-		SccProjectName5 = Amaq.Acloud.AsdaqViewer
-		SccLocalPath5 = Amaq.Acloud.AsdaqViewer
-	EndGlobalSection
 EndGlobal

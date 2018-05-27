@@ -113,7 +113,6 @@
     <Compile Include="Enums\SensorOrientation.cs" />
     <Compile Include="Enums\StreamType.cs" />
     <Compile Include="Enums\TripMultiply.cs" />
-    <Compile Include="Enums\TurningVelocity.cs" />
     <Compile Include="RecordedEvent.cs" />
     <Compile Include="MdVariableExtension.cs" />
     <Compile Include="NodeExtension.cs" />

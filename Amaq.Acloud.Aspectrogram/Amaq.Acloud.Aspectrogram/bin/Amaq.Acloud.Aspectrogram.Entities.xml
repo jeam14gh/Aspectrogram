@@ -1650,31 +1650,6 @@
             3X
             </summary>
         </member>
-        <member name="T:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.CPS">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.Hz">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.CPM">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:Amaq.Acloud.Aspectrogram.Entities.Enums.TurningVelocity.RPM">
-            <summary>
-            
-            </summary>
-        </member>
         <member name="T:Amaq.Acloud.Aspectrogram.Entities.RecordedEvent">
             <summary>
             Representa un evento grabado de condición u otro tipo
